@@ -11,7 +11,7 @@
 | Component | Status |
 |-----------|--------|
 | Rust crypto crate (`anox_crypto`) | `cargo test` **15/15 PASS** |
-| Android project build + APK packaging | PASS (debug + release APK) |
+| Android project build + APK packaging | PASS locally (debug + release APK) |
 | Android connected instrumentation | **35/35 PASS** on arm64 emulator API 34 |
 | JNI bridge (vodozemac 0.10.0, aes-gcm 0.10.3) | PASS at implemented test level |
 | Android Keystore state-key wrapping | PASS at implemented test level |
@@ -25,14 +25,14 @@
 | Contacts | Not implemented |
 | Push | Not implemented |
 | Attachments | Not implemented |
-| Git/GitHub baseline | Local repository, baseline, and origin remote configured; GitHub authentication pending before push |
+| Git/GitHub baseline | Remote `anox-admin/ax-messenger` connected and PRIVATE; `main` and `v1-foundation-baseline` pushed; CI running; Android CI build failing due to Gradle/Kotlin incompatibility |
 
 ## Toolchain
 
-- AGP `9.1.1`
-- Kotlin `2.2.10`
+- AGP `8.13.2`
+- Kotlin `1.9.20`
 - Gradle Wrapper `9.3.1`
-- JDK 17
+- JDK Temurin `17.0.20+8`
 - NDK `26.2.11394342` (r26c)
 - Rust `1.97.1`
 - `cargo-ndk` `4.1.2`
@@ -49,7 +49,9 @@
 
 ## Open Items
 
-See `docs/current/OPEN_ARCHITECTURE_ITEMS.md`.
+- Decide Android build-tooling alignment to make CI green (Gradle 8.x vs. AGP/Kotlin upgrade).
+- Branch protection / ruleset and GitHub secret scanning are unavailable on the free private plan.
+- See `docs/current/OPEN_ARCHITECTURE_ITEMS.md`.
 
 ## Historical Context
 
@@ -57,4 +59,4 @@ Older Raw1.1 documents are in `docs/history/raw1.1/` and must not be used as cur
 
 ## Next Engineering Task
 
-Connect the local repository to the private GitHub repository, then proceed to `PROMPT-007 — Device Authentication Foundation` after an independent security review.
+Resolve the CI Android build failure, then proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.

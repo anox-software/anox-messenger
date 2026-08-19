@@ -7,11 +7,11 @@
 
 ## A. Previous Git state
 
-No `.git` directory existed in the project root. Git was not initialized. No prior branches, commits, or remotes were present.
+No `.git` directory existed in the project root when GIT-001 started. Git was not initialized. No prior branches, commits, or remotes were present.
 
 ## B. `.gitignore` changes
 
-The existing `.gitignore` was updated to:
+The `.gitignore` was hardened to:
 
 - Ignore `.jks`, `.keystore`, and `.p12` files.
 - Ignore `crypto/rust/target/` and all `target/` directories.
@@ -22,7 +22,7 @@ Already ignored: `.DS_Store`, `.idea/`, `.gradle/`, `build/`, `local.properties`
 
 ## C. Secret audit result
 
-No production secrets were found in the working tree.
+No production secrets were found in the working tree at baseline.
 
 | Checked | Result |
 |---------|--------|
@@ -34,9 +34,9 @@ No production secrets were found in the working tree.
 | Hardcoded API keys / tokens | Not found |
 | `BEGIN ... PRIVATE KEY` blocks | Not found |
 
-## D. Files intentionally excluded
+Post-push `git ls-tree` confirmed no `local.properties`, `.env`, `.jks`, `.keystore`, `.p12`, build caches, `crypto/rust/target/`, or private PEM files were pushed.
 
-Generated and local files excluded from version control include:
+## D. Files intentionally excluded
 
 - `local.properties`
 - `android/build/`
@@ -51,11 +51,11 @@ Generated and local files excluded from version control include:
 
 | Test | Result |
 |------|--------|
-| `cargo test` (crypto/rust) | **15/15 PASS** (re-run) |
+| `cargo test` (crypto/rust) | **15/15 PASS** (re-run in GIT-001 session) |
 | Android connected instrumentation | **35/35 PASS** (accepted from prior run) |
 | `./gradlew :android:assembleRelease` | **BUILD SUCCESSFUL** (accepted from prior run) |
 
-Note: The current macOS environment does not have a running JDK or Android emulator, so the Gradle tasks could not be re-executed during this session. The accepted baseline from the prior working environment is reported above.
+The Gradle build could not be re-run in the local macOS session because no JDK/Android emulator is present.
 
 ## F. Baseline commit hash
 
@@ -71,17 +71,17 @@ v1-foundation-baseline -> 7db20fa4df8dc70392afd803fabaaf20c0b50d7d
 
 ## H. GitHub repository result
 
-The configured private repository is:
-
 ```text
 https://github.com/anox-admin/ax-messenger.git
 ```
 
-The remote was added as `origin` but the environment cannot authenticate to GitHub.
+- Remote added as `origin`.
+- `main` pushed.
+- `v1-foundation-baseline` tag pushed.
 
 ## I. Repository visibility
 
-Cannot be verified without a GitHub access token. `curl -I https://api.github.com/repos/anox-admin/ax-messenger` returned HTTP 404 (private or missing). `git ls-remote` failed with `terminal prompts disabled`.
+Verified as **PRIVATE** via the GitHub REST API.
 
 ## J. Remote result
 
@@ -92,44 +92,74 @@ origin	https://github.com/anox-admin/ax-messenger.git (push)
 
 ## K. Branch / ruleset protection
 
-Not configured; requires GitHub access.
+GitHub returned `403: Upgrade to GitHub Pro or make this repository public to enable this feature.` for both the branch protection and ruleset APIs.
+
+**Branch protection / ruleset: UNAVAILABLE** on the current free private plan.
 
 ## L. Secret scanning / push protection
 
-Not configured; requires GitHub access.
+GitHub did not expose `security_and_analysis` settings for this repository.
 
-## M. CI workflows created
+**Secret scanning / push protection: UNAVAILABLE** on the current plan.
 
-None created because the repository is not yet connected to GitHub.
+## M. CI workflow created
+
+Created `.github/workflows/ci.yml` with three jobs:
+
+1. `Rust crypto tests` — `cargo test` in `crypto/rust`
+2. `Android debug build` — `./gradlew :android:assembleDebug`
+3. `Android release compile smoke` — `./gradlew :android:assembleRelease`
+
+Tooling:
+
+- `actions/checkout@v4`
+- `dtolnay/rust-toolchain@stable`
+- `actions/setup-java@v4` (Temurin 17)
+- `android-actions/setup-android@v4.0.1`
+- `nttld/setup-ndk@v1.5.0` (r26c)
+
+No secrets are embedded in the workflow.
 
 ## N. CI execution result
 
-Not executed; CI pipeline not configured.
+| Run | Commit | Result |
+|-----|--------|--------|
+| `32309069013` | `42521af` (CI workflow add) | `failure` — could not resolve `org.jetbrains.kotlin.plugin.compose:1.9.20` |
+| `32309477433` | `f08f16e` (add compose plugin version) | `failure` — `org/gradle/api/internal/HasConvention` with Kotlin 1.9.20 on Gradle 9.3.1 |
+| `32309829334` | `b894058` (use `composeOptions.kotlinCompilerExtensionVersion = 1.5.4`) | `failure` — same `HasConvention` Gradle 9 / Kotlin 1.9.20 incompatibility |
+
+Final run `32309829334`:
+
+- **Rust crypto tests:** PASS
+- **Android debug build:** FAIL — `org/gradle/api/internal/HasConvention` / `BuildFlowService` error
+- **Android release compile smoke:** skipped (depends on debug)
+
+**Root cause:** Kotlin Gradle Plugin 1.9.20 is not compatible with Gradle 9.3.1 (convention APIs were removed in Gradle 9.0). The repository needs either a Gradle downgrade to 8.x or a Kotlin/AGP upgrade to the 2.2.x / 9.x line.
 
 ## O. Files changed
 
 | File | Change |
 |------|--------|
-| `.gitignore` | Keystore and Rust target exclusions added |
+| `.gitignore` | Hardened |
+| `build.gradle.kts` | Compose plugin version attempted, then reverted to correct 1.9.20 setup |
+| `android/build.gradle.kts` | Removed incompatible `plugin.compose`; added `composeOptions.kotlinCompilerExtensionVersion = "1.5.4"` |
 | `docs/current/GIT_DEVELOPMENT_WORKFLOW.md` | New |
 | `docs/current/REPOSITORY_SECURITY_POLICY.md` | New |
-| `PROJECT_STATE.md` | Updated with Git baseline status |
+| `PROJECT_STATE.md` | Updated |
+| `FORTSCHRITT.md` | Updated |
+| `DEVIN_PROMPT_OUTPUT_ARCHIV.md` | Updated with GIT-001 summary |
+| `docs/reports/git-github-baseline-report.md` | This report |
 
-All other files in the baseline are the accepted current project state.
+## P. Remaining blockers
 
-## P. Remaining Git/GitHub blockers
-
-1. **Authentication required.** The environment has no working GitHub authentication (`gh` not installed, no MCP GitHub server, no `GITHUB_TOKEN`). Pushing to the private repository requires credentials.
-2. **Repository privacy not verified** without authentication.
-3. **Push not attempted** until privacy and authentication are resolved.
-4. **CI pipeline, branch protection, and secret scanning** cannot be configured until the repository is reachable.
+1. **CI Android build failing** due to Kotlin 1.9.20 / Gradle 9.3.1 incompatibility. Requires a deliberate build-tooling alignment decision.
+2. **Branch protection / ruleset** unavailable on the free private GitHub plan.
+3. **Secret scanning / push protection** unavailable on the free private GitHub plan.
 
 ## Q. Exact recommended next engineering step
 
-1. Provide GitHub authentication to this environment by one of these methods:
-   - Install `gh` CLI and run `gh auth login` with access to the `anox-admin/ax-messenger` repository, or
-   - Provide a GitHub Personal Access Token (classic) with `repo` scope and add it to the environment (for example `export GITHUB_TOKEN=...`) without pasting it into source files or logs.
-2. Re-run `git ls-remote --heads origin main` to verify access.
-3. Push `main` and the `v1-foundation-baseline` tag.
-4. Configure branch protection, secret scanning, and the minimal Rust + Android CI workflow.
-5. Then proceed with `PROMPT-007 — Device Authentication Foundation`.
+1. Decide the build-tooling alignment:
+   - **Option A (minimal change):** Downgrade the Gradle wrapper to a version compatible with the existing AGP 8.13.2 + Kotlin 1.9.20 (e.g. 8.13.x).
+   - **Option B (baseline alignment):** Upgrade to AGP 9.1.1 + Kotlin 2.2.10 + `org.jetbrains.kotlin.plugin.compose` and remove `composeOptions`.
+2. After CI is green, optionally set `Rust crypto tests` as a required status check (if plan allows) and add branch protection.
+3. Then proceed with `PROMPT-007 — Device Authentication Foundation`.
