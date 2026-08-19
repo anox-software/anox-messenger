@@ -71,18 +71,23 @@ v1-foundation-baseline -> 7db20fa4df8dc70392afd803fabaaf20c0b50d7d
 
 ## H. GitHub repository result
 
-No GitHub integration was available in the current environment. `gh` CLI is not installed and no MCP GitHub server is configured.
+The configured private repository is:
 
-The repository identifier must be provided before the remote can be added.
+```text
+https://github.com/anox-admin/ax-messenger.git
+```
+
+The remote was added as `origin` but the environment cannot authenticate to GitHub.
 
 ## I. Repository visibility
 
-Not yet verified (no remote configured).
+Cannot be verified without a GitHub access token. `curl -I https://api.github.com/repos/anox-admin/ax-messenger` returned HTTP 404 (private or missing). `git ls-remote` failed with `terminal prompts disabled`.
 
 ## J. Remote result
 
 ```text
-(no remotes configured)
+origin	https://github.com/anox-admin/ax-messenger.git (fetch)
+origin	https://github.com/anox-admin/ax-messenger.git (push)
 ```
 
 ## K. Branch / ruleset protection
@@ -114,14 +119,17 @@ All other files in the baseline are the accepted current project state.
 
 ## P. Remaining Git/GitHub blockers
 
-1. **GitHub repository identifier needed.** Please provide the exact owner and repository name (e.g. `your-org/anoX-Messenger`) or the full HTTPS/SSH URL.
-2. **Authentication setup.** Confirm that the environment has a working `gh` CLI, a PAT, or an MCP GitHub integration with push access.
-3. **CI pipeline.** Add `.github/workflows/ci.yml` after the repository is connected.
-4. **Branch protection / ruleset.** Configure after pushing `main` to GitHub.
+1. **Authentication required.** The environment has no working GitHub authentication (`gh` not installed, no MCP GitHub server, no `GITHUB_TOKEN`). Pushing to the private repository requires credentials.
+2. **Repository privacy not verified** without authentication.
+3. **Push not attempted** until privacy and authentication are resolved.
+4. **CI pipeline, branch protection, and secret scanning** cannot be configured until the repository is reachable.
 
 ## Q. Exact recommended next engineering step
 
-1. Provide the exact private GitHub repository identifier.
-2. Add the remote and push `main` and the `v1-foundation-baseline` tag.
-3. Configure branch protection, secret scanning, and the minimal Rust + Android CI workflow.
-4. Then proceed with `PROMPT-007 — Device Authentication Foundation`.
+1. Provide GitHub authentication to this environment by one of these methods:
+   - Install `gh` CLI and run `gh auth login` with access to the `anox-admin/ax-messenger` repository, or
+   - Provide a GitHub Personal Access Token (classic) with `repo` scope and add it to the environment (for example `export GITHUB_TOKEN=...`) without pasting it into source files or logs.
+2. Re-run `git ls-remote --heads origin main` to verify access.
+3. Push `main` and the `v1-foundation-baseline` tag.
+4. Configure branch protection, secret scanning, and the minimal Rust + Android CI workflow.
+5. Then proceed with `PROMPT-007 — Device Authentication Foundation`.

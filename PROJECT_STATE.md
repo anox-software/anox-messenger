@@ -25,7 +25,7 @@
 | Contacts | Not implemented |
 | Push | Not implemented |
 | Attachments | Not implemented |
-| Git/GitHub baseline | Local repository and baseline established; GitHub push requires user connection |
+| Git/GitHub baseline | Local repository, baseline, and origin remote configured; GitHub authentication pending before push |
 
 ## Toolchain
 
