@@ -1,3 +1,13 @@
+# SUPERSEDED
+
+> **Status:** SUPERSEDED by the B-025 architecture package.
+>
+> The current implementation gap matrix is at `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md` and is mirrored in `docs/current/OPEN_ARCHITECTURE_ITEMS.md`.
+>
+> The historical body below is retained for reference.
+
+---
+
 # anoX V1 — Current Code Gap Audit
 
 **Status:** CURRENT  

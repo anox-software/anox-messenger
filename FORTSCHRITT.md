@@ -1,53 +1,53 @@
-# FORTSCHRITT
+# FORTSCHRITT — anoX Messenger V1
 
-**Status:** CURRENT  
-**Last updated:** 2026-08-20
+**Status:** CURRENT B-025
+**Updated:** 2026-08-20
 
----
+## Architecture / governance
 
-## Zusammenfassung
+- B-001 Master Completeness: DEFINED.
+- B-002…B-023: frozen according to `B_FREEZE_REGISTRY.md`.
+- B-024 Final MAIN Consistency Audit: PASS with mandatory amendments incorporated into B-025 authority docs.
+- B-025 New-Chat Handoff: COMPLETE.
 
-| Prompt | Status | Kurzergebnis |
-|--------|--------|--------------|
-| PROMPT-006 | PASS | Versionierter local-state envelope, Keystore-Lifecycle, atomic persistence, Rust 15/15, Android 35/35, Release BUILD SUCCESSFUL |
-| GIT-001 | FULL PASS | Lokaler Git-Baseline und Tag gepusht; Remote `anox-admin/ax-messenger` PRIVATE; CI auf `main` grün; Rust 15/15; alle technisch erreichbaren Anforderungen erfüllt |
-| GIT-001C | PASS (Reconciliation) | Tatsächliche checked-in Toolchain verifiziert; historischer `AGP 9.1.1` / `Kotlin 2.2.10` war Dokumentationsfehler |
-| TOOLCHAIN-001 | PASS / MERGED / VERIFIED ON MAIN | Android-Build-Toolchain auf `AGP 8.13.2` / `KGP 2.4.10` / `Gradle 9.3.1` ausgerichtet; `main`-CI grün; Rust 15/15; PR #1 gemergt; angeschlossene Tests nicht in CI laufbar |
+## Engineering milestones
 
----
+- PROMPT-001 codebase audit: PASS (historical).
+- PROMPT-002 initial crypto foundation: blocker found.
+- PROMPT-003 vodozemac message/session handling corrected in code.
+- PROMPT-004 Rust validation: 14/14 PASS at that time.
+- PROMPT-005 Android/JNI build/link: PASS; runtime initially unverified.
+- PROMPT-005B connected Android runtime: 19/19 PASS historically.
+- DOCSYNC-001: documentation synchronization, no product functionality.
+- PROMPT-005C JNI/FFI hardening: Rust 15/15, Android 27/27, release build PASS.
+- PROMPT-006 local protected state lifecycle: Rust 15/15, Android 35/35, release build PASS.
+- GIT-001: repository baseline, tag/remote/CI; complete.
+- TOOLCHAIN-001: KGP 2.4.10 + Compose plugin 2.4.10 alignment; PR #1 merged; main CI green according to repo report.
 
-## TOOLCHAIN-001 — Details
+## Current repository
 
-- **Branch:** `toolchain-001/android-toolchain-alignment`
-- **Pull Request:** #1 (`https://github.com/anox-admin/ax-messenger/pull/1`)
-- **Geänderte Build-Dateien:** `build.gradle.kts`, `android/build.gradle.kts`
-- **AGP:** `8.13.2` (unverändert)
-- **Gradle Wrapper:** `9.3.1` (unverändert)
-- **KGP:** `1.9.20` → `2.4.10`
-- **Compose-Plugin:** `org.jetbrains.kotlin.plugin.compose` `2.4.10`
-- **`compileSdk`/`targetSdk`/`minSdk`:** 34/34/26 (unverändert)
-- **NDK:** `26.2.11394342` (unverändert)
-- **Lokale Rust-Tests:** 15/15 PASS
-- **GitHub Actions CI Run (Branch):** `32342258423`
-  - Rust crypto tests: PASS
-  - Android debug build: PASS
-  - Android release compile smoke: PASS
-- **GitHub Actions CI Run (`main` nach Merge):** `32344459447`
-  - Rust crypto tests: PASS
-  - Android debug build: PASS
-  - Android release compile smoke: PASS
-- **Connected Instrumentation:** NICHT in CI gelaufen (kein Emulator); historische 35/35 PASS bleiben gültig
-- **Branch-Protection:** UNAVAILABLE (Free-Plan)
-- **Secret Scanning / Push Protection:** UNAVAILABLE (Free-Plan)
+`main` → `c076528e26e5e3ed05b4d0aeed794894f1f78b5e`. Device Authentication work has **not** started.
 
----
+## Functional progress
 
-## Nächste Schritte
+Approximately **27%**. Architecture freezes/governance do not count as completed user-facing messenger functionality.
 
-1. `PROMPT-007 — Device Authentication Foundation` nach Sicherheitsreview starten.
+## STEP-3B / 3B.1 — B-025 Synchronisation / Android-Backup-Härtung
 
----
+- Branch: `architecture/b025-main-sync`
+- Commits: `c54496c` (Docs/Governance), `2acca43` (Android-Backup/D2D), 3B.1-Korrektur
+- B-025-Autoritätsbereich `docs/authority/B025/` hinzugefügt.
+- Dokumentdrift zu B-025 korrigiert.
+- `android:allowBackup="false"` beibehalten, `dataExtractionRules` mit allen 9 App-Domains (`root`, `file`, `database`, `sharedpref`, `external`, `device_root`, `device_file`, `device_database`, `device_sharedpref`) hinzugefügt.
+- `cargo test`: 15/15 PASS.
+- CI `32372225161` und anschließende PR-CI: Rust, Android debug, Android release compile smoke PASS.
+- Connected Instrumentation: NICHT in CI gelaufen.
+- PR #2 erstellt, nicht gemergt.
 
-## Gesamtfortschritt
+## Next approved sequence
 
-Der funktionale Messenger-Fortschritt bleibt bei ca. 27 %. Toolchain-Governance ist kein funktionales Feature.
+1. Run B-025 Code Update Compatibility Workflow against the actual latest repository.
+2. Synchronize stale repo docs and only those code paths that genuinely conflict with current MAIN.
+3. Submit scoped PR, run all available regressions/CI, merge and post-merge verify.
+4. Then begin `PROMPT-007 — Device Authentication Foundation`, implementing B-002 P-256/ES256/DPoP (not old Ed25519 design).
+5. Continue product phases in B-track dependency order, updating this file after every agent task with scope/files/tests/PASS-FAIL-UNVERIFIED/blockers/commit/PR/next prompt.

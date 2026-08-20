@@ -1,3 +1,10 @@
+> **B-025 Authority Notice**
+>
+> B-025 is the current architecture authority for this repository.
+> This file may still contain pre-B-025 text that has not yet been fully reconciled.
+> The canonical B-025 package is at `docs/authority/B025/`.
+> Relevant frozen Track-B item: B-008 — Messaging + Sync (FROZEN v1.5).
+>
 # anoX V1 — Message Lifecycle
 
 **Status:** CURRENT  

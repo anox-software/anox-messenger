@@ -1,9 +1,13 @@
+> **B-025 Architecture Authority Notice**
+>
+> B-025 is the current architecture authority. See `docs/authority/B025/` for the complete handoff package. This file may still contain pre-B-025 text.
+>
 # anoX Messenger
 
 A security-oriented native messenger application for Android and GrapheneOS.
 
-**Current architecture baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Current architecture baseline:** B-025
+**Last synchronized:** 2026-08-20
 
 ---
 
