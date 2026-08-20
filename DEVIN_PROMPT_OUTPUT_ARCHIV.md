@@ -83,3 +83,27 @@
 - Next gate: `CONTINUITY-001 ARCHITECT REVIEW`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.1 — Governance Registry + Handoff Package Validation
+
+**Objective:** Resolve the two architect-review findings for PR #3: missing current freeze registry and unproven handoff package integrity/exclusion tests.
+
+**Result:** PASS — READY FOR ARCHITECT RE-REVIEW
+
+- Added `docs/authority/B_FREEZE_REGISTRY.md` as the current registry of frozen B-001…B-026 while preserving `docs/authority/B025/B_FREEZE_REGISTRY.md` as the immutable B-025 snapshot.
+- Updated `docs/authority/AUTHORITY_INDEX.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, and `tools/continuity/validate_continuity.py` to reference the current registry.
+- Generated handoff ZIP and proved integrity:
+  - `ZipFile.testzip()` PASS
+  - Internal SHA-256 manifest: 170/170 entries verified, 0 mismatches
+  - Exclusion scan: 0 prohibited members
+  - Secret-pattern sanity: 0 obvious secret artifacts
+  - Dirty-tree negative test: generator/validator both fail on dirty tree
+  - Validator missing-file negative test: non-zero exit with clear failure reason
+- `validate_continuity.py` and `generate_handoff.py` PASS on clean tree.
+- `git diff --check` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001 ARCHITECT RE-REVIEW`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

@@ -15,6 +15,7 @@ REQUIRED_FILES = [
     "docs/authority/AUTHORITY_INDEX.md",
     "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
     "docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md",
+    "docs/authority/B_FREEZE_REGISTRY.md",
     "docs/continuity/AUTHORITY_INDEX.md",
     "docs/continuity/CURRENT_HANDOFF.md",
     "docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md",

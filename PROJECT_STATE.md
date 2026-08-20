@@ -70,3 +70,12 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - `generate_handoff.py` creates `artifacts/handoff/ANOX_HANDOFF_*.zip` with file manifest and SHA-256 manifest.
 - Android/Rust product source unchanged.
 - Result: PASS — ready for architect review.
+
+## CONTINUITY-001.1 — Governance registry and handoff package validation
+
+- Branch: `governance/continuity-001`
+- Created current `docs/authority/B_FREEZE_REGISTRY.md` (B-001…B-026) while preserving `docs/authority/B025/B_FREEZE_REGISTRY.md` as immutable B-025 snapshot.
+- Updated `docs/authority/AUTHORITY_INDEX.md`, `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, and `validate_continuity.py` to reference the current registry.
+- Generated handoff ZIP on current branch; ran `ZipFile.testzip()` (PASS), internal SHA-256 manifest verification (170/170 entries verified, 0 mismatches), exclusion scan (0 prohibited members), secret-pattern sanity scan (0 obvious secret artifacts), dirty-tree negative test (generator and validator both fail on dirty tree), and validator missing-file negative test (non-zero exit, clear reason).
+- Re-ran `validate_continuity.py` and `generate_handoff.py` after commit: expected PASS.
+- Product source unchanged; next gate remains `CONTINUITY-001 ARCHITECT RE-REVIEW`.

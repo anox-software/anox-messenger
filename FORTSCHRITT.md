@@ -74,4 +74,31 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **PR:** https://github.com/anox-admin/ax-messenger/pull/3
 - **Merge status:** not merged.
 - **Final HEAD:** to be recorded after merge.
-- **Next gate:** `CONTINUITY-001 ARCHITECT REVIEW`
+- **Next gate:** `CONTINUITY-001 ARCHITECT RE-REVIEW`
+
+## CONTINUITY-001.1 — Governance Registry + Handoff Package Validation
+
+- **Date:** 2026-08-20
+- **Starting HEAD:** `a2d6e5bc2e0ed7b682f2e0f8e69437b7ff6fb797`
+- **Branch:** `governance/continuity-001`
+- **Objective:** Resolve architect-review findings: create current `B_FREEZE_REGISTRY.md` and prove handoff ZIP integrity/exclusion/secret/dirty-tree/validator-negative tests.
+- **Architecture references:** `docs/authority/AUTHORITY_INDEX.md`, `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `docs/authority/B_FREEZE_REGISTRY.md`, `docs/authority/AUTHORITY_INDEX.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, `tools/continuity/validate_continuity.py`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- **Tests actually run:**
+  - `ZipFile.testzip()` PASS
+  - Internal SHA-256 manifest verification: 170/170 entries verified, 0 mismatches
+  - Exclusion scan: 0 prohibited members
+  - Secret-pattern sanity scan: 0 obvious secret artifacts
+  - Dirty-tree negative test: generator/validator both fail on dirty tree
+  - Validator missing-file negative test: non-zero exit with clear reason
+  - `git diff --check` PASS
+  - `validate_continuity.py` PASS (after commit)
+  - `generate_handoff.py` PASS (after commit)
+- **Tests not run:** `cargo test` (optional for this governance correction), Android builds
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Commits:** to be recorded after final commit.
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+- **Merge status:** not merged.
+- **Final HEAD:** to be recorded after merge.
+- **Next gate:** `CONTINUITY-001 ARCHITECT RE-REVIEW`

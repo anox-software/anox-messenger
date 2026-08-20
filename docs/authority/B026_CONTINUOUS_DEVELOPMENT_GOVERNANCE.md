@@ -124,6 +124,12 @@ And exactly one of:
 
 `docs/continuity/` is the repository handoff and continuity authority. It contains the files listed in `docs/continuity/AUTHORITY_INDEX.md`.
 
+## Authority versioning rule
+
+- `docs/authority/B025/` is the immutable historical snapshot of the B-025 architecture handoff.
+- `docs/authority/B_FREEZE_REGISTRY.md` is the current registry of frozen specifications B-001…B-026.
+- New B IDs are appended to the current registry; the historical B-025 snapshot is not rewritten.
+
 ---
 
 ## Handoff workflow
