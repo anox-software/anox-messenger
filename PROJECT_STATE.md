@@ -90,4 +90,5 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Updated `docs/continuity/CURRENT_HANDOFF.md` and `docs/continuity/HISTORICAL_HANDOFFS/README.md` to reference the historical archive.
 - Full-history Git bundle intentionally not replicated; reason documented.
 - Product source unchanged.
-- New handoff generated and parity re-run: result to be recorded after commit/CI.
+- Re-generated handoff `ANOX_HANDOFF_2026-08-20_c2b3afc1b93e.zip`; parity verified PASS: 241 members, 238/238 manifest entries verified, 0 prohibited, 0 secret, 20/20 reconstruction questions ANSWERABLE.
+- New `docs/reports/CONTINUITY_001_2_MASTER_PARITY_AUDIT.md` created.
