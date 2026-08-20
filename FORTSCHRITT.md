@@ -32,15 +32,15 @@
 
 Approximately **27%**. Architecture freezes/governance do not count as completed user-facing messenger functionality.
 
-## STEP-3B — B-025 Synchronisation / Android-Backup-Härtung
+## STEP-3B / 3B.1 — B-025 Synchronisation / Android-Backup-Härtung
 
 - Branch: `architecture/b025-main-sync`
-- Commits: `c54496c` (Docs/Governance), `2acca43` (Android-Backup/D2D)
+- Commits: `c54496c` (Docs/Governance), `2acca43` (Android-Backup/D2D), 3B.1-Korrektur
 - B-025-Autoritätsbereich `docs/authority/B025/` hinzugefügt.
 - Dokumentdrift zu B-025 korrigiert.
-- `android:allowBackup="false"` beibehalten, `dataExtractionRules` hinzugefügt.
+- `android:allowBackup="false"` beibehalten, `dataExtractionRules` mit allen 9 App-Domains (`root`, `file`, `database`, `sharedpref`, `external`, `device_root`, `device_file`, `device_database`, `device_sharedpref`) hinzugefügt.
 - `cargo test`: 15/15 PASS.
-- CI `32372225161`: Rust, Android debug, Android release compile smoke PASS.
+- CI `32372225161` und anschließende PR-CI: Rust, Android debug, Android release compile smoke PASS.
 - Connected Instrumentation: NICHT in CI gelaufen.
 - PR #2 erstellt, nicht gemergt.
 

@@ -48,7 +48,7 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Branch: `architecture/b025-main-sync`
 - B-025 authority area added at `docs/authority/B025/`.
 - Documentation drift corrected; Device Auth, refresh token, recovery, multi-device, QR/SAS, push, attachments, and other stale statements are now aligned with B-025.
-- Android backup/D2D hardening added: `android:allowBackup="false"` retained, `dataExtractionRules` excludes all app-private storage from cloud backup and device transfer.
+- Android backup/D2D hardening added: `android:allowBackup="false"` retained, `dataExtractionRules` excludes all 9 app-owned storage domains (`root`, `file`, `database`, `sharedpref`, `external`, `device_root`, `device_file`, `device_database`, `device_sharedpref`) from both cloud backup and device transfer.
 - Protected foundation (crypto, JNI, build tooling, native `.so`) unchanged.
 - `cargo test`: 15/15 PASS (local).
 - GitHub Actions CI run `32372225161` on PR #2: Rust, Android debug, and Android release compile smoke all PASS.

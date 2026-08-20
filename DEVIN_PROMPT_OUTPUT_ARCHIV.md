@@ -48,10 +48,11 @@
 - Created branch `architecture/b025-main-sync`.
 - Added `docs/authority/B025/` with exact B-025 canonical material.
 - Updated top-level and `docs/current/` documentation to B-025 authority.
-- Added `dataExtractionRules` to exclude all app-private storage from cloud backup and D2D transfer.
+- Added `dataExtractionRules` to fail-closed exclude all 9 app-owned storage domains from both cloud backup and D2D transfer.
+- STEP-3B.1 architect-review correction completed on the same branch/PR #2.
 - No protected crypto, JNI, or build-tooling source changed.
 - `cargo test`: 15/15 PASS locally.
-- GitHub Actions CI run `32372225161` on PR #2: Rust, Android debug, and Android release compile smoke all PASS.
+- GitHub Actions CI on PR #2 (initial `32372225161` and final docs update `32373618012`): Rust, Android debug, and Android release compile smoke all PASS.
 - Connected Android instrumentation and GrapheneOS physical-device tests NOT RUN.
 - No Device Authentication, backend, messaging, or E2EE redesign implemented.
 

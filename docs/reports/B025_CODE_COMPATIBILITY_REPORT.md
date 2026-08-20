@@ -57,7 +57,21 @@ Key drift corrected:
 
 ## D. Android backup / D2D finding
 
-The `AndroidManifest.xml` already had `android:allowBackup="false"`. For Android 12+ the application additionally now declares `android:dataExtractionRules="@xml/data_extraction_rules"`. The new resource `android/src/main/res/xml/data_extraction_rules.xml` excludes all relevant app-private storage domains (`root`, `file`, `database`, `sharedpref`) from both `cloud-backup` and `device-transfer`. This is fail-closed and does not selectively permit crypto state.
+The `AndroidManifest.xml` already had `android:allowBackup="false"`. For Android 12+ the application additionally now declares `android:dataExtractionRules="@xml/data_extraction_rules"`.
+
+After STEP-3B.1 architect review, the resource `android/src/main/res/xml/data_extraction_rules.xml` fail-closed excludes the full applicable set of app-owned storage domains from both `cloud-backup` and `device-transfer`:
+
+- `root`
+- `file`
+- `database`
+- `sharedpref`
+- `external`
+- `device_root`
+- `device_file`
+- `device_database`
+- `device_sharedpref`
+
+For Android 11 and below, `android:allowBackup="false"` is the authoritative control that disables full app backup to Google servers; `dataExtractionRules` are only consulted on Android 12+ (API 31+). No legacy `fullBackupContent` rule is necessary.
 
 ---
 
@@ -171,6 +185,13 @@ https://github.com/anox-admin/ax-messenger/pull/2
 
 ---
 
-## P. Result
+## P. STEP-3B.1 architect-review correction
 
-**STEP-3B RESULT: PASS — READY FOR ARCHITECT REVIEW**
+- Narrow follow-up on `data_extraction_rules.xml`.
+- Added all 9 applicable app-owned backup domains to both `<cloud-backup>` and `<device-transfer>`.
+- Confirmed pre-Android-12 `android:allowBackup="false"` is sufficient; no legacy `fullBackupContent` rule added.
+- Re-pushed to PR #2; CI re-run passed.
+
+## Q. Result
+
+**STEP-3B / STEP-3B.1 RESULT: PASS — READY FOR ARCHITECT REVIEW**
