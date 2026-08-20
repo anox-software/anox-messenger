@@ -129,3 +129,7 @@ target/
 
 # macOS archive resource forks
 __MACOSX/
+
+# Generated handoff packages
+artifacts/handoff/*.zip
+artifacts/
