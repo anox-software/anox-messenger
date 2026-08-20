@@ -51,11 +51,9 @@ Post-push `git ls-tree` confirmed no `local.properties`, `.env`, `.jks`, `.keyst
 
 | Test | Result |
 |------|--------|
-| `cargo test` (crypto/rust) | **15/15 PASS** (re-run in GIT-001 session) |
-| Android connected instrumentation | **35/35 PASS** (accepted from prior run) |
-| `./gradlew :android:assembleRelease` | **BUILD SUCCESSFUL** (accepted from prior run) |
-
-The Gradle build could not be re-run in the local macOS session because no JDK/Android emulator is present.
+| `cargo test` (crypto/rust) | **15/15 PASS** (re-run in GIT-001C session) |
+| Android connected instrumentation | **35/35 PASS** (accepted from prior run; not re-run in CI) |
+| `./gradlew :android:assembleRelease` | **BUILD SUCCESSFUL** (accepted from prior run; CI not yet green) |
 
 ## F. Baseline commit hash
 
@@ -110,39 +108,57 @@ Created `.github/workflows/ci.yml` with three jobs:
 2. `Android debug build` — `./gradlew :android:assembleDebug`
 3. `Android release compile smoke` — `./gradlew :android:assembleRelease`
 
-Tooling:
+## N. CI execution result and toolchain reconciliation
 
-- `actions/checkout@v4`
-- `dtolnay/rust-toolchain@stable`
-- `actions/setup-java@v4` (Temurin 17)
-- `android-actions/setup-android@v4.0.1`
-- `nttld/setup-ndk@v1.5.0` (r26c)
+### Actual source of truth (from checked-in files)
 
-No secrets are embedded in the workflow.
+| File | Setting | Value | Lines |
+|------|---------|-------|-------|
+| `build.gradle.kts` | AGP | `8.13.2` | 3 |
+| `build.gradle.kts` | KGP | `1.9.20` | 4 |
+| `android/build.gradle.kts` | `compileSdk` / `targetSdk` | `34` | 8, 13 |
+| `android/build.gradle.kts` | `minSdk` | `26` | 12 |
+| `android/build.gradle.kts` | `ndkVersion` | `26.2.11394342` | 16 |
+| `android/build.gradle.kts` | `kotlinCompilerExtensionVersion` | `1.5.4` | 47–48 |
+| `gradle/wrapper/gradle-wrapper.properties` | Gradle Wrapper | `9.3.1` | 3 |
 
-## N. CI execution result
+### Historical discrepancy
+
+Previous documentation claimed `AGP 9.1.1` and `Kotlin 2.2.10`. Those values never appeared in the checked-in build files. The initial baseline commit `7db20fa` already contained `AGP 8.13.2`, `KGP 1.9.20`, and the Gradle 9.3.1 wrapper. The discrepancy came from earlier `PROJECT_STATE.md` entries that were written from the user's task description rather than from `build.gradle.kts` / `gradle-wrapper.properties`.
+
+### Incompatibility
+
+No supported Gradle 8.x wrapper exists for the **actual** checked-in toolchain:
+
+- **AGP 8.13.2** requires **Gradle 8.13** minimum.¹
+- **Kotlin Gradle Plugin 1.9.20** is fully compatible with **Gradle 6.8.3 through 8.1.1**.²
+
+There is no Gradle version that satisfies both `≥ 8.13` and `≤ 8.1.1`.
+
+### CI runs
 
 | Run | Commit | Result |
 |-----|--------|--------|
 | `32309069013` | `42521af` (CI workflow add) | `failure` — could not resolve `org.jetbrains.kotlin.plugin.compose:1.9.20` |
-| `32309477433` | `f08f16e` (add compose plugin version) | `failure` — `org/gradle/api/internal/HasConvention` with Kotlin 1.9.20 on Gradle 9.3.1 |
-| `32309829334` | `b894058` (use `composeOptions.kotlinCompilerExtensionVersion = 1.5.4`) | `failure` — same `HasConvention` Gradle 9 / Kotlin 1.9.20 incompatibility |
+| `32309477433` | `f08f16e` (compose plugin version) | `failure` — `org/gradle/api/internal/HasConvention` (Gradle 9 / KGP 1.9.20) |
+| `32309829334` | `b894058` (use `composeOptions`) | `failure` — same Gradle 9 / KGP 1.9.20 incompatibility |
 
 Final run `32309829334`:
 
 - **Rust crypto tests:** PASS
-- **Android debug build:** FAIL — `org/gradle/api/internal/HasConvention` / `BuildFlowService` error
-- **Android release compile smoke:** skipped (depends on debug)
+- **Android debug build:** FAIL (toolchain incompatibility)
+- **Android release compile smoke:** skipped
 
-**Root cause:** Kotlin Gradle Plugin 1.9.20 is not compatible with Gradle 9.3.1 (convention APIs were removed in Gradle 9.0). The repository needs either a Gradle downgrade to 8.x or a Kotlin/AGP upgrade to the 2.2.x / 9.x line.
+Because no compatible Gradle 8.x wrapper exists for the actual `AGP 8.13.2` + `KGP 1.9.20` combination, the CI Android build cannot be fixed by wrapper changes alone.
 
 ## O. Files changed
 
 | File | Change |
 |------|--------|
 | `.gitignore` | Hardened |
-| `build.gradle.kts` | Compose plugin version attempted, then reverted to correct 1.9.20 setup |
+| `build.gradle.kts` | Compose plugin version attempted, then reverted to KGP 1.9.20 setup |
 | `android/build.gradle.kts` | Removed incompatible `plugin.compose`; added `composeOptions.kotlinCompilerExtensionVersion = "1.5.4"` |
+| `.github/workflows/ci.yml` | Minimal CI workflow |
 | `docs/current/GIT_DEVELOPMENT_WORKFLOW.md` | New |
 | `docs/current/REPOSITORY_SECURITY_POLICY.md` | New |
 | `PROJECT_STATE.md` | Updated |
@@ -152,14 +168,17 @@ Final run `32309829334`:
 
 ## P. Remaining blockers
 
-1. **CI Android build failing** due to Kotlin 1.9.20 / Gradle 9.3.1 incompatibility. Requires a deliberate build-tooling alignment decision.
+1. **Toolchain incompatibility:** `AGP 8.13.2` and `KGP 1.9.20` cannot be reconciled with any single Gradle wrapper version. The checked-in build files need either an AGP/Kotlin downgrade or a dedicated Toolchain Modernization task.
 2. **Branch protection / ruleset** unavailable on the free private GitHub plan.
 3. **Secret scanning / push protection** unavailable on the free private GitHub plan.
 
 ## Q. Exact recommended next engineering step
 
-1. Decide the build-tooling alignment:
-   - **Option A (minimal change):** Downgrade the Gradle wrapper to a version compatible with the existing AGP 8.13.2 + Kotlin 1.9.20 (e.g. 8.13.x).
-   - **Option B (baseline alignment):** Upgrade to AGP 9.1.1 + Kotlin 2.2.10 + `org.jetbrains.kotlin.plugin.compose` and remove `composeOptions`.
-2. After CI is green, optionally set `Rust crypto tests` as a required status check (if plan allows) and add branch protection.
-3. Then proceed with `PROMPT-007 — Device Authentication Foundation`.
+1. **Option A (lowest-risk, given current KGP):** Downgrade `AGP` to a `KGP 1.9.20`-compatible version (e.g. AGP 8.1.x) and Gradle wrapper to 8.1.1, then run a full regression.
+2. **Option B (baseline modernization):** Upgrade `KGP` to `2.2.10` and `AGP` to `9.1.1`, keep Gradle 9.3.1, and replace `composeOptions` with the new Compose compiler plugin. This requires a dedicated `PROMPT-TOOLCHAIN-UPGRADE` with full device/emulator regression.
+3. **Do not apply either** without the user choosing, because both change build tooling beyond the scope of GIT-001.
+
+---
+
+¹ Source: Android Gradle Plugin 8.x/9.x compatibility — `https://developer.android.com/build/releases/about-agp`  
+² Source: Kotlin 1.9.20 Gradle compatibility — `https://kotlinlang.org/docs/whatsnew1920.html`
