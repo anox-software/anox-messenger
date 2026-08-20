@@ -1,56 +1,35 @@
-# anoX V1 — Open Architecture Items
+> **B-025 Authority Notice**
+>
+> This file is the B-025 implementation gap matrix. The canonical matrix lives at `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`.
+>
+# Implementation Gap Matrix — B-025
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+| Area | Current repository | B-025 target | Classification |
+|---|---|---|---|
+| Android starter UI | minimal | full B-020 UX | MISSING_FEATURE |
+| Rust/vodozemac | implemented foundation, 0.10.0 | keep narrow Rust/vodozemac boundary | COMPLIANT, regression required |
+| JNI handle safety | implemented/tested historically | narrow typed boundary | COMPLIANT, regression required |
+| Local crypto envelope | implemented files + Keystore | retained for E2EE state, later migrate into B-009 DB | COMPLIANT FOUNDATION / FUTURE MIGRATION |
+| Device Auth | absent; docs incorrectly say Ed25519 | P-256/ES256/DPoP | MISSING_FEATURE + DOC_ONLY drift |
+| Refresh token | no production auth implemented; old docs mention refresh | no refresh token | DOC_ONLY now; ensure future code follows B-002 |
+| Account/license | absent | B-003 | MISSING_FEATURE |
+| Backend/API | placeholder | B-004/B-007 | MISSING_FEATURE |
+| PostgreSQL/RLS | absent | B-005 | MISSING_FEATURE |
+| Key distribution server flow | absent | B-006 | MISSING_FEATURE |
+| Network messaging/sync | absent | B-008 | MISSING_FEATURE |
+| SQLCipher local DB | absent | B-009 | MISSING_FEATURE |
+| Contacts/SAS | absent; old docs ambiguous SAS/QR | B-010 | MISSING_FEATURE + DOC_ONLY drift |
+| Push | absent; old docs provider OPEN | FCM HTTP v1 optional wake-only | MISSING_FEATURE + DOC_ONLY drift |
+| Attachments | absent; old docs crypto OPEN | secretstream/libsodium | MISSING_FEATURE + DOC_ONLY drift |
+| Lifecycle server actions | absent | B-013 | MISSING_FEATURE |
+| Privacy/retention workers | absent | B-014 | MISSING_FEATURE |
+| Abuse controls | absent | B-015 | MISSING_FEATURE |
+| Production infra | absent | B-016 | MISSING_FEATURE |
+| CI | minimal current CI | B-017 hardened CI/supply-chain | UPDATE_REQUIRED before production; not a crypto-foundation rewrite |
+| Signing/update | absent | B-018 | MISSING_FEATURE |
+| Ops/IR | docs/planning only | B-019 | MISSING_FEATURE |
+| Security matrix/audit/DoD | not executed for full product | B-021/B-022/B-023 | FUTURE RELEASE GATE |
 
----
+## Preliminary recommendation
 
-These items are genuinely **OPEN** and require an explicit architecture decision record (ADR) to close.
-
-## 1. Authentication / Token Contract
-
-The exact production auth/token/challenge/signature contract is not frozen.
-
-## 2. Push Provider / Transport
-
-Provider/transport selection is not frozen.
-
-## 3. Offline Queue TTL
-
-Exact ciphertext TTL for offline recipients is not frozen.
-
-## 4. DB Schema
-
-Final DB schema is not frozen.
-
-## 5. Attachment AEAD
-
-XChaCha20-Poly1305 is planned only if supported by the final maintained Rust library.
-
-## 6. Certificate Pinning
-
-Not a mandatory V1 decision.
-
-## 7. State Serialization Versioning
-
-Current serialization has no explicit version byte. Adding an envelope version is a hardening item.
-
-## 8. UnifiedPush / FCM
-
-Do not document as the current binding architecture.
-
-## 9. 1-Year License Plan
-
-Not a current binding V1 plan.
-
-## 10. Support Staff Architecture
-
-- support virtual-device architecture
-- HA/load balancing model
-- support key backup
-- special retention
-- ticket-system integration
-- server-signed support trust model
-
-These operational support concerns are not current binding V1 cryptographic architecture.
+Do **not** broadly rewrite the current crypto/local-state foundation just because the architecture expanded. Static inspection found no obvious direct conflict requiring a new primitive or a new vodozemac design. The first necessary update is documentation/authority synchronization and a targeted regression/compatibility audit. Existing local state will need an explicit B-009 migration when the encrypted messenger DB is implemented. CI/supply-chain controls also need later hardening under B-017.

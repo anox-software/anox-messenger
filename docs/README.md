@@ -1,8 +1,12 @@
+> **B-025 Architecture Authority Notice**
+>
+> B-025 is the current architecture authority. The `docs/authority/B025/` package supersedes RAW/Raw1.1 historical material. This file may still contain pre-B-025 text.
+>
 # anoX V1 Documentation Guide
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** CURRENT
+**Architecture Baseline:** B-025
+**Last synchronized:** 2026-08-20
 
 ---
 

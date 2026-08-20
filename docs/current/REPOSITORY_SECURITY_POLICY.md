@@ -1,3 +1,10 @@
+> **B-025 Authority Notice**
+>
+> B-025 is the current architecture authority for this repository.
+> This file may still contain pre-B-025 text that has not yet been fully reconciled.
+> The canonical B-025 package is at `docs/authority/B025/`.
+> Relevant frozen Track-B item: B-017 — CI/CD + Supply Chain (FROZEN v1.2).
+>
 # Repository Security Policy
 
 **Status:** CURRENT  

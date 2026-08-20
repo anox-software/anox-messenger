@@ -1,77 +1,52 @@
-# anoX V1 — Project State
+# PROJECT_STATE — anoX Messenger V1
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-20
+**Date:** 2026-08-20
+**Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 complete.
+**Functional implementation:** approximately 27%.
 
----
+## Repository truth
 
-## Implementation Status
+- Branch: `main`
+- HEAD: `c076528e26e5e3ed05b4d0aeed794894f1f78b5e`
+- Remote main in uploaded repo: same HEAD.
+- GIT-001: FULL PASS in repo documentation.
+- TOOLCHAIN-001: PR #1 merged; main CI run `32344459447` recorded PASS for Rust/debug/release compile smoke.
+- Current extracted upload showed only executable-mode changes on `gradlew` and two `.so` files; their content hashes equal HEAD. Use clean Git snapshot as implementation baseline.
 
-| Component | Status |
-|-----------|--------|
-| Rust crypto crate (`anox_crypto`) | `cargo test` **15/15 PASS** |
-| Android project build + APK packaging | **PASS** locally and in CI (`assembleDebug` + `assembleRelease`) |
-| Android connected instrumentation | **35/35 PASS** (accepted from prior environment; **NOT RUN IN CI**) |
-| JNI bridge (vodozemac 0.10.0, aes-gcm 0.10.3) | PASS at implemented test level |
-| Android Keystore state-key wrapping | PASS at implemented test level |
-| Versioned protected state envelope | PASS at implemented test level |
-| Atomic local persistence | PASS at implemented test level |
-| MainActivity / UI | Minimal placeholder only |
-| Backend code | Empty / not implemented |
-| Database | Not implemented |
-| Account/auth registration | Not implemented |
-| Real chat UI | Not implemented |
-| Contacts | Not implemented |
-| Push | Not implemented |
-| Attachments | Not implemented |
-| Git/GitHub baseline | **FULL PASS** — remote connected; `main` + tag pushed; CI green on `main` |
+## Checked-in toolchain
 
-## Actual Toolchain (source of truth from checked-in files)
+AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JDK 17; NDK 26.2.11394342; compileSdk/targetSdk/minSdk 34/34/26. Rust evidence reports 1.97.1/cargo-ndk 4.1.2; Cargo pins vodozemac 0.10.0 and aes-gcm 0.10.3.
 
-- AGP `8.13.2` — `build.gradle.kts` line 3
-- KGP `2.4.10` — `build.gradle.kts` line 4
-- Compose compiler plugin `2.4.10` — `build.gradle.kts` line 5
-- Gradle Wrapper `9.3.1` — `gradle/wrapper/gradle-wrapper.properties` line 3
-- JDK `17`
-- NDK `26.2.11394342` (r26c)
-- Rust `1.97.1`
-- `cargo-ndk` `4.1.2`
-- `compileSdk`/`targetSdk` `34`, `minSdk` `26`
+## Implemented / accepted at implemented-test level
 
-## Toolchain Reconciliation
+- Minimal Android/Compose app foundation.
+- Rust vodozemac crypto foundation with real session round-trip/negative tests.
+- JNI bridge and typed identity/session handle safety.
+- AES-GCM local state protection with Android Keystore-wrapped random state key.
+- Versioned state envelope `[ANOX][0x01][12-byte nonce][ciphertext+tag]`, AAD magic/version.
+- Atomic file persistence, state lifecycle/fail-closed status, local wipe APIs.
+- Historical accepted test evidence: Rust 15/15; Android connected 35/35; release build PASS.
 
-Earlier documentation incorrectly listed `AGP 9.1.1` and `Kotlin 2.2.10`. Those values never appeared in `build.gradle.kts`, `android/build.gradle.kts`, or `gradle-wrapper.properties`. The first commit `7db20fa` already used `AGP 8.13.2`, `KGP 1.9.20`, and Gradle `9.3.1`.
+## Not implemented
 
-The previous `KGP 1.9.20` was incompatible with Gradle `9.3.1` and `AGP 8.13.2` because `KGP 1.9.20` only supports Gradle `≤ 8.1.1` while `AGP 8.13.2` requires Gradle `≥ 8.13`.
+- B-002 Device Authentication.
+- B-003 production account/license registration.
+- B-004 backend service.
+- B-005 production database/RLS.
+- B-006 server key distribution/claims.
+- B-007 production API.
+- B-008 network messaging/sync.
+- B-009 SQLCipher messenger DB/outbox.
+- B-010 contacts/SAS product flow.
+- B-011 push/offline jobs.
+- B-012 attachment secretstream/storage.
+- B-013 production server lifecycle.
+- Production privacy/abuse/infrastructure/signing/operations/test/audit/release gates.
 
-TOOLCHAIN-001 fixed this by:
+## Known documentation drift in repository snapshot
 
-- Upgrading `KGP` to `2.4.10` (officially supports Gradle `7.6.3–9.5.0` and AGP `8.5.2–9.1.0`).
-- Adding the new `org.jetbrains.kotlin.plugin.compose` plugin `2.4.10`.
-- Removing `composeOptions.kotlinCompilerExtensionVersion`.
-- Replacing `kotlinOptions { jvmTarget = "17" }` with the `compilerOptions` DSL.
+Repository `PROJECT_STATE.md` still says Device Auth Ed25519 and `OPEN_ARCHITECTURE_ITEMS.md` still lists decisions that Track B has closed. Those docs are stale relative to this B-025 package and must be synchronized before feature implementation.
 
-`compileSdk`, `targetSdk`, `minSdk`, and `NDK` were **not** changed.
+## Verification limitation of this artifact-generation environment
 
-## Architecture Highlights
-
-- One active device per account in V1.
-- No account or crypto recovery.
-- vodozemac/Olm is the E2EE direction.
-- No OpenPGP, no libsignal, no custom Double Ratchet.
-- Device auth (Ed25519) separate from E2EE identity.
-- Supabase/PostgreSQL as backend infrastructure, not a trust/recovery authority.
-
-## Open Items
-
-- Branch protection and GitHub secret scanning remain unavailable on the free private plan.
-- See `docs/current/OPEN_ARCHITECTURE_ITEMS.md`.
-
-## Historical Context
-
-Older Raw1.1 documents are in `docs/history/raw1.1/` and must not be used as current requirements.
-
-## Next Engineering Task
-
-1. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.
+A fresh local re-run was attempted here, but `cargo` is unavailable and Gradle could not download its distribution because this container has no internet. Therefore no new PASS claim is added. Prior repository/CI evidence is preserved as historical accepted evidence, and the new chat should re-run tests in a capable environment before code changes are accepted.

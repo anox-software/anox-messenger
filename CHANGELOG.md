@@ -5,6 +5,12 @@ All notable changes to the anoX Messenger project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## B-025 Authority Notice
+
+- The current architecture authority is **B-025** (`docs/authority/B025/`).
+- Open architecture items are now tracked in `docs/current/OPEN_ARCHITECTURE_ITEMS.md` and `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`.
+- The historical entries below are retained for context.
+
 ## [Unreleased]
 
 ### Added
