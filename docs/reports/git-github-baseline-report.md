@@ -144,15 +144,21 @@ The previous `AGP 8.13.2` + `KGP 1.9.20` combination had no compatible Gradle wr
 | `android/build.gradle.kts` | compiler `jvmTarget` | `JVM_17` | 90–92 |
 | `gradle/wrapper/gradle-wrapper.properties` | Gradle Wrapper | `9.3.1` | 3 |
 
-### CI run
+### CI runs
 
-Final run `32342258423`:
+Branch run `32342258423`:
 
 - **Rust crypto tests:** PASS
 - **Android debug build:** PASS
 - **Android release compile smoke:** PASS
 
-`main` CI is now green.
+`main` run after merge `32344459447` (merge commit `9e13c1dd889fa08d48f92e6c9b090474e7674cdd`):
+
+- **Rust crypto tests:** PASS
+- **Android debug build:** PASS
+- **Android release compile smoke:** PASS
+
+`main` CI is green and TOOLCHAIN-001 is **MERGED / VERIFIED ON MAIN**.
 
 ## O. Files changed
 
@@ -176,6 +182,5 @@ Final run `32342258423`:
 
 ## Q. Exact recommended next engineering step
 
-1. Merge `toolchain-001/android-toolchain-alignment` (PR #1) to `main` after review.
+1. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.
 2. Reconsider enabling branch protection / secret scanning if the GitHub plan changes.
-3. Then proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.

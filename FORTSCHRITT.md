@@ -10,9 +10,9 @@
 | Prompt | Status | Kurzergebnis |
 |--------|--------|--------------|
 | PROMPT-006 | PASS | Versionierter local-state envelope, Keystore-Lifecycle, atomic persistence, Rust 15/15, Android 35/35, Release BUILD SUCCESSFUL |
-| GIT-001 | PASS (Git/GitHub) | Lokaler Git-Baseline und Tag gepusht; Remote `anox-admin/ax-messenger` PRIVATE; CI erstellt; Rust 15/15 in CI |
+| GIT-001 | FULL PASS | Lokaler Git-Baseline und Tag gepusht; Remote `anox-admin/ax-messenger` PRIVATE; CI auf `main` grün; Rust 15/15; alle technisch erreichbaren Anforderungen erfüllt |
 | GIT-001C | PASS (Reconciliation) | Tatsächliche checked-in Toolchain verifiziert; historischer `AGP 9.1.1` / `Kotlin 2.2.10` war Dokumentationsfehler |
-| TOOLCHAIN-001 | PASS (Branch) | Android-Build-Toolchain auf `AGP 8.13.2` / `KGP 2.4.10` / `Gradle 9.3.1` ausgerichtet; CI Android debug/release grün; Rust 15/15; angeschlossene Tests nicht in CI laufbar |
+| TOOLCHAIN-001 | PASS / MERGED / VERIFIED ON MAIN | Android-Build-Toolchain auf `AGP 8.13.2` / `KGP 2.4.10` / `Gradle 9.3.1` ausgerichtet; `main`-CI grün; Rust 15/15; PR #1 gemergt; angeschlossene Tests nicht in CI laufbar |
 
 ---
 
@@ -28,7 +28,11 @@
 - **`compileSdk`/`targetSdk`/`minSdk`:** 34/34/26 (unverändert)
 - **NDK:** `26.2.11394342` (unverändert)
 - **Lokale Rust-Tests:** 15/15 PASS
-- **GitHub Actions CI Run:** `32342258423`
+- **GitHub Actions CI Run (Branch):** `32342258423`
+  - Rust crypto tests: PASS
+  - Android debug build: PASS
+  - Android release compile smoke: PASS
+- **GitHub Actions CI Run (`main` nach Merge):** `32344459447`
   - Rust crypto tests: PASS
   - Android debug build: PASS
   - Android release compile smoke: PASS
@@ -40,8 +44,7 @@
 
 ## Nächste Schritte
 
-1. PR #1 reviewen und in `main` mergen.
-2. `PROMPT-007 — Device Authentication Foundation` nach Sicherheitsreview starten.
+1. `PROMPT-007 — Device Authentication Foundation` nach Sicherheitsreview starten.
 
 ---
 

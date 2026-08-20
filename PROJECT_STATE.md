@@ -25,7 +25,7 @@
 | Contacts | Not implemented |
 | Push | Not implemented |
 | Attachments | Not implemented |
-| Git/GitHub baseline | Remote connected; `main` + tag pushed; CI green on `toolchain-001` branch (PR #1) |
+| Git/GitHub baseline | **FULL PASS** — remote connected; `main` + tag pushed; CI green on `main` |
 
 ## Actual Toolchain (source of truth from checked-in files)
 
@@ -65,7 +65,6 @@ TOOLCHAIN-001 fixed this by:
 
 ## Open Items
 
-- Review and merge `toolchain-001/android-toolchain-alignment` (PR #1).
 - Branch protection and GitHub secret scanning remain unavailable on the free private plan.
 - See `docs/current/OPEN_ARCHITECTURE_ITEMS.md`.
 
@@ -75,5 +74,4 @@ Older Raw1.1 documents are in `docs/history/raw1.1/` and must not be used as cur
 
 ## Next Engineering Task
 
-1. Review and merge TOOLCHAIN-001 PR #1.
-2. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.
+1. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.

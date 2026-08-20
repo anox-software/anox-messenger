@@ -90,7 +90,7 @@ kotlin {
 
 The local macOS environment does not have a JDK/Android SDK, so `./gradlew` builds could not be executed locally. CI was used for Android build validation.
 
-## 9. GitHub Actions CI
+## 9. GitHub Actions CI — branch
 
 Workflow: `anoX V1 CI`  
 Run: `32342258423`  
@@ -102,7 +102,23 @@ URL: https://github.com/anox-admin/ax-messenger/actions/runs/32342258423
 | `Android debug build` | **PASS** |
 | `Android release compile smoke` | **PASS** |
 
-All three required jobs passed.
+All three required jobs passed on the branch.
+
+## 9a. GitHub Actions CI — `main` after merge
+
+PR #1 was merged into `main` at commit `9e13c1dd889fa08d48f92e6c9b090474e7674cdd`.
+
+Workflow: `anoX V1 CI`  
+Run: `32344459447`  
+URL: https://github.com/anox-admin/ax-messenger/actions/runs/32344459447
+
+| Job | Result |
+|-----|--------|
+| `Rust crypto tests` | **PASS** |
+| `Android debug build` | **PASS** |
+| `Android release compile smoke` | **PASS** |
+
+TOOLCHAIN-001 is **MERGED / VERIFIED ON MAIN**.
 
 ## 10. Connected Android instrumentation
 
@@ -117,11 +133,9 @@ The GitHub Actions environment does not provide an Android emulator, so the exis
 ## 12. Remaining items
 
 - Branch protection and secret scanning are unavailable on the free private GitHub plan (same as GIT-001).
-- After review, merge `toolchain-001/android-toolchain-alignment` to `main`.
+- PR #1 has been merged; post-merge CI on `main` is green.
 - No functional product feature was introduced; functional progress remains at approximately 27%.
 
 ## 13. Recommended next step
 
-1. Review and merge PR #1.
-2. Update `main` branch `PROJECT_STATE.md` / `FORTSCHRITT.md` to reflect green CI.
-3. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.
+1. Proceed with `PROMPT-007 — Device Authentication Foundation` after an independent security review.

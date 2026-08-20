@@ -29,8 +29,9 @@
 - Upgraded `KGP` to `2.4.10` and added `org.jetbrains.kotlin.plugin.compose` `2.4.10`.
 - Preserved AGP, Gradle, `compileSdk`, `targetSdk`, `minSdk`, and NDK.
 - Rust tests: 15/15 PASS locally.
-- GitHub Actions CI run `32342258423`: Rust, Android debug build, and Android release compile smoke all PASS.
+- GitHub Actions CI run on branch `32342258423` and on `main` after merge `32344459447`: Rust, Android debug build, and Android release compile smoke all PASS.
 - Connected Android instrumentation not run in CI (no emulator); historical 35/35 remains accepted.
+- TOOLCHAIN-001 is **MERGED / VERIFIED ON MAIN**.
 - No application functionality, cryptography, or security invariants changed.
 
 **No Device Authentication work was started.**
