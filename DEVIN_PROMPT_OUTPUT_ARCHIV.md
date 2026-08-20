@@ -76,5 +76,10 @@
 - `git diff --check`: PASS.
 - `python3 tools/continuity/validate_continuity.py`: PASS.
 - `python3 tools/continuity/generate_handoff.py`: created clean handoff ZIP with manifest and SHA-256.
+- GitHub Actions CI `32380551703` on PR #3: Rust, Android debug, and Android release compile smoke all PASS.
+- `cargo test`: 15/15 PASS.
+- `git diff --check`: PASS.
 - No product source, crypto, JNI, or build-tooling changes.
 - Next gate: `CONTINUITY-001 ARCHITECT REVIEW`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

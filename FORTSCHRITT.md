@@ -61,13 +61,17 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
 - **Files changed:** `docs/authority/B026_*.md`, `docs/authority/AUTHORITY_INDEX.md`, `docs/continuity/`, `tools/continuity/`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - **Implementation summary:** B-026 frozen governance, continuity directory with machine-readable handoff and bootstrap docs, `generate_handoff.py` and `validate_continuity.py` using Python 3 stdlib, updated `PROJECT_STATE`, `FORTSCHRITT`, and `DEVIN` archive.
-- **Tests actually run:** `python3 tools/continuity/validate_continuity.py` PASS (after commit); `python3 tools/continuity/generate_handoff.py` PASS (after commit); `git diff --check` PASS; `cargo test` 15/15 PASS.
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS (after commit)
+  - `python3 tools/continuity/generate_handoff.py` PASS (after commit)
+  - `git diff --check` PASS
+  - `cargo test` 15/15 PASS
 - **Tests not run:** `./gradlew` (no local JDK/Android SDK); connected instrumentation; GrapheneOS physical device.
-- **CI:** GitHub Actions run `...` on PR #? (to be collected after push).
+- **CI:** GitHub Actions `32380551703` on PR #3: Rust crypto tests, Android debug build, Android release compile smoke all PASS.
 - **Security invariants:** No invariants changed.
 - **Blockers:** none.
-- **Commits:** to be recorded after final commit.
-- **PR:** to be opened.
+- **Commits:** `734e20e` (B-026 continuity and chat handoff foundation).
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/3
 - **Merge status:** not merged.
 - **Final HEAD:** to be recorded after merge.
 - **Next gate:** `CONTINUITY-001 ARCHITECT REVIEW`
