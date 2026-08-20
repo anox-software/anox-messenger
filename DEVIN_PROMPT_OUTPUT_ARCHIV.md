@@ -58,3 +58,23 @@
 - PR #2 has been merged into `main` at `75c11c823ec68cea576912b4095fa7a26ed33a33`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/2
+
+---
+
+## CONTINUITY-001 — Development Governance and Chat Handoff Foundation
+
+**Objective:** Establish a permanent repository-based continuity and handoff system (B-026) so that anoX development is independent of any single chat, Devin session, or AI provider.
+
+**Result:** PASS — READY FOR ARCHITECT REVIEW
+
+- Verified `main` baseline at `648b70391085ea5252cc9f88375064420f1b78d9`.
+- Created branch `governance/continuity-001`.
+- Added `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` and `docs/authority/AUTHORITY_INDEX.md`.
+- Added `docs/continuity/` with handoff, bootstrap prompt, upload requirements, Git/implementation/open-work state, next task, output contract, workflow, and validation checklist.
+- Added `tools/continuity/validate_continuity.py` and `tools/continuity/generate_handoff.py` (Python 3 standard library only).
+- `cargo test`: 15/15 PASS.
+- `git diff --check`: PASS.
+- `python3 tools/continuity/validate_continuity.py`: PASS.
+- `python3 tools/continuity/generate_handoff.py`: created clean handoff ZIP with manifest and SHA-256.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001 ARCHITECT REVIEW`.

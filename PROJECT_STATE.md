@@ -1,14 +1,17 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-08-20
-**Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 complete.
+**Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 complete, B-026 in review.
 **Functional implementation:** approximately 27%.
 
 ## Repository truth
 
 - Branch: `main`
-- HEAD: `c076528e26e5e3ed05b4d0aeed794894f1f78b5e`
-- Remote main in uploaded repo: same HEAD.
+- Current HEAD: `648b70391085ea5252cc9f88375064420f1b78d9`
+- B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
+- Current work branch: `governance/continuity-001`
+- Latest main CI: `32377964672` PASS
+- Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI run `32344459447` recorded PASS for Rust/debug/release compile smoke.
 - Current extracted upload showed only executable-mode changes on `gradlew` and two `.so` files; their content hashes equal HEAD. Use clean Git snapshot as implementation baseline.
@@ -55,3 +58,15 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - PR #2 merged; main HEAD `75c11c823ec68cea576912b4095fa7a26ed33a33`; post-merge CI `32376668391`: Rust, Android debug, and Android release compile smoke all PASS.
 - Connected Android instrumentation: NOT RUN in CI (no emulator); historical 35/35 remains accepted.
 - PROMPT-007 was not executed.
+
+## CONTINUITY-001 — Development governance and handoff foundation
+
+- Branch: `governance/continuity-001`
+- B-026 governance specification: `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- Master authority index: `docs/authority/AUTHORITY_INDEX.md`
+- New `docs/continuity/` directory with handoff, bootstrap, Git state, implementation state, open work, next task, output contract, workflow, and validation checklist.
+- New `tools/continuity/validate_continuity.py` and `tools/continuity/generate_handoff.py` (Python 3 standard library only, no network).
+- `validate_continuity.py` requires clean working tree, required files, and B-025/B-026 authority.
+- `generate_handoff.py` creates `artifacts/handoff/ANOX_HANDOFF_*.zip` with file manifest and SHA-256 manifest.
+- Android/Rust product source unchanged.
+- Result: PASS — ready for architect review.

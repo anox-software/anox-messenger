@@ -48,5 +48,26 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 ## Next approved sequence
 
 1. STEP-4 is complete; B-025 repository synchronization is merged into `main`.
-2. Next gate: `STEP 4 ARCHITECT REVIEW / DEVELOPMENT CONTINUITY SETUP` before normal product development resumes.
-3. PROMPT-007 / Device Authentication Foundation remains authorized only after the architect handoff.
+2. CONTINUITY-001 is in review on `governance/continuity-001`.
+3. Next gate: `CONTINUITY-001 ARCHITECT REVIEW` before normal product development resumes.
+4. PROMPT-007 / Device Authentication Foundation remains authorized only after the architect handoff.
+
+## CONTINUITY-001 — Development Governance and Chat Handoff
+
+- **Date:** 2026-08-20
+- **Starting HEAD:** `648b70391085ea5252cc9f88375064420f1b78d9`
+- **Branch:** `governance/continuity-001`
+- **Objective:** Create B-026, the `docs/continuity/` handoff system, and the `tools/continuity/` scripts.
+- **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `docs/authority/B026_*.md`, `docs/authority/AUTHORITY_INDEX.md`, `docs/continuity/`, `tools/continuity/`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- **Implementation summary:** B-026 frozen governance, continuity directory with machine-readable handoff and bootstrap docs, `generate_handoff.py` and `validate_continuity.py` using Python 3 stdlib, updated `PROJECT_STATE`, `FORTSCHRITT`, and `DEVIN` archive.
+- **Tests actually run:** `python3 tools/continuity/validate_continuity.py` PASS (after commit); `python3 tools/continuity/generate_handoff.py` PASS (after commit); `git diff --check` PASS; `cargo test` 15/15 PASS.
+- **Tests not run:** `./gradlew` (no local JDK/Android SDK); connected instrumentation; GrapheneOS physical device.
+- **CI:** GitHub Actions run `...` on PR #? (to be collected after push).
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Commits:** to be recorded after final commit.
+- **PR:** to be opened.
+- **Merge status:** not merged.
+- **Final HEAD:** to be recorded after merge.
+- **Next gate:** `CONTINUITY-001 ARCHITECT REVIEW`
