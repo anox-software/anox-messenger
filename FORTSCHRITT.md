@@ -41,13 +41,12 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - `android:allowBackup="false"` beibehalten, `dataExtractionRules` mit allen 9 App-Domains (`root`, `file`, `database`, `sharedpref`, `external`, `device_root`, `device_file`, `device_database`, `device_sharedpref`) hinzugefügt.
 - `cargo test`: 15/15 PASS.
 - CI `32372225161` und anschließende PR-CI: Rust, Android debug, Android release compile smoke PASS.
+- Post-Merge-CI auf `main` (`75c11c8`) `32376668391`: Rust, Android debug, Android release compile smoke PASS.
 - Connected Instrumentation: NICHT in CI gelaufen.
-- PR #2 erstellt, nicht gemergt.
+- PR #2 gemergt in `main`; finaler HEAD `75c11c823ec68cea576912b4095fa7a26ed33a33`.
 
 ## Next approved sequence
 
-1. Run B-025 Code Update Compatibility Workflow against the actual latest repository.
-2. Synchronize stale repo docs and only those code paths that genuinely conflict with current MAIN.
-3. Submit scoped PR, run all available regressions/CI, merge and post-merge verify.
-4. Then begin `PROMPT-007 — Device Authentication Foundation`, implementing B-002 P-256/ES256/DPoP (not old Ed25519 design).
-5. Continue product phases in B-track dependency order, updating this file after every agent task with scope/files/tests/PASS-FAIL-UNVERIFIED/blockers/commit/PR/next prompt.
+1. STEP-4 is complete; B-025 repository synchronization is merged into `main`.
+2. Next gate: `STEP 4 ARCHITECT REVIEW / DEVELOPMENT CONTINUITY SETUP` before normal product development resumes.
+3. PROMPT-007 / Device Authentication Foundation remains authorized only after the architect handoff.

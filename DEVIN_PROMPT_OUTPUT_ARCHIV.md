@@ -52,8 +52,9 @@
 - STEP-3B.1 architect-review correction completed on the same branch/PR #2.
 - No protected crypto, JNI, or build-tooling source changed.
 - `cargo test`: 15/15 PASS locally.
-- GitHub Actions CI on PR #2 (initial `32372225161` and final docs update `32373618012`): Rust, Android debug, and Android release compile smoke all PASS.
+- GitHub Actions CI on PR #2 (`32372225161`) and post-merge `main` (`32376668391`): Rust, Android debug, and Android release compile smoke all PASS.
 - Connected Android instrumentation and GrapheneOS physical-device tests NOT RUN.
 - No Device Authentication, backend, messaging, or E2EE redesign implemented.
+- PR #2 has been merged into `main` at `75c11c823ec68cea576912b4095fa7a26ed33a33`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/2

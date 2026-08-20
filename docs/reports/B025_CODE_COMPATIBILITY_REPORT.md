@@ -172,9 +172,13 @@ Implementation gaps are now recorded in `docs/authority/B025/IMPLEMENTATION_GAP_
 
 ---
 
-## N. PR
+## N. PR / merge
 
-https://github.com/anox-admin/ax-messenger/pull/2
+- PR: https://github.com/anox-admin/ax-messenger/pull/2
+- Merge method: `merge` (standard GitHub merge)
+- Merge commit: `75c11c823ec68cea576912b4095fa7a26ed33a33`
+- Final `main` HEAD: `75c11c823ec68cea576912b4095fa7a26ed33a33`
+- Post-merge CI run: `32376668391` — Rust, Android debug, and Android release compile smoke all PASS.
 
 ---
 

@@ -52,5 +52,6 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Protected foundation (crypto, JNI, build tooling, native `.so`) unchanged.
 - `cargo test`: 15/15 PASS (local).
 - GitHub Actions CI run `32372225161` on PR #2: Rust, Android debug, and Android release compile smoke all PASS.
+- PR #2 merged; main HEAD `75c11c823ec68cea576912b4095fa7a26ed33a33`; post-merge CI `32376668391`: Rust, Android debug, and Android release compile smoke all PASS.
 - Connected Android instrumentation: NOT RUN in CI (no emulator); historical 35/35 remains accepted.
 - PROMPT-007 was not executed.
