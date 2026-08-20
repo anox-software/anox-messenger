@@ -49,6 +49,14 @@ STEP-4A structured report (PR #2 merged, main green, PROMPT-007 not started).
 
 GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile smoke — PASS on latest `main`.
 
+## Historical provenance
+
+- Current authority: `docs/authority/AUTHORITY_INDEX.md`.
+- B-025 master handoff provenance archived under `docs/history/B025/`.
+- `docs/history/B025/README.md` and `docs/history/B025/SOURCE_INDEX.md` map every imported historical source.
+- `docs/history/B025/REPOSITORY_PROVENANCE/GIT_BUNDLE_STATUS.md` documents why the full-history Git bundle is not automatically replicated.
+- Historical material is non-authoritative; it must not override `docs/authority/` or `docs/continuity/`.
+
 ## Known unverified items
 
 - GrapheneOS physical-device testing

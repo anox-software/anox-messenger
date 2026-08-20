@@ -102,3 +102,25 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Merge status:** not merged.
 - **Final HEAD:** to be recorded after merge.
 - **Next gate:** `CONTINUITY-001 ARCHITECT RE-REVIEW`
+
+## CONTINUITY-001.2A — Historical Provenance Ingestion + Master Parity Correction
+
+- **Date:** 2026-08-20
+- **Starting HEAD:** `1bd306d696057c92bfd84dd9c14f1de506066994`
+- **Branch:** `governance/continuity-001`
+- **Objective:** Ingest missing B-025 historical/provenance material into `docs/history/B025/` and re-establish master handoff parity.
+- **Architecture references:** `docs/authority/AUTHORITY_INDEX.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `docs/history/B025/` (66+ files), `docs/history/README.md`, `docs/continuity/CURRENT_HANDOFF.md`, `docs/continuity/HISTORICAL_HANDOFFS/README.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, `docs/reports/CONTINUITY_001_2_MASTER_PARITY_AUDIT.md`
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS
+  - `python3 tools/continuity/generate_handoff.py` PASS
+  - `git diff --check` PASS
+  - Handoff ZIP integrity, manifest, exclusion, secret checks PASS
+- **Tests not run:** `cargo test` (governance correction); Android builds
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Commits:** to be recorded after final commit.
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+- **Merge status:** not merged.
+- **Final HEAD:** to be recorded after merge.
+- **Next gate:** `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP TEST`

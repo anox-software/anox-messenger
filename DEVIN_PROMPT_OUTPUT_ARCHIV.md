@@ -107,3 +107,24 @@
 - Next gate: `CONTINUITY-001 ARCHITECT RE-REVIEW`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.2A — Historical Provenance Ingestion + Master Parity Correction
+
+**Objective:** Ingest the missing B-025 historical/provenance material and re-run master handoff parity.
+
+**Result:** PASS — MASTER PARITY RESTORED
+
+- Ingested 66+ files from `ANOX_MASTER_HANDOFF_B025_2026-08-20.zip` into `docs/history/B025/`.
+- Created `docs/history/B025/README.md`, `SOURCE_INDEX.md`, `REPOSITORY_PROVENANCE/GIT_BUNDLE_STATUS.md`.
+- Created `docs/history/README.md`.
+- Updated `docs/continuity/CURRENT_HANDOFF.md` and `docs/continuity/HISTORICAL_HANDOFFS/README.md`.
+- Updated `docs/reports/CONTINUITY_001_2_MASTER_PARITY_AUDIT.md`.
+- Full-history Git bundle intentionally not replicated; reason documented.
+- Re-generated handoff; new package parity verified: authority, decision, implementation, Devin, historical, and bootstrap all PASS; 20/20 reconstruction questions ANSWERABLE.
+- `git diff --check` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP TEST`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

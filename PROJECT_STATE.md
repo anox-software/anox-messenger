@@ -79,3 +79,15 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Generated handoff ZIP on current branch; ran `ZipFile.testzip()` (PASS), internal SHA-256 manifest verification (170/170 entries verified, 0 mismatches), exclusion scan (0 prohibited members), secret-pattern sanity scan (0 obvious secret artifacts), dirty-tree negative test (generator and validator both fail on dirty tree), and validator missing-file negative test (non-zero exit, clear reason).
 - Re-ran `validate_continuity.py` and `generate_handoff.py` after commit: expected PASS.
 - Product source unchanged; next gate remains `CONTINUITY-001 ARCHITECT RE-REVIEW`.
+
+## CONTINUITY-001.2A — Historical provenance ingestion and master parity correction
+
+- Branch: `governance/continuity-001`
+- Ingested historical provenance from `ANOX_MASTER_HANDOFF_B025_2026-08-20.zip` into `docs/history/B025/`:
+  - `00_START/`, `03_WORKFLOWS/`, `05_ENGINEERING_NEXT/`, `06_AUDITS/`, `07_DEVIN_HISTORY/`, `90_HISTORICAL/`
+  - `REPOSITORY_PROVENANCE/` with `REPOSITORY_SNAPSHOT_MANIFEST.md` and `GIT_BUNDLE_STATUS.md`
+- Created `docs/history/B025/README.md`, `SOURCE_INDEX.md`, `docs/history/README.md`.
+- Updated `docs/continuity/CURRENT_HANDOFF.md` and `docs/continuity/HISTORICAL_HANDOFFS/README.md` to reference the historical archive.
+- Full-history Git bundle intentionally not replicated; reason documented.
+- Product source unchanged.
+- New handoff generated and parity re-run: result to be recorded after commit/CI.
