@@ -35,3 +35,24 @@
 - No application functionality, cryptography, or security invariants changed.
 
 **No Device Authentication work was started.**
+
+---
+
+## STEP-3B — B-025 Repository Synchronization and Android Backup/D2D Hardening
+
+**Objective:** Synchronize the connected repository with the B-025 architecture authority and harden Android backup/device-transfer policy.
+
+**Result:** PASS — READY FOR ARCHITECT REVIEW
+
+- Verified repository baseline: `main` at `c076528e26e5e3ed05b4d0aeed794894f1f78b5e`.
+- Created branch `architecture/b025-main-sync`.
+- Added `docs/authority/B025/` with exact B-025 canonical material.
+- Updated top-level and `docs/current/` documentation to B-025 authority.
+- Added `dataExtractionRules` to exclude all app-private storage from cloud backup and D2D transfer.
+- No protected crypto, JNI, or build-tooling source changed.
+- `cargo test`: 15/15 PASS locally.
+- GitHub Actions CI run `32372225161` on PR #2: Rust, Android debug, and Android release compile smoke all PASS.
+- Connected Android instrumentation and GrapheneOS physical-device tests NOT RUN.
+- No Device Authentication, backend, messaging, or E2EE redesign implemented.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/2

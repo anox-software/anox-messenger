@@ -43,10 +43,14 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - B-013 production server lifecycle.
 - Production privacy/abuse/infrastructure/signing/operations/test/audit/release gates.
 
-## Known documentation drift in repository snapshot
+## STEP-3B — B-025 repository synchronization (2026-08-20)
 
-Repository `PROJECT_STATE.md` still says Device Auth Ed25519 and `OPEN_ARCHITECTURE_ITEMS.md` still lists decisions that Track B has closed. Those docs are stale relative to this B-025 package and must be synchronized before feature implementation.
-
-## Verification limitation of this artifact-generation environment
-
-A fresh local re-run was attempted here, but `cargo` is unavailable and Gradle could not download its distribution because this container has no internet. Therefore no new PASS claim is added. Prior repository/CI evidence is preserved as historical accepted evidence, and the new chat should re-run tests in a capable environment before code changes are accepted.
+- Branch: `architecture/b025-main-sync`
+- B-025 authority area added at `docs/authority/B025/`.
+- Documentation drift corrected; Device Auth, refresh token, recovery, multi-device, QR/SAS, push, attachments, and other stale statements are now aligned with B-025.
+- Android backup/D2D hardening added: `android:allowBackup="false"` retained, `dataExtractionRules` excludes all app-private storage from cloud backup and device transfer.
+- Protected foundation (crypto, JNI, build tooling, native `.so`) unchanged.
+- `cargo test`: 15/15 PASS (local).
+- GitHub Actions CI run `32372225161` on PR #2: Rust, Android debug, and Android release compile smoke all PASS.
+- Connected Android instrumentation: NOT RUN in CI (no emulator); historical 35/35 remains accepted.
+- PROMPT-007 was not executed.
