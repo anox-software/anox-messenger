@@ -1,20 +1,16 @@
-> **B-025 Architecture Authority Notice**
->
-> B-025 is the current architecture authority. See `docs/authority/B025/` for the complete handoff package. This file may still contain pre-B-025 text.
->
 # anoX Messenger
 
 A security-oriented native messenger application for Android and GrapheneOS.
 
-**Current architecture baseline:** B-025
-**Last synchronized:** 2026-08-20
+**Current architecture baseline:** RAW1.60–RAW1.75 consolidated  
+**Last synchronized:** 2026-08-19
 
 ---
 
 ## Status
 
-- Rust crypto foundation implemented and passing: `cargo test` **15/15 PASS** (current CI and historical local runs).
-- Android connected instrumentation **35/35 PASS** (historical, not re-run in CI due to no emulator).
+- Rust crypto foundation implemented and passing: `cargo test` **14/14 PASS**.
+- Android build + connected instrumentation passing: **19/19 PASS** on arm64 emulator API 34.
 - Core backend, account/auth, messaging, contacts, push, and attachments are **not yet implemented**.
 
 This project is closed-source. Do not claim it is "unhackable" or production-secure without independent review.

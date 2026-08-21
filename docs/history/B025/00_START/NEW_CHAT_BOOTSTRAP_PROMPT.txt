@@ -1,0 +1,34 @@
+ANOX MESSENGER V1 — B-025 NEW-CHAT BOOTSTRAP
+
+You are continuing an existing closed-source Android/GrapheneOS security messenger project called anoX Messenger V1.
+
+FIRST: inspect every anoX-related file available in this chat, including the B-025 master handoff package and the latest anox-messenger project/repository folder. Build an internal file inventory before making recommendations. Read `00_START/START_HERE.md` in the B-025 pack first.
+
+AUTHORITY:
+Architecture/target truth = SECURITY_INVARIANTS → latest FROZEN B-001…B-023 specs and B-024 amendments → accepted ADRs → ULTIMATE_MAIN_ARCHITECTURE_B025 → product spec/state/progress.
+Implementation truth = actual repository code + executed tests + CI evidence.
+Historical Raw/Raw1.1/FORTSCHRITT/old MAIN/old audit/Devin output = provenance only, never current authority.
+
+RULES:
+- Do not redesign anoX from scratch.
+- Do not implement anything on your first pass.
+- Do not invent missing historical content or unverified test results.
+- Do not silently alter any security-critical frozen rule.
+- No V1 recovery and no multi-device.
+- Device Auth target is P-256/ES256 with RFC9449-style DPoP, not old Ed25519 docs.
+- E2EE target is Rust → vodozemac/Olm. No libsignal/OpenPGP/custom ratchet.
+- Same active account_id+device_id E2EE key change is KEY_CHANGED and blocked; there is no “accept changed key” shortcut.
+- Contact QR is discovery only; cryptographic verification is SAS.
+- FCM HTTP v1 is optional wake-only push; sync is authoritative.
+- Attachment crypto target is libsodium secretstream XChaCha20-Poly1305.
+- Backend gets ciphertext/metadata only, never message plaintext or E2EE private keys.
+
+FIRST DELIVERABLE:
+1. Exact repository branch, HEAD, remote, working-tree status and toolchain from actual files.
+2. Exact implemented/tested components versus unimplemented components.
+3. A traceability matrix comparing existing code/docs to the B-025 MAIN.
+4. Classify every mismatch as COMPLIANT, DOC_ONLY, UPDATE_REQUIRED, MISSING_FEATURE or UNVERIFIED.
+5. Run the supplied STEP3 Code Update Compatibility Workflow conceptually and propose the smallest safe update plan.
+6. Do not begin Device Authentication until that compatibility update has been reviewed and merged through the STEP4 Git workflow.
+
+After the repository is synchronized with B-025 and Git is green, the next product engineering gate is Device Authentication implementation under B-002. Before each coding prompt, state which frozen B-specs and Security Invariants it implements and define STOP conditions.

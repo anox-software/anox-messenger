@@ -1,0 +1,358 @@
+# B-026 — Continuous Development Governance and Chat Handoff System
+
+**Status:** FROZEN  
+**Date:** 2026-08-20
+
+---
+
+## Purpose
+
+Establish a permanent, repository-based continuity system for anoX Messenger so that development is independent of any individual ChatGPT conversation, Devin session, developer computer, or AI provider.
+
+B-026 is a governance specification. It does not modify B-002…B-025 product or security semantics.
+
+---
+
+## Mandatory post-task governance
+
+Every future Devin implementation task MUST update, before declaring `PASS`:
+
+1. `PROJECT_STATE.md`
+2. `FORTSCHRITT.md`
+3. `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+Where relevant it MUST ALSO update:
+
+4. Security / validation reports
+5. Architecture compatibility reports
+6. Migrations / schema documentation
+7. Test evidence
+8. Current continuity state in `docs/continuity/`
+
+A task that has not updated required governance files must report:
+
+`BLOCKED — GOVERNANCE UPDATE INCOMPLETE`
+
+---
+
+## PROJECT_STATE.md contract
+
+`PROJECT_STATE.md` must always answer:
+
+- current date
+- repository, branch, current HEAD
+- current milestone and architecture authority version
+- what is implemented, partial, missing, verified, and unverified
+- active blockers, CI status, physical-device status
+- last completed engineering task, next approved gate
+- next proposed Devin task
+- current known architecture deviations and release blockers
+
+It must not record intended future implementation as already implemented.
+
+---
+
+## FORTSCHRITT.md contract
+
+`FORTSCHRITT.md` is chronological. Every Devin task must append:
+
+- TASK ID, date, starting HEAD, branch, objective
+- architecture references
+- files changed
+- implementation summary
+- tests actually run with PASS / FAIL / NOT RUN / UNVERIFIED
+- CI, security invariants, blockers
+- commits, PR, merge status, final HEAD if merged
+- next gate
+
+Historical entries must never be silently rewritten. Corrections must be new entries.
+
+---
+
+## DEVIN PROMPT / OUTPUT ARCHIVE contract
+
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` must record for every future task:
+
+- TASK ID
+- prompt version / title
+- short purpose
+- architecture authority used
+- execution summary
+- files changed
+- test result
+- commit(s)
+- PR
+- final result
+- next recommended step
+
+The complete prompt does not have to be duplicated indefinitely if it is stored as a separate versioned prompt file; in that case record its path and hash.
+
+Never store tokens, passwords, private keys, license plaintext, or production secrets.
+
+---
+
+## Structured Devin final output standard
+
+`docs/continuity/DEVIN_OUTPUT_CONTRACT.md` defines the final-output sections. Every future Devin task must end with:
+
+A. TASK  
+B. BASELINE  
+C. BRANCH  
+D. FILES CHANGED  
+E. IMPLEMENTATION  
+F. TESTS ACTUALLY RUN  
+G. TESTS NOT RUN / UNVERIFIED  
+H. SECURITY INVARIANTS  
+I. PROJECT_STATE UPDATE  
+J. FORTSCHRITT UPDATE  
+K. DEVIN ARCHIVE UPDATE  
+L. COMMITS  
+M. PR  
+N. CI  
+O. BLOCKERS  
+P. ARCHITECTURE IMPACT  
+Q. NEXT RECOMMENDED GATE  
+
+And exactly one of:
+
+`RESULT: PASS — READY FOR ARCHITECT REVIEW`  
+`RESULT: BLOCKED — ARCHITECT DECISION REQUIRED`
+
+---
+
+## Continuity directory
+
+`docs/continuity/` is the repository handoff and continuity authority. It contains the files listed in `docs/continuity/AUTHORITY_INDEX.md`.
+
+## Authority versioning rule
+
+- `docs/authority/B025/` is the immutable historical snapshot of the B-025 architecture handoff.
+- `docs/authority/B_FREEZE_REGISTRY.md` is the current registry of frozen specifications B-001…B-026.
+- New B IDs are appended to the current registry; the historical B-025 snapshot is not rewritten.
+
+---
+
+## Handoff workflow
+
+The frozen lifecycle is:
+
+Chat A becomes slow / context too large  
+→ finish current Devin task  
+→ ensure clean / documented state  
+→ update `PROJECT_STATE`, `FORTSCHRITT`, `DEVIN_PROMPT_OUTPUT_ARCHIV`  
+→ update `docs/continuity/CURRENT_HANDOFF.md`  
+→ generate handoff package  
+→ new ChatGPT chat  
+→ upload package / provide repository  
+→ run read-only bootstrap  
+→ bootstrap `PASS`  
+→ handoff acceptance review  
+→ Chat A becomes archive  
+→ development continues only in Chat B
+
+Never switch chats in the middle of an undocumented partially completed implementation task unless an emergency handoff explicitly records that state.
+
+---
+
+## Handoff readiness gate
+
+`docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md` defines the required checks. Only when all are `PASS`:
+
+`HANDOFF READINESS = PASS`
+
+---
+
+## Handoff retention and performance policy
+
+A handoff ZIP is a local artifact. It is **not** committed to Git and is **not** automatically generated after every normal Devin task.
+
+### Normal task rule
+
+For every normal Devin task, update:
+
+1. `PROJECT_STATE.md`
+2. `FORTSCHRITT.md`
+3. `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+Update other `docs/continuity/` files only when their represented state actually changed. Run the task-specific required validation. Do **not** generate a handoff ZIP unless the task explicitly requests one.
+
+### When to generate a handoff ZIP
+
+A handoff ZIP may be generated only when:
+
+- a ChatGPT chat handoff is actually requested;
+- an explicitly defined architecture or release milestone is reached;
+- the architect or user explicitly requests one;
+- a recovery or emergency handoff is required.
+
+The expensive full handoff/parity/cold-bootstrap process is therefore event-driven, not mandatory after every task.
+
+### ZIP retention and cleanup
+
+- Generated ZIPs stay under `artifacts/handoff/` and are excluded from Git by `.gitignore`.
+- After a successor handoff has:
+  - validated `PASS`,
+  - passed integrity verification, and
+  - (for a real chat migration) successfully bootstrapped in the successor chat,
+  older intermediate or test handoff ZIPs may be deleted locally.
+- Milestone handoffs are preserved only when explicitly required.
+- Git history, authority files, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, and historical provenance remain the durable development record.
+
+---
+
+## APK content / secret leakage release gate
+
+### Architecture principle
+
+**Repository content is not APK content.** The following are repository/governance-only and must never appear in the distributed Android APK:
+
+- `docs/authority/`
+- `docs/continuity/`
+- `docs/history/`
+- `docs/reports/` unless deliberately converted to runtime-safe product data by a future explicit architecture decision
+- `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- `MAIN_PLAN_DE.md`
+- generated handoff ZIPs and `ANOX_HANDOFF_*` artifacts
+- `GIT_SNAPSHOT.txt`, `CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, `CURRENT_STATE.json`
+- historical RAW material and historical Devin outputs
+- audit working files
+- `.git/` and Git metadata
+- `.env`, `.env.*`, `local.properties`, `*.jks`, `*.keystore`, `*.p12`, `*.pfx`, `*.pem`, `*.key`
+
+These files are not removed from the repository; they are simply forbidden from the APK package.
+
+### Security principle
+
+The anoX security model must not depend on APK secrecy. Assume an attacker can unzip, decompile, inspect resources, native libraries, and the manifest. Therefore the APK must never embed production private keys, signing keys, backend credentials, database passwords, service-role secrets, API tokens, admin credentials, recovery secrets, E2EE private keys, or license-generation secrets.
+
+### Validation rule
+
+APK content validation is a mandatory release/security gate. `tools/security/validate_apk_contents.py` inspects the final APK and fails closed if any forbidden repository/governance artifact or obvious secret marker is found. This is a validation and detection tool, not a claim that reverse engineering is prevented.
+
+### Release gate status values
+
+- `PASS` — validator found no forbidden items and no obvious secret markers in the exact APK artifact.
+- `FAIL` — forbidden items or secret markers found; release blocked.
+- `NOT RUN` — validator was not executed.
+- `UNVERIFIED` — no APK artifact was available for inspection.
+
+A debug APK `PASS` is useful CI regression evidence but is not automatically the final production-release artifact attestation. At final release, B-023 must validate the exact signed/shipping APK again.
+
+### Authority references
+
+This rule complements the frozen B-017 (CI/CD + Supply Chain), B-018 (Release Signing + Secure Updates), and B-023 (V1 Release Definition of Done) specifications without modifying their security semantics.
+
+---
+
+## Handoff package generator
+
+`tools/continuity/generate_handoff.py` (Python 3 standard library only, no network) builds:
+
+`artifacts/handoff/ANOX_HANDOFF_<YYYY-MM-DD>_<short-head>.zip`
+
+The package contains at minimum:
+
+- `docs/authority` current frozen architecture
+- `docs/continuity`
+- `PROJECT_STATE.md`
+- `FORTSCHRITT.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- `MAIN_PLAN_DE.md`
+- relevant current reports
+- selected historical indexes / provenance
+- Git metadata snapshot
+- file manifest
+- SHA-256 manifest
+
+It must NOT include:
+
+- `.git` object database
+- `build/`, `.gradle/`, `target/`
+- `local.properties`
+- keystores, `.jks`, `.p12`, `.keystore`
+- `.env` or environment files
+- production credentials
+- Android build caches
+- large generated build artifacts
+
+---
+
+## Git snapshot in package
+
+The generator records a text snapshot with:
+
+```
+git remote -v
+git branch --show-current
+git rev-parse HEAD
+git status --short
+git tag --list
+recent relevant log
+```
+
+If the working tree is dirty, the generator must either `FAIL` or clearly produce `EMERGENCY / DIRTY HANDOFF` with the exact changed files.
+
+---
+
+## Validation script
+
+`tools/continuity/validate_continuity.py` (Python standard library only) validates presence and basic consistency of:
+
+- `PROJECT_STATE.md`
+- `FORTSCHRITT.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- authority files
+- continuity files
+
+and checks Git cleanliness. It returns non-zero on handoff readiness failure.
+
+---
+
+## Historical handoffs
+
+`docs/continuity/HISTORICAL_HANDOFFS/` contains lightweight metadata/index files referencing previous handoff generations. Generated ZIPs normally remain local artifacts; do not commit large ZIPs to Git unless explicitly required by a later architecture decision.
+
+---
+
+## Upload requirements
+
+Preferred future handoff workflow:
+
+- **UPLOAD A:** latest generated `ANOX_HANDOFF_*.zip`
+- **UPLOAD B:** latest repository snapshot only if direct repository access is unavailable
+
+If the new AI can directly inspect the current repository, the handoff package plus repository access is sufficient.
+
+---
+
+## Bootstrap prompt contract
+
+`docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md` must instruct a new ChatGPT conversation to:
+
+- inventory supplied anoX files
+- read current authority
+- read `PROJECT_STATE`, `FORTSCHRITT`, `CURRENT_HANDOFF`
+- inspect the repository and Git state
+- distinguish target truth from implementation truth
+- treat historical RAW as history only
+- never invent Raw1.0
+- never modify code in the first bootstrap pass
+- return a read-only bootstrap audit
+- state `PASS` or `BLOCKED`
+
+It must not contain a hard-coded Git HEAD. Instead, it must direct the AI to read `docs/continuity/CURRENT_GIT_STATE.md` and actual repository state.
+
+---
+
+## No product source changes
+
+B-026 implementations must not modify:
+
+- `crypto/rust` source
+- JNI layer
+- `CryptoNative.kt` / `CryptoBridge.kt`
+- Android manifest security architecture
+- Gradle / Kotlin / NDK versions
+- native libraries
+- application features
+- backend code
