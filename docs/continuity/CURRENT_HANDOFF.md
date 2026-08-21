@@ -36,6 +36,7 @@ Highest to lowest:
 - CONTINUITY-001.3A atomic handoff state consistency fix applied.
 - CONTINUITY-001.3 cold new-chat bootstrap retest PASS.
 - CONTINUITY-001.4 APK content / secret leakage release gate merged.
+- CONTINUITY-001.5 final main continuity state synchronization fix applied.
 - CONTINUITY-001: ACCEPTED.
 
 ## Latest completed work

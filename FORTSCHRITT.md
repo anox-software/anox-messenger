@@ -1,14 +1,16 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** CURRENT B-025
-**Updated:** 2026-08-20
+**Status:** CURRENT B-025 + B-026
+**Updated:** 2026-08-21
 
 ## Architecture / governance
 
 - B-001 Master Completeness: DEFINED.
 - B-002…B-023: frozen according to `B_FREEZE_REGISTRY.md`.
-- B-024 Final MAIN Consistency Audit: PASS with mandatory amendments incorporated into B-025 authority docs.
+- B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
+- B-026 Continuous Development Governance: FROZEN on `main`.
+- CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
 
@@ -26,7 +28,7 @@
 
 ## Current repository
 
-`main` → `c076528e26e5e3ed05b4d0aeed794894f1f78b5e`. Device Authentication work has **not** started.
+`main` at the latest clean HEAD. Device Authentication work has **not** started.
 
 ## Functional progress
 
@@ -221,3 +223,21 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Security invariants:** No invariants changed.
 - **Blockers:** none.
 - **Next gate:** `FINAL NEW-CHAT HANDOFF ACCEPTANCE`
+
+## CONTINUITY-001.5 — Final Main Continuity State Synchronization Fix
+
+- **Date:** 2026-08-21
+- **Branch:** `main`
+- **Objective:** Fix stale current-state records in `PROJECT_STATE.md` and `FORTSCHRITT.md` that caused the new-chat bootstrap to BLOCK.
+- **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `PROJECT_STATE.md`, `FORTSCHRITT.md`, `docs/continuity/CURRENT_GIT_STATE.md`, `docs/continuity/CURRENT_HANDOFF.md`, `tools/continuity/validate_continuity.py`, `tools/continuity/generate_handoff.py`
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS
+  - `python3 tools/continuity/generate_handoff.py` PASS
+  - `git diff --check` PASS
+  - negative regression tests: stale branch, unresolved placeholder, stale gate, inconsistent CONTINUITY status, dirty tree → all FAIL as expected
+  - restored correct state → PASS
+- **Tests not run:** `cargo test` (merged from CI)
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Next gate:** `FINAL NEW-CHAT HANDOFF ACCEPTANCE RETEST`

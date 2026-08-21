@@ -118,6 +118,43 @@ def build_git_snapshot():
     return "\n".join(lines)
 
 
+def check_unresolved_placeholders(rel_files):
+    """Fail if a current-state surface still contains unresolved runtime placeholders."""
+    watched = {
+        "PROJECT_STATE.md",
+        "FORTSCHRITT.md",
+        "docs/continuity/CURRENT_HANDOFF.md",
+        "docs/continuity/CURRENT_NEXT_DEVIN_TASK.md",
+        "docs/continuity/CURRENT_IMPLEMENTATION_STATE.md",
+        "docs/continuity/CURRENT_OPEN_WORK.md",
+        "docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md",
+        "docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md",
+    }
+    placeholder_files = []
+    for rel in rel_files:
+        if rel not in watched:
+            continue
+        if rel in ("docs/continuity/CURRENT_STATE.json", "docs/continuity/CURRENT_GIT_STATE.md"):
+            # These are resolved before writestr()
+            continue
+        full = REPO_ROOT / rel
+        try:
+            with open(full, "rb") as f:
+                data = f.read()
+            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__"):
+                if marker in data:
+                    placeholder_files.append(f"{rel} ({marker.decode('utf-8')})")
+                    break
+        except OSError:
+            pass
+    if placeholder_files:
+        print("ERROR: unresolved runtime placeholders found in current-state surfaces:", file=sys.stderr)
+        for pf in placeholder_files:
+            print(f"  {pf}", file=sys.stderr)
+        return False
+    return True
+
+
 def resolve_placeholders(content, state):
     """Replace template placeholders with live Git and state values."""
     head, _ = git_cmd(["rev-parse", "HEAD"])
@@ -183,13 +220,15 @@ def main():
         if not validate_or_fail():
             return 1
 
+    rel_files = collect_files()
+    if not check_unresolved_placeholders(rel_files):
+        return 1
+
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     status_label = "EMERGENCY_DIRTY" if (dirty and args.emergency) else "CLEAN"
     zip_name = f"ANOX_HANDOFF_{date_str}_{short}.zip"
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     zip_path = ARTIFACT_DIR / zip_name
-
-    rel_files = collect_files()
 
     manifest = io.StringIO()
     manifest.write(f"# ANOX V1 Handoff Manifest\n")

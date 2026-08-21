@@ -1,20 +1,23 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-20
-**Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 complete, B-026 in review.
+**Date:** 2026-08-21
+**Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
 **Functional implementation:** approximately 27%.
 
 ## Repository truth
 
 - Branch: `main`
-- Current HEAD: `648b70391085ea5252cc9f88375064420f1b78d9`
+- Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
-- Current work branch: `governance/continuity-001`
-- Latest main CI: `32377964672` PASS
+- PR #3: merged at `7320253f27a1eef32847b992f13292d77178c4db`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
+- CONTINUITY-001: ACCEPTED
+- B-026: FROZEN on `main`
+- Current gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE`
+- Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
-- TOOLCHAIN-001: PR #1 merged; main CI run `32344459447` recorded PASS for Rust/debug/release compile smoke.
-- Current extracted upload showed only executable-mode changes on `gradlew` and two `.so` files; their content hashes equal HEAD. Use clean Git snapshot as implementation baseline.
+- TOOLCHAIN-001: PR #1 merged; main CI green.
+- Clean Git snapshot is the implementation baseline.
 
 ## Checked-in toolchain
 
@@ -140,9 +143,21 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 ## CONTINUITY-001 FINAL — PR #3 merge and main continuity finalization
 
 - Merged `governance/continuity-001` into `main`.
-- Final `main` HEAD: `__HANDOFF_HEAD__` (see `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt` at handoff generation).
+- Final `main` HEAD at handoff generation: see `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`.
 - PR #3 closed and merged.
 - Synchronized `CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md`, `CURRENT_OPEN_WORK.md` to the merged `main` state.
 - Final handoff generated on `main` and validated.
 - CONTINUITY-001: ACCEPTED.
 - Next gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE`.
+
+## CONTINUITY-001.5 — Final main continuity state synchronization fix
+
+- Branch: `main`
+- Trigger: new-chat bootstrap of `ANOX_HANDOFF_2026-08-21_cc0ad020f6aa.zip` returned `BLOCKED` due to stale current-state information in `PROJECT_STATE.md` and `FORTSCHRITT.md` (pre-merge dates/HEADs/branch, unresolved runtime HEAD placeholder).
+- Synchronized `PROJECT_STATE.md` and `FORTSCHRITT.md` current state to `main` after PR #3 merge.
+- Updated `CURRENT_IMPLEMENTATION_STATE.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md` to reflect the accepted `main` state.
+- Hardened `tools/continuity/validate_continuity.py` to detect stale current branch, unresolved placeholders in `PROJECT_STATE.md`/`FORTSCHRITT.md`, inconsistent `continuity_001_status`, and current-gate disagreement.
+- Strengthened `tools/continuity/generate_handoff.py` to fail closed if any packaged file contains unresolved runtime HEAD/working-tree placeholders.
+- Ran negative regression tests: all expected failures now detected.
+- Product source unchanged.
+- New final handoff generated and validated.

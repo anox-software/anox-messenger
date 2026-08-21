@@ -228,3 +228,22 @@
 - Next gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3 (merged)
+
+---
+
+## CONTINUITY-001.5 — Final Main Continuity State Synchronization Fix
+
+**Objective:** Fix stale current-state records that caused the final main handoff new-chat bootstrap to BLOCK.
+
+**Result:** PASS — FINAL STATE SYNCHRONIZED; READY FOR NEW-CHAT ACCEPTANCE RETEST
+
+- New-chat bootstrap of `ANOX_HANDOFF_2026-08-21_cc0ad020f6aa.zip` had BLOCKED on stale `PROJECT_STATE.md`/`FORTSCHRITT.md` current-state (pre-merge date/HEAD/branch, unresolved `__HANDOFF_HEAD__`).
+- Synchronized `PROJECT_STATE.md` and `FORTSCHRITT.md` current state to `main` after PR #3 merge.
+- Updated `CURRENT_GIT_STATE.md` and `CURRENT_HANDOFF.md`.
+- Hardened `validate_continuity.py` to fail on stale current branch, unresolved placeholders in `PROJECT_STATE.md`/`FORTSCHRITT.md`, inconsistent `continuity_001_status`, and gate disagreement.
+- Strengthened `generate_handoff.py` to fail closed if any packaged file still contains unresolved `__HANDOFF_HEAD__` / `__WORKING_TREE__`.
+- Negative regression tests pass (all expected failures detected).
+- `python3 tools/continuity/validate_continuity.py` PASS.
+- `git diff --check` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE RETEST`.

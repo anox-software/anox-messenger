@@ -22,6 +22,7 @@
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: `none` — PR #3 merged and closed
+- Latest correction: `CONTINUITY-001.5` final main continuity state synchronization
 - Latest status: `CONTINUITY-001` ACCEPTED; continuity system VERIFIED
 - Next gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE`
 
@@ -32,6 +33,7 @@
 - CONTINUITY-001.3 — Cold new-chat bootstrap PASS
 - CONTINUITY-001.3B — Bootstrap pass finalization, B-010 fix, retention policy
 - CONTINUITY-001.4 — APK content / secret leakage release gate
+- CONTINUITY-001.5 — Final main continuity state synchronization fix
 
 ## Verification
 
