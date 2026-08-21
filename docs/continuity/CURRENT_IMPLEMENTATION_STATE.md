@@ -12,7 +12,8 @@
 - TOOLCHAIN-001 merged; AGP 8.13.2 + KGP 2.4.10 + Gradle 9.3.1 green.
 - STEP-3B / 3B.1 merged; B-025 authority in `docs/authority/B025/`.
 - Android backup/D2D hardening: `allowBackup="false"` + full `dataExtractionRules`.
-- B-026 continuity governance files created in `docs/continuity/` (branch `governance/continuity-001`, not yet merged).
+- B-026 continuity governance files merged to `main` in `docs/continuity/` and `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- B-026 Android APK content and secret-leakage release gate; `tools/security/validate_apk_contents.py` integrated into CI.
 
 ## IMPLEMENTED
 

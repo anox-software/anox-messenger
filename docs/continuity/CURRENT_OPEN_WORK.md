@@ -6,7 +6,7 @@
 
 ## ARCHITECTURE OPEN
 
-None. B-024 closed the last known architecture-open items. B-025 is frozen. B-026 is frozen after CONTINUITY-001 is reviewed.
+None. B-024 closed the last known architecture-open items. B-025 is frozen. B-026 is frozen.
 
 ## IMPLEMENTATION MISSING
 

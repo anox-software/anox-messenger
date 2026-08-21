@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** CONTINUITY-001.3A
-**Date:** 2026-08-20
+**Handoff version:** CONTINUITY-001 FINAL
+**Date:** 2026-08-21
 
 ---
 
@@ -19,50 +19,36 @@ Highest to lowest:
 4. `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
 5. `docs/authority/B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025_NEW_CHAT_HANDOFF.md`
 
-## Merged baseline
+## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Baseline branch: `main`
-- Baseline HEAD: `648b70391085ea5252cc9f88375064420f1b78d9`
-- Last merge: PR #2 `75c11c823ec68cea576912b4095fa7a26ed33a33` (B-025 sync + Android backup hardening)
+- Branch: `main`
+- Current main HEAD: resolve from `CURRENT_STATE.json` or `GIT_SNAPSHOT.txt`
+- Working tree: expected clean at handoff generation
+- Open PR: `none` — PR #3 merged and closed
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
-## Current handoff / work state
-
-- Current handoff branch: `governance/continuity-001`
-- Current handoff HEAD: resolve from `CURRENT_STATE.json` or `GIT_SNAPSHOT.txt`
-- Working tree: expected clean at handoff generation
-- Open PR: `#3` to `main`
-- Foundation baseline remains `v1-foundation-baseline`
-
-## Current implementation milestone
+## Implementation milestone
 
 - B-025 repository synchronization merged to `main`.
-- B-026 continuity governance implemented on `governance/continuity-001`.
+- B-026 continuity governance merged to `main`.
 - CONTINUITY-001.2A master parity restored.
 - CONTINUITY-001.3A atomic handoff state consistency fix applied.
 - CONTINUITY-001.3 cold new-chat bootstrap retest PASS.
-- CONTINUITY-001.4 APK content / secret leakage release gate in progress.
-- CONTINUITY-001.3A atomic handoff state consistency fix in progress.
+- CONTINUITY-001.4 APK content / secret leakage release gate merged.
+- CONTINUITY-001: ACCEPTED.
 
-## Last completed task
+## Latest completed work
 
-CONTINUITY-001.2A — Historical provenance ingestion and master parity correction.
-
-## Last Devin output
-
-CONTINUITY-001.2A structured report (master parity restored, PR #3 open, PROMPT-007 not started).
+CONTINUITY-001 FINAL — PR #3 merge and main-branch continuity finalization.
 
 ## Current test baseline
 
 - Rust crypto tests: 15/15 PASS
-- Android connected instrumentation: 35/35 PASS (historical, not re-run recently)
-- Android debug/release CI: PASS on `main`
+- Android debug build + APK content validation: PASS
+- Android release compile + APK content validation: PASS
+- Android connected instrumentation: historical 35/35 PASS (not re-run)
 - GrapheneOS physical device: UNVERIFIED
-
-## Current CI
-
-GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile smoke — PASS on latest `governance/continuity-001` run.
 
 ## Historical provenance
 
@@ -83,15 +69,15 @@ GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile 
 ## Current blockers
 
 - GitHub free plan: branch protection and secret scanning unavailable.
-- No product/security blockers.
+- There are no product/security blockers.
 
 ## Next architecture gate
 
-`CONTINUITY-001.4 — APK content / secret leakage release gate`
+`FINAL NEW-CHAT HANDOFF ACCEPTANCE`
 
 ## Next engineering task
 
-PROMPT-007 / Device Authentication Foundation is not the next task until the cold bootstrap retest passes and an architect explicitly authorizes it.
+PROMPT-007 / Device Authentication Foundation is not the next task until the final main handoff has been accepted by a new chat and an architect explicitly authorizes it.
 
 ## Do-not-touch foundation
 
