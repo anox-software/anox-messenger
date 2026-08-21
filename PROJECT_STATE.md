@@ -92,3 +92,14 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Product source unchanged.
 - Re-generated handoff `ANOX_HANDOFF_2026-08-20_c2b3afc1b93e.zip`; parity verified PASS: 241 members, 238/238 manifest entries verified, 0 prohibited, 0 secret, 20/20 reconstruction questions ANSWERABLE.
 - New `docs/reports/CONTINUITY_001_2_MASTER_PARITY_AUDIT.md` created.
+
+## CONTINUITY-001.3A — Atomic handoff state consistency fix
+
+- Branch: `governance/continuity-001`
+- Cold new-chat bootstrap for `ANOX_HANDOFF_2026-08-20_c2b3afc1b93e.zip` returned `BLOCKED` because recorded `CURRENT_GIT_STATE.md`, `PROJECT_STATE.md`, `CURRENT_NEXT_DEVIN_TASK.md`, and `CURRENT_HANDOFF.md` described the merged `main` baseline instead of the current handoff branch `governance/continuity-001`.
+- Corrected `CURRENT_GIT_STATE.md` and `PROJECT_STATE.md` to explicitly separate **merged baseline** (`main`) from **current handoff / work state** (`governance/continuity-001`).
+- Introduced `docs/continuity/CURRENT_STATE.json` as machine-readable canonical continuity metadata with placeholders for `handoff_head` and `working_tree` that `generate_handoff.py` resolves at generation time.
+- Updated `CURRENT_HANDOFF.md` and `CURRENT_CHAT_BOOTSTRAP_PROMPT.md` to reference the canonical `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md` path.
+- Extended `validate_continuity.py` to fail on branch/HEAD/authority/gate inconsistencies.
+- Extended `generate_handoff.py` to validate continuity state before packaging and to fail closed if validation fails.
+- Product source unchanged.

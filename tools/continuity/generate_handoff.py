@@ -4,6 +4,7 @@
 import argparse
 import hashlib
 import io
+import json
 import os
 import subprocess
 import sys
@@ -22,6 +23,7 @@ EXCLUDED_DIRS = {
     "__pycache__",
     ".kotlin",
     "artifacts",
+    "__MACOSX",
 }
 
 EXCLUDED_FILES = {
@@ -30,6 +32,7 @@ EXCLUDED_FILES = {
     ".env",
     ".env.local",
     ".env.production",
+    "CURRENT_STATE_RESOLVED.json",
 }
 
 EXCLUDED_SUFFIXES = (
@@ -79,6 +82,8 @@ def is_excluded(rel_path):
         return True
     if name.endswith(EXCLUDED_SUFFIXES):
         return True
+    if name.startswith("._"):
+        return True
     return False
 
 
@@ -113,6 +118,46 @@ def build_git_snapshot():
     return "\n".join(lines)
 
 
+def resolve_placeholders(content, state):
+    """Replace template placeholders with live Git and state values."""
+    head, _ = git_cmd(["rev-parse", "HEAD"])
+    status, _ = git_cmd(["status", "--short"])
+    working_tree = "clean" if status.strip() == "" else "dirty"
+    branch, _ = git_cmd(["branch", "--show-current"])
+
+    # CURRENT_GIT_STATE placeholders
+    content = content.replace("__HANDOFF_HEAD__", head)
+    content = content.replace("__WORKING_TREE__", working_tree)
+
+    # CURRENT_STATE.json placeholder object support
+    if "__HANDOFF_HEAD__" in content:
+        # for JSON strings
+        content = content.replace('"__HANDOFF_HEAD__"', json.dumps(head))
+    if "__WORKING_TREE__" in content:
+        content = content.replace('"__WORKING_TREE__"', json.dumps(working_tree))
+
+    # Additional simple state placeholders for future use
+    content = content.replace("__HANDOFF_BRANCH__", branch)
+    return content
+
+
+def validate_or_fail():
+    """Run the continuity validator and fail closed if it does not pass."""
+    validator = REPO_ROOT / "tools" / "continuity" / "validate_continuity.py"
+    result = subprocess.run(
+        [sys.executable, str(validator)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print("ERROR: Continuity validation failed. Handoff generation blocked.", file=sys.stderr)
+        print(result.stdout, file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        return False
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate an anoX handoff package.")
     parser.add_argument(
@@ -132,6 +177,11 @@ def main():
         print("ERROR: Working tree is dirty. Clean it or use --emergency.", file=sys.stderr)
         print(status, file=sys.stderr)
         return 1
+
+    # Fail-closed validation for normal handoffs
+    if not args.emergency:
+        if not validate_or_fail():
+            return 1
 
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     status_label = "EMERGENCY_DIRTY" if (dirty and args.emergency) else "CLEAN"
@@ -156,13 +206,33 @@ def main():
 
     git_snapshot = build_git_snapshot()
 
+    # Load current state template
+    state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
+    state_text = state_path.read_text(encoding="utf-8") if state_path.exists() else ""
+    resolved_state = resolve_placeholders(state_text, {})
+
+    git_state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
+    git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
+    resolved_git_state = resolve_placeholders(git_state_text, {})
+
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for rel in rel_files:
-            full = REPO_ROOT / rel
-            zf.write(full, rel)
-            digest = sha256_file(full)
-            manifest.write(f"{rel}\n")
-            sha_manifest.write(f"{digest}  {rel}\n")
+            if rel == "docs/continuity/CURRENT_STATE.json":
+                zf.writestr(rel, resolved_state)
+                digest = hashlib.sha256(resolved_state.encode("utf-8")).hexdigest()
+                manifest.write(f"{rel}\n")
+                sha_manifest.write(f"{digest}  {rel}\n")
+            elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
+                zf.writestr(rel, resolved_git_state)
+                digest = hashlib.sha256(resolved_git_state.encode("utf-8")).hexdigest()
+                manifest.write(f"{rel}\n")
+                sha_manifest.write(f"{digest}  {rel}\n")
+            else:
+                full = REPO_ROOT / rel
+                zf.write(full, rel)
+                digest = sha256_file(full)
+                manifest.write(f"{rel}\n")
+                sha_manifest.write(f"{digest}  {rel}\n")
 
         # Git snapshot
         zf.writestr("GIT_SNAPSHOT.txt", git_snapshot)

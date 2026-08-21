@@ -128,3 +128,30 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Merge status:** not merged.
 - **Final HEAD:** to be recorded after merge.
 - **Next gate:** `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP TEST`
+
+## CONTINUITY-001.3A — Atomic Handoff State Consistency Fix
+
+- **Date:** 2026-08-20
+- **Starting HEAD:** `6fd123f13ac1...`
+- **Branch:** `governance/continuity-001`
+- **Objective:** Fix the atomic handoff state consistency defect detected by the cold new-chat bootstrap (stale `CURRENT_GIT_STATE.md`, `PROJECT_STATE.md`, `CURRENT_NEXT_DEVIN_TASK.md`, incorrect Security Invariants path, no machine-readable state).
+- **Architecture references:** `docs/authority/AUTHORITY_INDEX.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `docs/continuity/CURRENT_GIT_STATE.md`, `docs/continuity/CURRENT_HANDOFF.md`, `docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md`, `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`, `docs/continuity/CURRENT_STATE.json`, `PROJECT_STATE.md`, `tools/continuity/validate_continuity.py`, `tools/continuity/generate_handoff.py`
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS
+  - `python3 tools/continuity/generate_handoff.py` PASS
+  - `git diff --check` PASS
+  - Negative regression tests for stale HEAD, branch, security-invariants path, next gate, dirty tree → validator FAIL
+  - Restored correct state → validator PASS
+  - `ZipFile.testzip()` PASS
+  - Internal SHA-256 manifest verified
+  - Exclusion/secret scan 0/0
+  - 20/20 reconstruction questions remain ANSWERABLE
+- **Tests not run:** `cargo test` (governance correction); Android builds
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Commits:** to be recorded after final commit.
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+- **Merge status:** not merged.
+- **Final HEAD:** to be recorded after merge.
+- **Next gate:** `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`

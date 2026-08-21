@@ -128,3 +128,26 @@
 - Next gate: `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP TEST`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.3A — Atomic Handoff State Consistency Fix
+
+**Objective:** Fix the handoff state consistency defect detected by the cold new-chat bootstrap.
+
+**Result:** PASS — ATOMIC HANDOFF CONSISTENCY RESTORED
+
+- Cold bootstrap of `ANOX_HANDOFF_2026-08-20_c2b3afc1b93e.zip` had returned `BLOCKED` due to stale `CURRENT_GIT_STATE.md`, `PROJECT_STATE.md`, `CURRENT_NEXT_DEVIN_TASK.md`, and an incorrect `docs/authority/SECURITY_INVARIANTS_V1_1.md` reference.
+- Updated `CURRENT_GIT_STATE.md` and `PROJECT_STATE.md` to clearly separate merged `main` baseline from current `governance/continuity-001` handoff state.
+- Updated `CURRENT_HANDOFF.md` and `CURRENT_CHAT_BOOTSTRAP_PROMPT.md` to reference `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`.
+- Updated `CURRENT_NEXT_DEVIN_TASK.md` to reflect `CONTINUITY-001.2A` complete and `CONTINUITY-001.3` as the next retest gate.
+- Added `docs/continuity/CURRENT_STATE.json` as machine-readable canonical continuity metadata.
+- Extended `validate_continuity.py` to detect branch/HEAD/authority/gate inconsistencies and fail closed.
+- Extended `generate_handoff.py` to run `validate_continuity.py` before packaging and to resolve `__HANDOFF_HEAD__` / `__WORKING_TREE__` placeholders in the generated package.
+- `git diff --check` PASS.
+- `validate_continuity.py` PASS.
+- `generate_handoff.py` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

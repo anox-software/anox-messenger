@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** CONTINUITY-001  
+**Handoff version:** CONTINUITY-001.3A
 **Date:** 2026-08-20
 
 ---
@@ -11,43 +11,55 @@ anoX Messenger V1 — closed-source native Android/GrapheneOS messenger with vod
 
 ## Architecture authority
 
-- `docs/authority/AUTHORITY_INDEX.md`
-- `docs/authority/SECURITY_INVARIANTS_V1_1.md`
-- `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
-- `docs/authority/B025/B_FREEZE_REGISTRY.md`
-- `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
-- `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`
+Highest to lowest:
 
-## Current main
+1. `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
+2. `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+3. `docs/authority/B_FREEZE_REGISTRY.md`
+4. `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
+5. `docs/authority/B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025_NEW_CHAT_HANDOFF.md`
+
+## Merged baseline
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Branch: `main`
-- Current HEAD: `648b70391085ea5252cc9f88375064420f1b78d9`
+- Baseline branch: `main`
+- Baseline HEAD: `648b70391085ea5252cc9f88375064420f1b78d9`
 - Last merge: PR #2 `75c11c823ec68cea576912b4095fa7a26ed33a33` (B-025 sync + Android backup hardening)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
+## Current handoff / work state
+
+- Current handoff branch: `governance/continuity-001`
+- Current handoff HEAD: resolve from `CURRENT_STATE.json` or `GIT_SNAPSHOT.txt`
+- Working tree: expected clean at handoff generation
+- Open PR: `#3` to `main`
+- Foundation baseline remains `v1-foundation-baseline`
+
 ## Current implementation milestone
 
-B-025 repository synchronization merged; B-026 continuity governance added on branch `governance/continuity-001` (not yet merged).
+- B-025 repository synchronization merged to `main`.
+- B-026 continuity governance implemented on `governance/continuity-001`.
+- CONTINUITY-001.2A master parity restored.
+- CONTINUITY-001.3A atomic handoff state consistency fix in progress.
 
 ## Last completed task
 
-STEP-4A — PR #2 merge and post-merge verification.
+CONTINUITY-001.2A — Historical provenance ingestion and master parity correction.
 
 ## Last Devin output
 
-STEP-4A structured report (PR #2 merged, main green, PROMPT-007 not started).
+CONTINUITY-001.2A structured report (master parity restored, PR #3 open, PROMPT-007 not started).
 
 ## Current test baseline
 
-- Rust crypto tests: 15/15 PASS (historical and re-run)
+- Rust crypto tests: 15/15 PASS
 - Android connected instrumentation: 35/35 PASS (historical, not re-run recently)
-- Android debug/release CI: PASS on `main` runs `32376668391` and `32377964672`
+- Android debug/release CI: PASS on `main`
 - GrapheneOS physical device: UNVERIFIED
 
 ## Current CI
 
-GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile smoke — PASS on latest `main`.
+GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile smoke — PASS on latest `governance/continuity-001` run.
 
 ## Historical provenance
 
@@ -72,11 +84,11 @@ GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile 
 
 ## Next architecture gate
 
-`CONTINUITY-001 ARCHITECT REVIEW` (this task).
+`CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`
 
 ## Next engineering task
 
-To be authorized after architect review. PROMPT-007 / Device Authentication Foundation is not automatically next.
+PROMPT-007 / Device Authentication Foundation is not the next task until the cold bootstrap retest passes and an architect explicitly authorizes it.
 
 ## Do-not-touch foundation
 
@@ -92,6 +104,6 @@ To be authorized after architect review. PROMPT-007 / Device Authentication Foun
 
 ## Historical material rule
 
-- `docs/history/` and `docs/history/raw1.1/` are provenance only.
+- `docs/history/` and `docs/history/B025/` are provenance only.
 - Never reactivate superseded RAW rules.
 - B-025 and B-026 are current governance.

@@ -14,16 +14,19 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
 
 2. Read the current authority in this order:
    - `docs/authority/AUTHORITY_INDEX.md`
-   - `docs/authority/SECURITY_INVARIANTS_V1_1.md`
+   - `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
    - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
-   - `docs/authority/B025/B_FREEZE_REGISTRY.md`
+   - `docs/authority/B_FREEZE_REGISTRY.md`
+   - `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
 
 3. Read the current state in this order:
    - `docs/continuity/CURRENT_HANDOFF.md`
    - `docs/continuity/CURRENT_GIT_STATE.md`
+   - `docs/continuity/CURRENT_STATE.json`
    - `PROJECT_STATE.md`
    - `FORTSCHRITT.md`
    - `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+   - `GIT_SNAPSHOT.txt`
 
 4. Inspect the actual repository and Git state:
    - `git remote -v`
@@ -33,10 +36,12 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
    - `git tag --list`
    - `git log --oneline -n 15`
 
-5. Compare the recorded `CURRENT_GIT_STATE.md` with the live Git state. Report any discrepancy.
+5. Compare the recorded `CURRENT_GIT_STATE.md`, `CURRENT_STATE.json`, and `GIT_SNAPSHOT.txt` with the live Git state. Report any discrepancy.
 
 6. Verify the presence of:
+   - `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
    - `docs/authority/B025/`
+   - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
    - `docs/continuity/`
    - `tools/continuity/generate_handoff.py`
    - `tools/continuity/validate_continuity.py`
@@ -50,13 +55,13 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
    - B-025 frozen architecture = what must be built
    - repository code and tests = what is actually implemented
 
-10. Treat historical `docs/history/raw1.1/` material as provenance only. Never reactivate superseded RAW rules. Never invent Raw1.0.
+10. Treat historical `docs/history/B025/` material as provenance only. Never reactivate superseded RAW rules. Never invent Raw1.0.
 
 11. Do not modify source code, Gradle versions, NDK, or build configuration in this bootstrap pass.
 
 12. Return a structured bootstrap report with:
-    - A. BASELINE
-    - B. HEAD
+    - A. MERGED BASELINE
+    - B. CURRENT HANDOFF HEAD
     - C. WORKING TREE
     - D. ARCHITECTURE AUTHORITY PRESENT
     - E. CONTINUITY FILES PRESENT

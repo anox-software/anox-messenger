@@ -1,0 +1,26 @@
+{
+  "schema_version": "B026-1.0",
+  "recorded_at": "2026-08-20",
+  "repository": "https://github.com/anox-admin/ax-messenger.git",
+  "baseline_branch": "main",
+  "baseline_head": "648b70391085ea5252cc9f88375064420f1b78d9",
+  "baseline_tag": "v1-foundation-baseline",
+  "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
+  "latest_merge_to_baseline": "75c11c823ec68cea576912b4095fa7a26ed33a33",
+  "handoff_branch": "governance/continuity-001",
+  "handoff_head": "__HANDOFF_HEAD__",
+  "working_tree": "__WORKING_TREE__",
+  "open_pr": 3,
+  "open_pr_target": "main",
+  "current_gate": "CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST",
+  "authority_index": "docs/authority/AUTHORITY_INDEX.md",
+  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
+  "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
+  "ultimate_architecture_path": "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md",
+  "next_devin_task_path": "docs/continuity/CURRENT_NEXT_DEVIN_TASK.md",
+  "handoff_workflow_path": "docs/continuity/HANDOFF_WORKFLOW.md",
+  "notes": [
+    "handoff_head and working_tree are placeholders. They must be resolved from the live repository or from GIT_SNAPSHOT.txt at handoff generation.",
+    "validate_continuity.py checks that these placeholders are present, that the live branch/HEAD/tree match the model, and that all required authority paths exist."
+  ]
+}
