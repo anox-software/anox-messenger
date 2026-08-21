@@ -155,3 +155,32 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Merge status:** not merged.
 - **Final HEAD:** to be recorded after merge.
 - **Next gate:** `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`
+
+## CONTINUITY-001.3 — Cold New-Chat Bootstrap Retest
+
+- **Date:** 2026-08-21
+- **Branch:** `governance/continuity-001`
+- **Objective:** Verify that a clean new ChatGPT conversation can reconstruct the project state from the generated handoff package.
+- **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Tests actually run:**
+  - New-chat bootstrap on `ANOX_HANDOFF_2026-08-21_06023258f60e.zip`
+  - Result: `BOOTSTRAP RESULT: PASS — READY TO ACCEPT HANDOFF`
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Next gate:** `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
+
+## CONTINUITY-001.3B — Cold-Bootstrap Pass Finalization
+
+- **Date:** 2026-08-21
+- **Branch:** `governance/continuity-001`
+- **Objective:** Record the PASS result, apply the B-010 path correction, add the handoff retention/performance policy, and fix README evidence drift.
+- **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Files changed:** `README.md`, `docs/authority/B_FREEZE_REGISTRY.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, `docs/continuity/CURRENT_STATE.json`, `docs/continuity/CURRENT_GIT_STATE.md`, `docs/continuity/CURRENT_HANDOFF.md`, `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS
+  - `git diff --check` PASS
+  - B-010 path now resolves to existing `B010_CONTACTS_VERIFICATION.md`
+- **Tests not run:** `cargo test` (documentation/governance-only); no new handoff ZIP generated
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Next gate:** `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`

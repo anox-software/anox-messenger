@@ -13,8 +13,8 @@ A security-oriented native messenger application for Android and GrapheneOS.
 
 ## Status
 
-- Rust crypto foundation implemented and passing: `cargo test` **14/14 PASS**.
-- Android build + connected instrumentation passing: **19/19 PASS** on arm64 emulator API 34.
+- Rust crypto foundation implemented and passing: `cargo test` **15/15 PASS** (current CI and historical local runs).
+- Android connected instrumentation **35/35 PASS** (historical, not re-run in CI due to no emulator).
 - Core backend, account/auth, messaging, contacts, push, and attachments are **not yet implemented**.
 
 This project is closed-source. Do not claim it is "unhackable" or production-secure without independent review.

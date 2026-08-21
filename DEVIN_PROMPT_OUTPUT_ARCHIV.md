@@ -151,3 +151,38 @@
 - Next gate: `CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.3 — Cold New-Chat Bootstrap Retest
+
+**Objective:** Verify a clean ChatGPT conversation can reconstruct project state from the generated handoff.
+
+**Result:** PASS — `BOOTSTRAP RESULT: PASS — READY TO ACCEPT HANDOFF`
+
+- Tested handoff: `ANOX_HANDOFF_2026-08-21_06023258f60e.zip`
+- HEAD: `06023258f60e086d3a8f04e6fe98dc8bab0a0493`
+- Branch: `governance/continuity-001`
+- Successfully reconstructed: merged baseline, current handoff/work state, authority hierarchy, Security Invariants, implementation truth, missing features, current gate, historical provenance, and Git snapshot.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.3B — Cold-Bootstrap Pass Finalization
+
+**Objective:** Record the PASS result, fix the B-010 registry path, add the handoff retention/performance policy, and fix README evidence drift.
+
+**Result:** PASS — READY FOR FINAL ARCHITECT REVIEW
+
+- Recorded `CONTINUITY-001.3` PASS.
+- Corrected `docs/authority/B_FREEZE_REGISTRY.md` B-010 path from `B010_CONTACTS_AND_VERIFICATION.md` to `B010_CONTACTS_VERIFICATION.md`.
+- Added handoff ZIP retention/performance policy to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- Synchronized `README.md` with current evidence: `cargo test` 15/15 PASS; Android connected instrumentation 35/35 PASS (historical).
+- Updated `PROJECT_STATE.md`, `FORTSCHRITT.md`, `CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, and `CURRENT_NEXT_DEVIN_TASK.md`.
+- `python3 tools/continuity/validate_continuity.py` PASS.
+- `git diff --check` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

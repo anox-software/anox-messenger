@@ -26,7 +26,7 @@
 | B-007 | API + Wire Protocol | FROZEN v1.9 | `docs/authority/B025/TRACK_B/B007_API_WIRE.md` |
 | B-008 | Messaging + Sync | FROZEN v1.5 | `docs/authority/B025/TRACK_B/B008_MESSAGING_SYNC.md` |
 | B-009 | Local Messenger Database | FROZEN v1.4 | `docs/authority/B025/TRACK_B/B009_LOCAL_DATABASE.md` |
-| B-010 | Contacts + Verification | FROZEN v1.2 | `docs/authority/B025/TRACK_B/B010_CONTACTS_AND_VERIFICATION.md` |
+| B-010 | Contacts + Verification | FROZEN v1.2 | `docs/authority/B025/TRACK_B/B010_CONTACTS_VERIFICATION.md` |
 | B-011 | Push + Offline Queue | FROZEN v1.2 | `docs/authority/B025/TRACK_B/B011_PUSH_OFFLINE.md` |
 | B-012 | Attachments | FROZEN | `docs/authority/B025/TRACK_B/B012_ATTACHMENTS.md` |
 | B-013 | Account / Device Lifecycle | FROZEN v1.2 | `docs/authority/B025/TRACK_B/B013_LIFECYCLE.md` |

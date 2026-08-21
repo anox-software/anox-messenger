@@ -103,3 +103,22 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Extended `validate_continuity.py` to fail on branch/HEAD/authority/gate inconsistencies.
 - Extended `generate_handoff.py` to validate continuity state before packaging and to fail closed if validation fails.
 - Product source unchanged.
+
+## CONTINUITY-001.3 — Cold new-chat bootstrap retest
+
+- Tested handoff: `ANOX_HANDOFF_2026-08-21_06023258f60e.zip`
+- Branch: `governance/continuity-001`, HEAD `06023258f60e086d3a8f04e6fe98dc8bab0a0493`
+- Result: `BOOTSTRAP RESULT: PASS — READY TO ACCEPT HANDOFF`
+- The clean ChatGPT conversation successfully reconstructed: merged baseline, current handoff/work state, authority hierarchy, Security Invariants, implementation truth, missing features, current gate, historical provenance, and Git snapshot.
+- Next gate: `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
+
+## CONTINUITY-001.3B — Cold-bootstrap pass finalization
+
+- Branch: `governance/continuity-001`
+- Recorded `CONTINUITY-001.3` PASS.
+- Corrected B-010 path in `docs/authority/B_FREEZE_REGISTRY.md` from `B010_CONTACTS_AND_VERIFICATION.md` to `B010_CONTACTS_VERIFICATION.md`.
+- Added handoff ZIP retention/performance policy to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- Synchronized `README.md` test evidence with current records (15/15 Rust, 35/35 Android instrumentation historical).
+- Updated `CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, and `CURRENT_NEXT_DEVIN_TASK.md` to the final architect-review gate.
+- Product source unchanged.
+- PR #3 remains open and unmerged.

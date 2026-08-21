@@ -1,21 +1,21 @@
 # CURRENT NEXT DEVIN TASK
 
 **Status:** PENDING ARCHITECT REVIEW  
-**Task ID:** CONTINUITY-001.3A
-**Date:** 2026-08-20
+**Task ID:** CONTINUITY-001.3
+**Date:** 2026-08-21
 
 ---
 
 ## Purpose
 
-Fix the atomic handoff state consistency defect detected by the cold new-chat bootstrap. Synchronize recorded continuity state with the live Git/work state from which any handoff is generated.
+CONTINUITY-001.3 — Cold new-chat bootstrap retest — has completed with `BOOTSTRAP RESULT: PASS`. The branch now awaits final architect review of the full `governance/continuity-001` / PR #3 changes before any merge decision.
 
 ## Preconditions
 
 - B-025 repository synchronization is merged.
-- `docs/continuity/` exists.
-- `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py` exist.
-- `CONTINUITY-001.2A` has reached PASS.
+- `docs/continuity/` exists and is synchronized with live Git state.
+- `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py` exist and enforce atomic state consistency.
+- `CONTINUITY-001.3` cold new-chat bootstrap `PASS`.
 
 ## Architecture references
 
@@ -31,19 +31,11 @@ Fix the atomic handoff state consistency defect detected by the cold new-chat bo
 - native `.so` files
 - all product source
 
-## Expected tests
-
-- `python3 tools/continuity/validate_continuity.py` → returns 0
-- `python3 tools/continuity/generate_handoff.py` → creates a clean handoff ZIP with manifest and SHA-256
-- `git diff --check` → clean
-- Negative regression tests for stale HEAD, branch, security-invariants path, next gate, dirty tree
-- `ZipFile.testzip()`, internal SHA-256 manifest, exclusion/secret scan → PASS
-- 20/20 reconstruction questions remain ANSWERABLE
-
 ## Current gate
 
-`CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`
+`CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
 
 ## Note
 
-PROMPT-007 / Device Authentication Foundation is not the next task until the cold bootstrap retest passes and an architect explicitly authorizes it.
+- PROMPT-007 / Device Authentication Foundation is not the next task until this branch is merged and an architect explicitly authorizes it.
+- A handoff ZIP should only be generated if a chat handoff is actually requested or an explicit milestone is reached.

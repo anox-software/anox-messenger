@@ -162,6 +162,44 @@ Never switch chats in the middle of an undocumented partially completed implemen
 
 ---
 
+## Handoff retention and performance policy
+
+A handoff ZIP is a local artifact. It is **not** committed to Git and is **not** automatically generated after every normal Devin task.
+
+### Normal task rule
+
+For every normal Devin task, update:
+
+1. `PROJECT_STATE.md`
+2. `FORTSCHRITT.md`
+3. `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+Update other `docs/continuity/` files only when their represented state actually changed. Run the task-specific required validation. Do **not** generate a handoff ZIP unless the task explicitly requests one.
+
+### When to generate a handoff ZIP
+
+A handoff ZIP may be generated only when:
+
+- a ChatGPT chat handoff is actually requested;
+- an explicitly defined architecture or release milestone is reached;
+- the architect or user explicitly requests one;
+- a recovery or emergency handoff is required.
+
+The expensive full handoff/parity/cold-bootstrap process is therefore event-driven, not mandatory after every task.
+
+### ZIP retention and cleanup
+
+- Generated ZIPs stay under `artifacts/handoff/` and are excluded from Git by `.gitignore`.
+- After a successor handoff has:
+  - validated `PASS`,
+  - passed integrity verification, and
+  - (for a real chat migration) successfully bootstrapped in the successor chat,
+  older intermediate or test handoff ZIPs may be deleted locally.
+- Milestone handoffs are preserved only when explicitly required.
+- Git history, authority files, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, and historical provenance remain the durable development record.
+
+---
+
 ## Handoff package generator
 
 `tools/continuity/generate_handoff.py` (Python 3 standard library only, no network) builds:

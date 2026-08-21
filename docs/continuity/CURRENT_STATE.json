@@ -12,7 +12,7 @@
   "working_tree": "__WORKING_TREE__",
   "open_pr": 3,
   "open_pr_target": "main",
-  "current_gate": "CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST",
+  "current_gate": "CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",

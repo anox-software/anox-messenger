@@ -40,6 +40,8 @@ Highest to lowest:
 - B-025 repository synchronization merged to `main`.
 - B-026 continuity governance implemented on `governance/continuity-001`.
 - CONTINUITY-001.2A master parity restored.
+- CONTINUITY-001.3A atomic handoff state consistency fix applied.
+- CONTINUITY-001.3 cold new-chat bootstrap retest PASS.
 - CONTINUITY-001.3A atomic handoff state consistency fix in progress.
 
 ## Last completed task
@@ -84,7 +86,7 @@ GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile 
 
 ## Next architecture gate
 
-`CONTINUITY-001.3 — COLD NEW-CHAT BOOTSTRAP RETEST`
+`CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
 
 ## Next engineering task
 
