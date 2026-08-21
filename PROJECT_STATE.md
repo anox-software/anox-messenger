@@ -120,5 +120,21 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Added handoff ZIP retention/performance policy to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
 - Synchronized `README.md` test evidence with current records (15/15 Rust, 35/35 Android instrumentation historical).
 - Updated `CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, and `CURRENT_NEXT_DEVIN_TASK.md` to the final architect-review gate.
+
+## CONTINUITY-001.4 — APK content / secret leakage release gate
+
+- Branch: `governance/continuity-001`
+- Added APK content / secret leakage release gate to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- Created `tools/security/validate_apk_contents.py` (Python 3 standard library only, no network) that:
+  - reads an APK as a ZIP,
+  - inventories members (dex, native libs, assets, manifest, resources),
+  - detects forbidden repository/governance paths and names,
+  - scans text-like members for obvious private-key / secret markers,
+  - never prints discovered secret values.
+- Integrated `validate_apk_contents.py` into `.github/workflows/ci.yml` to validate the debug and release APK artifacts after each build.
+- Ran synthetic APK negative tests: all forbidden-path and secret-marker fixtures returned non-zero with safe output; benign fixture returned PASS.
+- CI ran on PR #3: debug and release APK content validation PASS (details in FORTSCHRITT and DEVIN archive).
+- Product source unchanged.
+- PR #3 remains open and unmerged.
 - Product source unchanged.
 - PR #3 remains open and unmerged.

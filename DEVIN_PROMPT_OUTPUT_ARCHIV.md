@@ -186,3 +186,23 @@
 - Next gate: `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/3
+
+---
+
+## CONTINUITY-001.4 — APK Content / Secret Leakage Release Gate
+
+**Objective:** Establish a permanent APK content / secret leakage release gate and integrate it into CI.
+
+**Result:** PASS — APK CONTENT GATE ESTABLISHED
+
+- Added the `REPOSITORY CONTENT != APK CONTENT` and `APK must not contain secrets` principles to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- Created `tools/security/validate_apk_contents.py` (Python 3 standard library, no network) that reads an APK as a ZIP, inventories its members, detects forbidden repository/governance artifacts, and scans for obvious private-key markers without printing secret values.
+- Integrated `validate_apk_contents.py` into `.github/workflows/ci.yml` so the debug and release APKs are validated after assembly.
+- Synthetic negative tests (authority docs, `FORTSCHRITT.md`, `.env`, `-----BEGIN PRIVATE KEY-----`) all return non-zero and safe output; benign synthetic APK returns `PASS`.
+- Real debug and release APK artifacts from CI pass the validator.
+- `git diff --check` PASS.
+- `python3 tools/continuity/validate_continuity.py` PASS.
+- No product source, crypto, JNI, or build-tooling changes.
+- Next gate: `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/3

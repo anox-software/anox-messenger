@@ -1,26 +1,28 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** PENDING ARCHITECT REVIEW  
-**Task ID:** CONTINUITY-001.3
+**Status:** IN PROGRESS
+**Task ID:** CONTINUITY-001.4
 **Date:** 2026-08-21
 
 ---
 
 ## Purpose
 
-CONTINUITY-001.3 — Cold new-chat bootstrap retest — has completed with `BOOTSTRAP RESULT: PASS`. The branch now awaits final architect review of the full `governance/continuity-001` / PR #3 changes before any merge decision.
+Establish the permanent APK content / secret leakage release gate. Add `tools/security/validate_apk_contents.py`, integrate it into CI, and ensure repository/governance material and obvious secrets cannot be accidentally shipped in the Android APK.
 
 ## Preconditions
 
 - B-025 repository synchronization is merged.
-- `docs/continuity/` exists and is synchronized with live Git state.
-- `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py` exist and enforce atomic state consistency.
-- `CONTINUITY-001.3` cold new-chat bootstrap `PASS`.
+- B-026 continuity governance is in place.
+- `tools/continuity/validate_continuity.py` and `tools/continuity/generate_handoff.py` exist.
 
 ## Architecture references
 
 - `docs/authority/AUTHORITY_INDEX.md`
 - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- `docs/authority/B017_CICD_SUPPLY_CHAIN.md`
+- `docs/authority/B018_RELEASE_SIGNING_UPDATES.md`
+- `docs/authority/B023_RELEASE_DOD.md`
 
 ## Do-not-touch
 
@@ -31,7 +33,20 @@ CONTINUITY-001.3 — Cold new-chat bootstrap retest — has completed with `BOOT
 - native `.so` files
 - all product source
 
+## Expected tests
+
+- `python3 tools/continuity/validate_continuity.py` → returns 0
+- `python3 tools/security/validate_apk_contents.py <debug-apk>` → returns 0 on real CI artifact
+- `python3 tools/security/validate_apk_contents.py <release-apk>` → returns 0 on real CI artifact, or `NOT RUN` if no artifact
+- synthetic APK negative tests → non-zero for forbidden paths and secret markers
+- `git diff --check` → clean
+- PR #3 CI passes
+
 ## Current gate
+
+`CONTINUITY-001.4 — APK content / secret leakage release gate`
+
+## Next gate
 
 `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
 

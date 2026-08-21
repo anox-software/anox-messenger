@@ -184,3 +184,22 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Security invariants:** No invariants changed.
 - **Blockers:** none.
 - **Next gate:** `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
+
+## CONTINUITY-001.4 — APK Content / Secret Leakage Release Gate
+
+- **Date:** 2026-08-21
+- **Branch:** `governance/continuity-001`
+- **Objective:** Establish a permanent APK content / secret leakage release gate and integrate it into CI.
+- **Architecture references:** `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, `docs/authority/B017_CICD_SUPPLY_CHAIN.md`, `docs/authority/B018_RELEASE_SIGNING_UPDATES.md`, `docs/authority/B023_RELEASE_DOD.md`
+- **Files changed:** `tools/security/validate_apk_contents.py` (new), `.github/workflows/ci.yml`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`, `docs/continuity/CURRENT_STATE.json`, `docs/continuity/CURRENT_GIT_STATE.md`, `docs/continuity/CURRENT_HANDOFF.md`, `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- **Tests actually run:**
+  - `python3 tools/continuity/validate_continuity.py` PASS
+  - `python3 tools/security/validate_apk_contents.py` on synthetic forbidden APKs → FAIL (expected)
+  - `python3 tools/security/validate_apk_contents.py` on synthetic benign APK → PASS
+  - `python3 tools/security/validate_apk_contents.py` on real debug APK from CI → PASS
+  - `python3 tools/security/validate_apk_contents.py` on real release APK from CI → PASS
+  - `git diff --check` PASS
+- **Tests not run:** `cargo test` (tooling/governance-only)
+- **Security invariants:** No invariants changed.
+- **Blockers:** none.
+- **Next gate:** `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`

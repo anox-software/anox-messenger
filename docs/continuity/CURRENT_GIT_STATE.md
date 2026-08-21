@@ -27,8 +27,8 @@ The machine-readable canonical state is in `docs/continuity/CURRENT_STATE.json`.
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: `#3` to `main`
-- Latest correction: `CONTINUITY-001.3B` cold-bootstrap finalization and B-010/retention fixes
-- Next gate: `CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
+- Latest correction: `CONTINUITY-001.4` APK content / secret leakage release gate
+- Next gate: `CONTINUITY-001.4 — APK content / secret leakage release gate`
 
 ## GitHub governance limitations
 

@@ -42,6 +42,7 @@ Highest to lowest:
 - CONTINUITY-001.2A master parity restored.
 - CONTINUITY-001.3A atomic handoff state consistency fix applied.
 - CONTINUITY-001.3 cold new-chat bootstrap retest PASS.
+- CONTINUITY-001.4 APK content / secret leakage release gate in progress.
 - CONTINUITY-001.3A atomic handoff state consistency fix in progress.
 
 ## Last completed task
@@ -86,7 +87,7 @@ GitHub Actions `anoX V1 CI`: Rust, Android debug build, Android release compile 
 
 ## Next architecture gate
 
-`CONTINUITY-001 FINAL ARCHITECT REVIEW / PR #3 MERGE GATE`
+`CONTINUITY-001.4 — APK content / secret leakage release gate`
 
 ## Next engineering task
 

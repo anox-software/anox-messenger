@@ -200,6 +200,50 @@ The expensive full handoff/parity/cold-bootstrap process is therefore event-driv
 
 ---
 
+## APK content / secret leakage release gate
+
+### Architecture principle
+
+**Repository content is not APK content.** The following are repository/governance-only and must never appear in the distributed Android APK:
+
+- `docs/authority/`
+- `docs/continuity/`
+- `docs/history/`
+- `docs/reports/` unless deliberately converted to runtime-safe product data by a future explicit architecture decision
+- `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- `MAIN_PLAN_DE.md`
+- generated handoff ZIPs and `ANOX_HANDOFF_*` artifacts
+- `GIT_SNAPSHOT.txt`, `CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, `CURRENT_STATE.json`
+- historical RAW material and historical Devin outputs
+- audit working files
+- `.git/` and Git metadata
+- `.env`, `.env.*`, `local.properties`, `*.jks`, `*.keystore`, `*.p12`, `*.pfx`, `*.pem`, `*.key`
+
+These files are not removed from the repository; they are simply forbidden from the APK package.
+
+### Security principle
+
+The anoX security model must not depend on APK secrecy. Assume an attacker can unzip, decompile, inspect resources, native libraries, and the manifest. Therefore the APK must never embed production private keys, signing keys, backend credentials, database passwords, service-role secrets, API tokens, admin credentials, recovery secrets, E2EE private keys, or license-generation secrets.
+
+### Validation rule
+
+APK content validation is a mandatory release/security gate. `tools/security/validate_apk_contents.py` inspects the final APK and fails closed if any forbidden repository/governance artifact or obvious secret marker is found. This is a validation and detection tool, not a claim that reverse engineering is prevented.
+
+### Release gate status values
+
+- `PASS` — validator found no forbidden items and no obvious secret markers in the exact APK artifact.
+- `FAIL` — forbidden items or secret markers found; release blocked.
+- `NOT RUN` — validator was not executed.
+- `UNVERIFIED` — no APK artifact was available for inspection.
+
+A debug APK `PASS` is useful CI regression evidence but is not automatically the final production-release artifact attestation. At final release, B-023 must validate the exact signed/shipping APK again.
+
+### Authority references
+
+This rule complements the frozen B-017 (CI/CD + Supply Chain), B-018 (Release Signing + Secure Updates), and B-023 (V1 Release Definition of Done) specifications without modifying their security semantics.
+
+---
+
 ## Handoff package generator
 
 `tools/continuity/generate_handoff.py` (Python 3 standard library only, no network) builds:

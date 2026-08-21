@@ -55,6 +55,16 @@ jobs:
       - name: Assemble debug
         run: ./gradlew --no-daemon :android:assembleDebug
 
+      - name: Validate debug APK contents
+        run: |
+          APK=$(find android -path '*/debug/*.apk' -type f | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "ERROR: no debug APK found"
+            exit 1
+          fi
+          echo "Validating $APK"
+          python3 tools/security/validate_apk_contents.py "$APK"
+
   android-release:
     name: Android release compile smoke
     runs-on: ubuntu-latest
@@ -86,3 +96,13 @@ jobs:
 
       - name: Assemble release
         run: ./gradlew --no-daemon :android:assembleRelease
+
+      - name: Validate release APK contents
+        run: |
+          APK=$(find android -path '*/release/*.apk' -type f | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "ERROR: no release APK found"
+            exit 1
+          fi
+          echo "Validating $APK"
+          python3 tools/security/validate_apk_contents.py "$APK"
