@@ -57,8 +57,14 @@ android {
                 srcDir("src/main/jniLibs")
             }
         }
+        getByName("test") {
+            java {
+                srcDir("src/test/java")
+            }
+        }
         getByName("androidTest") {
             java {
+                srcDir("src/androidTest/java")
                 srcDir("../crypto/android/src/androidTest/java")
             }
             jniLibs {
@@ -77,8 +83,15 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    
+
+    // B-002 Device Authentication: RFC9449 DPoP / JOSE ES256.
+    // Pinned. Standards-compliant JWS/JWK implementation; supports non-extractable
+    // Android Keystore EC private keys via ECDSASigner(PrivateKey, Curve).
+    // Java 7 bytecode, shaded JSON, BouncyCastle/Tink optional -> Android-safe.
+    implementation("com.nimbusds:nimbus-jose-jwt:10.9.1")
+
     testImplementation("junit:junit:4.13.2")
+    testImplementation("com.nimbusds:nimbus-jose-jwt:10.9.1")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
