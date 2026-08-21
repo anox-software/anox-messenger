@@ -247,3 +247,24 @@
 - `git diff --check` PASS.
 - No product source, crypto, JNI, or build-tooling changes.
 - Next gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE RETEST`.
+
+---
+
+## PROMPT-007 — B-002 Device Authentication Foundation
+
+**Objective:** Implement the minimum production-oriented B-002 Device Authentication client foundation.
+
+**Result:** PASS — READY FOR ARCHITECT REVIEW
+
+- Baseline `main @ 33440823f3d2a785202ca1828e4bf9c71b175008`; implemented on `feature/b002-device-auth-foundation`.
+- Added a narrow Device Auth subsystem under `com.anox.messenger.security.deviceauth`: Android Keystore P-256/ES256 non-exportable key, hardware security policy, public-only JWK exposure, RFC9449 DPoP proof creation, DPoP verification boundary, replay cache, and the frozen access token contract.
+- Frozen B-002 parameters encoded and tested: `jti` >= 128 bits, `iat` +/-120s, replay window 5 minutes, opaque 256-bit token, SHA-256-only server storage, 15 minute TTL, no refresh token.
+- Terminal Device Auth key loss is fail-closed: no silent replacement key and no re-binding to the old account; local E2EE identity and protected state are untouched.
+- Pinned `com.nimbusds:nimbus-jose-jwt:10.9.1` rather than hand-rolling ES256/JWS transcoding. No AGP/Kotlin/Compose/Gradle/NDK change.
+- 69 JVM unit tests PASS (0 failures, 0 skipped) covering the positive path and every required negative path, including algorithm confusion, replay, key-binding mismatch, `ath`/`nonce` mismatch, `iat` window edges and software-only rejection.
+- CI run `32514140072`: Rust, Android debug build, Android release compile smoke, and both APK content/secret gates PASS.
+- Android instrumentation tests for the real Keystore: NOT RUN (no emulator). Physical StrongBox/TEE and GrapheneOS device behaviour: UNVERIFIED.
+- No product source, crypto, JNI or build-tooling change; no `docs/authority/` change.
+- Next gate: `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/4 (open, not merged)

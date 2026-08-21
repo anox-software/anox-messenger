@@ -241,3 +241,38 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Security invariants:** No invariants changed.
 - **Blockers:** none.
 - **Next gate:** `FINAL NEW-CHAT HANDOFF ACCEPTANCE RETEST`
+
+## PROMPT-007 — B-002 Device Authentication Foundation
+
+- **Date:** 2026-08-21
+- **Branch:** `feature/b002-device-auth-foundation`
+- **Starting HEAD:** `33440823f3d2a785202ca1828e4bf9c71b175008` (`main`)
+- **Objective:** Implement the minimum production-oriented B-002 Device Authentication client foundation.
+- **Architecture references:** `docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md`, `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`, `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Implemented:**
+  - Android Keystore P-256/ES256 non-exportable Device Auth key, dedicated alias separate from `K_STATE`.
+  - StrongBox preferred with TEE fallback; no per-use user authentication.
+  - Hardware policy: StrongBox/TEE production eligible; software-only and unprovable hardware rejected fail-closed.
+  - Public-only JWK exposure plus RFC7638 `jkt` thumbprint.
+  - RFC9449 DPoP proof creation and a testable verification boundary.
+  - Frozen parameters: `jti` >= 128 bits, `iat` +/-120s, replay window 5 min, opaque 256-bit token, SHA-256-only storage, 15 min TTL, no refresh token.
+  - Terminal Device Auth key loss fail-closed; no silent replacement key, no re-binding.
+- **Dependency added:** `com.nimbusds:nimbus-jose-jwt:10.9.1` (pinned; standards-compliant ES256/JWK/JWS; supports non-extractable Keystore keys). No AGP/Kotlin/Compose/Gradle/NDK change.
+- **Files changed:** 15 new sources under `android/src/main/java/com/anox/messenger/security/deviceauth/`, 6 new JVM test files, 1 new instrumentation test file, `android/build.gradle.kts`, `.github/workflows/ci.yml`, `docs/reports/PROMPT_007_DEVICE_AUTH_FOUNDATION.md`
+- **Tests actually run:**
+  - JVM unit tests: **69 tests, 0 failures, 0 skipped** (CI run `32514140072`)
+  - Rust `cargo test`: PASS (CI)
+  - Android debug build: PASS (CI)
+  - Android release compile smoke: PASS (CI)
+  - Debug APK content/secret gate: PASS (CI)
+  - Release APK content/secret gate: PASS (CI)
+  - `git diff --check`: PASS
+- **Tests NOT run / UNVERIFIED:**
+  - Android instrumentation tests for the real Keystore: NOT RUN (no emulator in CI)
+  - Physical hardware-backed StrongBox/TEE behaviour: UNVERIFIED
+  - GrapheneOS physical-device Device Auth behaviour: UNVERIFIED
+- **Security invariants:** No invariants changed. No `docs/authority/` file modified.
+- **Product foundation:** crypto, JNI, vodozemac, `K_STATE`, `[ANOX][0x01]`, native `.so` and build tooling unchanged.
+- **Blockers:** none.
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/4 (open, not merged)
+- **Next gate:** `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
