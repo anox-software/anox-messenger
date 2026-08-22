@@ -1,32 +1,37 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** PENDING ARCHITECT REVIEW
-**Task ID:** PROMPT-007
-**Date:** 2026-08-21
+**Status:** NOT STARTED, NOT AUTHORIZED
+**Task ID:** none active
+**Date:** 2026-08-22
 
 ---
 
 ## Purpose
 
-PROMPT-007 implemented the B-002 Device Authentication client foundation on
-`feature/b002-device-auth-foundation`. PR #4 is open and awaits architect review before any
-merge decision.
+PROMPT-007 (B-002 Device Authentication client foundation) was implemented, independently
+reviewed (PROMPT-007B: `APPROVE — READY FOR PROMPT-007 MERGE GATE`), verified, and merged into
+`main` (PROMPT-007C) at `d281df66a3471dfd6a9bab0bd899be701317afb4` via PR #4.
 
-## Preconditions satisfied
+No new task is currently authorized or in progress.
 
-- CONTINUITY-001 ACCEPTED; `main` baseline `33440823f3d2a785202ca1828e4bf9c71b175008`.
-- 69 JVM unit tests PASS, 0 failures, 0 skipped (CI run `32514140072`).
-- Rust 15/15, Android debug build, release compile smoke and both APK content gates PASS.
-- No product-source, crypto, JNI or build-tooling change.
+## Completed
+
+- CONTINUITY-001 ACCEPTED.
+- PROMPT-007 — B-002 Device Authentication client foundation: MERGED.
+- PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
+- PROMPT-007C — merge gate verification, empirical dependency-tree confirmation (BouncyCastle/
+  Tink not resolved), PR #4 merged, continuity synchronized.
 
 ## Architecture references
 
+- `docs/authority/B_FREEZE_REGISTRY.md`
 - `docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md`
+- `docs/authority/B025/TRACK_B/B003_ACCOUNT_LICENSE.md`
 - `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
 - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
 - `docs/reports/PROMPT_007_DEVICE_AUTH_FOUNDATION.md`
 
-## Do-not-touch
+## Do-not-touch (still applies to any future task)
 
 - `crypto/rust/`
 - `CryptoNative.kt` / `CryptoBridge.kt`
@@ -36,17 +41,23 @@ merge decision.
 
 ## Current gate
 
-`PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
+`B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
 
-## Known open items for review
+Per `docs/authority/B_FREEZE_REGISTRY.md`, B-003 (Account + License, FROZEN v1.4) is the next
+architecture-frozen specification after B-002 in Track B sequence. Recording this as the likely
+next gate is informational only; implementation is NOT authorized until an architect explicitly
+starts it.
+
+## Known open items carried forward
 
 - `DeviceAuthBindingStore` has only an in-memory implementation; persistence is required
-  before real device binding.
-- Android instrumentation tests for the real Keystore are NOT RUN in CI (no emulator).
+  before real device binding (future B-003/B-004 integration).
+- Android instrumentation tests for the real Keystore are NOT RUN (no emulator/device in CI or
+  in any review environment to date).
 - Physical StrongBox/TEE and GrapheneOS device behaviour remain UNVERIFIED.
 - Production token issuance/storage and the shared replay cache remain B-004 work.
 
 ## Note
 
-No further B-002 backend work, B-003 registration or messaging work is authorized until an
-architect reviews PR #4.
+No B-002 backend work, B-003 registration, or messaging work is authorized by this record. Any
+future task must explicitly confirm its own authorization before implementation begins.

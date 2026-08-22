@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-21
+**Date:** 2026-08-22
 
 ---
 
@@ -14,7 +14,7 @@
 - Android backup/D2D hardening: `allowBackup="false"` + full `dataExtractionRules`.
 - B-026 continuity governance files merged to `main` in `docs/continuity/` and `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
 - B-026 Android APK content and secret-leakage release gate; `tools/security/validate_apk_contents.py` integrated into CI.
-- B-002 Device Authentication client foundation on branch `feature/b002-device-auth-foundation` (PR #4, not merged): Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS in CI run `32514140072`.
+- B-002 Device Authentication client foundation: MERGED into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4). Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS (independently reconfirmed locally and in CI). Independent security/architecture review: APPROVE, no merge-blocking findings. Dependency graph empirically confirmed via `./gradlew :android:dependencies`: BouncyCastle/Tink not resolved.
 
 ## IMPLEMENTED
 
@@ -37,7 +37,7 @@
 
 - Device Authentication (B-002) server side: token issuance/storage/revocation, device
   registry, shared production replay cache, registration binding call, entitlement
-  enforcement. The client foundation exists (see above) but is unmerged.
+  enforcement. The client foundation is merged (see VERIFIED above).
 - Account/license (B-003)
 - Backend service (B-004)
 - Database/RLS (B-005)
@@ -65,4 +65,7 @@
 - GrapheneOS physical-device behavior
 - D2D transfer in practice
 - Connected Android instrumentation in CI
+- Android instrumentation for Device Auth real Keystore behaviour (StrongBox/TEE generation,
+  key invalidation handling, hardware-level classification)
+- Physical StrongBox/TEE Device Auth key behaviour
 - Production-grade abuse/privacy/infrastructure controls

@@ -285,3 +285,37 @@
 - 5 non-blocking findings (1 LOW documentation staleness, 4 INFO), no CRITICAL/HIGH/MEDIUM.
 - `git status --short` clean at end of review.
 - Next gate: `PROMPT-007C — B-002 MERGE / CONTINUITY SYNCHRONIZATION`.
+
+---
+
+## PROMPT-007C — B-002 Merge / Continuity Synchronization
+
+**Objective:** Verify final PR state, empirically close the dependency-tree verification item,
+merge PR #4, and synchronize continuity to the new `main`.
+
+**Result:** `PASS — PROMPT-007 MERGED AND CONTINUITY SYNCHRONIZED`
+
+- Obtained a local JDK 17 and ran `./gradlew :android:dependencies` on `debugRuntimeClasspath`,
+  `releaseRuntimeClasspath`, and `debugUnitTestRuntimeClasspath`: `nimbus-jose-jwt:10.9.1`
+  resolves as a leaf dependency; BouncyCastle and Tink are NOT resolved in any of them.
+  Additionally used `dexdump` on the built debug/release APKs to confirm zero actual
+  BouncyCastle/Tink class definitions are packaged (only unresolved type-name strings from
+  Nimbus's own unused optional classes remain, due to `isMinifyEnabled=false`).
+- Fixed the stale `PROJECT_STATE.md` current-gate line identified by PROMPT-007B (commit
+  `9197fe7`).
+- Independently re-ran the full regression suite locally: `cargo test` 15/15, JVM unit tests
+  69/69 (0 failures), `assembleDebug`/`assembleRelease` both PASS, APK content/secret
+  validation PASS on both freshly built APKs, `git diff --check` PASS, continuity validation
+  PASS pre-merge.
+- Confirmed CI green on the final feature HEAD (`9197fe7`, run `32574948320`).
+- Merged PR #4 into `main`: merge commit `d281df66a3471dfd6a9bab0bd899be701317afb4`.
+- Synchronized all current-state surfaces (`PROJECT_STATE.md`, `FORTSCHRITT.md`, this archive,
+  and all `docs/continuity/CURRENT_*` files) to the merged `main` HEAD.
+- B-002 remains explicitly recorded as client-foundation-only: backend token issuance/storage,
+  shared replay cache, device registry, entitlement enforcement, persistent
+  `DeviceAuthBindingStore`, and physical Keystore/StrongBox/TEE/GrapheneOS verification remain
+  future/unverified work.
+- No product source, crypto, JNI, or build-tooling change. No B-003/B-004 implementation.
+- Next gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/4 (MERGED, merge commit `d281df66a3471dfd6a9bab0bd899be701317afb4`)

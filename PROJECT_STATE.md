@@ -1,22 +1,22 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-21
+**Date:** 2026-08-22
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
-**Functional implementation:** approximately 29%.
+**Functional implementation:** approximately 30%.
 
 ## Repository truth
 
-- Branch: `feature/b002-device-auth-foundation`
+- Branch: `main`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
-- Merged baseline branch: `main`
-- Merged baseline HEAD: `33440823f3d2a785202ca1828e4bf9c71b175008`
-- Open PR: `#4` (PROMPT-007 / B-002 Device Auth foundation) — not merged
+- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
+- PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
+  `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
 - PR #3: merged at `7320253f27a1eef32847b992f13292d77178c4db`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
+- Current gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -36,9 +36,11 @@ AGP 8.13.2; Kotlin Gradle Plugin 2.4.10; Compose plugin 2.4.10; Gradle 9.3.1; JD
 - Atomic file persistence, state lifecycle/fail-closed status, local wipe APIs.
 - Historical accepted test evidence: Rust 15/15; Android connected 35/35; release build PASS.
 
-## PROMPT-007 — B-002 Device Authentication foundation (2026-08-21)
+## PROMPT-007 — B-002 Device Authentication foundation — MERGED (2026-08-22)
 
-Status per component, not a claim that B-002 is production complete.
+Merged into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4` via PR #4. Status per
+component below; this is a client foundation merge, not a claim that B-002 is production
+complete or that backend enforcement now exists.
 
 **IMPLEMENTED (client foundation)**
 - Android Keystore P-256/ES256 non-exportable Device Auth key, separate alias from `K_STATE`.
@@ -53,18 +55,20 @@ Status per component, not a claim that B-002 is production complete.
 - Terminal Device Auth key loss is fail-closed; no silent replacement key, no re-binding.
 
 **VERIFIED**
-- 69 JVM unit tests, 0 failures, 0 skipped (CI run `32514140072` on `e059dfd`, reconfirmed
-  green on final feature HEAD `d36eaf4` via CI run `32516700604`), covering the positive path
-  and every required negative path.
+- 69 JVM unit tests, 0 failures, 0 skipped — confirmed on CI (runs `32514140072`,
+  `32516700604`, `32574948320`) and independently re-run locally against the exact merged
+  code, covering the positive path and every required negative path.
 - Rust 15/15, Android debug build, Android release compile smoke, debug + release APK content
-  gate: all PASS on PR #4.
+  gate: all PASS on PR #4 and independently re-run locally.
 - Independent security/architecture review (PROMPT-007B): `APPROVE — READY FOR PROMPT-007
   MERGE GATE`; no merge-blocking findings.
 - Empirical dependency-tree verification (PROMPT-007C): `./gradlew :android:dependencies` on
   `debugRuntimeClasspath`, `releaseRuntimeClasspath`, and `debugUnitTestRuntimeClasspath`
   confirms `com.nimbusds:nimbus-jose-jwt:10.9.1` resolves as a leaf dependency; BouncyCastle
   (`bcprov`/`bcpkix`/`bcutil`) and `com.google.crypto.tink:tink` are NOT resolved into any of
-  these classpaths (they are declared `optional` in Nimbus's POM).
+  these classpaths. Cross-checked with `dexdump` against the built debug/release APKs: zero
+  actual BouncyCastle/Tink class definitions in either `classes.dex`.
+- PR #4 merged into `main`: merge commit `d281df66a3471dfd6a9bab0bd899be701317afb4`.
 
 **PARTIAL**
 - `DeviceAuthBindingStore` has only an in-memory implementation; persistence is required

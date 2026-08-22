@@ -288,3 +288,53 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - Findings: 1 LOW (stale `PROJECT_STATE.md` current-gate line), 4 INFO (dependency-tree not empirically captured; Keystore instrumentation unexecuted; replay cache dedups on `jti` alone; no explicit `alg=none` test). None merge-blocking.
 - `git status --short` confirmed clean at end of review; no tracked file modified.
 - **Next gate:** `PROMPT-007C — B-002 MERGE / CONTINUITY SYNCHRONIZATION`
+
+## PROMPT-007C — B-002 Merge / Continuity Synchronization
+
+- **Date:** 2026-08-22
+- **Starting HEAD:** `d36eaf4f668f3dc12164fc2dae3b71c11d2ca303` on `feature/b002-device-auth-foundation`
+- **Objective:** Verify PR #4 final state, close remaining PROMPT-007B non-blocking items where
+  possible, synchronize governance, merge PR #4, and synchronize continuity to the new `main`.
+- **Pre-merge fixes (commit `9197fe7`):** corrected stale `PROJECT_STATE.md` current-gate line;
+  empirically verified the Android runtime dependency graph.
+- **Dependency-tree verification:** obtained a local JDK 17 (Temurin) and ran
+  `./gradlew :android:dependencies` on `debugRuntimeClasspath`, `releaseRuntimeClasspath`, and
+  `debugUnitTestRuntimeClasspath`, plus `dependencyInsight --dependency nimbus-jose-jwt`.
+  Result: `com.nimbusds:nimbus-jose-jwt:10.9.1` resolves as a leaf dependency in all three;
+  BouncyCastle (`bcprov`/`bcpkix`/`bcutil-jdk18on`) and `com.google.crypto.tink:tink` are NOT
+  resolved anywhere. Additionally built the debug and release APKs locally and used `dexdump`
+  to confirm zero actual BouncyCastle/Tink class definitions in either `classes.dex`; the raw
+  strings `org/bouncycastle` and `com/google/crypto/tink` present in the dex string pool are
+  unresolved type-name references from Nimbus's own unused optional classes (`Ed25519Signer`,
+  `X25519Encrypter`, `BouncyCastleProviderSingleton`), never invoked by anoX, and remain only
+  because `isMinifyEnabled=false`.
+- **Tests actually run (local, independent of CI):**
+  - `cargo test` (crypto/rust): 15/15 PASS
+  - `./gradlew :android:testDebugUnitTest`: 69/69 PASS, 0 failures, 0 errors (verified via
+    `test-results/testDebugUnitTest/*.xml`)
+  - `./gradlew :android:assembleDebug`: PASS
+  - `./gradlew :android:assembleRelease`: PASS
+  - `python3 tools/security/validate_apk_contents.py` on both the freshly built debug and
+    release APKs: PASS (0 forbidden findings, 0 secret markers)
+  - `git diff --check`: PASS
+  - `python3 tools/continuity/validate_continuity.py`: PASS (pre-merge, on the feature branch)
+- **Tests NOT run / UNVERIFIED:** Android instrumentation for the real Keystore (no
+  `adb`/emulator/device available); physical StrongBox/TEE behaviour; GrapheneOS physical
+  device behaviour. Unchanged from PROMPT-007/007B.
+- **CI:** final feature-branch CI run `32574948320` on commit `9197fe7`: Rust, JVM unit tests,
+  Android debug build + APK content validation, Android release compile smoke + APK content
+  validation — all `success`.
+- **Security gate:** no new blocker discovered; all PROMPT-007B non-blocking findings addressed
+  or explicitly re-confirmed unchanged.
+- **PR merge:** PR #4 merged into `main` via GitHub API (`merge` method). Merge commit:
+  `d281df66a3471dfd6a9bab0bd899be701317afb4`.
+- **Post-merge main verification:** `main` fast-forwarded to `d281df66a3471dfd6a9bab0bd899be701317afb4`;
+  working tree clean; `python3 tools/continuity/validate_continuity.py` re-run post-sync: PASS.
+- **Continuity synchronization:** `PROJECT_STATE.md`, `FORTSCHRITT.md`,
+  `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, `docs/continuity/CURRENT_STATE.json`,
+  `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_IMPLEMENTATION_STATE.md`,
+  `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md` all updated to reflect the merged
+  `main` state; B-002 explicitly kept as client-foundation-only, not production-complete.
+- **Security invariants:** No invariants changed. No `docs/authority/` file modified.
+- **Blockers:** none.
+- **Next gate:** `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`

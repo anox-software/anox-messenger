@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** CONTINUITY-001 FINAL
-**Date:** 2026-08-21
+**Handoff version:** PROMPT-007 MERGED
+**Date:** 2026-08-22
 
 ---
 
@@ -22,11 +22,10 @@ Highest to lowest:
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Current work branch: `feature/b002-device-auth-foundation`
-- Merged baseline branch: `main`
-- Merged baseline HEAD: `33440823f3d2a785202ca1828e4bf9c71b175008`
+- Branch: `main`
+- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - Working tree: expected clean at handoff generation
-- Open PR: `#4` → `main` (PROMPT-007 / B-002 Device Auth foundation), not merged
+- Open PR: `none` — PR #4 merged and closed
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -39,16 +38,20 @@ Highest to lowest:
 - CONTINUITY-001.4 APK content / secret leakage release gate merged.
 - CONTINUITY-001.5 final main continuity state synchronization fix applied.
 - CONTINUITY-001: ACCEPTED.
-- PROMPT-007 — B-002 Device Authentication client foundation implemented on `feature/b002-device-auth-foundation` and open as PR #4.
+- PROMPT-007 — B-002 Device Authentication client foundation (PR #4): MERGED into `main` at
+  `d281df66a3471dfd6a9bab0bd899be701317afb4`.
+- PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
+- PROMPT-007C — dependency-tree empirically verified (BouncyCastle/Tink not resolved), merge
+  gate finalized, PR #4 merged, continuity synchronized.
 
 ## Latest completed work
 
-CONTINUITY-001 FINAL — PR #3 merge and main-branch continuity finalization.
+PROMPT-007C — B-002 Device Authentication foundation merge and continuity synchronization.
 
 ## Current open work
 
-PROMPT-007 — B-002 Device Authentication foundation on `feature/b002-device-auth-foundation`,
-PR #4 open and unmerged. Awaiting architect review before any merge decision.
+None. B-002 client foundation is merged. B-003 Account/License foundation is the next
+architecture-authorized area but has not been started and is not authorized by this task.
 
 ## Current test baseline
 
@@ -80,16 +83,17 @@ PR #4 open and unmerged. Awaiting architect review before any merge decision.
 ## Current blockers
 
 - GitHub free plan: branch protection and secret scanning unavailable.
-- No product/security blockers; PR #4 is open and awaits architect review.
+- No product/security blockers.
 
 ## Next architecture gate
 
-`PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
+`B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
 
 ## Next engineering task
 
-PROMPT-007 is in review. No further B-002 backend, B-003 registration or messaging work is
-authorized until the architect reviews PR #4.
+B-002 client foundation is merged. The likely next architecture-authorized area is B-003
+Account/License per `B_FREEZE_REGISTRY.md`, but implementation is NOT authorized by this task
+and has not been started.
 
 ## Do-not-touch foundation
 
