@@ -276,3 +276,15 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Blockers:** none.
 - **PR:** https://github.com/anox-admin/ax-messenger/pull/4 (open, not merged)
 - **Next gate:** `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
+
+## PROMPT-007B — B-002 Independent Security / Architecture Review
+
+- **Date:** 2026-08-21
+- **Mode:** strict read-only review, no source/test/doc/CI changes.
+- **Result:** `APPROVE — READY FOR PROMPT-007 MERGE GATE`; `NO MERGE-BLOCKING SECURITY FINDINGS`.
+- Verified live baseline, diff, and PR #4 state directly against GitHub; no unexpected drift.
+- Independently downloaded and read the actual `nimbus-jose-jwt:10.9.1` sources jar to verify: `ECDSASigner`/`ECDSAVerifier` use standard JCA (no hand-rolled crypto); `ECDSAVerifier` guards against invalid-curve attacks and CVE-2022-21449; private JWK headers are rejected at the library level (`JWSHeader.Builder.jwk`, `CommonSEHeader.parsePublicJWK`); `alg=none` is structurally impossible (`JWSHeader` constructor throws).
+- Analytically confirmed (POM `optional=true`, no Gradle Module Metadata, no BC/Tink declared in `build.gradle.kts`, source-level confirmation the only BC-referencing method is unreachable) that BouncyCastle/Tink are not expected in the runtime dependency graph; recommended empirical `./gradlew :android:dependencies` confirmation as non-blocking follow-up.
+- Findings: 1 LOW (stale `PROJECT_STATE.md` current-gate line), 4 INFO (dependency-tree not empirically captured; Keystore instrumentation unexecuted; replay cache dedups on `jti` alone; no explicit `alg=none` test). None merge-blocking.
+- `git status --short` confirmed clean at end of review; no tracked file modified.
+- **Next gate:** `PROMPT-007C — B-002 MERGE / CONTINUITY SYNCHRONIZATION`

@@ -138,6 +138,26 @@ supplied.
 `htu` is normalised identically on both sides by stripping query and fragment and lowercasing
 scheme and authority.
 
+### 6.1 Empirical dependency-tree verification (PROMPT-007C addendum, 2026-08-22)
+
+`./gradlew :android:dependencies` was run against `debugRuntimeClasspath`,
+`releaseRuntimeClasspath`, and `debugUnitTestRuntimeClasspath`. In all three,
+`com.nimbusds:nimbus-jose-jwt:10.9.1` resolves as a leaf with no further dependencies;
+`org.bouncycastle:bcprov/bcpkix/bcutil-jdk18on` and `com.google.crypto.tink:tink` (all declared
+`optional=true` in Nimbus's POM) do not appear anywhere in any of the three trees.
+`dependencyInsight --dependency nimbus-jose-jwt` confirms it as a direct dependency with no
+transitive requesters.
+
+As a further sanity check, both the built debug and release APK `classes*.dex` files were
+inspected with `dexdump`. Raw byte scanning found the strings `org/bouncycastle` and
+`com/google/crypto/tink` inside the primary `classes.dex` of both APKs; `dexdump -l xml`
+confirms these are **unresolved type-name references from Nimbus's own unused optional
+classes** (e.g. `Ed25519Signer`, `X25519Encrypter`, `BouncyCastleProviderSingleton`, none of
+which anoX's Device Auth code calls) that remain in the dex string/type-descriptor pool because
+`isMinifyEnabled = false` (no R8 shrinking removes Nimbus's unused classes). Zero actual
+`Lorg/bouncycastle/...;` or `Lcom/google/crypto/tink/...;` **class definitions** exist in either
+dex file. No BouncyCastle or Tink bytecode is packaged or loadable.
+
 ## 7. Frozen parameters implemented
 
 | Parameter | Value | Location |

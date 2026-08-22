@@ -268,3 +268,20 @@
 - Next gate: `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/4 (open, not merged)
+
+---
+
+## PROMPT-007B — B-002 Independent Security / Architecture Review
+
+**Objective:** Independent, strict read-only security/architecture review of PROMPT-007 before merge.
+
+**Result:** `APPROVE — READY FOR PROMPT-007 MERGE GATE` / `NO MERGE-BLOCKING SECURITY FINDINGS`
+
+- Live-verified baseline, branch, HEAD, PR #4 state, and full diff directly against Git/GitHub; no drift found.
+- Read the actual Nimbus JOSE+JWT 10.9.1 sources jar (not just javadoc) to independently confirm: no hand-rolled crypto; standard JCA signing routes correctly to Android Keystore-backed keys; `ECDSAVerifier` defends against invalid-curve attacks and CVE-2022-21449; private-JWK headers rejected at the library level; `alg=none` structurally impossible.
+- Confirmed terminal Device Auth key-loss logic (`DeviceAuthKeyStateResolver`) is shared verbatim between production and tests, not duplicated/bypassed.
+- Confirmed DPoP claim handling (`htm`/`htu`/`iat`/`ath`/`nonce`/`jti`/replay/key-binding) against RFC9449 line-by-line.
+- Analytically confirmed BouncyCastle/Tink are not expected in the runtime graph (POM optional flags, no Gradle Module Metadata, no explicit dependency, unreachable BC codepath); recommended empirical `./gradlew :android:dependencies` verification as a non-blocking follow-up.
+- 5 non-blocking findings (1 LOW documentation staleness, 4 INFO), no CRITICAL/HIGH/MEDIUM.
+- `git status --short` clean at end of review.
+- Next gate: `PROMPT-007C — B-002 MERGE / CONTINUITY SYNCHRONIZATION`.

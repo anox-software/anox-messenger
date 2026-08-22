@@ -16,7 +16,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `FINAL NEW-CHAT HANDOFF ACCEPTANCE`
+- Current gate: `PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -53,10 +53,18 @@ Status per component, not a claim that B-002 is production complete.
 - Terminal Device Auth key loss is fail-closed; no silent replacement key, no re-binding.
 
 **VERIFIED**
-- 69 JVM unit tests, 0 failures, 0 skipped (CI run `32514140072`), covering the positive path
+- 69 JVM unit tests, 0 failures, 0 skipped (CI run `32514140072` on `e059dfd`, reconfirmed
+  green on final feature HEAD `d36eaf4` via CI run `32516700604`), covering the positive path
   and every required negative path.
 - Rust 15/15, Android debug build, Android release compile smoke, debug + release APK content
   gate: all PASS on PR #4.
+- Independent security/architecture review (PROMPT-007B): `APPROVE — READY FOR PROMPT-007
+  MERGE GATE`; no merge-blocking findings.
+- Empirical dependency-tree verification (PROMPT-007C): `./gradlew :android:dependencies` on
+  `debugRuntimeClasspath`, `releaseRuntimeClasspath`, and `debugUnitTestRuntimeClasspath`
+  confirms `com.nimbusds:nimbus-jose-jwt:10.9.1` resolves as a leaf dependency; BouncyCastle
+  (`bcprov`/`bcpkix`/`bcutil`) and `com.google.crypto.tink:tink` are NOT resolved into any of
+  these classpaths (they are declared `optional` in Nimbus's POM).
 
 **PARTIAL**
 - `DeviceAuthBindingStore` has only an in-memory implementation; persistence is required
