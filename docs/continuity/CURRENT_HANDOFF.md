@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-007 MERGED
+**Handoff version:** PROMPT-008 IN REVIEW
 **Date:** 2026-08-22
 
 ---
@@ -22,10 +22,11 @@ Highest to lowest:
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Branch: `main`
-- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
+- Current work branch: `feature/b003-account-license-foundation`
+- Merged baseline branch: `main`
+- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
 - Working tree: expected clean at handoff generation
-- Open PR: `none` — PR #4 merged and closed
+- Open PR: PROMPT-008 / B-003 Account/License foundation, being opened against `main`; not merged
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -43,22 +44,26 @@ Highest to lowest:
 - PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
 - PROMPT-007C — dependency-tree empirically verified (BouncyCastle/Tink not resolved), merge
   gate finalized, PR #4 merged, continuity synchronized.
+- PROMPT-008 — B-003 Account/License client domain/state foundation implemented on
+  `feature/b003-account-license-foundation`; PR being opened against `main`, not merged.
 
 ## Latest completed work
 
-PROMPT-007C — B-002 Device Authentication foundation merge and continuity synchronization.
+PROMPT-008 — B-003 Account/License client foundation implementation, awaiting architect review.
 
 ## Current open work
 
-None. B-002 client foundation is merged. B-003 Account/License foundation is the next
-architecture-authorized area but has not been started and is not authorized by this task.
+PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license-foundation`, PR
+being opened against `main`. Awaiting architect review before any merge decision.
 
 ## Current test baseline
 
 - Rust crypto tests: 15/15 PASS
+- Android JVM unit tests: 146/146 PASS
 - Android debug build + APK content validation: PASS
 - Android release compile + APK content validation: PASS
-- Android connected instrumentation: historical 35/35 PASS (not re-run)
+- Android connected instrumentation: 58/58 PASS on a real emulator (API 34), including the
+  B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` suite for the first time; NOT run in CI
 - GrapheneOS physical device: UNVERIFIED
 
 ## Historical provenance
@@ -73,8 +78,8 @@ architecture-authorized area but has not been started and is not authorized by t
 
 - GrapheneOS physical-device testing
 - Local Android release build tooling
-- Connected Android instrumentation in CI (no emulator)
-- Android instrumentation for Device Auth real Keystore behaviour
+- Connected Android instrumentation in CI (no emulator; run and passing locally on an emulator
+  during PROMPT-008, but that is not CI)
 - Physical StrongBox / TEE Device Auth key behaviour
 - GrapheneOS physical-device Device Auth behaviour
 - FCM/push runtime behavior
@@ -87,13 +92,12 @@ architecture-authorized area but has not been started and is not authorized by t
 
 ## Next architecture gate
 
-`B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+`PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
 
 ## Next engineering task
 
-B-002 client foundation is merged. The likely next architecture-authorized area is B-003
-Account/License per `B_FREEZE_REGISTRY.md`, but implementation is NOT authorized by this task
-and has not been started.
+PROMPT-008 is in review. No further B-003/B-004 backend work or messaging work is authorized
+until the architect reviews the PROMPT-008 PR.
 
 ## Do-not-touch foundation
 

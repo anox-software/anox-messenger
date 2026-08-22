@@ -1,0 +1,66 @@
+package com.anox.messenger.account
+
+/**
+ * Client-side view of the B-003 registration transaction.
+ *
+ * Frozen sequence: reserve license+username -> registration session/grant -> register Device
+ * Auth with proof-of-possession -> create E2EE locally -> upload public E2EE material -> atomic
+ * final server commit of account/device/Device Auth binding/E2EE public identity/entitlement
+ * redemption.
+ *
+ * Security-critical property: the client MUST NOT treat the account as
+ * [AccountState.ACTIVE][AccountState] before [Committed] is reached. [Committed] itself only
+ * means the local transaction observed a successful commit response; it is not by itself a
+ * substitute for an authoritative account-state check.
+ *
+ * A crash/process death before [Committed] is transaction *resume*, modelled by resuming into
+ * whichever intermediate state was last durably recorded (see [RegistrationSessionStore]). It
+ * is never treated as account recovery or device replacement, and no state in this hierarchy
+ * represents either.
+ */
+sealed class RegistrationState {
+
+    /** No registration transaction is in progress. */
+    object NotStarted : RegistrationState()
+
+    /** License + username reservation succeeded; a registration grant is held. */
+    data class Reserved(
+        val registrationId: RegistrationId,
+        val grant: RegistrationGrant,
+        val username: Username
+    ) : RegistrationState()
+
+    /** Device Auth registration (proof-of-possession) succeeded for this registration. */
+    data class DeviceAuthRegistered(
+        val registrationId: RegistrationId,
+        val grant: RegistrationGrant,
+        val username: Username,
+        val deviceAuthJwkThumbprint: String
+    ) : RegistrationState()
+
+    /** Local E2EE identity was created and its public material was uploaded. */
+    data class PublicIdentityUploaded(
+        val registrationId: RegistrationId,
+        val grant: RegistrationGrant,
+        val username: Username,
+        val deviceAuthJwkThumbprint: String
+    ) : RegistrationState()
+
+    /**
+     * The server confirmed the atomic final commit.
+     *
+     * This is the only state in which the client may consider the registration transaction
+     * itself complete. It is still not, by itself, an authoritative live [AccountState] check.
+     */
+    data class Committed(
+        val accountId: AccountId,
+        val deviceId: DeviceId,
+        val username: Username
+    ) : RegistrationState()
+
+    /** The registration grant's 30-minute TTL elapsed before commit; the reservation is released. */
+    data class Expired(val registrationId: RegistrationId) : RegistrationState()
+
+    /** A step failed. [reason] is a safe, non-secret diagnostic string. */
+    data class Failed(val reason: String) : RegistrationState()
+}

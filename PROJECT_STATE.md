@@ -2,13 +2,16 @@
 
 **Date:** 2026-08-22
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
-**Functional implementation:** approximately 30%.
+**Functional implementation:** approximately 32%.
 
 ## Repository truth
 
-- Branch: `main`
+- Branch: `feature/b003-account-license-foundation`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
-- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
+- Merged baseline branch: `main`
+- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- Open PR: PROMPT-008 / B-003 Account/License foundation — see `CURRENT_GIT_STATE.md` for PR
+  number once opened; not merged
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
@@ -16,7 +19,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+- Current gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -82,15 +85,57 @@ complete or that backend enforcement now exists.
   expired-entitlement renewal flow.
 
 **UNVERIFIED**
-- Android instrumentation tests for the real Keystore: NOT RUN in CI (no emulator).
+- Android instrumentation tests for the real Keystore: NOT RUN in CI (no emulator); subsequently
+  run and PASSING (10/10) on a local emulator during PROMPT-008 — see that section below. Still
+  not run in CI.
 - Physical hardware-backed StrongBox/TEE behaviour.
 - GrapheneOS physical-device Device Auth behaviour.
+
+## PROMPT-008 — B-003 Account/License foundation (2026-08-22)
+
+Status per component, not a claim that B-003 is production complete.
+
+**IMPLEMENTED (client domain/state foundation)**
+- Strongly typed `AccountId`/`DeviceId`/`RegistrationId` (server-issued UUIDv4 only, no client
+  generation), `Username` syntax validation, `LicenseCode` structural validation (secret-safe),
+  `LicenseDuration` (30/90/180 days only), frozen `AccountState`/`DeviceState`/
+  `EntitlementState` enums, non-authoritative `EntitlementRenewal` preview.
+- `RegistrationState` transaction state machine and `RegistrationOrchestrator` driving
+  reserve -> Device Auth registration -> public E2EE identity upload -> atomic commit, never
+  marking the Device Auth key bound before a successful commit.
+- Narrow `RegistrationApi` / `LocalE2eeIdentityStep` contracts (no real backend, no fake
+  Supabase/PostgreSQL access).
+- Persistent `FileDeviceAuthBindingStore` (closes the PROMPT-007 in-memory-only gap) and
+  persistent `FileRegistrationSessionStore`, both under `noBackupFilesDir`, fail-closed on
+  corruption.
+
+**VERIFIED**
+- 146 JVM unit tests (77 new + 69 pre-existing B-002, unchanged), 0 failures.
+- 58 Android instrumentation tests on a real emulator (API 34), 0 failures, including — for the
+  first time — the 10 B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` tests and 35 pre-existing
+  `CryptoInstrumentedTest` tests.
+- Rust 15/15, Android debug/release build, debug + release APK content gate: all PASS.
+
+**PARTIAL**
+- `LicenseCode` structural validation assumes a placeholder uppercase-alphanumeric charset
+  pending the exact "unambiguous character" definition.
+- One-active-device-per-account is representable, not enforced (enforcement is DB-level, B-005).
+
+**MISSING (not attempted in this task)**
+- B-004 backend implementation of `RegistrationApi`, B-005 database/RLS, license generation,
+  server HMAC lookup, real network stack, UI/ViewModel wiring.
+
+**UNVERIFIED**
+- Physical hardware-backed StrongBox/TEE behaviour.
+- GrapheneOS physical-device behaviour.
 
 ## Not implemented
 
 - B-002 Device Authentication: backend/server side and registration binding (client
   foundation only, see PROMPT-007 above).
-- B-003 production account/license registration.
+- B-003 production account/license registration: backend/server side, license generation,
+  server HMAC lookup, DB enforcement (client domain/state foundation only, see PROMPT-008
+  above).
 - B-004 backend service.
 - B-005 production database/RLS.
 - B-006 server key distribution/claims.

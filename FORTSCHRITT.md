@@ -338,3 +338,65 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Security invariants:** No invariants changed. No `docs/authority/` file modified.
 - **Blockers:** none.
 - **Next gate:** `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+
+## PROMPT-008 — B-003 Account / License Foundation
+
+- **Date:** 2026-08-22
+- **Branch:** `feature/b003-account-license-foundation`
+- **Starting HEAD:** `0785b6001f816f5a6520951dd9a8c5a4af9af4c2` (`main`)
+- **Objective:** Implement the minimum B-003 Account/License client domain/state foundation
+  without implementing B-004 backend or B-005 database/RLS.
+- **Architecture references:** `docs/authority/B025/TRACK_B/B003_ACCOUNT_LICENSE.md`,
+  `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`,
+  `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Implemented:**
+  - `AccountId`/`DeviceId`/`RegistrationId` value types: server-issued UUIDv4 only, no client
+    generation, non-v4 UUIDs rejected.
+  - `Username` syntax validation (lowercase ASCII `[a-z0-9_.]`, 3-32); invalid input is rejected,
+    never silently lowercased.
+  - `LicenseCode` structural validation (`anox-XXXX-XXXX-XXXX`), secret-safe `toString()`, no
+    generation method (server responsibility).
+  - `LicenseDuration` with exactly `{30, 90, 180}` days; no 365-day/one-week variant.
+  - Frozen `AccountState`/`DeviceState`/`EntitlementState` enums; non-authoritative
+    `EntitlementRenewal` preview taking server time as an explicit input, never the local clock.
+  - `RegistrationState` sealed state machine and `RegistrationOrchestrator` driving
+    reserve -> Device Auth registration (reusing the existing B-002 boundary unmodified) ->
+    public E2EE identity upload (via a new `LocalE2eeIdentityStep` boundary calling the existing,
+    unmodified `CryptoBridge` public API) -> atomic commit. The Device Auth key is marked bound
+    from exactly one call site, only after a successful commit.
+  - `RegistrationApi` narrow contract interface (no real HTTP stack, no fake backend).
+  - `FileDeviceAuthBindingStore`: persistent, no-backup, fail-closed (corrupt -> bound) —
+    closes the PROMPT-007 in-memory-only gap.
+  - `FileRegistrationSessionStore`: persistent, no-backup, crash-resumable registration session
+    state; corrupt -> `NotStarted` (opposite fail-closed direction, deliberately, since there is
+    no security asymmetry to preserve there).
+- **Files changed:** 17 new sources under `android/src/main/java/com/anox/messenger/account/`,
+  1 new file under `security/deviceauth/`, 1 new shared storage utility, 10 new JVM test files,
+  2 new instrumentation test files, `docs/reports/PROMPT_008_B003_ACCOUNT_LICENSE_FOUNDATION.md`.
+- **Tests actually run:**
+  - JVM unit tests: **146/146 PASS** (77 new, 69 pre-existing unchanged), 0 failures, 0 errors
+    (local run against a downloaded JDK 17; no build.gradle.kts/CI change was required since the
+    existing `testDebugUnitTest` step already covers the whole `src/test/java` tree)
+  - Android instrumentation: **58/58 PASS**, 0 failures, 0 errors, on a real emulator
+    (`anox_api34_arm64`, API 34) that was unexpectedly available in this environment. This
+    includes, for the first time, the 10 B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` tests
+    (previously never executed) and the 35 pre-existing `CryptoInstrumentedTest` tests, plus 7
+    new `FileDeviceAuthBindingStoreTest` and 6 new `FileRegistrationSessionStoreTest` tests.
+  - `cargo test`: 15/15 PASS
+  - `./gradlew :android:assembleDebug` / `:android:assembleRelease`: PASS
+  - Debug + release APK content/secret gate: PASS
+  - `git diff --check`: PASS
+- **Tests NOT run / UNVERIFIED:**
+  - Physical hardware-backed StrongBox/TEE behaviour: UNVERIFIED (emulator only, not physical).
+  - GrapheneOS physical-device behaviour: UNVERIFIED.
+- **CI:** no workflow change required; existing `Run JVM unit tests` step already covers the new
+  package. Instrumentation remains not runnable in CI (no emulator there), unchanged from
+  PROMPT-007.
+- **Security invariants:** No invariants changed. No `docs/authority/` file modified.
+- **Product foundation:** crypto, JNI, vodozemac, `K_STATE`, `[ANOX][0x01]`, native `.so`, build
+  tooling, and the B-002 Device Auth security model unchanged; `CryptoBridge` called through its
+  existing public API only, never modified.
+- **Blockers:** none.
+- **PR:** to be opened against `main`; not merged (requires a separate architect security/
+  architecture review, per PROMPT-008B).
+- **Next gate:** `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`

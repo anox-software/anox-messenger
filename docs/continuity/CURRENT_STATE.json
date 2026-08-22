@@ -3,18 +3,18 @@
   "recorded_at": "2026-08-22",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
-  "baseline_head": "d281df66a3471dfd6a9bab0bd899be701317afb4",
+  "baseline_head": "0785b6001f816f5a6520951dd9a8c5a4af9af4c2",
   "baseline_tag": "v1-foundation-baseline",
   "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
   "latest_merge_to_baseline": "d281df66a3471dfd6a9bab0bd899be701317afb4",
-  "handoff_branch": "main",
+  "handoff_branch": "feature/b003-account-license-foundation",
   "handoff_head": "__HANDOFF_HEAD__",
   "working_tree": "__WORKING_TREE__",
   "open_pr": null,
-  "open_pr_target": null,
+  "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "PROMPT-007 — B-002 Device Authentication foundation — MERGED",
-  "current_gate": "B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED",
+  "current_task": "PROMPT-008 — B-003 Account/License foundation",
+  "current_gate": "PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
@@ -25,7 +25,7 @@
     "handoff_head and working_tree are placeholders. They must be resolved from the live repository or from GIT_SNAPSHOT.txt at handoff generation.",
     "validate_continuity.py checks that these placeholders are present, that the live branch/HEAD/tree match the model, and that all required authority paths exist.",
     "PR #3 was merged into main; PR #4 (PROMPT-007, B-002 Device Authentication client foundation) was merged into main at d281df66a3471dfd6a9bab0bd899be701317afb4.",
-    "B-002 client foundation is IMPLEMENTED/VERIFIED where tested. Backend token issuance/storage, shared replay cache, device registry, entitlement enforcement, persistent DeviceAuthBindingStore, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work.",
-    "Next architecture-authorized task per B_FREEZE_REGISTRY.md is B-003 Account/License; it has not been started and is not authorized by this task."
+    "B-002 client foundation is IMPLEMENTED/VERIFIED where tested. Backend token issuance/storage, shared replay cache, device registry, entitlement enforcement, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work. The persistent DeviceAuthBindingStore gap was closed by PROMPT-008.",
+    "PROMPT-008 (B-003 Account/License client foundation) work is on feature/b003-account-license-foundation; a PR is being opened against main and is not merged."
   ]
 }
