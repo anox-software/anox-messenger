@@ -14,6 +14,7 @@
 - Android backup/D2D hardening: `allowBackup="false"` + full `dataExtractionRules`.
 - B-026 continuity governance files merged to `main` in `docs/continuity/` and `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
 - B-026 Android APK content and secret-leakage release gate; `tools/security/validate_apk_contents.py` integrated into CI.
+- B-002 Device Authentication client foundation on branch `feature/b002-device-auth-foundation` (PR #4, not merged): Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS in CI run `32514140072`.
 
 ## IMPLEMENTED
 
@@ -34,7 +35,9 @@
 
 ## MISSING
 
-- Device Authentication (B-002)
+- Device Authentication (B-002) server side: token issuance/storage/revocation, device
+  registry, shared production replay cache, registration binding call, entitlement
+  enforcement. The client foundation exists (see above) but is unmerged.
 - Account/license (B-003)
 - Backend service (B-004)
 - Database/RLS (B-005)

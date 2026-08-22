@@ -52,6 +52,17 @@ jobs:
           link-to-sdk: true
           local-cache: true
 
+      - name: Run JVM unit tests
+        run: ./gradlew --no-daemon :android:testDebugUnitTest
+
+      - name: Upload unit test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-unit-test-report
+          path: android/build/reports/tests/testDebugUnitTest
+          if-no-files-found: ignore
+
       - name: Assemble debug
         run: ./gradlew --no-daemon :android:assembleDebug
 

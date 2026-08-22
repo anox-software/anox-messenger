@@ -3,17 +3,18 @@
   "recorded_at": "2026-08-21",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
-  "baseline_head": "648b70391085ea5252cc9f88375064420f1b78d9",
+  "baseline_head": "33440823f3d2a785202ca1828e4bf9c71b175008",
   "baseline_tag": "v1-foundation-baseline",
   "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
   "latest_merge_to_baseline": "7320253f27a1eef32847b992f13292d77178c4db",
-  "handoff_branch": "main",
+  "handoff_branch": "feature/b002-device-auth-foundation",
   "handoff_head": "__HANDOFF_HEAD__",
   "working_tree": "__WORKING_TREE__",
-  "open_pr": null,
-  "open_pr_target": null,
+  "open_pr": 4,
+  "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_gate": "FINAL NEW-CHAT HANDOFF ACCEPTANCE",
+  "current_task": "PROMPT-007 — B-002 Device Authentication foundation",
+  "current_gate": "PROMPT-007 ARCHITECT REVIEW / PR #4 MERGE GATE",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
@@ -23,6 +24,7 @@
   "notes": [
     "handoff_head and working_tree are placeholders. They must be resolved from the live repository or from GIT_SNAPSHOT.txt at handoff generation.",
     "validate_continuity.py checks that these placeholders are present, that the live branch/HEAD/tree match the model, and that all required authority paths exist.",
-    "PR #3 was merged into main. The current handoff is now the main branch."
+    "PR #3 was merged into main; main is the merged baseline.",
+    "PROMPT-007 work is on feature/b002-device-auth-foundation with PR #4 open and unmerged."
   ]
 }
