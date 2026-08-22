@@ -22,8 +22,7 @@
 - Current handoff branch: `feature/b003-account-license-foundation`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: PROMPT-008 / B-003 Account/License foundation, being opened against `main`;
-  not merged
+- Open relevant PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation, not merged
 - Current task: `PROMPT-008` — B-003 Account/License foundation
 - Current gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
 
@@ -44,7 +43,7 @@
 ## Unmerged work
 
 - `PROMPT-008` — B-003 Account/License client domain/state foundation, on
-  `feature/b003-account-license-foundation`, PR being opened against `main`.
+  `feature/b003-account-license-foundation`, PR `#5` open against `main`.
 
 ## B-003 status after this task
 

@@ -10,8 +10,7 @@
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - Merged baseline branch: `main`
 - Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
-- Open PR: PROMPT-008 / B-003 Account/License foundation — see `CURRENT_GIT_STATE.md` for PR
-  number once opened; not merged
+- Open PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; not merged
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`

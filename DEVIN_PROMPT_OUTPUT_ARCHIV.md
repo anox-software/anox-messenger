@@ -355,4 +355,4 @@ B-005 database/RLS.
   B-004/B-005 implementation.
 - Next gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`.
 
-**PR:** to be opened against `main`; not merged.
+**PR:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)

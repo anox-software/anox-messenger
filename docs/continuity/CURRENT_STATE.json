@@ -10,7 +10,7 @@
   "handoff_branch": "feature/b003-account-license-foundation",
   "handoff_head": "__HANDOFF_HEAD__",
   "working_tree": "__WORKING_TREE__",
-  "open_pr": null,
+  "open_pr": 5,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
   "current_task": "PROMPT-008 — B-003 Account/License foundation",
@@ -26,6 +26,6 @@
     "validate_continuity.py checks that these placeholders are present, that the live branch/HEAD/tree match the model, and that all required authority paths exist.",
     "PR #3 was merged into main; PR #4 (PROMPT-007, B-002 Device Authentication client foundation) was merged into main at d281df66a3471dfd6a9bab0bd899be701317afb4.",
     "B-002 client foundation is IMPLEMENTED/VERIFIED where tested. Backend token issuance/storage, shared replay cache, device registry, entitlement enforcement, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work. The persistent DeviceAuthBindingStore gap was closed by PROMPT-008.",
-    "PROMPT-008 (B-003 Account/License client foundation) work is on feature/b003-account-license-foundation; a PR is being opened against main and is not merged."
+    "PROMPT-008 (B-003 Account/License client foundation) work is on feature/b003-account-license-foundation; PR #5 is open against main and is not merged. CI run 32578497395 green."
   ]
 }

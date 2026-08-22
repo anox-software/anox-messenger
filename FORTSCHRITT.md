@@ -397,6 +397,8 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
   tooling, and the B-002 Device Auth security model unchanged; `CryptoBridge` called through its
   existing public API only, never modified.
 - **Blockers:** none.
-- **PR:** to be opened against `main`; not merged (requires a separate architect security/
-  architecture review, per PROMPT-008B).
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged; requires a
+  separate architect security/architecture review, per PROMPT-008B)
+- **CI on PR #5 HEAD `3e06af9`:** run `32578497395` — Rust, Android debug build, Android
+  release compile smoke all `success`
 - **Next gate:** `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`

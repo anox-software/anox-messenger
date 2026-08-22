@@ -9,7 +9,7 @@
 ## Purpose
 
 PROMPT-008 implemented the B-003 Account/License client domain/state foundation on
-`feature/b003-account-license-foundation`. A PR is being opened against `main` and awaits
+`feature/b003-account-license-foundation`. PR `#5` is open against `main` and awaits
 architect review before any merge decision.
 
 ## Preconditions satisfied

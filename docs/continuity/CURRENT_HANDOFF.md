@@ -26,7 +26,7 @@ Highest to lowest:
 - Merged baseline branch: `main`
 - Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
 - Working tree: expected clean at handoff generation
-- Open PR: PROMPT-008 / B-003 Account/License foundation, being opened against `main`; not merged
+- Open PR: PROMPT-008 / B-003 Account/License foundation, `#5` against `main`; not merged
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -45,7 +45,7 @@ Highest to lowest:
 - PROMPT-007C — dependency-tree empirically verified (BouncyCastle/Tink not resolved), merge
   gate finalized, PR #4 merged, continuity synchronized.
 - PROMPT-008 — B-003 Account/License client domain/state foundation implemented on
-  `feature/b003-account-license-foundation`; PR being opened against `main`, not merged.
+  `feature/b003-account-license-foundation`; PR `#5` open against `main`, not merged.
 
 ## Latest completed work
 
@@ -54,7 +54,7 @@ PROMPT-008 — B-003 Account/License client foundation implementation, awaiting 
 ## Current open work
 
 PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license-foundation`, PR
-being opened against `main`. Awaiting architect review before any merge decision.
+`#5` open against `main`. Awaiting architect review before any merge decision.
 
 ## Current test baseline
 

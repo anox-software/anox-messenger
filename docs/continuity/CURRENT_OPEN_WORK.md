@@ -17,7 +17,7 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 ## IN REVIEW
 
 - `PROMPT-008` — B-003 Account/License client domain/state foundation on
-  `feature/b003-account-license-foundation`, PR being opened against `main`, awaiting architect
+  `feature/b003-account-license-foundation`, PR `#5` open against `main`, awaiting architect
   review.
 
 ## IMPLEMENTATION MISSING
