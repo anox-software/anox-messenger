@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-008 IN REVIEW
-**Date:** 2026-08-22
+**Handoff version:** B-003 MERGED — DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
+**Date:** 2026-08-23
 
 ---
 
@@ -22,11 +22,12 @@ Highest to lowest:
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Current work branch: `feature/b003-account-license-foundation`
+- Current work branch: `main`
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
 - Working tree: expected clean at handoff generation
-- Open PR: PROMPT-008 / B-003 Account/License foundation, `#5` against `main`; not merged
+- Open PR: none
+- Latest merge: PR #5 PROMPT-008 / B-003 Account/License foundation into `main`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone

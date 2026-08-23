@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-23 (PROMPT-008D)
+**Date:** 2026-08-23 (PROMPT-008 MERGE)
 
 ---
 
@@ -18,6 +18,7 @@
 - B-003 Account/License client domain/state foundation on branch `feature/b003-account-license-foundation` (PROMPT-008, PR #5 open, not merged): identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage. 146 JVM unit tests PASS; 58 Android instrumentation tests PASS on a local emulator.
 - B-003 PROMPT-008C security review remediation: crash-safe `RegistrationOrchestrator` with `markBound` ordered before `Committed`; `RegistrationState.Committed` terminal; encrypted `FileRegistrationSessionStore` with dedicated `anox.b003.session.v1` Keystore AES-GCM key; `BinaryRegistrationStateCodec`; `RegistrationGrantGenerator` moved to `src/test`. 160 JVM unit tests PASS; Rust 15/15 PASS; Android debug + release builds and APK content gates PASS.
 - B-003 PROMPT-008D final commit-uncertainty closure: `DeviceAuthBindingStore` now tracks an independent `isArmed` flag; `RegistrationState.CommitArmed` persisted before the remote commit call; `DeviceAuthKeyStateResolver` treats `isArmed` like `isBound` for key-loss; `FileRegistrationSessionStore` deletes legacy plaintext artifacts without reading them. 160 JVM unit tests PASS; Rust 15/15 PASS; 62 Android instrumentation tests PASS on API-34 emulator; Android debug + release builds and APK content gates PASS.
+- B-003 Account/License client foundation MERGED into `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). B-003 is MERGED FOUNDATION, not production complete.
 
 ## IMPLEMENTED
 

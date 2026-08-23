@@ -6,11 +6,12 @@
 
 ## Repository truth
 
-- Branch: `feature/b003-account-license-foundation`
+- Branch: `main`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
-- Open PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; not merged
+- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- Merged PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; merged
+- Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
@@ -18,7 +19,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `PROMPT-008 MERGE GATE`
+- Current gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -315,3 +316,9 @@ local binding persistence. PROMPT-008D introduces a durable `CommitArmed` fail-c
 - Rust 15/15.
 - Android debug and release builds PASS; debug + release APK content gates PASS.
 - Android instrumentation: 62/62 PASS on API-34 emulator.
+
+## PROMPT-008 MERGE — B-003 merged into main (2026-08-23)
+
+PR #5 merged via merge commit `e7ee54a713e08950c63cf2d61ec97931864b66bc`.
+B-003 is now MERGED FOUNDATION on `main`, not production complete.
+Next approved milestone: DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING.

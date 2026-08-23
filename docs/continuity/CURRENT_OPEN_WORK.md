@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-23
+**Date:** 2026-08-23 (post PROMPT-008 merge)
 
 ---
 
@@ -13,19 +13,19 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 - `PROMPT-007` — B-002 Device Authentication client foundation. Merged into `main` at
   `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4) after independent security/architecture
   review (APPROVE, no merge-blocking findings) and empirical dependency-tree verification.
+- `PROMPT-008` / `PROMPT-008C` / `PROMPT-008D` — B-003 Account/License client domain/state
+  foundation, security review remediation, and final commit-uncertainty closure. Merged into
+  `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5).
 
 ## IN MERGE GATE
 
-- `PROMPT-008` / `PROMPT-008C` — B-003 Account/License client domain/state foundation plus
-  security review remediation on `feature/b003-account-license-foundation`, PR `#5` open against
-  `main`. All PROMPT-008B findings closed. Awaiting merge authorization.
+None. Next gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`.
 
 ## IMPLEMENTATION MISSING
 
-All B-004…B-020 product features are not implemented. B-002 has a merged client foundation and
-B-003 has a client domain/state foundation in review, but no backend, license generation, or DB
-enforcement exists yet. See `CURRENT_IMPLEMENTATION_STATE.md` and
-`docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`.
+All B-004…B-020 product features are not implemented. B-002 and B-003 client foundations are
+merged, but no backend, license generation, or DB enforcement exists yet. See
+`CURRENT_IMPLEMENTATION_STATE.md` and `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`.
 
 ## VERIFICATION MISSING
 

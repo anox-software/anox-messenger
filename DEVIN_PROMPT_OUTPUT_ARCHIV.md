@@ -394,3 +394,21 @@ B-005 database/RLS.
 - **Result:** `PASS — B-003 READY FOR MERGE GATE`
 - **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
 - **Next gate:** `PROMPT-008 MERGE GATE`
+
+## PROMPT-008 MERGE GATE — B-003 merge and continuity synchronization
+
+- **Date:** 2026-08-23
+- **Starting branch/HEAD:** `feature/b003-account-license-foundation` @ `3013a8f5203f`
+- **Pre-merge main:** `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- **Merge:** PR #5 merged into `main` via merge commit `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- **Final main HEAD:** `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- **Verification fresh run:** `cargo test` 15/15; JVM unit tests 161/161; Android instrumentation 62/62;
+  debug + release builds; debug + release APK validation; `git diff --check` clean; continuity pass.
+- **CI run 32636872580 on `3013a8f5203f`:** `success` (Rust, Android debug, release compile smoke).
+- **Critical invariants verified:** one `api.commitRegistration()` call site, `CommitArmed` persisted
+  before `markArmed()` and both before remote commit, `isArmed||isBound` key loss is terminal,
+  grant is Keystore AES-GCM, legacy plaintext artifacts deleted without reading.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Result:** `PASS — B-003 MERGED AND CONTINUITY SYNCHRONIZED`
+- **PR #5 state:** MERGED
+- **Next gate:** `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`

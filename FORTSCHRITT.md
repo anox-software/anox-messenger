@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-008D — B-003 commit-uncertainty closure
+**Status:** B-003 MERGED — Next: DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
 **Updated:** 2026-08-23
 
 ## Architecture / governance
@@ -28,15 +28,14 @@
 
 ## Current repository
 
-`feature/b003-account-license-foundation` (PR #5 open against `main`). B-002 Device
-Authentication client foundation is merged. B-003 Account/License client domain/state is
-implemented with PROMPT-008C remediation and PROMPT-008D commit-uncertainty closure.
+`main` is the active branch. PR #5 was merged at `e7ee54a713e08950c63cf2d61ec97931864b66bc`.
+B-002 Device Authentication client foundation is merged. B-003 Account/License client
+foundation is merged (PROMPT-008 / 008C / 008D).
 
 ## Functional progress
 
 Approximately **33%**. Architecture freezes/governance do not count as completed user-facing
-messenger functionality; the percentage reflects merged B-002 plus the in-review B-003 client
-foundation.
+messenger functionality; the percentage reflects merged B-002 plus B-003 client foundations.
 
 ## STEP-3B / 3B.1 — B-025 Synchronisation / Android-Backup-Härtung
 
@@ -51,12 +50,17 @@ foundation.
 - Connected Instrumentation: NICHT in CI gelaufen.
 - PR #2 gemergt in `main`; finaler HEAD `75c11c823ec68cea576912b4095fa7a26ed33a33`.
 
+## PROMPT-008 MERGE
+
+- PR #5 merged via `e7ee54a713e08950c63cf2d61ec97931864b66bc` on `main`.
+- 160 JVM unit tests, 62/62 Android instrumentation, Rust 15/15, builds and APK gates green.
+- B-003 is MERGED FOUNDATION, not production complete.
+
 ## Next approved sequence
 
-1. STEP-4 is complete; B-025 repository synchronization is merged into `main`.
-2. CONTINUITY-001 is in review on `governance/continuity-001`.
-3. Next gate: `CONTINUITY-001 ARCHITECT REVIEW` before normal product development resumes.
-4. PROMPT-007 / Device Authentication Foundation remains authorized only after the architect handoff.
+1. `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING` (cloud-AI secret protection, S0–S4, PR-only-main, cold-chat bootstrap persistence, secure handoff ZIP).
+2. After that: `B-017-Lite`.
+3. After that: `B-004 Backend DEV`.
 
 ## CONTINUITY-001 — Development Governance and Chat Handoff
 

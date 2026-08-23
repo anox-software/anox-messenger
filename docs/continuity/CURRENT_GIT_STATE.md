@@ -1,6 +1,6 @@
 # CURRENT GIT STATE
 
-**Recorded:** 2026-08-22
+**Recorded:** 2026-08-23
 
 ---
 
@@ -12,19 +12,21 @@
 ## Merged baseline
 
 - Branch: `main`
-- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
-- Latest merge into baseline: PR #4 `d281df66a3471dfd6a9bab0bd899be701317afb4` — PROMPT-007,
+- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- Latest merge into baseline: PR #5 `e7ee54a713e08950c63cf2d61ec97931864b66bc` — PROMPT-008 /
+  B-003 Account/License client foundation
+- Previous merge: PR #4 `d281df66a3471dfd6a9bab0bd899be701317afb4` — PROMPT-007,
   B-002 Device Authentication client foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
-- Current handoff branch: `feature/b003-account-license-foundation`
+- Current handoff branch: `main`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation, not merged
-- Current task: `PROMPT-008` — B-003 Account/License foundation
-- Current gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+- Open relevant PR: none
+- Current task: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`
+- Current gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`
 
 ## Merged history on main
 
@@ -42,8 +44,7 @@
 
 ## Unmerged work
 
-- `PROMPT-008` — B-003 Account/License client domain/state foundation, on
-  `feature/b003-account-license-foundation`, PR `#5` open against `main`.
+None. PR #5 (PROMPT-008 / B-003 client foundation) has been merged into `main`.
 
 ## B-003 status after this task
 
