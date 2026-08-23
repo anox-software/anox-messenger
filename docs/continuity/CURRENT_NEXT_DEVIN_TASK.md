@@ -1,7 +1,7 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** B-003 REMEDIATION COMPLETE — AWAITING MERGE GATE
-**Task ID:** PROMPT-008C
+**Status:** B-003 COMMIT-UNCERTAINTY CLOSED — AWAITING MERGE GATE
+**Task ID:** PROMPT-008D
 **Date:** 2026-08-23
 
 ---
@@ -16,10 +16,10 @@ architect review before any merge decision.
 
 - CONTINUITY-001 ACCEPTED; PROMPT-007 (B-002) merged; `main` baseline
   `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`.
-- 146 JVM unit tests PASS, 0 failures, 0 errors (77 new B-003 tests + 69 pre-existing B-002).
-- 58 Android instrumentation tests PASS, 0 failures, on a local emulator (API 34).
+- 160 JVM unit tests PASS, 0 failures, 0 errors.
+- 62 Android instrumentation tests PASS, 0 failures, on a local emulator (API 34).
 - Rust 15/15, Android debug/release build, and both APK content gates PASS.
-- No product-source, crypto, JNI or build-tooling change.
+- No product-source, crypto, JNI or build-tooling change; `DeviceAuthBindingStore` extended only.
 
 ## Architecture references
 

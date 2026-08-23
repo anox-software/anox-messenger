@@ -40,7 +40,8 @@ class AndroidKeystoreDeviceAuthKeyManager(
         return DeviceAuthKeyStateResolver.resolve(
             keyPresent = privateKey != null,
             hardwareSecurityLevel = privateKey?.let { resolveHardwareSecurityLevel(it) },
-            isBound = bindingStore.isBound()
+            isBound = bindingStore.isBound(),
+            isArmed = bindingStore.isArmed()
         )
     }
 

@@ -235,13 +235,14 @@ class RegistrationOrchestratorTest {
             is RegistrationState.Reserved -> "Reserved"
             is RegistrationState.DeviceAuthRegistered -> "DeviceAuthRegistered"
             is RegistrationState.PublicIdentityUploaded -> "PublicIdentityUploaded"
+            is RegistrationState.CommitArmed -> "CommitArmed"
             is RegistrationState.Committed -> "Committed"
             is RegistrationState.Expired -> "Expired"
             is RegistrationState.Failed -> "Failed"
         }
         val allNames = setOf(
             "NotStarted", "Reserved", "DeviceAuthRegistered", "PublicIdentityUploaded",
-            "Committed", "Expired", "Failed"
+            "CommitArmed", "Committed", "Expired", "Failed"
         )
         assertTrue(allNames.none { it.contains("Recover", ignoreCase = true) })
         assertTrue(allNames.none { it.contains("Replace", ignoreCase = true) })

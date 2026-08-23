@@ -43,6 +43,12 @@ class RegistrationStateCodecTest {
     }
 
     @Test
+    fun `commit armed round trips`() {
+        val state = RegistrationState.CommitArmed(registrationId, grant, username, "jkt-value")
+        assertEquals(state, roundTrip(state))
+    }
+
+    @Test
     fun `committed round trips`() {
         val state = RegistrationState.Committed(
             AccountId.parse(UUID.randomUUID().toString())!!,

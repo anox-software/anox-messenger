@@ -1,8 +1,8 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-22
+**Date:** 2026-08-23
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
-**Functional implementation:** approximately 32%.
+**Functional implementation:** approximately 33%.
 
 ## Repository truth
 
@@ -289,3 +289,29 @@ retention), LOW-4 (atomic-file durability), LOW-5 (Committed clobbered by failSt
 - Rust 15/15.
 - Android debug and release builds PASS; debug + release APK content gates PASS.
 - Android instrumentation: NOT RUN in this session (no emulator/device available on this host).
+
+## PROMPT-008D — B-003 final commit-uncertainty closure (2026-08-23)
+
+PROMPT-008C closed the MEDIUM findings but still left a window between the remote commit call and
+local binding persistence. PROMPT-008D introduces a durable `CommitArmed` fail-closed guard:
+
+**Closed in implementation**
+- `DeviceAuthBindingStore` now tracks an independent `isArmed` flag. `markArmed()` is persisted
+  before `api.commitRegistration()` is called.
+- `RegistrationOrchestrator.commit()` persists `RegistrationState.CommitArmed` to the encrypted
+  session store, then calls `markArmed()`, and only then calls the remote commit endpoint.
+- If `markArmed()` or the session-store `save(CommitArmed)` fails, the remote call is not issued.
+- Unknown remote outcomes (timeout, exception, lost response) retain `isArmed == true` and the
+  `CommitArmed` session; retry is idempotent and uses the same Device Auth key.
+- `DeviceAuthKeyStateResolver` treats a missing Device Auth key as `TerminalKeyLoss` whenever
+  `isArmed` or `isBound` is true.
+- `canStartNew()`, `abandon()`, `expiredOrNull()`, and `failStep()` all consult `isArmed()` and
+  fail closed.
+- `FileRegistrationSessionStore` now deletes the legacy plaintext `anox_registration_session.state`
+  and `.tmp` artifacts on load/clear without reading or printing them.
+
+**Verified**
+- 160 JVM unit tests, 0 failures, 0 errors, 0 skipped.
+- Rust 15/15.
+- Android debug and release builds PASS; debug + release APK content gates PASS.
+- Android instrumentation: 62/62 PASS on API-34 emulator.

@@ -16,11 +16,9 @@ import java.io.File
  *  - returns [RegistrationState.NotStarted] only when no file exists;
  *  - treats any read/decrypt/parse failure as a [RegistrationSessionSecurityException];
  *  - does not silently fall back to a fresh in-progress state if the encrypted session
- *    becomes unreadable (the orchestrator checks [DeviceAuthBindingStore] to fail closed).
- *
- * The old `anox_registration_session.state` file name is intentionally changed to
- * `anox_registration_session.enc` because the on-disk format is now an authenticated binary
- * envelope, not text. A stale unencrypted file from a previous install is simply ignored.
+ *    becomes unreadable (the orchestrator checks [DeviceAuthBindingStore] to fail closed);
+ *  - safely deletes any legacy plaintext `anox_registration_session.state` and its known
+ *    `.tmp` artifact when encountered, without reading or printing their contents.
  */
 class FileRegistrationSessionStore(
     context: Context,
@@ -29,10 +27,15 @@ class FileRegistrationSessionStore(
 
     private val file = File(context.noBackupFilesDir, FILE_NAME)
     private val atomicFile = AtomicFile(file)
+    private val legacyFile = File(context.noBackupFilesDir, LEGACY_FILE_NAME)
+    private val legacyTmp = File(context.noBackupFilesDir, LEGACY_TMP_NAME)
 
     @Synchronized
     override fun load(): RegistrationState {
-        if (!file.exists()) return RegistrationState.NotStarted
+        if (!file.exists()) {
+            deleteLegacyArtifacts()
+            return RegistrationState.NotStarted
+        }
         val envelope = try {
             atomicFile.readFully()
         } catch (e: Exception) {
@@ -71,9 +74,22 @@ class FileRegistrationSessionStore(
     @Synchronized
     override fun clear() {
         atomicFile.delete()
+        deleteLegacyArtifacts()
+    }
+
+    private fun deleteLegacyArtifacts() {
+        // These files may contain plaintext 256-bit grant material from the PROMPT-008C-era
+        // codec. Remove them without reading or logging their contents. The caller (load/clear)
+        // does not treat deletion failure as fatal, because the encrypted store is the source
+        // of truth; a subsequent write will simply overwrite an extant legacy artifact on a
+        // later call.
+        try { legacyFile.delete() } catch (_: Exception) { /* best effort */ }
+        try { legacyTmp.delete() } catch (_: Exception) { /* best effort */ }
     }
 
     companion object {
         private const val FILE_NAME = "anox_registration_session.enc"
+        private const val LEGACY_FILE_NAME = "anox_registration_session.state"
+        private const val LEGACY_TMP_NAME = "anox_registration_session.state.tmp"
     }
 }

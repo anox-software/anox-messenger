@@ -32,6 +32,7 @@ internal object BinaryRegistrationStateCodec {
     private const val TAG_PUBLIC_IDENTITY_UPLOADED: Byte = 3
     private const val TAG_COMMITTED: Byte = 4
     private const val TAG_EXPIRED: Byte = 5
+    private const val TAG_COMMIT_ARMED: Byte = 7
     private const val TAG_FAILED: Byte = 6
 
     fun encode(state: RegistrationState): ByteArray {
@@ -57,6 +58,14 @@ internal object BinaryRegistrationStateCodec {
                 }
                 is RegistrationState.PublicIdentityUploaded -> {
                     d.writeByte(TAG_PUBLIC_IDENTITY_UPLOADED.toInt())
+                    writeString(d, state.registrationId.value.toString())
+                    writeString(d, state.grant.value)
+                    d.writeLong(state.grant.expiresAt.epochSecond)
+                    writeString(d, state.username.value)
+                    writeString(d, state.deviceAuthJwkThumbprint)
+                }
+                is RegistrationState.CommitArmed -> {
+                    d.writeByte(TAG_COMMIT_ARMED.toInt())
                     writeString(d, state.registrationId.value.toString())
                     writeString(d, state.grant.value)
                     d.writeLong(state.grant.expiresAt.epochSecond)
@@ -100,6 +109,12 @@ internal object BinaryRegistrationStateCodec {
                 deviceAuthJwkThumbprint = readString(input)
             )
             TAG_PUBLIC_IDENTITY_UPLOADED -> RegistrationState.PublicIdentityUploaded(
+                registrationId = requireRegistrationId(input),
+                grant = requireGrant(input),
+                username = requireUsername(input),
+                deviceAuthJwkThumbprint = readString(input)
+            )
+            TAG_COMMIT_ARMED -> RegistrationState.CommitArmed(
                 registrationId = requireRegistrationId(input),
                 grant = requireGrant(input),
                 username = requireUsername(input),

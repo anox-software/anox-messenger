@@ -115,6 +115,8 @@ class FaultyInMemoryRegistrationSessionStore(
 ) : RegistrationSessionStore {
 
     var failNextSave: Boolean = false
+    /** If > 0, fail on the Nth call to [save] instead of the next one. */
+    var failOnNthSave: Int = -1
     var saveCallCount: Int = 0
         private set
 
@@ -122,8 +124,9 @@ class FaultyInMemoryRegistrationSessionStore(
 
     override fun save(state: RegistrationState) {
         saveCallCount++
-        if (failNextSave) {
+        if (failNextSave || (failOnNthSave > 0 && saveCallCount == failOnNthSave)) {
             failNextSave = false
+            failOnNthSave = -1
             throw RegistrationSessionSecurityException("injected save fault")
         }
         delegate.save(state)

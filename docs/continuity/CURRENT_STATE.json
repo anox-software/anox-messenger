@@ -1,6 +1,6 @@
 {
   "schema_version": "B026-1.0",
-  "recorded_at": "2026-08-23",
+  "recorded_at": "2026-08-23 (PROMPT-008D)",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
   "baseline_head": "0785b6001f816f5a6520951dd9a8c5a4af9af4c2",
@@ -13,7 +13,7 @@
   "open_pr": 5,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "PROMPT-008C — B-003 Account/License security review remediation",
+  "current_task": "PROMPT-008D — B-003 final commit-uncertainty closure",
   "current_gate": "PROMPT-008 MERGE GATE",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
@@ -26,6 +26,6 @@
     "validate_continuity.py checks that these placeholders are present, that the live branch/HEAD/tree match the model, and that all required authority paths exist.",
     "PR #3 was merged into main; PR #4 (PROMPT-007, B-002 Device Authentication client foundation) was merged into main at d281df66a3471dfd6a9bab0bd899be701317afb4.",
     "B-002 client foundation is IMPLEMENTED/VERIFIED where tested. Backend token issuance/storage, shared replay cache, device registry, entitlement enforcement, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work. The persistent DeviceAuthBindingStore gap was closed by PROMPT-008.",
-    "PROMPT-008 (B-003 Account/License client foundation) work is on feature/b003-account-license-foundation; PR #5 is open against main and is not merged. CI run 32578497395 green."
+    "PROMPT-008 / PROMPT-008C / PROMPT-008D (B-003 Account/License client foundation) work is on feature/b003-account-license-foundation; PR #5 is open against main and is not merged. PROMPT-008D introduces the CommitArmed fail-closed guard, closes the commit-uncertainty window, cleans legacy plaintext session artifacts, and has fresh 62/62 Android instrumentation."
   ]
 }

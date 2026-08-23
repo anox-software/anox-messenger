@@ -24,6 +24,8 @@ class FileRegistrationSessionStoreTest {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val file = File(context.noBackupFilesDir, "anox_registration_session.enc")
     private val backupFile = File(context.noBackupFilesDir, "anox_registration_session.enc.bak")
+    private val legacyFile = File(context.noBackupFilesDir, "anox_registration_session.state")
+    private val legacyTmp = File(context.noBackupFilesDir, "anox_registration_session.state.tmp")
     private lateinit var store: FileRegistrationSessionStore
 
     private val username = (Username.validate("alice") as UsernameValidation.Valid).username
@@ -34,6 +36,8 @@ class FileRegistrationSessionStoreTest {
     fun setUp() {
         file.delete()
         backupFile.delete()
+        legacyFile.delete()
+        legacyTmp.delete()
         store = FileRegistrationSessionStore(context)
     }
 
@@ -41,6 +45,8 @@ class FileRegistrationSessionStoreTest {
     fun tearDown() {
         file.delete()
         backupFile.delete()
+        legacyFile.delete()
+        legacyTmp.delete()
     }
 
     @Test
@@ -140,6 +146,22 @@ class FileRegistrationSessionStoreTest {
             val backup = String(backupFile.readBytes(), Charsets.ISO_8859_1)
             assertFalse("grant must not appear as plaintext in backup file", backup.contains(grant.value))
         }
+    }
+
+    @Test
+    fun legacyPlaintextSessionArtifactIsRemovedWithoutBeingRead() {
+        // The old PROMPT-008C plaintext session file contained the grant in the clear.
+        // A fresh store load must remove it and any known temp artifact without printing contents.
+        val grantLine = "grantValue=${grant.value}\nregistrationId=${registrationId.value}"
+        legacyFile.parentFile?.mkdirs()
+        legacyFile.writeText(grantLine)
+        legacyTmp.writeText("partial")
+
+        val loaded = FileRegistrationSessionStore(context).load()
+        assertEquals(RegistrationState.NotStarted, loaded)
+        assertFalse("legacy plaintext session file must not remain", legacyFile.exists())
+        assertFalse("legacy plaintext temp file must not remain", legacyTmp.exists())
+        assertFalse("new encrypted file must not have been created just by cleanup", file.exists())
     }
 
     @Test

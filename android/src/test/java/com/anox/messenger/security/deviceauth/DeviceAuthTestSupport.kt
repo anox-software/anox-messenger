@@ -146,7 +146,8 @@ class FakeDeviceAuthKeyManager(
     override fun status(): DeviceAuthKeyStatus = DeviceAuthKeyStateResolver.resolve(
         keyPresent = signerOrNull != null,
         hardwareSecurityLevel = if (signerOrNull != null) hardwareLevel else null,
-        isBound = bindingStore.isBound()
+        isBound = bindingStore.isBound(),
+        isArmed = bindingStore.isArmed()
     )
 
     override fun createKeyIfAbsent(): DeviceAuthKeyStatus {
@@ -184,14 +185,29 @@ class FakeDeviceAuthKeyManager(
  */
 class FaultyDeviceAuthBindingStore(
     private val delegate: DeviceAuthBindingStore = InMemoryDeviceAuthBindingStore(),
+    private var failNextMarkArmed: Boolean = false,
     private var failNextMarkBound: Boolean = false,
-    private var isBoundOverride: Boolean? = null
+    private var isBoundOverride: Boolean? = null,
+    private var isArmedOverride: Boolean? = null
 ) : DeviceAuthBindingStore {
 
+    var markArmedCallCount: Int = 0
+        private set
     var markBoundCallCount: Int = 0
         private set
 
     override fun isBound(): Boolean = isBoundOverride ?: delegate.isBound()
+
+    override fun isArmed(): Boolean = isArmedOverride ?: delegate.isArmed()
+
+    override fun markArmed() {
+        markArmedCallCount++
+        if (failNextMarkArmed) {
+            failNextMarkArmed = false
+            throw RuntimeException("injected markArmed fault")
+        }
+        delegate.markArmed()
+    }
 
     override fun markBound() {
         markBoundCallCount++
@@ -202,12 +218,20 @@ class FaultyDeviceAuthBindingStore(
         delegate.markBound()
     }
 
+    fun setFailNextMarkArmed() {
+        failNextMarkArmed = true
+    }
+
     fun setFailNextMarkBound() {
         failNextMarkBound = true
     }
 
     fun setBoundOverride(value: Boolean?) {
         isBoundOverride = value
+    }
+
+    fun setArmedOverride(value: Boolean?) {
+        isArmedOverride = value
     }
 
     override fun clearBinding() = delegate.clearBinding()

@@ -4,9 +4,9 @@ package com.anox.messenger.account
  * Client-side view of the B-003 registration transaction.
  *
  * Frozen sequence: reserve license+username -> registration session/grant -> register Device
- * Auth with proof-of-possession -> create E2EE locally -> upload public E2EE material -> atomic
- * final server commit of account/device/Device Auth binding/E2EE public identity/entitlement
- * redemption.
+ * Auth with proof-of-possession -> create E2EE locally -> upload public E2EE material ->
+ * arm the pre-commit fail-closed guard -> call the atomic final server commit of
+ * account/device/Device Auth binding/E2EE public identity/entitlement redemption.
  *
  * Security-critical property: the client MUST NOT treat the account as
  * [AccountState.ACTIVE][AccountState] before [Committed] is reached. [Committed] itself only
@@ -20,7 +20,9 @@ package com.anox.messenger.account
  *
  * Terminal states cannot be overwritten by normal failure handling. [Committed] is the only
  * terminal success state; it is preserved because it represents a potentially successful
- * remote atomic commit.
+ * remote atomic commit. [CommitArmed] is not terminal, but it is protected by the durable
+ * [com.anox.messenger.security.deviceauth.DeviceAuthBindingStore] armed marker and must not
+ * be downgraded while that marker is set.
  */
 sealed class RegistrationState {
 
@@ -47,6 +49,20 @@ sealed class RegistrationState {
 
     /** Local E2EE identity was created and its public material was uploaded. */
     data class PublicIdentityUploaded(
+        val registrationId: RegistrationId,
+        val grant: RegistrationGrant,
+        val username: Username,
+        val deviceAuthJwkThumbprint: String
+    ) : RegistrationState()
+
+    /**
+     * The pre-commit fail-closed guard has been armed and persisted.
+ *
+     * From this point the remote commit endpoint may be called; a missing Device Auth key
+     * must be treated as terminal. This state records enough material to retry the idempotent
+     * commit using the same Device Auth identity.
+     */
+    data class CommitArmed(
         val registrationId: RegistrationId,
         val grant: RegistrationGrant,
         val username: Username,

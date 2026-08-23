@@ -25,7 +25,8 @@ class DeviceAuthKeyLifecycleTest {
         val status = DeviceAuthKeyStateResolver.resolve(
             keyPresent = false,
             hardwareSecurityLevel = null,
-            isBound = false
+            isBound = false,
+            isArmed = false
         )
         assertSame(DeviceAuthKeyStatus.AbsentNotBound, status)
     }
@@ -35,7 +36,8 @@ class DeviceAuthKeyLifecycleTest {
         val status = DeviceAuthKeyStateResolver.resolve(
             keyPresent = false,
             hardwareSecurityLevel = null,
-            isBound = true
+            isBound = true,
+            isArmed = false
         )
         assertSame(DeviceAuthKeyStatus.TerminalKeyLoss, status)
     }
@@ -45,7 +47,8 @@ class DeviceAuthKeyLifecycleTest {
         val status = DeviceAuthKeyStateResolver.resolve(
             keyPresent = true,
             hardwareSecurityLevel = HardwareSecurityLevel.STRONGBOX,
-            isBound = true
+            isBound = true,
+            isArmed = false
         )
         assertEquals(DeviceAuthKeyStatus.Present(HardwareSecurityLevel.STRONGBOX), status)
     }
@@ -55,7 +58,8 @@ class DeviceAuthKeyLifecycleTest {
         val status = DeviceAuthKeyStateResolver.resolve(
             keyPresent = true,
             hardwareSecurityLevel = null,
-            isBound = false
+            isBound = false,
+            isArmed = false
         )
         assertEquals(DeviceAuthKeyStatus.Present(HardwareSecurityLevel.UNKNOWN), status)
     }

@@ -1,7 +1,7 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** CURRENT B-025 + B-026
-**Updated:** 2026-08-21
+**Status:** PROMPT-008D — B-003 commit-uncertainty closure
+**Updated:** 2026-08-23
 
 ## Architecture / governance
 
@@ -28,11 +28,15 @@
 
 ## Current repository
 
-`main` at the latest clean HEAD. Device Authentication work has **not** started.
+`feature/b003-account-license-foundation` (PR #5 open against `main`). B-002 Device
+Authentication client foundation is merged. B-003 Account/License client domain/state is
+implemented with PROMPT-008C remediation and PROMPT-008D commit-uncertainty closure.
 
 ## Functional progress
 
-Approximately **27%**. Architecture freezes/governance do not count as completed user-facing messenger functionality.
+Approximately **33%**. Architecture freezes/governance do not count as completed user-facing
+messenger functionality; the percentage reflects merged B-002 plus the in-review B-003 client
+foundation.
 
 ## STEP-3B / 3B.1 — B-025 Synchronisation / Android-Backup-Härtung
 

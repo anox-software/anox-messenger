@@ -376,3 +376,21 @@ B-005 database/RLS.
 - **Result:** `PASS — B-003 REMEDIATION READY FOR MERGE GATE`
 - **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
 - **Next gate:** `PROMPT-008 MERGE GATE`
+
+## PROMPT-008D — B-003 final commit-uncertainty closure
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation`
+- **Scope:** close the remaining crash window between remote commit and local binding; no B-004/B-005.
+- **Design:** durable `DeviceAuthBindingStore.isArmed` guard plus `RegistrationState.CommitArmed`.
+- **Key changes:** `DeviceAuthBindingStore` v2 bitflags; `FileDeviceAuthBindingStore` armed/bound
+  persistence; `DeviceAuthKeyStateResolver` treats `isArmed` like `isBound`; `RegistrationOrchestrator`
+  persists `CommitArmed` and arms the guard before the remote commit call; `CommitArmed` round-trips
+  in `BinaryRegistrationStateCodec`; legacy plaintext session cleanup in `FileRegistrationSessionStore`;
+  updated crash/fault matrix in `RegistrationCrashConsistencyTest`.
+- **Verification:** 160 JVM unit tests PASS; Rust 15/15 PASS; Android instrumentation 62/62 PASS on
+  API-34 emulator; Android debug + release builds PASS; debug + release APK content validation PASS.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Result:** `PASS — B-003 READY FOR MERGE GATE`
+- **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+- **Next gate:** `PROMPT-008 MERGE GATE`
