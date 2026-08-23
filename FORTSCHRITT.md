@@ -402,3 +402,26 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **CI on PR #5 HEAD `3e06af9`:** run `32578497395` — Rust, Android debug build, Android
   release compile smoke all `success`
 - **Next gate:** `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+
+### 2026-08-23 — PROMPT-008C — B-003 Account/License security review remediation
+
+- **Task:** close all PROMPT-008B findings before any PR #5 merge decision.
+- **Findings remediated:**
+  - HIGH-1: remote-commit / local-binding crash-consistency fixed by marking Device Auth binding
+    before persisting `Committed`; `failStep` will not overwrite terminal/bound state.
+  - MEDIUM-2: registration grant persisted with dedicated Android Keystore AES-256-GCM
+    (`anox.b003.session.v1`), fresh IV per write; never plaintext at rest.
+  - MEDIUM-3: stale `.tmp` / plaintext artifacts eliminated via `androidx.core.util.AtomicFile`
+    and `BinaryRegistrationStateCodec`.
+  - LOW-4: new `FileRegistrationSessionStore` uses the established `AtomicFile` primitive.
+  - LOW-5: `RegistrationState.Committed` is now terminal.
+  - LOW-6: fragile newline/equals text codec replaced with versioned length-prefixed binary codec.
+- **Changes:** new `RegistrationSessionKey`, `BinaryRegistrationStateCodec`,
+  `RegistrationSessionSecurityException`; rewritten `FileRegistrationSessionStore`;
+  hardened `RegistrationOrchestrator`; `RegistrationGrantGenerator` moved to `src/test`;
+  new `RegistrationCrashConsistencyTest` with fault-injection crash matrix.
+- **Tests:** 160 JVM unit tests PASS, 0 failures; Rust 15/15 PASS; Android debug + release build
+  and both APK content gates PASS. Instrumentation NOT RUN (no emulator/device available).
+- **Authority:** unchanged. No `docs/authority/` file modified.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Next gate:** `PROMPT-008 MERGE GATE`.

@@ -174,13 +174,19 @@ class RegistrationOrchestratorTest {
         deviceAuthKeyManager.simulateKeyInvalidation()
         assertEquals(DeviceAuthKeyStatus.TerminalKeyLoss, deviceAuthKeyManager.status())
 
-        orchestrator.reserve(username, license)
-        val result = orchestrator.registerDeviceAuth()
+        // A new registration is blocked at the first step because the device is bound.
+        try {
+            orchestrator.reserve(username, license)
+            org.junit.Assert.fail("expected cannot-start-new exception")
+        } catch (e: IllegalStateException) {
+            // expected
+        }
 
+        // Even if a step is called directly with an empty session, it fails without creating
+        // a replacement key and without changing the durable binding.
+        val result = orchestrator.registerDeviceAuth()
         assertTrue(result is RegistrationState.Failed)
         assertEquals(0, api.registerDeviceAuthCallCount)
-        // Still bound from before; this call must not have changed that, and must certainly
-        // not have silently created a replacement key.
         assertTrue(bindingStore.isBound())
     }
 

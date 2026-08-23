@@ -1,6 +1,6 @@
 {
   "schema_version": "B026-1.0",
-  "recorded_at": "2026-08-22",
+  "recorded_at": "2026-08-23",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
   "baseline_head": "0785b6001f816f5a6520951dd9a8c5a4af9af4c2",
@@ -13,8 +13,8 @@
   "open_pr": 5,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "PROMPT-008 — B-003 Account/License foundation",
-  "current_gate": "PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE",
+  "current_task": "PROMPT-008C — B-003 Account/License security review remediation",
+  "current_gate": "PROMPT-008 MERGE GATE",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",

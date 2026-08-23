@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-22 (PROMPT-008)
+**Date:** 2026-08-23 (PROMPT-008C)
 
 ---
 
@@ -15,7 +15,8 @@
 - B-026 continuity governance files merged to `main` in `docs/continuity/` and `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
 - B-026 Android APK content and secret-leakage release gate; `tools/security/validate_apk_contents.py` integrated into CI.
 - B-002 Device Authentication client foundation: MERGED into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4). Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS (independently reconfirmed locally and in CI). Independent security/architecture review: APPROVE, no merge-blocking findings. Dependency graph empirically confirmed via `./gradlew :android:dependencies`: BouncyCastle/Tink not resolved. Its `AndroidKeystoreDeviceAuthKeyManagerTest` instrumentation suite (10 tests) was executed for the first time during PROMPT-008 on a local emulator: PASS.
-- B-003 Account/License client domain/state foundation on branch `feature/b003-account-license-foundation` (PROMPT-008, PR being opened, not merged): identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage. 146 JVM unit tests PASS; 58 Android instrumentation tests PASS on a local emulator.
+- B-003 Account/License client domain/state foundation on branch `feature/b003-account-license-foundation` (PROMPT-008, PR #5 open, not merged): identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage. 146 JVM unit tests PASS; 58 Android instrumentation tests PASS on a local emulator.
+- B-003 PROMPT-008C security review remediation: crash-safe `RegistrationOrchestrator` with `markBound` ordered before `Committed`; `RegistrationState.Committed` terminal; encrypted `FileRegistrationSessionStore` with dedicated `anox.b003.session.v1` Keystore AES-GCM key; `BinaryRegistrationStateCodec`; `RegistrationGrantGenerator` moved to `src/test`. 160 JVM unit tests PASS; Rust 15/15 PASS; Android debug + release builds and APK content gates PASS. Android instrumentation NOT RUN in this session (no emulator).
 
 ## IMPLEMENTED
 

@@ -11,23 +11,24 @@ import java.time.Instant
  * reserve -> register Device Auth (proof-of-possession) -> upload public E2EE identity ->
  * atomic commit.
  *
- * Design notes:
- *  - The account is never treated as bound/active before [commit] observes
- *    [CommitResult.Committed]. [DeviceAuthBindingStore.markBound] is called from exactly one
- *    place: immediately after a successful commit.
- *  - Each step persists its resulting [RegistrationState] via [sessionStore] before returning,
- *    so a crash/process death is resumable by simply reading [currentState] again and calling
- *    the next appropriate step. This is transaction resume, never account recovery or device
- *    replacement.
- *  - [nowForGrantStalenessCheck] is used ONLY as a local courtesy check against the
- *    registration grant's 30-minute TTL, to avoid an obviously-stale local retry. This is
- *    unrelated to, and must not be confused with, the frozen rule that *entitlement* expiry is
- *    never computed from the local device clock (see [EntitlementRenewal]); the server remains
- *    the sole authority for whether a grant is actually still valid.
- *  - Reuses the existing B-002 [DeviceAuthKeyManager] boundary as-is; it never duplicates or
- *    modifies the P-256/ES256/DPoP implementation.
- *  - Reuses the existing E2EE foundation only through [LocalE2eeIdentityStep]; it never reads
- *    or transmits private key material.
+ * Crash-consistency / Device Auth safety design:
+ *  - [DeviceAuthBindingStore] is the durable fail-closed guard. If it says the installation is
+ *    bound, [canStartNew] is always false and the key manager treats key loss as terminal.
+ *  - `commit()` first durably marks the binding via [DeviceAuthBindingStore.markBound] and only
+ *    then persists [RegistrationState.Committed]. A crash between these two writes leaves
+ *    `isBound == true` with the session still at [PublicIdentityUploaded]; retrying `commit()`
+ *    is safe because the remote call is idempotent and `markBound()` is idempotent.
+ *  - [RegistrationState.Committed] is terminal. [failStep] will never overwrite it, and
+ *    [canStartNew] rejects it.
+ *  - [failStep] also refuses to overwrite any in-progress state once the binding has been marked
+ *    true, preventing a transient error from destroying the evidence needed to resume a bound
+ *    commit.
+ *  - [expiredOrNull] is skipped whenever the binding is already true, so an already-committed
+ *    (or binding-marked) transaction cannot be downgraded to [Expired] by a local clock.
+ *  - The registration grant is persisted through [RegistrationSessionStore] only as an
+ *    authenticated, Keystore-wrapped AES-GCM ciphertext.
+ *
+ * This is transaction resume, never account recovery or device replacement.
  */
 class RegistrationOrchestrator(
     private val api: RegistrationApi,
@@ -39,14 +40,25 @@ class RegistrationOrchestrator(
     private val oneTimeKeyCount: Int = DEFAULT_ONE_TIME_KEY_COUNT
 ) {
 
-    /** The last durably recorded registration state; safe to call after a crash/restart. */
-    fun currentState(): RegistrationState = sessionStore.load()
+    /**
+     * The last durably recorded registration state; safe to call after a crash/restart.
+     *
+     * If the session store cannot be read or authenticated, this returns a synthetic
+     * [RegistrationState.Failed] rather than pretending the state is [NotStarted]. Callers must
+     * always use [canStartNew] (which consults [DeviceAuthBindingStore]) before any new
+     * transaction can begin.
+     */
+    fun currentState(): RegistrationState = try {
+        sessionStore.load()
+    } catch (e: RegistrationSessionSecurityException) {
+        RegistrationState.Failed("registration session is unreadable: ${e.message}")
+    }
 
     /** Step 1: reserve [licenseCode] and [username] together. */
     fun reserve(username: Username, licenseCode: LicenseCode): RegistrationState {
-        val current = sessionStore.load()
+        val current = currentState()
         check(canStartNew(current)) {
-            "cannot start a new registration while one is already in progress: $current"
+            "cannot start a new registration while one is already in progress or this device is bound: $current"
         }
         val next = when (val result = api.reserveRegistration(username, licenseCode)) {
             is ReservationResult.Reserved ->
@@ -60,14 +72,15 @@ class RegistrationOrchestrator(
 
     /** Step 2: register this device's Device Auth public key with proof-of-possession. */
     fun registerDeviceAuth(nowForGrantStalenessCheck: Instant = Instant.now()): RegistrationState {
-        val reserved = sessionStore.load() as? RegistrationState.Reserved
-            ?: return failStep("registerDeviceAuth requires Reserved state, was ${sessionStore.load()}")
+        val current = currentState()
+        val reserved = current as? RegistrationState.Reserved
+            ?: return failStep(current, "registerDeviceAuth requires Reserved state, was $current")
 
-        expiredOrNull(reserved.registrationId, reserved.grant, nowForGrantStalenessCheck)
-            ?.let { return it }
+        expiredOrNull(current, nowForGrantStalenessCheck)?.let { return it }
 
         if (deviceAuthKeyManager.status() is DeviceAuthKeyStatus.TerminalKeyLoss) {
             return failStep(
+                current,
                 "Device Auth key is in a terminal state for this installation; " +
                     "registration cannot proceed. There is no recovery or re-binding in V1."
             )
@@ -76,7 +89,7 @@ class RegistrationOrchestrator(
             deviceAuthKeyManager.createKeyIfAbsent()
             deviceAuthKeyManager.signer()
         } catch (e: DeviceAuthTerminalStateException) {
-            return failStep("Device Auth key is in a terminal state: ${e.message}")
+            return failStep(current, "Device Auth key is in a terminal state: ${e.message}")
         }
         val proof = createDeviceAuthProof(reserved.registrationId)
 
@@ -103,18 +116,16 @@ class RegistrationOrchestrator(
 
     /** Step 3: create/reuse the local E2EE identity and upload its public material. */
     fun uploadPublicIdentity(nowForGrantStalenessCheck: Instant = Instant.now()): RegistrationState {
-        val registered = sessionStore.load() as? RegistrationState.DeviceAuthRegistered
-            ?: return failStep(
-                "uploadPublicIdentity requires DeviceAuthRegistered state, was ${sessionStore.load()}"
-            )
+        val current = currentState()
+        val registered = current as? RegistrationState.DeviceAuthRegistered
+            ?: return failStep(current, "uploadPublicIdentity requires DeviceAuthRegistered state, was $current")
 
-        expiredOrNull(registered.registrationId, registered.grant, nowForGrantStalenessCheck)
-            ?.let { return it }
+        expiredOrNull(current, nowForGrantStalenessCheck)?.let { return it }
 
         val material = try {
             e2eeStep.ensurePublicIdentityMaterial(oneTimeKeyCount)
         } catch (e: LocalE2eeIdentityStepException) {
-            return failStep("local E2EE identity material unavailable: ${e.message}")
+            return failStep(current, "local E2EE identity material unavailable: ${e.message}")
         }
         val next = when (
             val result = api.submitPublicIdentity(registered.registrationId, registered.grant, material)
@@ -132,27 +143,28 @@ class RegistrationOrchestrator(
         return next
     }
 
-    /** Step 4: request the atomic final commit. Only this step may result in [markBound]. */
+    /** Step 4: request the atomic final commit. */
     fun commit(nowForGrantStalenessCheck: Instant = Instant.now()): RegistrationState {
-        val uploaded = sessionStore.load() as? RegistrationState.PublicIdentityUploaded
-            ?: return failStep(
-                "commit requires PublicIdentityUploaded state, was ${sessionStore.load()}"
-            )
+        val current = currentState()
+        val uploaded = current as? RegistrationState.PublicIdentityUploaded
+            ?: return failStep(current, "commit requires PublicIdentityUploaded state, was $current")
 
-        expiredOrNull(uploaded.registrationId, uploaded.grant, nowForGrantStalenessCheck)
-            ?.let { return it }
+        expiredOrNull(current, nowForGrantStalenessCheck)?.let { return it }
 
-        val next = when (val result = api.commitRegistration(uploaded.registrationId, uploaded.grant)) {
-            is CommitResult.Committed ->
+        val result = api.commitRegistration(uploaded.registrationId, uploaded.grant)
+        val next = when (result) {
+            is CommitResult.Committed -> {
+                // The binding marker MUST become durable before the Committed state is saved.
+                // If anything fails after this point (save, clear), the installation is already
+                // marked bound, so a later key loss is terminal and retrying commit is safe.
+                deviceAuthBindingStore.markBound()
                 RegistrationState.Committed(result.accountId, result.deviceId, uploaded.username)
+            }
             is CommitResult.Rejected -> RegistrationState.Failed("commit rejected: ${result.reason}")
         }
         sessionStore.save(next)
 
         if (next is RegistrationState.Committed) {
-            // Only now, after the atomic server commit succeeded, is this key considered
-            // bound to an account. This is the ONLY call site for markBound() in this class.
-            deviceAuthBindingStore.markBound()
             sessionStore.clear()
         }
         return next
@@ -160,28 +172,66 @@ class RegistrationOrchestrator(
 
     /** Explicitly abandons an in-progress registration transaction. Not account deletion. */
     fun abandon() {
+        val current = currentState()
+        if (current.isTerminal || deviceAuthBindingStore.isBound()) {
+            return
+        }
         sessionStore.clear()
     }
 
-    private fun canStartNew(state: RegistrationState): Boolean = when (state) {
-        is RegistrationState.NotStarted,
-        is RegistrationState.Expired,
-        is RegistrationState.Failed -> true
-        else -> false
+    private fun canStartNew(state: RegistrationState): Boolean {
+        if (deviceAuthBindingStore.isBound()) return false
+        return when (state) {
+            is RegistrationState.NotStarted,
+            is RegistrationState.Expired,
+            is RegistrationState.Failed -> true
+            else -> false
+        }
     }
 
-    private fun expiredOrNull(
-        registrationId: RegistrationId,
-        grant: RegistrationGrant,
-        now: Instant
-    ): RegistrationState? {
-        if (!grant.isExpired(now)) return null
-        val expired = RegistrationState.Expired(registrationId)
-        sessionStore.save(expired)
-        return expired
+    private fun expiredOrNull(state: RegistrationState, now: Instant): RegistrationState? {
+        // Once the binding is durable, the local grant TTL is irrelevant; the server already
+        // accepted (or will idempotently re-accept) the commit.
+        if (deviceAuthBindingStore.isBound()) return null
+
+        fun handle(s: RegistrationState): RegistrationState? = when (s) {
+            is RegistrationState.Reserved ->
+                if (s.grant.isExpired(now)) {
+                    val expired = RegistrationState.Expired(s.registrationId)
+                    sessionStore.save(expired)
+                    expired
+                } else null
+            is RegistrationState.DeviceAuthRegistered ->
+                if (s.grant.isExpired(now)) {
+                    val expired = RegistrationState.Expired(s.registrationId)
+                    sessionStore.save(expired)
+                    expired
+                } else null
+            is RegistrationState.PublicIdentityUploaded ->
+                if (s.grant.isExpired(now)) {
+                    val expired = RegistrationState.Expired(s.registrationId)
+                    sessionStore.save(expired)
+                    expired
+                } else null
+            else -> null
+        }
+        return handle(state)
     }
 
-    private fun failStep(reason: String): RegistrationState {
+    /**
+     * Records a step failure. It is fail-closed: it never overwrites a terminal [Committed]
+     * state and never overwrites any in-progress state once [DeviceAuthBindingStore] says this
+     * installation is bound, because the in-progress session may be required to complete a
+     * binding that has already been durably marked.
+     *
+     * When the binding is already true, the method still returns [RegistrationState.Failed] (so
+     * the caller sees a clear failure) but does **not** save it, preserving any existing session.
+     */
+    private fun failStep(current: RegistrationState, reason: String): RegistrationState {
+        if (current.isTerminal) return current
+        if (deviceAuthBindingStore.isBound()) {
+            return RegistrationState.Failed(reason)
+        }
         val failed = RegistrationState.Failed(reason)
         sessionStore.save(failed)
         return failed

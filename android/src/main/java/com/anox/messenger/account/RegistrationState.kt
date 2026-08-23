@@ -17,8 +17,15 @@ package com.anox.messenger.account
  * whichever intermediate state was last durably recorded (see [RegistrationSessionStore]). It
  * is never treated as account recovery or device replacement, and no state in this hierarchy
  * represents either.
+ *
+ * Terminal states cannot be overwritten by normal failure handling. [Committed] is the only
+ * terminal success state; it is preserved because it represents a potentially successful
+ * remote atomic commit.
  */
 sealed class RegistrationState {
+
+    /** Whether this state is a terminal success state that must not be downgraded. */
+    open val isTerminal: Boolean = false
 
     /** No registration transaction is in progress. */
     object NotStarted : RegistrationState()
@@ -56,7 +63,9 @@ sealed class RegistrationState {
         val accountId: AccountId,
         val deviceId: DeviceId,
         val username: Username
-    ) : RegistrationState()
+    ) : RegistrationState() {
+        override val isTerminal: Boolean = true
+    }
 
     /** The registration grant's 30-minute TTL elapsed before commit; the reservation is released. */
     data class Expired(val registrationId: RegistrationId) : RegistrationState()

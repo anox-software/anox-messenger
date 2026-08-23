@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-22
+**Date:** 2026-08-23
 
 ---
 
@@ -14,11 +14,11 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
   `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4) after independent security/architecture
   review (APPROVE, no merge-blocking findings) and empirical dependency-tree verification.
 
-## IN REVIEW
+## IN MERGE GATE
 
-- `PROMPT-008` — B-003 Account/License client domain/state foundation on
-  `feature/b003-account-license-foundation`, PR `#5` open against `main`, awaiting architect
-  review.
+- `PROMPT-008` / `PROMPT-008C` — B-003 Account/License client domain/state foundation plus
+  security review remediation on `feature/b003-account-license-foundation`, PR `#5` open against
+  `main`. All PROMPT-008B findings closed. Awaiting merge authorization.
 
 ## IMPLEMENTATION MISSING
 

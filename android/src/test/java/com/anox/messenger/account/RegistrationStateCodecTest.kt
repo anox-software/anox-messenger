@@ -7,8 +7,8 @@ import java.time.Instant
 import java.util.UUID
 
 /**
- * Tests the dependency-free text codec used by [FileRegistrationSessionStore], independent of
- * the Android file I/O it wraps.
+ * Tests the versioned length-prefixed binary codec used by [FileRegistrationSessionStore],
+ * independent of the Android file I/O and Keystore encryption it wraps.
  */
 class RegistrationStateCodecTest {
 
@@ -17,7 +17,7 @@ class RegistrationStateCodecTest {
     private val grant = RegistrationGrant("grant-value-abc", Instant.parse("2026-08-22T00:30:00Z"))
 
     private fun roundTrip(state: RegistrationState): RegistrationState? =
-        RegistrationStateCodec.decode(RegistrationStateCodec.encode(state))
+        BinaryRegistrationStateCodec.decode(BinaryRegistrationStateCodec.encode(state))
 
     @Test
     fun `not started round trips`() {
@@ -65,15 +65,30 @@ class RegistrationStateCodecTest {
     }
 
     @Test
+    fun `arbitrary reason text cannot inject fields`() {
+        val reason = "line1\nline2\r\n=foo\u0000bar\uD83D\uDE00"
+        val state = RegistrationState.Failed(reason)
+        assertEquals(state, roundTrip(state))
+    }
+
+    @Test
     fun `garbage content decodes to null`() {
-        assertNull(RegistrationStateCodec.decode("not a real state file\nwith random content"))
-        assertNull(RegistrationStateCodec.decode(""))
-        assertNull(RegistrationStateCodec.decode("RESERVED\nmissingFields=true"))
+        assertNull(BinaryRegistrationStateCodec.decode(byteArrayOf(0xFF.toByte(), 0x00, 0x01)))
+        assertNull(BinaryRegistrationStateCodec.decode(byteArrayOf()))
+        assertNull(BinaryRegistrationStateCodec.decode(byteArrayOf(BinaryRegistrationStateCodec.VERSION, 0x42)))
     }
 
     @Test
     fun `truncated reserved record decodes to null rather than partial state`() {
-        val truncated = "RESERVED\nregistrationId=${registrationId.value}\n"
-        assertNull(RegistrationStateCodec.decode(truncated))
+        val truncated = BinaryRegistrationStateCodec.encode(
+            RegistrationState.Reserved(registrationId, grant, username)
+        ).copyOfRange(0, 20)
+        assertNull(BinaryRegistrationStateCodec.decode(truncated))
+    }
+
+    @Test
+    fun `codec version is fixed`() {
+        val encoded = BinaryRegistrationStateCodec.encode(RegistrationState.NotStarted)
+        assertEquals(BinaryRegistrationStateCodec.VERSION, encoded[0])
     }
 }

@@ -176,3 +176,39 @@ class FakeDeviceAuthKeyManager(
         signerOrNull = null
     }
 }
+
+/**
+ * Fault-injecting [DeviceAuthBindingStore] for crash-consistency tests.
+ *
+ * TEST SCOPE ONLY.
+ */
+class FaultyDeviceAuthBindingStore(
+    private val delegate: DeviceAuthBindingStore = InMemoryDeviceAuthBindingStore(),
+    private var failNextMarkBound: Boolean = false,
+    private var isBoundOverride: Boolean? = null
+) : DeviceAuthBindingStore {
+
+    var markBoundCallCount: Int = 0
+        private set
+
+    override fun isBound(): Boolean = isBoundOverride ?: delegate.isBound()
+
+    override fun markBound() {
+        markBoundCallCount++
+        if (failNextMarkBound) {
+            failNextMarkBound = false
+            throw RuntimeException("injected markBound fault")
+        }
+        delegate.markBound()
+    }
+
+    fun setFailNextMarkBound() {
+        failNextMarkBound = true
+    }
+
+    fun setBoundOverride(value: Boolean?) {
+        isBoundOverride = value
+    }
+
+    override fun clearBinding() = delegate.clearBinding()
+}

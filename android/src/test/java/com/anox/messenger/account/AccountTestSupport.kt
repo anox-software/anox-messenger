@@ -104,3 +104,30 @@ class FakeLocalE2eeIdentityStep(
         return material
     }
 }
+
+/**
+ * Fault-injecting [RegistrationSessionStore] for crash-consistency tests.
+ *
+ * TEST SCOPE ONLY.
+ */
+class FaultyInMemoryRegistrationSessionStore(
+    private val delegate: InMemoryRegistrationSessionStore = InMemoryRegistrationSessionStore()
+) : RegistrationSessionStore {
+
+    var failNextSave: Boolean = false
+    var saveCallCount: Int = 0
+        private set
+
+    override fun load(): RegistrationState = delegate.load()
+
+    override fun save(state: RegistrationState) {
+        saveCallCount++
+        if (failNextSave) {
+            failNextSave = false
+            throw RegistrationSessionSecurityException("injected save fault")
+        }
+        delegate.save(state)
+    }
+
+    override fun clear() = delegate.clear()
+}

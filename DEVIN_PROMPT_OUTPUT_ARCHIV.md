@@ -356,3 +356,23 @@ B-005 database/RLS.
 - Next gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+
+## PROMPT-008C — B-003 Account/License security review remediation
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation`
+- **Authority:** `SECURITY_INVARIANTS_V1_1.md`, `B002_DEVICE_AUTHENTICATION.md`,
+  `B003_ACCOUNT_LICENSE.md`, `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`,
+  `PROMPT_008_B003_ACCOUNT_LICENSE_FOUNDATION.md`, PROMPT-008B findings.
+- **Scope:** targeted remediation only; no B-004/B-005 or product expansion.
+- **Findings closed:** HIGH-1, MEDIUM-2, MEDIUM-3, LOW-4, LOW-5, LOW-6, and related test gaps.
+- **Key changes:** crash-safe `RegistrationOrchestrator` with `markBound` ordered before
+  `Committed`; `RegistrationState.Committed` terminal; encrypted `FileRegistrationSessionStore`
+  (`anox.b003.session.v1` Keystore AES-GCM); `BinaryRegistrationStateCodec`;
+  `RegistrationGrantGenerator` moved to `src/test`.
+- **Verification:** 160 JVM unit tests PASS; Rust 15/15 PASS; Android debug + release builds PASS;
+  debug + release APK content validation PASS. Android instrumentation NOT RUN (no emulator).
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Result:** `PASS — B-003 REMEDIATION READY FOR MERGE GATE`
+- **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+- **Next gate:** `PROMPT-008 MERGE GATE`

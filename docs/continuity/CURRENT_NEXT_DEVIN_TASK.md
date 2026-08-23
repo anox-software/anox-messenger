@@ -1,8 +1,8 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** PENDING ARCHITECT REVIEW
-**Task ID:** PROMPT-008
-**Date:** 2026-08-22
+**Status:** B-003 REMEDIATION COMPLETE — AWAITING MERGE GATE
+**Task ID:** PROMPT-008C
+**Date:** 2026-08-23
 
 ---
 
@@ -41,7 +41,7 @@ architect review before any merge decision.
 
 ## Current gate
 
-`PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+`PROMPT-008 MERGE GATE`
 
 ## Known open items for review
 

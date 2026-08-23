@@ -11,7 +11,15 @@ package com.anox.messenger.account
  */
 interface RegistrationSessionStore {
 
-    /** The last durably recorded state, or [RegistrationState.NotStarted] if none. */
+    /**
+     * The last durably recorded state, or [RegistrationState.NotStarted] if none.
+     *
+     * Implementations that protect the session with authenticated encryption MUST throw
+     * [RegistrationSessionSecurityException] on read/authentication/parse failures; callers are
+     * expected to combine this with [com.anox.messenger.security.deviceauth.DeviceAuthBindingStore]
+     * to fail closed.
+     */
+    @Throws(RegistrationSessionSecurityException::class)
     fun load(): RegistrationState
 
     /** Durably records [state], overwriting any previous state. */

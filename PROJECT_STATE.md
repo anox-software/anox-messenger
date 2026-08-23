@@ -18,7 +18,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+- Current gate: `PROMPT-008 MERGE GATE`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -259,3 +259,33 @@ Status per component, not a claim that B-003 is production complete.
 - Ran negative regression tests: all expected failures now detected.
 - Product source unchanged.
 - New final handoff generated and validated.
+
+## PROMPT-008C — B-003 Account/License security review remediation (2026-08-23)
+
+Independent PROMPT-008B security review identified HIGH-1 (remote-commit / local-binding
+failure window), MEDIUM-2 (plaintext registration grant at rest), MEDIUM-3 (stale temp-file
+retention), LOW-4 (atomic-file durability), LOW-5 (Committed clobbered by failStep), LOW-6
+(fragile text codec), and test gaps. This remediation closes all of them.
+
+**Closed in implementation**
+- `RegistrationOrchestrator.commit()` now marks the Device Auth binding *before* persisting the
+  local `Committed` state, and `failStep()` will never overwrite a terminal `Committed` state or
+  any in-progress state once the binding is true.
+- `canStartNew()` consults the durable `DeviceAuthBindingStore` directly, so a bound device can
+  never start a fresh registration, even if the session file is unreadable.
+- `RegistrationState.Committed` is terminal (`isTerminal = true`).
+- `FileRegistrationSessionStore` now uses a dedicated Android Keystore AES-256-GCM key
+  (`anox.b003.session.v1`), a fresh IV per write, and an authenticated versioned binary envelope
+  through `BinaryRegistrationStateCodec` / `RegistrationSessionKey`. The registration grant is
+  never written to disk as plaintext.
+- Session persistence uses `androidx.core.util.AtomicFile` (established platform primitive) and
+  has no `.tmp` plaintext artifact; `clear()` removes the persisted session.
+- `RegistrationGrantGenerator` moved out of the production source set to `src/test`.
+- Crash/fault-injection test matrix added in `RegistrationCrashConsistencyTest` covering all
+  meaningful commit/binding failure windows.
+
+**Verified**
+- 160 JVM unit tests, 0 failures, 0 errors, 0 skipped.
+- Rust 15/15.
+- Android debug and release builds PASS; debug + release APK content gates PASS.
+- Android instrumentation: NOT RUN in this session (no emulator/device available on this host).
