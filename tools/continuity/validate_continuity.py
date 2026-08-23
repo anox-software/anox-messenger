@@ -15,6 +15,8 @@ REQUIRED_FILES = [
     "FORTSCHRITT.md",
     "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
     "docs/authority/AUTHORITY_INDEX.md",
+    "docs/authority/CLOUD_AI_SECRET_PROTECTION.md",
+    "docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md",
     "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
     "docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md",
     "docs/authority/B_FREEZE_REGISTRY.md",
@@ -37,6 +39,8 @@ REQUIRED_FILES = [
 
 REQUIRED_AUTHORITY_PATHS = {
     "authority_index": "docs/authority/AUTHORITY_INDEX.md",
+    "cloud_ai_secret": "docs/authority/CLOUD_AI_SECRET_PROTECTION.md",
+    "dev_security_workflow": "docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md",
     "security_invariants": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
     "b026": "docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md",
     "freeze_registry": "docs/authority/B_FREEZE_REGISTRY.md",
@@ -247,6 +251,61 @@ def main():
             all_ok = False
         else:
             print(f"  OK   CURRENT_HANDOFF.md handoff branch = {declared}")
+
+    # 7f. CURRENT_HANDOFF.md merged baseline HEAD must match CURRENT_STATE.json
+    if state is not None:
+        declared_baseline = state.get("baseline_head")
+        m = re.search(r"- Merged baseline HEAD:\s*`?([^`\n]+)`?", handoff_text, re.MULTILINE)
+        if m and declared_baseline:
+            handoff_baseline = m.group(1).strip()
+            if handoff_baseline != declared_baseline:
+                print(f"  FAIL CURRENT_HANDOFF.md baseline {handoff_baseline} != CURRENT_STATE.json {declared_baseline}")
+                all_ok = False
+            else:
+                print(f"  OK   CURRENT_HANDOFF.md baseline matches CURRENT_STATE.json")
+
+    # 7g. CURRENT_GIT_STATE.md merged baseline HEAD must match CURRENT_STATE.json
+    git_state_path = REPO_ROOT / "docs/continuity/CURRENT_GIT_STATE.md"
+    git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
+    m = re.search(r"- Merged baseline HEAD:\s*`?([^`\n]+)`?", git_state_text, re.MULTILINE)
+    if m and state is not None:
+        declared_baseline = state.get("baseline_head")
+        git_baseline = m.group(1).strip()
+        if declared_baseline and git_baseline != declared_baseline:
+            print(f"  FAIL CURRENT_GIT_STATE.md baseline {git_baseline} != CURRENT_STATE.json {declared_baseline}")
+            all_ok = False
+        else:
+            print("  OK   CURRENT_GIT_STATE.md baseline matches CURRENT_STATE.json")
+
+    # 7h. CURRENT_GIT_STATE.md current handoff branch must match live
+    m = re.search(r"- Current handoff branch:\s*`?([^`\n]+)`?", git_state_text, re.MULTILINE)
+    if m:
+        declared = m.group(1).strip()
+        if declared != branch:
+            print(f"  FAIL CURRENT_GIT_STATE.md handoff branch {declared} != live {branch}")
+            all_ok = False
+        else:
+            print(f"  OK   CURRENT_GIT_STATE.md handoff branch = {declared}")
+
+    # 7i. Stale current-state claims must not reappear
+    stale_phrases = [
+        ("Approximately **27%**", "outdated functional progress"),
+        ("Device Authentication work has not started", "outdated Device Auth claim"),
+        ("B-003 has a client domain/state foundation in review", "outdated B-003 review claim"),
+    ]
+    for phrase, reason in stale_phrases:
+        for path_name in ("PROJECT_STATE.md", "FORTSCHRITT.md"):
+            p = REPO_ROOT / path_name
+            if p.exists() and phrase in p.read_text(encoding="utf-8"):
+                print(f"  FAIL {path_name} contains stale current-state phrase: {reason} ('{phrase}')")
+                all_ok = False
+
+    # 7j. CURRENT_NEXT_DEVIN_TASK.md must not contain PROMPT-008 as the current task
+    next_task_path = REPO_ROOT / "docs/continuity/CURRENT_NEXT_DEVIN_TASK.md"
+    next_task_text = next_task_path.read_text(encoding="utf-8") if next_task_path.exists() else ""
+    if re.search(r"PROMPT-008\b", next_task_text) and not re.search(r"MERGED", next_task_text):
+        print("  FAIL CURRENT_NEXT_DEVIN_TASK.md still references PROMPT-008 as an active task without MERGED")
+        all_ok = False
 
     print("\n" + "=" * 60)
     if all_ok:

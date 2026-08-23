@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B-003 MERGED — Next: DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
+**Status:** PROMPT-009 GOVERNANCE — DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING IN REVIEW
 **Updated:** 2026-08-23
 
 ## Architecture / governance
@@ -28,7 +28,8 @@
 
 ## Current repository
 
-`main` is the active branch. PR #5 was merged at `e7ee54a713e08950c63cf2d61ec97931864b66bc`.
+`governance/development-security-handoff-v1` is the active branch. B-003 was merged at
+`e7ee54a713e08950c63cf2d61ec97931864b66bc`. PR for PROMPT-009 is open against `main`.
 B-002 Device Authentication client foundation is merged. B-003 Account/License client
 foundation is merged (PROMPT-008 / 008C / 008D).
 

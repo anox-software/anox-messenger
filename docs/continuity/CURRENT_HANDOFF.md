@@ -22,7 +22,7 @@ Highest to lowest:
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Current work branch: `main`
+- Current work branch: `governance/development-security-handoff-v1`
 - Merged baseline branch: `main`
 - Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
 - Working tree: expected clean at handoff generation

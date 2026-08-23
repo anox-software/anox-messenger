@@ -21,7 +21,7 @@
 
 ## Current handoff / work state
 
-- Current handoff branch: `main`
+- Current handoff branch: `governance/development-security-handoff-v1`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none

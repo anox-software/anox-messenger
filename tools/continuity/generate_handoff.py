@@ -51,6 +51,47 @@ EXCLUDED_SUFFIXES = (
     ".zip",
 )
 
+# Secret / high-risk export preflight.
+# These are MINIMUM guards. B-017-Lite will introduce stronger maintained scanning.
+FORBIDDEN_BASENAME_PATTERNS = (
+    ".env",
+    ".env.local",
+    ".env.production",
+    ".env.staging",
+    "local.properties",
+    "google-services.json",
+)
+FORBIDDEN_NAME_SUBSTRINGS = (
+    "service-account",
+    "service_account",
+    "private-key",
+    "private_key",
+    "database-dump",
+    "db_dump",
+)
+FORBIDDEN_EXTENSIONS = (
+    ".env",
+    ".pem",
+    ".key",
+    ".p12",
+    ".pfx",
+    ".jks",
+    ".keystore",
+    ".p8",
+    ".pkcs8",
+    ".cer",
+    ".crt",
+)
+PEM_PRIVATE_KEY_MARKERS = (
+    b"-----BEGIN PRIVATE KEY-----",
+    b"-----BEGIN RSA PRIVATE KEY-----",
+    b"-----BEGIN EC PRIVATE KEY-----",
+    b"-----BEGIN OPENSSH PRIVATE KEY-----",
+    b"-----BEGIN DSA PRIVATE KEY-----",
+    b"-----BEGIN ENCRYPTED PRIVATE KEY-----",
+    b"-----BEGIN PGP PRIVATE KEY BLOCK-----",
+)
+
 
 def git_cmd(args):
     result = subprocess.run(
@@ -99,6 +140,48 @@ def collect_files():
                 continue
             files.append(rel)
     return sorted(files)
+
+
+def preflight_security(rel_files):
+    """Fail closed if high-risk secret material may be exported."""
+    findings = []
+
+    for rel in rel_files:
+        name = Path(rel).name.lower()
+
+        if name in FORBIDDEN_BASENAME_PATTERNS:
+            findings.append((rel, "forbidden basename"))
+            continue
+
+        if any(sub in name for sub in FORBIDDEN_NAME_SUBSTRINGS):
+            findings.append((rel, "forbidden filename marker"))
+            continue
+
+        if any(name.endswith(ext) for ext in FORBIDDEN_EXTENSIONS):
+            findings.append((rel, "forbidden file extension"))
+            continue
+
+        # PEM / key marker scan (binary-safe, first 8 KiB).
+        # Skip .py source files to avoid tripping over the detector's own marker list.
+        full = REPO_ROOT / rel
+        if full.suffix == ".py":
+            continue
+        try:
+            with open(full, "rb") as f:
+                head = f.read(8192)
+        except (OSError, PermissionError):
+            continue
+        for marker in PEM_PRIVATE_KEY_MARKERS:
+            if marker in head:
+                findings.append((rel, "private-key PEM marker"))
+                break
+
+    if findings:
+        print("ERROR: handoff secret preflight failed. Rejecting the following high-risk artifacts:", file=sys.stderr)
+        for path, reason in findings:
+            print(f"  - {path}: {reason}", file=sys.stderr)
+        return False
+    return True
 
 
 def build_git_snapshot():
@@ -222,6 +305,8 @@ def main():
 
     rel_files = collect_files()
     if not check_unresolved_placeholders(rel_files):
+        return 1
+    if not preflight_security(rel_files):
         return 1
 
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")

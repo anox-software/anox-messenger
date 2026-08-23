@@ -1,6 +1,6 @@
 # Current Chat Bootstrap Prompt
 
-**Authority:** B-026
+**Authority:** B-026 + `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
 
 ---
 
@@ -16,6 +16,8 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
    - `docs/authority/AUTHORITY_INDEX.md`
    - `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
    - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+   - `docs/authority/CLOUD_AI_SECRET_PROTECTION.md`
+   - `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
    - `docs/authority/B_FREEZE_REGISTRY.md`
    - `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
 
@@ -40,8 +42,11 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
 
 6. Verify the presence of:
    - `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
-   - `docs/authority/B025/`
+   - `docs/authority/CLOUD_AI_SECRET_PROTECTION.md`
+   - `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
    - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+   - `docs/authority/B_FREEZE_REGISTRY.md`
+   - `docs/authority/B025/`
    - `docs/continuity/`
    - `tools/continuity/generate_handoff.py`
    - `tools/continuity/validate_continuity.py`
@@ -69,6 +74,21 @@ You are bootstrapping into an existing anoX Messenger V1 project. Do not write o
     - G. SECURITY INVARIANTS CURRENT
     - H. NEXT GATE
     - I. RESULT: `PASS` or `BLOCKED`
+
+    The report must also answer these required governance reconstruction questions:
+    1. Is B-002 merged?
+    2. Is B-003 merged?
+    3. What comes next?
+    4. What is S0–S4?
+    5. Are per-PR Frontier audits mandatory during normal V1 development? (expected: NO)
+    6. What happens to known HIGH/CRITICAL findings? (expected: IMMEDIATE MERGE BLOCKERS)
+    7. What is the Cloud-AI secret invariant?
+    8. Are production user private keys allowed in Cloud AI? (expected: NO)
+    9. When does B-017-Lite occur? (expected: AFTER GOVERNANCE/HANDOFF HARDENING, BEFORE B-004/B-005)
+    10. When does the full READ-ONLY AI audit occur? (expected: AFTER FUNCTIONAL V1)
+    11. Is an external human audit still required? (expected: YES)
+    12. Is `main` PR-only under the new governance? (expected: YES)
+    13. Should model recommendations be embedded inside Devin prompts? (expected: NO)
 
 End with exactly:
 

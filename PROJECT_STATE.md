@@ -6,7 +6,7 @@
 
 ## Repository truth
 
-- Branch: `main`
+- Branch: `governance/development-security-handoff-v1`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - Merged baseline branch: `main`
 - Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`

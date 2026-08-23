@@ -19,7 +19,9 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 
 ## IN MERGE GATE
 
-None. Next gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`.
+`PROMPT-009` — Development Security Governance / Handoff Hardening on
+`governance/development-security-handoff-v1`, PR pending against `main`. Next gate:
+`DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`.
 
 ## IMPLEMENTATION MISSING
 
