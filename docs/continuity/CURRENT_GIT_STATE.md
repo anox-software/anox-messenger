@@ -12,19 +12,19 @@
 ## Merged baseline
 
 - Branch: `main`
-- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
-- Latest merge into baseline: PR #4 `d281df66a3471dfd6a9bab0bd899be701317afb4` — PROMPT-007, B-002
-  Device Authentication client foundation
+- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- Latest merge into baseline: PR #4 `d281df66a3471dfd6a9bab0bd899be701317afb4` — PROMPT-007,
+  B-002 Device Authentication client foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
-- Current handoff branch: `main`
+- Current handoff branch: `feature/b003-account-license-foundation`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: `none` — PR #4 merged and closed
-- Current task: `PROMPT-007` — MERGED
-- Current gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+- Open relevant PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation, not merged
+- Current task: `PROMPT-008` — B-003 Account/License foundation
+- Current gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
 
 ## Merged history on main
 
@@ -42,17 +42,17 @@
 
 ## Unmerged work
 
-- None on `main`.
+- `PROMPT-008` — B-003 Account/License client domain/state foundation, on
+  `feature/b003-account-license-foundation`, PR `#5` open against `main`.
 
-## B-002 status after merge
+## B-003 status after this task
 
-- Client foundation (Android Keystore key, hardware policy, RFC9449 DPoP proof creation and
-  verification boundary, fail-closed terminal key loss): IMPLEMENTED / VERIFIED where tested.
-- Backend token issuance/storage/revocation, shared production replay cache, device registry,
-  entitlement enforcement, persistent `DeviceAuthBindingStore`, registration binding call:
-  MISSING (future B-003/B-004 work).
-- Android instrumentation (real Keystore), physical StrongBox/TEE, GrapheneOS physical-device
-  Device Auth: UNVERIFIED.
+- Client domain/state foundation (identifiers, username/license validation, account/device/
+  entitlement states, registration state machine, narrow B-004 API contracts, persistent Device
+  Auth binding store and registration session storage): IMPLEMENTED / VERIFIED where tested.
+- Backend implementation of `RegistrationApi`, license generation, server HMAC lookup, real
+  network stack, DB enforcement of one-active-device-per-account: MISSING (future B-004/B-005).
+- Physical StrongBox/TEE, GrapheneOS physical-device behaviour: UNVERIFIED.
 
 ## Verification
 

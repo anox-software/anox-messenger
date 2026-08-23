@@ -1,14 +1,16 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-22
+**Date:** 2026-08-23
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
-**Functional implementation:** approximately 30%.
+**Functional implementation:** approximately 33%.
 
 ## Repository truth
 
-- Branch: `main`
+- Branch: `feature/b003-account-license-foundation`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
-- Merged baseline HEAD: `d281df66a3471dfd6a9bab0bd899be701317afb4`
+- Merged baseline branch: `main`
+- Merged baseline HEAD: `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- Open PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; not merged
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
@@ -16,7 +18,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+- Current gate: `PROMPT-008 MERGE GATE`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
@@ -82,15 +84,57 @@ complete or that backend enforcement now exists.
   expired-entitlement renewal flow.
 
 **UNVERIFIED**
-- Android instrumentation tests for the real Keystore: NOT RUN in CI (no emulator).
+- Android instrumentation tests for the real Keystore: NOT RUN in CI (no emulator); subsequently
+  run and PASSING (10/10) on a local emulator during PROMPT-008 — see that section below. Still
+  not run in CI.
 - Physical hardware-backed StrongBox/TEE behaviour.
 - GrapheneOS physical-device Device Auth behaviour.
+
+## PROMPT-008 — B-003 Account/License foundation (2026-08-22)
+
+Status per component, not a claim that B-003 is production complete.
+
+**IMPLEMENTED (client domain/state foundation)**
+- Strongly typed `AccountId`/`DeviceId`/`RegistrationId` (server-issued UUIDv4 only, no client
+  generation), `Username` syntax validation, `LicenseCode` structural validation (secret-safe),
+  `LicenseDuration` (30/90/180 days only), frozen `AccountState`/`DeviceState`/
+  `EntitlementState` enums, non-authoritative `EntitlementRenewal` preview.
+- `RegistrationState` transaction state machine and `RegistrationOrchestrator` driving
+  reserve -> Device Auth registration -> public E2EE identity upload -> atomic commit, never
+  marking the Device Auth key bound before a successful commit.
+- Narrow `RegistrationApi` / `LocalE2eeIdentityStep` contracts (no real backend, no fake
+  Supabase/PostgreSQL access).
+- Persistent `FileDeviceAuthBindingStore` (closes the PROMPT-007 in-memory-only gap) and
+  persistent `FileRegistrationSessionStore`, both under `noBackupFilesDir`, fail-closed on
+  corruption.
+
+**VERIFIED**
+- 146 JVM unit tests (77 new + 69 pre-existing B-002, unchanged), 0 failures.
+- 58 Android instrumentation tests on a real emulator (API 34), 0 failures, including — for the
+  first time — the 10 B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` tests and 35 pre-existing
+  `CryptoInstrumentedTest` tests.
+- Rust 15/15, Android debug/release build, debug + release APK content gate: all PASS.
+
+**PARTIAL**
+- `LicenseCode` structural validation assumes a placeholder uppercase-alphanumeric charset
+  pending the exact "unambiguous character" definition.
+- One-active-device-per-account is representable, not enforced (enforcement is DB-level, B-005).
+
+**MISSING (not attempted in this task)**
+- B-004 backend implementation of `RegistrationApi`, B-005 database/RLS, license generation,
+  server HMAC lookup, real network stack, UI/ViewModel wiring.
+
+**UNVERIFIED**
+- Physical hardware-backed StrongBox/TEE behaviour.
+- GrapheneOS physical-device behaviour.
 
 ## Not implemented
 
 - B-002 Device Authentication: backend/server side and registration binding (client
   foundation only, see PROMPT-007 above).
-- B-003 production account/license registration.
+- B-003 production account/license registration: backend/server side, license generation,
+  server HMAC lookup, DB enforcement (client domain/state foundation only, see PROMPT-008
+  above).
 - B-004 backend service.
 - B-005 production database/RLS.
 - B-006 server key distribution/claims.
@@ -215,3 +259,59 @@ complete or that backend enforcement now exists.
 - Ran negative regression tests: all expected failures now detected.
 - Product source unchanged.
 - New final handoff generated and validated.
+
+## PROMPT-008C — B-003 Account/License security review remediation (2026-08-23)
+
+Independent PROMPT-008B security review identified HIGH-1 (remote-commit / local-binding
+failure window), MEDIUM-2 (plaintext registration grant at rest), MEDIUM-3 (stale temp-file
+retention), LOW-4 (atomic-file durability), LOW-5 (Committed clobbered by failStep), LOW-6
+(fragile text codec), and test gaps. This remediation closes all of them.
+
+**Closed in implementation**
+- `RegistrationOrchestrator.commit()` now marks the Device Auth binding *before* persisting the
+  local `Committed` state, and `failStep()` will never overwrite a terminal `Committed` state or
+  any in-progress state once the binding is true.
+- `canStartNew()` consults the durable `DeviceAuthBindingStore` directly, so a bound device can
+  never start a fresh registration, even if the session file is unreadable.
+- `RegistrationState.Committed` is terminal (`isTerminal = true`).
+- `FileRegistrationSessionStore` now uses a dedicated Android Keystore AES-256-GCM key
+  (`anox.b003.session.v1`), a fresh IV per write, and an authenticated versioned binary envelope
+  through `BinaryRegistrationStateCodec` / `RegistrationSessionKey`. The registration grant is
+  never written to disk as plaintext.
+- Session persistence uses `androidx.core.util.AtomicFile` (established platform primitive) and
+  has no `.tmp` plaintext artifact; `clear()` removes the persisted session.
+- `RegistrationGrantGenerator` moved out of the production source set to `src/test`.
+- Crash/fault-injection test matrix added in `RegistrationCrashConsistencyTest` covering all
+  meaningful commit/binding failure windows.
+
+**Verified**
+- 160 JVM unit tests, 0 failures, 0 errors, 0 skipped.
+- Rust 15/15.
+- Android debug and release builds PASS; debug + release APK content gates PASS.
+- Android instrumentation: NOT RUN in this session (no emulator/device available on this host).
+
+## PROMPT-008D — B-003 final commit-uncertainty closure (2026-08-23)
+
+PROMPT-008C closed the MEDIUM findings but still left a window between the remote commit call and
+local binding persistence. PROMPT-008D introduces a durable `CommitArmed` fail-closed guard:
+
+**Closed in implementation**
+- `DeviceAuthBindingStore` now tracks an independent `isArmed` flag. `markArmed()` is persisted
+  before `api.commitRegistration()` is called.
+- `RegistrationOrchestrator.commit()` persists `RegistrationState.CommitArmed` to the encrypted
+  session store, then calls `markArmed()`, and only then calls the remote commit endpoint.
+- If `markArmed()` or the session-store `save(CommitArmed)` fails, the remote call is not issued.
+- Unknown remote outcomes (timeout, exception, lost response) retain `isArmed == true` and the
+  `CommitArmed` session; retry is idempotent and uses the same Device Auth key.
+- `DeviceAuthKeyStateResolver` treats a missing Device Auth key as `TerminalKeyLoss` whenever
+  `isArmed` or `isBound` is true.
+- `canStartNew()`, `abandon()`, `expiredOrNull()`, and `failStep()` all consult `isArmed()` and
+  fail closed.
+- `FileRegistrationSessionStore` now deletes the legacy plaintext `anox_registration_session.state`
+  and `.tmp` artifacts on load/clear without reading or printing them.
+
+**Verified**
+- 160 JVM unit tests, 0 failures, 0 errors, 0 skipped.
+- Rust 15/15.
+- Android debug and release builds PASS; debug + release APK content gates PASS.
+- Android instrumentation: 62/62 PASS on API-34 emulator.

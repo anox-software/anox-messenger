@@ -319,3 +319,78 @@ merge PR #4, and synchronize continuity to the new `main`.
 - Next gate: `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`.
 
 **PR:** https://github.com/anox-admin/ax-messenger/pull/4 (MERGED, merge commit `d281df66a3471dfd6a9bab0bd899be701317afb4`)
+
+---
+
+## PROMPT-008 — B-003 Account / License Foundation
+
+**Objective:** Implement the minimum B-003 Account/License client domain/state foundation:
+identifiers, username/license validation, account/device/entitlement states, the registration
+transaction state machine, narrow B-004 API contracts, and persistent local storage for the
+Device Auth binding marker and registration session — without implementing B-004 backend or
+B-005 database/RLS.
+
+**Result:** PASS — READY FOR ARCHITECT REVIEW
+
+- Baseline `main @ 0785b6001f816f5a6520951dd9a8c5a4af9af4c2`; implemented on
+  `feature/b003-account-license-foundation`.
+- Strongly typed `AccountId`/`DeviceId`/`RegistrationId` (server UUIDv4 only, no client
+  generation), `Username` and `LicenseCode` validators (secret-safe, no license generation),
+  `LicenseDuration` restricted to exactly 30/90/180 days, frozen account/device/entitlement
+  state enums, non-authoritative `EntitlementRenewal` preview taking server time explicitly.
+- `RegistrationOrchestrator` drives reserve -> Device Auth registration (existing B-002 boundary,
+  unmodified) -> public E2EE identity upload (new narrow boundary over the existing, unmodified
+  `CryptoBridge` public API) -> atomic commit; the Device Auth key is marked bound from exactly
+  one call site, only after a successful commit; every step persists resumable state so a
+  crash/process death is transaction resume, never account recovery or device replacement.
+- `FileDeviceAuthBindingStore` (persistent, no-backup, fail-closed to bound on corruption) closes
+  the PROMPT-007 in-memory-only gap; `FileRegistrationSessionStore` (persistent, no-backup,
+  fail-closed to NotStarted on corruption) provides crash-resumable registration state.
+- 146 JVM unit tests PASS (77 new, 69 pre-existing unchanged). 58 Android instrumentation tests
+  PASS on a real emulator that was unexpectedly available in this environment — including, for
+  the first time, the 10 B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` tests. Physical
+  StrongBox/TEE and GrapheneOS device behaviour remain UNVERIFIED (emulator only).
+- Rust 15/15, Android debug/release build, and both APK content/secret gates PASS.
+- No product source, crypto, JNI, or build-tooling change; no `docs/authority/` change; no
+  B-004/B-005 implementation.
+- Next gate: `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`.
+
+**PR:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+
+## PROMPT-008C — B-003 Account/License security review remediation
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation`
+- **Authority:** `SECURITY_INVARIANTS_V1_1.md`, `B002_DEVICE_AUTHENTICATION.md`,
+  `B003_ACCOUNT_LICENSE.md`, `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`,
+  `PROMPT_008_B003_ACCOUNT_LICENSE_FOUNDATION.md`, PROMPT-008B findings.
+- **Scope:** targeted remediation only; no B-004/B-005 or product expansion.
+- **Findings closed:** HIGH-1, MEDIUM-2, MEDIUM-3, LOW-4, LOW-5, LOW-6, and related test gaps.
+- **Key changes:** crash-safe `RegistrationOrchestrator` with `markBound` ordered before
+  `Committed`; `RegistrationState.Committed` terminal; encrypted `FileRegistrationSessionStore`
+  (`anox.b003.session.v1` Keystore AES-GCM); `BinaryRegistrationStateCodec`;
+  `RegistrationGrantGenerator` moved to `src/test`.
+- **Verification:** 160 JVM unit tests PASS; Rust 15/15 PASS; Android debug + release builds PASS;
+  debug + release APK content validation PASS. Android instrumentation NOT RUN (no emulator).
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Result:** `PASS — B-003 REMEDIATION READY FOR MERGE GATE`
+- **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+- **Next gate:** `PROMPT-008 MERGE GATE`
+
+## PROMPT-008D — B-003 final commit-uncertainty closure
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation`
+- **Scope:** close the remaining crash window between remote commit and local binding; no B-004/B-005.
+- **Design:** durable `DeviceAuthBindingStore.isArmed` guard plus `RegistrationState.CommitArmed`.
+- **Key changes:** `DeviceAuthBindingStore` v2 bitflags; `FileDeviceAuthBindingStore` armed/bound
+  persistence; `DeviceAuthKeyStateResolver` treats `isArmed` like `isBound`; `RegistrationOrchestrator`
+  persists `CommitArmed` and arms the guard before the remote commit call; `CommitArmed` round-trips
+  in `BinaryRegistrationStateCodec`; legacy plaintext session cleanup in `FileRegistrationSessionStore`;
+  updated crash/fault matrix in `RegistrationCrashConsistencyTest`.
+- **Verification:** 160 JVM unit tests PASS; Rust 15/15 PASS; Android instrumentation 62/62 PASS on
+  API-34 emulator; Android debug + release builds PASS; debug + release APK content validation PASS.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Result:** `PASS — B-003 READY FOR MERGE GATE`
+- **PR #5:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged)
+- **Next gate:** `PROMPT-008 MERGE GATE`

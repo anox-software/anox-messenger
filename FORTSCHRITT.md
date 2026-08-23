@@ -1,7 +1,7 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** CURRENT B-025 + B-026
-**Updated:** 2026-08-21
+**Status:** PROMPT-008D — B-003 commit-uncertainty closure
+**Updated:** 2026-08-23
 
 ## Architecture / governance
 
@@ -28,11 +28,15 @@
 
 ## Current repository
 
-`main` at the latest clean HEAD. Device Authentication work has **not** started.
+`feature/b003-account-license-foundation` (PR #5 open against `main`). B-002 Device
+Authentication client foundation is merged. B-003 Account/License client domain/state is
+implemented with PROMPT-008C remediation and PROMPT-008D commit-uncertainty closure.
 
 ## Functional progress
 
-Approximately **27%**. Architecture freezes/governance do not count as completed user-facing messenger functionality.
+Approximately **33%**. Architecture freezes/governance do not count as completed user-facing
+messenger functionality; the percentage reflects merged B-002 plus the in-review B-003 client
+foundation.
 
 ## STEP-3B / 3B.1 — B-025 Synchronisation / Android-Backup-Härtung
 
@@ -338,3 +342,90 @@ Approximately **27%**. Architecture freezes/governance do not count as completed
 - **Security invariants:** No invariants changed. No `docs/authority/` file modified.
 - **Blockers:** none.
 - **Next gate:** `B-003 ACCOUNT / LICENSE FOUNDATION — NOT STARTED, NOT AUTHORIZED`
+
+## PROMPT-008 — B-003 Account / License Foundation
+
+- **Date:** 2026-08-22
+- **Branch:** `feature/b003-account-license-foundation`
+- **Starting HEAD:** `0785b6001f816f5a6520951dd9a8c5a4af9af4c2` (`main`)
+- **Objective:** Implement the minimum B-003 Account/License client domain/state foundation
+  without implementing B-004 backend or B-005 database/RLS.
+- **Architecture references:** `docs/authority/B025/TRACK_B/B003_ACCOUNT_LICENSE.md`,
+  `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`,
+  `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- **Implemented:**
+  - `AccountId`/`DeviceId`/`RegistrationId` value types: server-issued UUIDv4 only, no client
+    generation, non-v4 UUIDs rejected.
+  - `Username` syntax validation (lowercase ASCII `[a-z0-9_.]`, 3-32); invalid input is rejected,
+    never silently lowercased.
+  - `LicenseCode` structural validation (`anox-XXXX-XXXX-XXXX`), secret-safe `toString()`, no
+    generation method (server responsibility).
+  - `LicenseDuration` with exactly `{30, 90, 180}` days; no 365-day/one-week variant.
+  - Frozen `AccountState`/`DeviceState`/`EntitlementState` enums; non-authoritative
+    `EntitlementRenewal` preview taking server time as an explicit input, never the local clock.
+  - `RegistrationState` sealed state machine and `RegistrationOrchestrator` driving
+    reserve -> Device Auth registration (reusing the existing B-002 boundary unmodified) ->
+    public E2EE identity upload (via a new `LocalE2eeIdentityStep` boundary calling the existing,
+    unmodified `CryptoBridge` public API) -> atomic commit. The Device Auth key is marked bound
+    from exactly one call site, only after a successful commit.
+  - `RegistrationApi` narrow contract interface (no real HTTP stack, no fake backend).
+  - `FileDeviceAuthBindingStore`: persistent, no-backup, fail-closed (corrupt -> bound) —
+    closes the PROMPT-007 in-memory-only gap.
+  - `FileRegistrationSessionStore`: persistent, no-backup, crash-resumable registration session
+    state; corrupt -> `NotStarted` (opposite fail-closed direction, deliberately, since there is
+    no security asymmetry to preserve there).
+- **Files changed:** 17 new sources under `android/src/main/java/com/anox/messenger/account/`,
+  1 new file under `security/deviceauth/`, 1 new shared storage utility, 10 new JVM test files,
+  2 new instrumentation test files, `docs/reports/PROMPT_008_B003_ACCOUNT_LICENSE_FOUNDATION.md`.
+- **Tests actually run:**
+  - JVM unit tests: **146/146 PASS** (77 new, 69 pre-existing unchanged), 0 failures, 0 errors
+    (local run against a downloaded JDK 17; no build.gradle.kts/CI change was required since the
+    existing `testDebugUnitTest` step already covers the whole `src/test/java` tree)
+  - Android instrumentation: **58/58 PASS**, 0 failures, 0 errors, on a real emulator
+    (`anox_api34_arm64`, API 34) that was unexpectedly available in this environment. This
+    includes, for the first time, the 10 B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` tests
+    (previously never executed) and the 35 pre-existing `CryptoInstrumentedTest` tests, plus 7
+    new `FileDeviceAuthBindingStoreTest` and 6 new `FileRegistrationSessionStoreTest` tests.
+  - `cargo test`: 15/15 PASS
+  - `./gradlew :android:assembleDebug` / `:android:assembleRelease`: PASS
+  - Debug + release APK content/secret gate: PASS
+  - `git diff --check`: PASS
+- **Tests NOT run / UNVERIFIED:**
+  - Physical hardware-backed StrongBox/TEE behaviour: UNVERIFIED (emulator only, not physical).
+  - GrapheneOS physical-device behaviour: UNVERIFIED.
+- **CI:** no workflow change required; existing `Run JVM unit tests` step already covers the new
+  package. Instrumentation remains not runnable in CI (no emulator there), unchanged from
+  PROMPT-007.
+- **Security invariants:** No invariants changed. No `docs/authority/` file modified.
+- **Product foundation:** crypto, JNI, vodozemac, `K_STATE`, `[ANOX][0x01]`, native `.so`, build
+  tooling, and the B-002 Device Auth security model unchanged; `CryptoBridge` called through its
+  existing public API only, never modified.
+- **Blockers:** none.
+- **PR:** https://github.com/anox-admin/ax-messenger/pull/5 (open, not merged; requires a
+  separate architect security/architecture review, per PROMPT-008B)
+- **CI on PR #5 HEAD `3e06af9`:** run `32578497395` — Rust, Android debug build, Android
+  release compile smoke all `success`
+- **Next gate:** `PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+
+### 2026-08-23 — PROMPT-008C — B-003 Account/License security review remediation
+
+- **Task:** close all PROMPT-008B findings before any PR #5 merge decision.
+- **Findings remediated:**
+  - HIGH-1: remote-commit / local-binding crash-consistency fixed by marking Device Auth binding
+    before persisting `Committed`; `failStep` will not overwrite terminal/bound state.
+  - MEDIUM-2: registration grant persisted with dedicated Android Keystore AES-256-GCM
+    (`anox.b003.session.v1`), fresh IV per write; never plaintext at rest.
+  - MEDIUM-3: stale `.tmp` / plaintext artifacts eliminated via `androidx.core.util.AtomicFile`
+    and `BinaryRegistrationStateCodec`.
+  - LOW-4: new `FileRegistrationSessionStore` uses the established `AtomicFile` primitive.
+  - LOW-5: `RegistrationState.Committed` is now terminal.
+  - LOW-6: fragile newline/equals text codec replaced with versioned length-prefixed binary codec.
+- **Changes:** new `RegistrationSessionKey`, `BinaryRegistrationStateCodec`,
+  `RegistrationSessionSecurityException`; rewritten `FileRegistrationSessionStore`;
+  hardened `RegistrationOrchestrator`; `RegistrationGrantGenerator` moved to `src/test`;
+  new `RegistrationCrashConsistencyTest` with fault-injection crash matrix.
+- **Tests:** 160 JVM unit tests PASS, 0 failures; Rust 15/15 PASS; Android debug + release build
+  and both APK content gates PASS. Instrumentation NOT RUN (no emulator/device available).
+- **Authority:** unchanged. No `docs/authority/` file modified.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+- **Next gate:** `PROMPT-008 MERGE GATE`.
