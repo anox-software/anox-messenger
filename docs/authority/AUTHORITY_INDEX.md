@@ -1,7 +1,7 @@
 # anoX V1 Architecture Authority Index
 
 **Status:** CURRENT  
-**Date:** 2026-08-23
+**Date:** 2026-08-28
 
 ---
 
@@ -32,6 +32,13 @@
 | `B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` | Frozen | Individual B specifications B-001…B-025 |
 
 ---
+
+## Canonical source
+
+`docs/authority/AUTHORITY_INDEX.md` is the single canonical source for authority precedence.
+All other governance, continuity, and handoff documents must reference this file rather than
+duplicating or redefining the precedence list. If any other surface appears to define a competing
+precedence, `AUTHORITY_INDEX.md` wins.
 
 ## Authority versioning rule
 

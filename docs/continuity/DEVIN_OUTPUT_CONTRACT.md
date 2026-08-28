@@ -1,6 +1,6 @@
 # Devin Final Output Contract
 
-**Authority:** B-026 + `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
+**Authority:** B-026
 **Applies to:** every future Devin implementation task
 
 Every Devin task must end with the following sections, in order, and exactly one of the two final result lines.
@@ -25,10 +25,27 @@ M. PR — PR number and URL, merge status
 N. CI — CI run ID(s) and results
 O. BLOCKERS — active blockers or `NONE`
 P. ARCHITECTURE IMPACT — whether architecture changed and how
-Q. SECURITY CLASS — `S0` / `S1` / `S2` / `S3` / `S4`
-R. CLOUD-AI SECRET STATUS — `NO CONFIRMED CLOUD-AI SECRET EXPOSURE` or blocker
-S. IMPLEMENTATION / VERIFIED / PARTIAL / MISSING / UNVERIFIED — explicit status for each changed area
-T. NEXT RECOMMENDED GATE — the next authorized gate (not an automatic feature start)
+Q. NEXT RECOMMENDED GATE — the next authorized gate (not an automatic feature start)
+
+---
+
+## Security subfields (required inside the sections above)
+
+Every S2–S4 task (and any task touching secrets, keys, identity, authentication, authorization,
+E2EE, cryptographic state, or supply-chain security) must also report:
+
+- `SECURITY CLASS: S0 / S1 / S2 / S3 / S4` — normally reported within section P or as a subfield of C/H.
+- `CLOUD-AI SECRET STATUS: NO CONFIRMED CLOUD-AI SECRET EXPOSURE` or the blocking status.
+
+For every security-relevant implementation area, sections E and P must distinguish:
+
+- `IMPLEMENTED`
+- `VERIFIED`
+- `PARTIAL`
+- `MISSING`
+- `UNVERIFIED`
+
+Do not conflate these.
 
 ---
 
@@ -51,6 +68,6 @@ RESULT: BLOCKED — ARCHITECT DECISION REQUIRED
 ## Clarifications
 
 - Do not include a model recommendation field.
-- `SECURITY CLASS` must be chosen from S0–S4 for the most sensitive part of the task.
+- S0–S4 is the sole security-classification system.
 - `CLOUD-AI SECRET STATUS` is mandatory for every security-relevant task.
 - Distinguish `IMPLEMENTED` from `VERIFIED` from `UNVERIFIED`; do not conflate them.

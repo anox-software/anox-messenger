@@ -262,10 +262,10 @@ def resolve_placeholders(content, state):
 
 
 def validate_or_fail():
-    """Run the continuity validator and fail closed if it does not pass."""
+    """Run the continuity validator in live mode and fail closed if it does not pass."""
     validator = REPO_ROOT / "tools" / "continuity" / "validate_continuity.py"
     result = subprocess.run(
-        [sys.executable, str(validator)],
+        [sys.executable, str(validator), "--mode", "live"],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,
@@ -291,6 +291,21 @@ def main():
     short = head[:12]
     branch, _ = git_cmd(["branch", "--show-current"])
     status, _ = git_cmd(["status", "--short"])
+
+    # Baseline information from CURRENT_STATE.json or default
+    state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
+    baseline_branch = "main"
+    baseline_head = ""
+    try:
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        baseline_branch = state.get("baseline_branch", "main")
+        baseline_head = state.get("baseline_head", "")
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    # If possible, resolve the real baseline branch HEAD
+    real_baseline_head, _ = git_cmd(["rev-parse", baseline_branch]) if baseline_branch else ("", 0)
+    if real_baseline_head:
+        baseline_head = real_baseline_head
 
     dirty = status.strip() != ""
     if dirty and not args.emergency:
@@ -318,8 +333,10 @@ def main():
     manifest = io.StringIO()
     manifest.write(f"# ANOX V1 Handoff Manifest\n")
     manifest.write(f"# Date: {date_str}\n")
-    manifest.write(f"# HEAD: {head}\n")
-    manifest.write(f"# Branch: {branch}\n")
+    manifest.write(f"# Handoff branch: {branch}\n")
+    manifest.write(f"# Handoff HEAD: {head}\n")
+    manifest.write(f"# Baseline branch: {baseline_branch}\n")
+    manifest.write(f"# Baseline HEAD: {baseline_head}\n")
     manifest.write(f"# Status: {status_label}\n")
     manifest.write(f"# File count: {len(rel_files)}\n")
     manifest.write("\n")

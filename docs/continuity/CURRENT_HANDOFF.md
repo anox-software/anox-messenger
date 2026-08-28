@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B-003 MERGED — DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
-**Date:** 2026-08-23
+**Handoff version:** PROMPT-009 GOVERNANCE REMEDIATION / REVIEW
+**Date:** 2026-08-28
 
 ---
 
@@ -11,23 +11,19 @@ anoX Messenger V1 — closed-source native Android/GrapheneOS messenger with vod
 
 ## Architecture authority
 
-Highest to lowest:
-
-1. `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
-2. `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
-3. `docs/authority/B_FREEZE_REGISTRY.md`
-4. `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
-5. `docs/authority/B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025_NEW_CHAT_HANDOFF.md`
+Authority precedence is canonical in `docs/authority/AUTHORITY_INDEX.md`.
+New sessions must read that file first.
 
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
 - Current work branch: `governance/development-security-handoff-v1`
-- Merged baseline branch: `main`
-- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- Current baseline branch: `main`
+- Current baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
 - Working tree: expected clean at handoff generation
-- Open PR: none
-- Latest merge: PR #5 PROMPT-008 / B-003 Account/License foundation into `main`
+- Open PR: PR #6 — PROMPT-009 / PROMPT-009R governance, open against `main`
+- Latest merge into `main`: PR #5 `e7ee54a713e08950c63cf2d61ec97931864b66bc` — PROMPT-008 / B-003
+  Account/License client foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -43,28 +39,32 @@ Highest to lowest:
 - PROMPT-007 — B-002 Device Authentication client foundation (PR #4): MERGED into `main` at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`.
 - PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
-- PROMPT-007C — dependency-tree empirically verified (BouncyCastle/Tink not resolved), merge
-  gate finalized, PR #4 merged, continuity synchronized.
-- PROMPT-008 — B-003 Account/License client domain/state foundation implemented on
-  `feature/b003-account-license-foundation`; PR `#5` open against `main`, not merged.
+- PROMPT-007C — merge gate verification, dependency-tree empirical confirmation, merge, and
+  continuity synchronization.
+- PROMPT-008 / PROMPT-008C / PROMPT-008D — B-003 Account/License client domain/state foundation,
+  security review remediation, and final commit-uncertainty closure: MERGED into `main` at
+  `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). B-003 is MERGED FOUNDATION, not
+  production complete.
+- Post-PROMPT-008 main continuity synchronization: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`.
 
 ## Latest completed work
 
-PROMPT-008 — B-003 Account/License client foundation implementation, awaiting architect review.
+PROMPT-009 — Development Security Governance / Handoff Hardening: added S0–S4, Cloud-AI secret
+protection, PR-only-main governance, B-017-Lite timing, and handoff secret preflight.
 
 ## Current open work
 
-PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license-foundation`, PR
-`#5` open against `main`. Awaiting architect review before any merge decision.
+PROMPT-009R — Governance Consistency / Handoff Recovery Remediation: repair current-state
+contradictions, distinguish live and archive validation modes, and make authority precedence
+canonical. PR #6 open against `main`.
 
 ## Current test baseline
 
 - Rust crypto tests: 15/15 PASS
-- Android JVM unit tests: 146/146 PASS
+- Android JVM unit tests: 161/161 PASS
 - Android debug build + APK content validation: PASS
 - Android release compile + APK content validation: PASS
-- Android connected instrumentation: 58/58 PASS on a real emulator (API 34), including the
-  B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` suite for the first time; NOT run in CI
+- Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
 
 ## Historical provenance
@@ -78,11 +78,8 @@ PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license
 ## Known unverified items
 
 - GrapheneOS physical-device testing
-- Local Android release build tooling
-- Connected Android instrumentation in CI (no emulator; run and passing locally on an emulator
-  during PROMPT-008, but that is not CI)
+- Connected Android instrumentation in CI (no emulator; run and passing locally)
 - Physical StrongBox / TEE Device Auth key behaviour
-- GrapheneOS physical-device Device Auth behaviour
 - FCM/push runtime behavior
 - Network messaging/sync at scale
 
@@ -93,19 +90,19 @@ PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license
 
 ## Next architecture gate
 
-`PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+`PROMPT-009 GOVERNANCE REMEDIATION / REVIEW`
 
 ## Next engineering task
 
-PROMPT-008 is in review. No further B-003/B-004 backend work or messaging work is authorized
-until the architect reviews the PROMPT-008 PR.
+PROMPT-009R is in review. No B-004/B-005/B-017-Lite/B-027 implementation is authorized until
+the governance branch is reviewed, remediated as needed, and merged.
 
 ## Do-not-touch foundation
 
 - `crypto/rust/` source (identity, session, serialization, lib, error)
 - `CryptoNative.kt`, `CryptoBridge.kt`
 - vodozemac 0.10.0
-- JNI typed-handle architecture
+- Typed JNI identity/session handle architecture
 - `K_STATE` / AES-256-GCM protected local state
 - `[ANOX][0x01]` envelope
 - Android Keystore state-key wrapping

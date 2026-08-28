@@ -412,3 +412,25 @@ B-005 database/RLS.
 - **Result:** `PASS — B-003 MERGED AND CONTINUITY SYNCHRONIZED`
 - **PR #5 state:** MERGED
 - **Next gate:** `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`
+
+## PROMPT-009R — Governance Consistency / Handoff Recovery Remediation
+
+**Objective:** Repair PROMPT-009 governance layer: fix baseline drift, B-003/PR #5 contradictions,
+make `AUTHORITY_INDEX.md` canonical, restore B-026 A–Q Devin output contract, and add live/archive
+validation modes with baseline drift detection.
+
+**Result:** PASS
+
+- Updated `docs/continuity/CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`,
+  `CURRENT_IMPLEMENTATION_STATE.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`,
+  `PROJECT_STATE.md`, `FORTSCHRITT.md` to distinguish `main @ 881c85e...` (current baseline)
+  from `e7ee54a...` (B-003 merge provenance).
+- B-003 is unequivocally `MERGED FOUNDATION`.
+- `AUTHORITY_INDEX.md` is now the single canonical precedence source.
+- `DEVIN_OUTPUT_CONTRACT.md` restored to B-026 A–Q with S0–S4 and Cloud-AI subfields.
+- `validate_continuity.py` supports `--mode live`, `--mode archive`, `--mode auto`.
+- `generate_handoff.py` records baseline and handoff branch/HEAD in `MANIFEST.txt`.
+- Added 009R regression tests (A–L); existing tests still PASS.
+- Generated fresh handoff passes both archive and live validation.
+- `git diff --check` clean; live and archive validators PASS.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.

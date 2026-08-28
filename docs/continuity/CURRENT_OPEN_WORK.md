@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-23 (post PROMPT-008 merge)
+**Date:** 2026-08-28 (PROMPT-009R remediation)
 
 ---
 
@@ -19,9 +19,9 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 
 ## IN MERGE GATE
 
-`PROMPT-009` — Development Security Governance / Handoff Hardening on
-`governance/development-security-handoff-v1`, PR pending against `main`. Next gate:
-`DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`.
+`PROMPT-009R` — Governance Consistency / Handoff Recovery Remediation on
+`governance/development-security-handoff-v1`, PR #6 open against `main`. Next gate:
+`PROMPT-009 GOVERNANCE REMEDIATION / REVIEW`.
 
 ## IMPLEMENTATION MISSING
 

@@ -14,13 +14,9 @@ It does **NOT** supersede B-025 frozen product and security semantics. If any wo
 
 ## Authority precedence
 
-1. `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md` — product security invariants.
-2. `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` — continuity and handoff governance.
-3. `docs/authority/B_FREEZE_REGISTRY.md` — Track B freeze registry.
-4. This document `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` — development security workflow and S0–S4 classification.
-5. `docs/authority/CLOUD_AI_SECRET_PROTECTION.md` — cloud-AI secret rules.
-6. `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` and `B025/TRACK_B/B0xx_*.md` — product architecture.
-7. Historical `docs/history/` — provenance only, superseded.
+The canonical authority precedence is `docs/authority/AUTHORITY_INDEX.md`. This document is an
+additive current authority under that index. In case of any apparent conflict, `AUTHORITY_INDEX.md`
+is the winner.
 
 ---
 
