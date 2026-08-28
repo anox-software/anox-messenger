@@ -16,7 +16,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 class LiveFixture:
     """Minimal repository fixture that can run live validator and handoff generator."""
 
-    def __init__(self, baseline_override=None, add_synthetic_secret=None, stale_claims=None):
+    def __init__(self, baseline_override=None, add_synthetic_secret=None, stale_claims=None,
+                 handoff_branch_override=None, competing_precedence=False):
         self.tmp = tempfile.mkdtemp(prefix="anox_handoff_test_")
         self.root = Path(self.tmp)
 
@@ -44,9 +45,13 @@ class LiveFixture:
         self._run(["git", "checkout", "-b", "governance/development-security-handoff-v1"])
 
         self.baseline_head = baseline_override if baseline_override else main_head
-        self._write("docs/continuity/CURRENT_STATE.json", self._state_json(self.baseline_head))
-        self._write("docs/continuity/CURRENT_GIT_STATE.md", self._git_state_md(self.baseline_head))
-        self._write("docs/continuity/CURRENT_HANDOFF.md", self._handoff_md(self.baseline_head))
+        self.handoff_branch = handoff_branch_override if handoff_branch_override else "governance/development-security-handoff-v1"
+        self._write("docs/continuity/CURRENT_STATE.json", self._state_json(self.baseline_head, self.handoff_branch))
+        self._write("docs/continuity/CURRENT_GIT_STATE.md", self._git_state_md(self.baseline_head, self.handoff_branch))
+        self._write("docs/continuity/CURRENT_HANDOFF.md", self._handoff_md(self.baseline_head, self.handoff_branch))
+
+        if competing_precedence:
+            self._write("docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md", self._competing_precedence_md())
 
         if add_synthetic_secret:
             (self.root / add_synthetic_secret).write_text("synthetic secret fixture", encoding="utf-8")
@@ -86,35 +91,50 @@ class LiveFixture:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
-    def _handoff_md(self, baseline_head):
+    def _handoff_md(self, baseline_head, handoff_branch=None):
+        branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Handoff\n"
-            f"- Current work branch: `governance/development-security-handoff-v1`\n"
+            f"- Current work branch: `{branch}`\n"
             f"- Current baseline HEAD: `{baseline_head}`\n"
             f"- Merged baseline HEAD: `{baseline_head}`\n"
         )
 
-    def _git_state_md(self, baseline_head):
+    def _git_state_md(self, baseline_head, handoff_branch=None):
+        branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Git\n"
-            "- Current handoff branch: `governance/development-security-handoff-v1`\n"
+            f"- Current handoff branch: `{branch}`\n"
             f"- Current baseline HEAD: `{baseline_head}`\n"
             f"- Merged baseline HEAD: `{baseline_head}`\n"
         )
 
-    def _state_json(self, baseline_head):
+    def _state_json(self, baseline_head, handoff_branch=None):
+        branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             '{\n'
             '  "schema_version": "B026-1.0",\n'
-            '  "handoff_branch": "governance/development-security-handoff-v1",\n'
+            f'  "handoff_branch": "{branch}",\n'
+            '  "handoff_head": "__HANDOFF_HEAD__",\n'
             f'  "baseline_branch": "main",\n'
             f'  "baseline_head": "{baseline_head}",\n'
+            '  "working_tree": "__WORKING_TREE__",\n'
             '  "continuity_001_status": "ACCEPTED",\n'
             '  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",\n'
             '  "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",\n'
             '  "current_task": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",\n'
             '  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW"\n'
             '}\n'
+        )
+
+    def _competing_precedence_md(self):
+        return (
+            "# Workflow\n"
+            "## Authority precedence\n"
+            "1. `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md` is the winner.\n"
+            "2. `docs/authority/AUTHORITY_INDEX.md` is subordinate.\n"
+            "\n"
+            "## S0–S4 Security Classification\n"
         )
 
     def _run(self, cmd, **kw):
@@ -455,6 +475,76 @@ class Test009RRegression(unittest.TestCase):
         self.assertIn("Q. NEXT RECOMMENDED GATE", text)
         self.assertIn("SECURITY CLASS", text)
         self.assertIn("CLOUD-AI SECRET STATUS", text)
+
+    def test_009r_f_branch_mismatch(self):
+        """F. recorded handoff branch does not match live branch."""
+        f = LiveFixture(handoff_branch_override="main")
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "branch mismatch"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            # Validate concrete branch mismatch is reported, not merely a stale phrase
+            self.assertIn("handoff_branch", r.stdout + r.stderr)
+            self.assertIn("governance/development-security-handoff-v1", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_009r_i_authority_precedence_drift(self):
+        """I. non-canonical authority document defines a competing precedence list."""
+        f = LiveFixture(competing_precedence=True)
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "precedence drift"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            # The validator must detect a competing numbered authority list
+            self.assertIn("competing numbered precedence", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_009r_k_archive_unresolved_handoff_head(self):
+        """K. archive containing unresolved __HANDOFF_HEAD__ placeholder must fail."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "generate"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                state_path = a.root / "docs" / "continuity" / "CURRENT_STATE.json"
+                import json
+                data = json.loads(state_path.read_text(encoding="utf-8"))
+                data["handoff_head"] = "__HANDOFF_HEAD__"
+                data["working_tree"] = "__WORKING_TREE__"
+                state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr)
+                self.assertIn("UNRESOLVED HANDOFF PLACEHOLDER", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    def test_009r_l_live_resolved_placeholder_drift(self):
+        """L. live validator rejects resolved current-state values that drift from live."""
+        f = LiveFixture()
+        try:
+            # Set CURRENT_GIT_STATE.md to a concrete but wrong head
+            bad_head = "0000000000000000000000000000000000000000"
+            f._write(
+                "docs/continuity/CURRENT_GIT_STATE.md",
+                f"# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n- Current handoff HEAD: `{bad_head}`\n- Current baseline HEAD: `{f.baseline_head}`\n- Working tree: `clean`\n"
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "placeholder drift"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("CURRENT_GIT_STATE.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
 
 
 if __name__ == "__main__":

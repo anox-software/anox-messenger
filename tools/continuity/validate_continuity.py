@@ -60,6 +60,14 @@ REQUIRED_AUTHORITY_PATHS = {
 
 PLACEHOLDER_MARKERS = ("__HANDOFF_HEAD__", "__WORKING_TREE__")
 
+# Files where runtime placeholders are intentional repository templates.
+# In a generated handoff archive these placeholders MUST already be resolved.
+# In live mode the validator resolves them against live Git.
+PLACEHOLDER_TEMPLATE_FILES = {
+    "docs/continuity/CURRENT_STATE.json",
+    "docs/continuity/CURRENT_GIT_STATE.md",
+}
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Validate anoX continuity / handoff readiness.")
@@ -236,6 +244,15 @@ def validate_current_state_surfaces(root, all_ok, label, live_branch=None):
             print(f"  FAIL FORTSCHRITT.md contains unresolved placeholder: {marker}")
             all_ok = False
 
+    # CURRENT_HANDOFF.md must not contain unresolved placeholders
+    handoff_path = root / "docs/continuity/CURRENT_HANDOFF.md"
+    if handoff_path.exists():
+        handoff_text = handoff_path.read_text(encoding="utf-8")
+        for marker in PLACEHOLDER_MARKERS:
+            if marker in handoff_text:
+                print(f"  FAIL CURRENT_HANDOFF.md contains unresolved placeholder: {marker}")
+                all_ok = False
+
     # Stale current-state phrases
     stale_phrases = [
         ("Approximately **27%**", "outdated functional progress"),
@@ -265,6 +282,189 @@ def validate_current_state_surfaces(root, all_ok, label, live_branch=None):
     if re.search(r"B-003.*(open|not merged|in review)", impl_text, re.IGNORECASE) and re.search(r"B-003.*MERGED", impl_text):
         print("  FAIL CURRENT_IMPLEMENTATION_STATE.md contains contradictory B-003 merged and open/not-merged claims")
         all_ok = False
+
+    return all_ok
+
+
+def _resolve_and_check(text, marker, expected):
+    """Replace a single placeholder with the expected value and confirm the text now contains it."""
+    resolved = text.replace(marker, expected, 1)
+    return resolved, expected in resolved
+
+
+def validate_placeholders(root, all_ok, label, mode, live_state=None):
+    """Validate runtime placeholders in current-state surfaces.
+
+    Repository templates intentionally use __HANDOFF_HEAD__ and __WORKING_TREE__
+    in docs/continuity/CURRENT_STATE.json and CURRENT_GIT_STATE.md; these are
+    resolved by generate_handoff.py before packaging. In archive mode they MUST
+    already be resolved. In live mode unresolved placeholders are acceptable only
+    in the template files; all other current-state files must be concrete.
+    """
+    print(f"\n[{label}] Placeholder / template resolution")
+
+    # Files that may never contain runtime placeholders
+    concrete_files = [
+        "PROJECT_STATE.md",
+        "FORTSCHRITT.md",
+        "docs/continuity/CURRENT_HANDOFF.md",
+        "docs/continuity/CURRENT_OPEN_WORK.md",
+        "docs/continuity/CURRENT_NEXT_DEVIN_TASK.md",
+        "docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md",
+        "docs/continuity/HANDOFF_WORKFLOW.md",
+        "docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md",
+    ]
+
+    for rel in concrete_files:
+        p = root / rel
+        if not p.exists():
+            continue
+        text = p.read_text(encoding="utf-8")
+        for marker in PLACEHOLDER_MARKERS:
+            if marker in text:
+                print(f"  FAIL {rel} contains forbidden placeholder {marker}")
+                all_ok = False
+
+    state = load_current_state(root)
+
+    # CURRENT_STATE.json template handling
+    state_path = root / "docs/continuity/CURRENT_STATE.json"
+    if state_path.exists() and state is not None:
+        for key, marker in (("handoff_head", "__HANDOFF_HEAD__"), ("working_tree", "__WORKING_TREE__")):
+            value = state.get(key, "")
+            if value == marker:
+                if mode == "archive":
+                    print(f"  UNRESOLVED HANDOFF PLACEHOLDER: CURRENT_STATE.json {key} = {marker}")
+                    all_ok = False
+                elif live_state is not None:
+                    # live repository template; confirm it is resolvable
+                    resolved_value = live_state.get("head" if key == "handoff_head" else "working_tree", "")
+                    expected = marker if resolved_value == "" else resolved_value
+                    if resolved_value == "" or (resolved_value != "" and resolved_value not in (marker, "")):
+                        print(f"  OK   CURRENT_STATE.json {key} placeholder is resolvable to live {key}")
+                    else:
+                        print(f"  FAIL CURRENT_STATE.json {key} placeholder cannot be resolved")
+                        all_ok = False
+                else:
+                    print(f"  OK   CURRENT_STATE.json {key} placeholder (template)")
+            elif value == "" or value is None:
+                print(f"  FAIL CURRENT_STATE.json {key} is missing")
+                all_ok = False
+            else:
+                if mode == "archive":
+                    # resolved in archive; no further check needed
+                    print(f"  OK   CURRENT_STATE.json {key} = {value[:24]}...")
+                elif live_state is not None:
+                    expected = live_state.get("head" if key == "handoff_head" else "working_tree", "")
+                    if expected and value != expected:
+                        print(f"  FAIL CURRENT_STATE.json {key} {value} != live {expected}")
+                        all_ok = False
+                    else:
+                        print(f"  OK   CURRENT_STATE.json {key} matches live")
+
+    # CURRENT_GIT_STATE.md template handling
+    git_state_path = root / "docs/continuity/CURRENT_GIT_STATE.md"
+    if git_state_path.exists():
+        git_state_text = git_state_path.read_text(encoding="utf-8")
+        for marker in PLACEHOLDER_MARKERS:
+            if marker in git_state_text:
+                if mode == "archive":
+                    print(f"  UNRESOLVED HANDOFF PLACEHOLDER: CURRENT_GIT_STATE.md contains {marker}")
+                    all_ok = False
+                elif live_state is not None:
+                    expected = live_state.get("head" if marker == "__HANDOFF_HEAD__" else "working_tree", "")
+                    if expected and expected not in (marker, ""):
+                        resolved_text = git_state_text.replace(marker, expected)
+                        if expected in resolved_text:
+                            print(f"  OK   CURRENT_GIT_STATE.md {marker} resolvable to live value")
+                        else:
+                            print(f"  FAIL CURRENT_GIT_STATE.md {marker} does not resolve to {expected}")
+                            all_ok = False
+                    else:
+                        print(f"  FAIL CURRENT_GIT_STATE.md {marker} cannot be resolved")
+                        all_ok = False
+                else:
+                    print(f"  OK   CURRENT_GIT_STATE.md {marker} placeholder (template)")
+
+    # Verify concrete resolved values in CURRENT_GIT_STATE.md match live state
+    if git_state_path.exists() and live_state is not None:
+        git_state_text = git_state_path.read_text(encoding="utf-8")
+        # Current handoff HEAD
+        m = re.search(r"[-*]\s*(?:Current handoff HEAD|Handoff HEAD|HEAD):\s*`?([^`\n]+)`?", git_state_text, re.IGNORECASE)
+        if m:
+            recorded_head = m.group(1).strip()
+            if recorded_head and recorded_head not in PLACEHOLDER_MARKERS:
+                live_head = live_state.get("head", "")
+                if live_head and recorded_head != live_head:
+                    print(f"  FAIL CURRENT_GIT_STATE.md recorded handoff HEAD {recorded_head} != live {live_head}")
+                    all_ok = False
+                else:
+                    print(f"  OK   CURRENT_GIT_STATE.md handoff HEAD matches live")
+        # Working tree
+        m = re.search(r"[-*]\s*Working tree:\s*`?([^`\n]+)`?", git_state_text, re.IGNORECASE)
+        if m:
+            recorded_tree = m.group(1).strip()
+            if recorded_tree and recorded_tree not in PLACEHOLDER_MARKERS:
+                live_tree = live_state.get("working_tree", "")
+                if live_tree and recorded_tree != live_tree:
+                    print(f"  FAIL CURRENT_GIT_STATE.md recorded working tree {recorded_tree} != live {live_tree}")
+                    all_ok = False
+                else:
+                    print(f"  OK   CURRENT_GIT_STATE.md working tree matches live")
+
+    return all_ok
+
+
+def _extract_section(text, heading):
+    """Return the text from a heading up to the next same-level heading or end of file."""
+    pattern = re.escape(heading) + r"\n(.*?)((?=\n## )|\Z)"
+    m = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+    return m.group(1) if m else ""
+
+
+def validate_authority_precedence(root, all_ok, label):
+    """Ensure only docs/authority/AUTHORITY_INDEX.md defines a canonical numbered precedence."""
+    print(f"\n[{label}] Authority precedence drift")
+
+    canonical_path = root / "docs/authority/AUTHORITY_INDEX.md"
+    if canonical_path.exists():
+        canonical_text = canonical_path.read_text(encoding="utf-8")
+        # Accept either "## Precedence" or "## Authority precedence"
+        canonical_section = _extract_section(canonical_text, "## Precedence") or _extract_section(canonical_text, "## Authority precedence")
+        if re.search(r"^\d+\.\s+", canonical_section, re.MULTILINE):
+            print("  OK   AUTHORITY_INDEX.md defines canonical numbered precedence")
+        else:
+            print("  WARN AUTHORITY_INDEX.md does not contain a numbered precedence list")
+    else:
+        print("  FAIL AUTHORITY_INDEX.md missing")
+        return False
+
+    # Other authority/continuity surfaces may not independently define a competing numbered list
+    surfaces = [
+        "docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md",
+        "docs/continuity/CURRENT_HANDOFF.md",
+        "docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md",
+    ]
+    for rel in surfaces:
+        p = root / rel
+        if not p.exists():
+            continue
+        text = p.read_text(encoding="utf-8")
+        for heading in ("## Authority precedence", "## Precedence"):
+            section = _extract_section(text, heading)
+            if not section:
+                continue
+            # Two or more numbered items in a non-canonical authority/precedence section = competing precedence
+            items = re.findall(r"^\d+\.\s+", section, re.MULTILINE)
+            if len(items) >= 2:
+                print(f"  FAIL {rel} defines a competing numbered precedence list under {heading}")
+                all_ok = False
+                break
+            elif len(items) == 1:
+                # Single item still implies an attempt at a numbered list
+                print(f"  FAIL {rel} attempts a competing numbered precedence list under {heading}")
+                all_ok = False
+                break
 
     return all_ok
 
@@ -429,6 +629,8 @@ def live_validation():
     state = load_current_state(REPO_ROOT)
     baseline_branch = state.get("baseline_branch") if state else "main"
     live_baseline_head = git_branch_head(baseline_branch)
+    working_tree = "clean" if (status is not None and status.strip() == "") else "dirty"
+    live_state = {"branch": branch, "head": head, "working_tree": working_tree}
 
     print(f"\n[LIVE] Branch / HEAD")
     print(f"  current branch: {branch or 'FAIL'}")
@@ -438,7 +640,9 @@ def live_validation():
 
     all_ok = validate_state_json(state, REPO_ROOT, all_ok, mode_label, live_branch=branch, live_baseline_head=live_baseline_head)
     all_ok = validate_baseline_consistency(REPO_ROOT, all_ok, mode_label)
+    all_ok = validate_authority_precedence(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch)
+    all_ok = validate_placeholders(REPO_ROOT, all_ok, mode_label, "live", live_state=live_state)
 
     print("\n" + "=" * 60)
     if all_ok:
@@ -467,6 +671,8 @@ def archive_validation(archive_root):
     state = load_current_state(archive_root)
     all_ok = validate_state_json(state, archive_root, all_ok, "ARCHIVE")
     all_ok = validate_baseline_consistency(archive_root, all_ok, "ARCHIVE")
+    all_ok = validate_authority_precedence(archive_root, all_ok, "ARCHIVE")
+    all_ok = validate_placeholders(archive_root, all_ok, "ARCHIVE", "archive", live_state=None)
     all_ok = validate_current_state_surfaces(archive_root, all_ok, "ARCHIVE", live_branch=None)
 
     print("\n" + "=" * 60)
