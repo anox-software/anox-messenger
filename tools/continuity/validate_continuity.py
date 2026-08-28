@@ -358,7 +358,7 @@ def validate_archive_manifests(archive_root, all_ok):
 
     # Manifest metadata check
     manifest_text = manifest.read_text(encoding="utf-8")
-    for key in ("HEAD:", "Branch:", "Status:"):
+    for key in ("Handoff branch:", "Handoff HEAD:", "Baseline HEAD:", "Status:"):
         if key not in manifest_text:
             print(f"  WARN MANIFEST.txt missing {key} metadata")
 
