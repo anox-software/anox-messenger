@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-009R GOVERNANCE REMEDIATION — HANDOFF RECOVERY IN REVIEW
+**Status:** PROMPT-009R3 — CONTINUITY BOOKKEEPING COMPLETE; AWAITING INDEPENDENT RETEST OF ANOX-GOVREV-009R-005
 **Updated:** 2026-08-28
 
 ## Architecture / governance
@@ -32,6 +32,12 @@
 `881c85ec726d8a32eb84b00955b6b9db7912fe1e`. B-003 was merged into `main` at
 `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). PR #6 for PROMPT-009 / PROMPT-009R is
 open against `main`.
+
+PROMPT-009R2 hardened the validator and tests; independent retest CLOSED findings
+`ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004`. The retest discovered
+`ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` in
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` and synchronized continuity surfaces. `ANOX-GOVREV-009R-005` is
+`FIX_READY`; next local gate is its independent retest. GitHub remote remains blocked.
 
 ## Functional progress
 

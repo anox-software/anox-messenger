@@ -434,3 +434,33 @@ validation modes with baseline drift detection.
 - Generated fresh handoff passes both archive and live validation.
 - `git diff --check` clean; live and archive validators PASS.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## PROMPT-009R2 — Governance Validator Final Hardening
+
+**Objective:** Close the three local findings from the independent PROMPT-009R governance review
+(`ANOX-GOVREV-009R-001` missing branch-mismatch / authority-drift tests,
+`ANOX-GOVREV-009R-002` archive not fail-closed for `__HANDOFF_HEAD__`,
+`ANOX-GOVREV-009R-004` incomplete live placeholder/drift coverage).
+
+**START_HEAD:** `0abe9fc25a08a54221f6dcc3d996bc92991060e6`
+
+**FINAL_HEAD:** `57d6e7a13dfd3110020a185d0ddfd68986979111`
+
+**Result:** PASS
+
+- `tools/continuity/validate_continuity.py` hardened:
+  - `validate_placeholders()` distinguishes allowed repository templates from forbidden placeholders.
+  - Archive mode rejects unresolved `__HANDOFF_HEAD__` / `__WORKING_TREE__` with `UNRESOLVED HANDOFF PLACEHOLDER`.
+  - Live mode resolves allowed placeholders and also rejects concrete resolved values that drift from live head/status.
+  - `validate_authority_precedence()` rejects non-canonical numbered authority/precedence lists.
+- `tools/continuity/test_handoff_and_validator.py` extended:
+  - `test_009r_f_branch_mismatch` (branch mismatch FAIL).
+  - `test_009r_i_authority_precedence_drift` (competing precedence FAIL).
+  - `test_009r_k_archive_unresolved_handoff_head` (archive unresolved placeholder FAIL).
+  - `test_009r_l_live_resolved_placeholder_drift` (concrete drift FAIL).
+- `python3 tools/continuity/test_handoff_and_validator.py`: 24 tests PASS.
+- `validate_continuity.py --mode live`: `LIVE_GIT_VERIFICATION: PASS`.
+- Fresh handoff `ANOX_HANDOFF_2026-08-28_57d6e7a13dfd.zip`: `HANDOFF_ARCHIVE_VALIDATION: PASS`.
+- Negative unresolved-placeholder test: `HANDOFF_ARCHIVE_VALIDATION: FAIL` with `UNRESOLVED HANDOFF PLACEHOLDER`.
+- Independent retest confirmed all three findings CLOSED.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.

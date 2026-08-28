@@ -1,57 +1,54 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** PROMPT-009 GOVERNANCE REMEDIATION / REVIEW
-**Task ID:** PROMPT-009R
+**Status:** AWAITING INDEPENDENT RETEST
+**Task ID:** ANOX-GOVREV-009R-005
 **Date:** 2026-08-28
 
 ---
 
 ## Purpose
 
-PROMPT-009 introduced development security governance and handoff hardening. PROMPT-009R repairs
-current-state contradictions, canonicalizes authority precedence, restores the frozen B-026 Devin
-output contract, distinguishes live and archive validation modes, and proves a new handoff can be
-reconstructed and reconciled.
+The independent PROMPT-009R2 retest closed `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`,
+and `ANOX-GOVREV-009R-004` but identified `ANOX-GOVREV-009R-005` (PROMPT-009R2 not archived in
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md`). PROMPT-009R3 has recorded PROMPT-009R2 and synchronized the
+continuity surfaces. The next local gate is an independent retest of the 005 bookkeeping fix.
 
 ## Preconditions satisfied
 
-- B-002 (PR #4) and B-003 (PR #5) are merged into `main`.
-- `main` baseline is `881c85ec726d8a32eb84b00955b6b9db7912fe1e`.
-- B-003 merge commit is `e7ee54a713e08950c63cf2d61ec97931864b66bc`.
-- PROMPT-009 is implemented on `governance/development-security-handoff-v1` (PR #6 open).
-- Rust 15/15, JVM 161/161, Android instrumentation 62/62 all previously PASS.
+- `ANOX-GOVREV-009R-001` through `ANOX-GOVREV-009R-004` are CLOSED by the independent retest.
+- `tools/continuity/validate_continuity.py` and `tools/continuity/test_handoff_and_validator.py`
+  are hardened.
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md` now records `PROMPT-009R2`.
+- `PROMPT-009R3` continuity bookkeeping is completed.
+- 24 regression tests PASS.
+- Live and archive validators PASS.
+- `git diff --check` clean.
 
-## Architecture references
+## Scope of the next task
 
-- `docs/authority/AUTHORITY_INDEX.md`
-- `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
-- `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
-- `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
-- `docs/authority/CLOUD_AI_SECRET_PROTECTION.md`
-
-## Scope
-
-- Repair current-state contradictions (baseline, B-003 merge status, PR #5 status).
-- Make `AUTHORITY_INDEX.md` the single canonical precedence source.
-- Restore B-026 A–Q Devin output contract with PROMPT-009 subfields.
-- Add live and archive validation modes to `validate_continuity.py`.
-- Add baseline drift detection.
-- Extend `generate_handoff.py` metadata for archive validation.
-- Add 009R regression tests.
-- Generate and verify a fresh handoff with both archive and live reconciliation tests.
+- Independently verify `PROMPT-009R2` is accurately and completely recorded in
+  `DEVIN_PROMPT_OUTPUT_ARCHIV.md`.
+- Verify the updated continuity surfaces (`PROJECT_STATE.md`, `FORTSCHRITT.md`,
+  `CURRENT_OPEN_WORK.md`, `CURRENT_HANDOFF.md`, `CURRENT_STATE.json`, `CURRENT_NEXT_DEVIN_TASK.md`)
+  agree on the current gate and finding status.
+- Run `validate_continuity.py --mode live` and confirm `LIVE_GIT_VERIFICATION: PASS`.
+- Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm 24 tests PASS.
+- If all checks pass, declare `ANOX-GOVREV-009R-005` CLOSED.
 
 ## Out of scope
 
-- B-004 backend implementation.
-- B-005 PostgreSQL/RLS implementation.
 - B-017-Lite implementation.
 - B-027 Workforce implementation.
+- B-004 backend implementation.
+- B-005 database/RLS implementation.
 - Any Messenger product code change.
 
-## Next authorized sequence after this remediation
+## Next authorized sequence after this retest
 
-1. Independent governance review of PROMPT-009/009R.
-2. Merge PR #6 after review.
-3. Continuity synchronization on `main` through reviewable workflow.
-4. Fresh canonical handoff.
-5. B-017-Lite (after governance is fully accepted/merged).
+1. If `ANOX-GOVREV-009R-005` retest PASS, the independent reviewer closes the finding.
+2. If GitHub access is restored, push the final governance HEAD and independently verify PR #6.
+3. Merge-review PR #6 and merge into `main` through the reviewable workflow.
+4. Synchronize `main` continuity surfaces and generate a fresh canonical handoff.
+5. Cold archive bootstrap PASS and live-source reconciliation PASS.
+6. Declare PROMPT-009 complete.
+7. Authorize `B-017-Lite` as the next engineering gate.

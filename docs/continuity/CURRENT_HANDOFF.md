@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-009 GOVERNANCE REMEDIATION / REVIEW
+**Handoff version:** PROMPT-009R3 — CONTINUITY BOOKKEEPING CLOSURE
 **Date:** 2026-08-28
 
 ---
@@ -49,14 +49,15 @@ New sessions must read that file first.
 
 ## Latest completed work
 
-PROMPT-009 — Development Security Governance / Handoff Hardening: added S0–S4, Cloud-AI secret
-protection, PR-only-main governance, B-017-Lite timing, and handoff secret preflight.
+PROMPT-009R2 — Governance Validator Final Hardening: closed `ANOX-GOVREV-009R-001`,
+`ANOX-GOVREV-009R-002`, and `ANOX-GOVREV-009R-004` by hardening `validate_continuity.py`
+and the regression test suite.
 
 ## Current open work
 
-PROMPT-009R — Governance Consistency / Handoff Recovery Remediation: repair current-state
-contradictions, distinguish live and archive validation modes, and make authority precedence
-canonical. PR #6 open against `main`.
+`ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `PROMPT-009R2` and `PROMPT-009R3`
+have been recorded in `DEVIN_PROMPT_OUTPUT_ARCHIV.md` and current-state surfaces have been
+synchronized. The finding is `FIX_READY` and awaits independent retest.
 
 ## Current test baseline
 
@@ -90,12 +91,13 @@ canonical. PR #6 open against `main`.
 
 ## Next architecture gate
 
-`PROMPT-009 GOVERNANCE REMEDIATION / REVIEW`
+`INDEPENDENT RETEST OF ANOX-GOVREV-009R-005`
 
 ## Next engineering task
 
-PROMPT-009R is in review. No B-004/B-005/B-017-Lite/B-027 implementation is authorized until
-the governance branch is reviewed, remediated as needed, and merged.
+PROMPT-009R3 bookkeeping is complete. The originating independent governance reviewer must
+retest `ANOX-GOVREV-009R-005`. No B-004/B-005/B-017-Lite/B-027 implementation is authorized until
+all governance findings are CLOSED and the governance branch is reviewed and merged.
 
 ## Do-not-touch foundation
 

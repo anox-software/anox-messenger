@@ -1,6 +1,6 @@
 {
   "schema_version": "B026-1.0",
-  "recorded_at": "2026-08-28 (PROMPT-009R governance remediation)",
+  "recorded_at": "2026-08-28 (PROMPT-009R3 bookkeeping closure)",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
   "baseline_head": "881c85ec726d8a32eb84b00955b6b9db7912fe1e",
@@ -13,8 +13,8 @@
   "open_pr": 6,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",
-  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",
+  "current_task": "ANOX-GOVREV-009R-005 independent retest",
+  "current_gate": "INDEPENDENT RETEST OF ANOX-GOVREV-009R-005",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
