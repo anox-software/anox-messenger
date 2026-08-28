@@ -213,6 +213,26 @@ Do not falsely claim server-side GitHub protection exists.
 
 ---
 
+## GitHub remote activity safety
+
+All AI-assisted and human-assisted Git/GitHub remote activity is governed by
+`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`.
+
+Key hard invariant:
+
+```text
+NO RAPID REPETITIVE REMOTE AUTOMATION
+```
+
+Remote-write authority is explicit and never assumed. After the controlled migration to the new
+GitHub environment, AI initially operates in `HUMAN-CONTROLLED REMOTE WRITE MODE`. AI may not
+autonomously push, create remote PRs, poll GitHub in tight loops, or cycle credentials. Account
+migration and credential reconfiguration are explicit human-controlled workflows.
+
+This is governance only; account migration is a separate controlled workflow.
+
+---
+
 ## Prompt / model-selection governance
 
 The recommended Devin/AI model is communicated **OUTSIDE** the actual implementation prompt.

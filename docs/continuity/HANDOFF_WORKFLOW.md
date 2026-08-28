@@ -53,6 +53,13 @@ not prove that the live repository has not changed since handoff generation. Arc
 may reconstruct state. Before new productive write work, live-source reconciliation is required
 whenever live Git becomes available.
 
+## Remote-write authority
+
+Every handoff must preserve `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`. Remote write is not
+assumed. A new AI session must not push, create remote PRs, poll GitHub, or manage credentials unless
+explicit authority is present. In the initial post-migration mode, remote synchronization is
+human-controlled.
+
 ## Continuity-sync runs
 
 A narrowly scoped run whose sole purpose is archive/continuity synchronization does not require a

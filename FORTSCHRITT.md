@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-009R4 — FINAL CONTINUITY CLOSURE; AWAITING INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006
+**Status:** PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE; AWAITING INDEPENDENT REVIEW
 **Updated:** 2026-08-28
 
 ## Architecture / governance
@@ -38,8 +38,10 @@ PROMPT-009R2 hardened the validator and tests; independent retest CLOSED finding
 `ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` and
 synchronized continuity surfaces. PROMPT-009R4 amended the `PROMPT-009R2` archive entry with the
 missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
-"last Devin task archived" checklist rule. `ANOX-GOVREV-009R-005` and
-`ANOX-GOVREV-009R-006` are `FIX_READY`; next local gate is their independent retest.
+"last Devin task archived" checklist rule. The independent R4 retest CLOSED
+`ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. PROMPT-010 introduced
+`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md` and updated continuity surfaces to enforce
+`NO RAPID REPETITIVE REMOTE AUTOMATION`. The next local gate is independent review of PROMPT-010.
 GitHub remote remains blocked.
 
 ## Functional progress

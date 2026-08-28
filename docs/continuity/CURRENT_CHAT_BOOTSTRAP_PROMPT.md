@@ -23,6 +23,7 @@ Report the mode you used and clearly distinguish `STATE VERIFIED AGAINST LIVE SO
    - `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
    - `docs/authority/CLOUD_AI_SECRET_PROTECTION.md`
    - `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
+   - `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`
    - `docs/authority/B_FREEZE_REGISTRY.md`
    - `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
    (The canonical precedence list is always `AUTHORITY_INDEX.md`. If another document appears to
@@ -111,6 +112,7 @@ Report the mode you used and clearly distinguish `STATE VERIFIED AGAINST LIVE SO
     13. Is an external human audit still required? (expected: YES)
     14. Is `main` PR-only under the new governance? (expected: YES)
     15. Should model recommendations be embedded inside Devin prompts? (expected: NO)
+    16. Is AI remote-write authority assumed? (expected: NO — `REMOTE WRITE AUTHORITY IS EXPLICIT, NEVER ASSUMED`)
 
 End with exactly:
 

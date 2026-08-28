@@ -496,3 +496,37 @@ validation modes with baseline drift detection.
 - `ANOX-GOVREV-009R-005 = FIX_READY` (continuity bookkeeping provided; awaiting independent retest).
 - `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`; no remote CI, push, or PR verification occurred.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## PROMPT-010 — GitHub Remote Activity Safety Governance
+
+**Objective:** Permanently introduce the `NO RAPID REPETITIVE REMOTE AUTOMATION` hard invariant before any AI agent regains GitHub remote-write capability. Enforce local-first development, meaningful commits, controlled pushes, no rapid remote loops, stop-on-auth/error behavior, human-controlled initial remote-write mode, and account-enforcement discipline.
+
+**START_HEAD:** `7f51388aed901feb55b965cc99b36915d3ca36ef`
+
+**FINAL_HEAD:** resolve at handoff generation
+
+**Result:** PASS — ready for independent review
+
+**Changed files:**
+- `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`
+- `docs/authority/AUTHORITY_INDEX.md`
+- `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
+- `docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md`
+- `docs/continuity/HANDOFF_WORKFLOW.md`
+- `FORTSCHRITT.md`
+- `PROJECT_STATE.md`
+- `docs/continuity/CURRENT_HANDOFF.md`
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`
+- `docs/continuity/CURRENT_OPEN_WORK.md`
+- `docs/continuity/CURRENT_STATE.json`
+- `docs/continuity/CURRENT_GIT_STATE.md`
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+**Validation:**
+- `python3 tools/continuity/test_handoff_and_validator.py`: 24 tests PASS.
+- `python3 tools/continuity/validate_continuity.py --mode live`: `LIVE_GIT_VERIFICATION: PASS`.
+- `git diff --check`: clean.
+- Test handoff archive validation PASS.
+- `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`; no remote CI, push, PR, or credential reconfiguration occurred.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.

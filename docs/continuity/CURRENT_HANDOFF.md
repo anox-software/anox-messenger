@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-009R4 — FINAL CONTINUITY CLOSURE / RECURSIVE BOOKKEEPING FIX
+**Handoff version:** PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE
 **Date:** 2026-08-28
 
 ---
@@ -58,16 +58,21 @@ PROMPT-009R3 — Continuity Bookkeeping Closure: recorded `PROMPT-009R2` in
 PROMPT-009R4 — Final Continuity Closure: amended the `PROMPT-009R2` archive entry with the
 missing `ANOX-GOVREV-009R-005` discovery and `REMOTE_SYNC_STATUS` evidence, recorded
 `PROMPT-009R3`, and replaced the recursive "last Devin task archived" checklist rule with a
-finite, auditable distinction between substantive tasks and continuity-sync runs.
+finite, auditable distinction between substantive tasks and continuity-sync runs. The independent
+R4 retest CLOSED `ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`.
+
+PROMPT-010 — GitHub Remote Activity Safety Governance: introduced
+`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`, added it to the authority index, updated
+`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`, `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`, `HANDOFF_WORKFLOW.md`,
+and current-state surfaces. Hard invariant: `NO RAPID REPETITIVE REMOTE AUTOMATION`.
 
 ## Current open work
 
-`ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `PROMPT-009R2` and `PROMPT-009R3`
-are recorded with complete provenance; the finding is `FIX_READY` and awaits independent retest.
+`ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `CLOSED` by independent R4 retest.
 
-`ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: the `HANDOFF_VALIDATION_CHECKLIST.md`
-rule was clarified so a continuity-sync run does not require another run solely to archive itself.
-The finding is `FIX_READY` and awaits independent retest.
+`ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: `CLOSED` by independent R4 retest.
+
+`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced and awaits independent review.
 
 ## Current test baseline
 
@@ -101,14 +106,13 @@ The finding is `FIX_READY` and awaits independent retest.
 
 ## Next architecture gate
 
-`INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006`
+`INDEPENDENT REVIEW OF PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE`
 
 ## Next engineering task
 
-PROMPT-009R4 final continuity closure is complete. The originating independent governance
-reviewer must retest `ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. No B-004/B-005/
-B-017-Lite/B-027 implementation is authorized until all governance findings are CLOSED and the
-governance branch is reviewed and merged.
+PROMPT-010 GitHub remote activity safety governance is implemented and awaits independent review.
+No B-004/B-005/B-017-Lite/B-027 implementation is authorized until the governance branch is
+reviewed, merged, and remote activity is re-enabled under the new safety policy.
 
 ## Do-not-touch foundation
 
