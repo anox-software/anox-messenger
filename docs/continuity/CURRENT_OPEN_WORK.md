@@ -25,9 +25,17 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 `PROMPT-009R2` — Validator and test hardening: implementation PASS, independent retest PASS.
 Findings `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004` are CLOSED.
 
+`PROMPT-009R3` — Continuity bookkeeping: recorded `PROMPT-009R2` and synchronized surfaces.
+
 `ANOX-GOVREV-009R-005` — Continuity bookkeeping (`DEVIN_PROMPT_OUTPUT_ARCHIV.md` record for
-PROMPT-009R2) is now `FIX_READY` after PROMPT-009R3. Retest owner: independent governance
-reviewer. Next local gate: independent retest of 009R-005.
+PROMPT-009R2) is now `FIX_READY` after PROMPT-009R4. The R2 archive entry now includes the
+discovery of 005 and the `BLOCKED` remote status. Retest owner: independent governance reviewer.
+
+`ANOX-GOVREV-009R-006` — Recursive bookkeeping invariant in `HANDOFF_VALIDATION_CHECKLIST.md`
+is now `FIX_READY` after PROMPT-009R4. The checklist no longer requires a continuity-sync run to
+archive itself. Retest owner: independent governance reviewer.
+
+Next local gate: independent retest of `009R-005` and `009R-006`.
 
 ## RELEASE BLOCKERS
 

@@ -52,3 +52,11 @@ A valid handoff proves the integrity and internal consistency of the generated s
 not prove that the live repository has not changed since handoff generation. Archive-only bootstrap
 may reconstruct state. Before new productive write work, live-source reconciliation is required
 whenever live Git becomes available.
+
+## Continuity-sync runs
+
+A narrowly scoped run whose sole purpose is archive/continuity synchronization does not require a
+follow-on run to archive the current run. Its provenance is the resulting Git commit, the updated
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` record of the prior substantive task, and the updated `CURRENT_*`,
+`PROJECT_STATE.md`, and `FORTSCHRITT.md` surfaces. Substantive Devin tasks must still be archived in
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` as completed historical records.

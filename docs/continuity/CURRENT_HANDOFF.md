@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-009R3 — CONTINUITY BOOKKEEPING CLOSURE
+**Handoff version:** PROMPT-009R4 — FINAL CONTINUITY CLOSURE / RECURSIVE BOOKKEEPING FIX
 **Date:** 2026-08-28
 
 ---
@@ -50,14 +50,24 @@ New sessions must read that file first.
 ## Latest completed work
 
 PROMPT-009R2 — Governance Validator Final Hardening: closed `ANOX-GOVREV-009R-001`,
-`ANOX-GOVREV-009R-002`, and `ANOX-GOVREV-009R-004` by hardening `validate_continuity.py`
-and the regression test suite.
+`ANOX-GOVREV-009R-002`, and `ANOX-GOVREV-009R-004`.
+
+PROMPT-009R3 — Continuity Bookkeeping Closure: recorded `PROMPT-009R2` in
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` and synchronized current-state surfaces.
+
+PROMPT-009R4 — Final Continuity Closure: amended the `PROMPT-009R2` archive entry with the
+missing `ANOX-GOVREV-009R-005` discovery and `REMOTE_SYNC_STATUS` evidence, recorded
+`PROMPT-009R3`, and replaced the recursive "last Devin task archived" checklist rule with a
+finite, auditable distinction between substantive tasks and continuity-sync runs.
 
 ## Current open work
 
 `ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `PROMPT-009R2` and `PROMPT-009R3`
-have been recorded in `DEVIN_PROMPT_OUTPUT_ARCHIV.md` and current-state surfaces have been
-synchronized. The finding is `FIX_READY` and awaits independent retest.
+are recorded with complete provenance; the finding is `FIX_READY` and awaits independent retest.
+
+`ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: the `HANDOFF_VALIDATION_CHECKLIST.md`
+rule was clarified so a continuity-sync run does not require another run solely to archive itself.
+The finding is `FIX_READY` and awaits independent retest.
 
 ## Current test baseline
 
@@ -91,13 +101,14 @@ synchronized. The finding is `FIX_READY` and awaits independent retest.
 
 ## Next architecture gate
 
-`INDEPENDENT RETEST OF ANOX-GOVREV-009R-005`
+`INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006`
 
 ## Next engineering task
 
-PROMPT-009R3 bookkeeping is complete. The originating independent governance reviewer must
-retest `ANOX-GOVREV-009R-005`. No B-004/B-005/B-017-Lite/B-027 implementation is authorized until
-all governance findings are CLOSED and the governance branch is reviewed and merged.
+PROMPT-009R4 final continuity closure is complete. The originating independent governance
+reviewer must retest `ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. No B-004/B-005/
+B-017-Lite/B-027 implementation is authorized until all governance findings are CLOSED and the
+governance branch is reviewed and merged.
 
 ## Do-not-touch foundation
 

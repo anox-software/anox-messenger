@@ -13,7 +13,8 @@
 - [ ] `docs/continuity/CURRENT_OPEN_WORK.md` is current
 - [ ] `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md` is current
 - [ ] Working tree is clean (or emergency dirty handoff is explicitly declared)
-- [ ] Last Devin task is archived in `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- [ ] All completed substantive Devin tasks preceding the current continuity synchronization are archived in `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- [ ] The current continuity synchronization is explicitly represented by the current Git HEAD and the updated authoritative continuity surfaces (it is not required to archive itself within the same commit)
 - [ ] Latest tests are recorded truthfully
 - [ ] Latest CI is recorded
 - [ ] Open PRs are recorded

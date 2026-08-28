@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-009R3 — CONTINUITY BOOKKEEPING COMPLETE; AWAITING INDEPENDENT RETEST OF ANOX-GOVREV-009R-005
+**Status:** PROMPT-009R4 — FINAL CONTINUITY CLOSURE; AWAITING INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006
 **Updated:** 2026-08-28
 
 ## Architecture / governance
@@ -35,9 +35,12 @@ open against `main`.
 
 PROMPT-009R2 hardened the validator and tests; independent retest CLOSED findings
 `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004`. The retest discovered
-`ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` in
-`DEVIN_PROMPT_OUTPUT_ARCHIV.md` and synchronized continuity surfaces. `ANOX-GOVREV-009R-005` is
-`FIX_READY`; next local gate is its independent retest. GitHub remote remains blocked.
+`ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` and
+synchronized continuity surfaces. PROMPT-009R4 amended the `PROMPT-009R2` archive entry with the
+missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
+"last Devin task archived" checklist rule. `ANOX-GOVREV-009R-005` and
+`ANOX-GOVREV-009R-006` are `FIX_READY`; next local gate is their independent retest.
+GitHub remote remains blocked.
 
 ## Functional progress
 

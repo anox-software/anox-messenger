@@ -1,6 +1,6 @@
 {
   "schema_version": "B026-1.0",
-  "recorded_at": "2026-08-28 (PROMPT-009R3 bookkeeping closure)",
+  "recorded_at": "2026-08-28 (PROMPT-009R4 final continuity closure)",
   "repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
   "baseline_head": "881c85ec726d8a32eb84b00955b6b9db7912fe1e",
@@ -13,8 +13,8 @@
   "open_pr": 6,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "ANOX-GOVREV-009R-005 independent retest",
-  "current_gate": "INDEPENDENT RETEST OF ANOX-GOVREV-009R-005",
+  "current_task": "ANOX-GOVREV-009R-005 and ANOX-GOVREV-009R-006 independent retest",
+  "current_gate": "INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
@@ -27,6 +27,7 @@
     "PR #3 was merged into main; PR #4 (PROMPT-007, B-002 Device Authentication client foundation) was merged into main at d281df66a3471dfd6a9bab0bd899be701317afb4.",
     "B-002 client foundation is MERGED and VERIFIED where tested. Backend server-side, shared replay cache, device registry, entitlement enforcement, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work.",
     "PR #5 (PROMPT-008 / PROMPT-008C / PROMPT-008D, B-003 Account/License client foundation) was merged into main at e7ee54a713e08950c63cf2d61ec97931864b66bc. main was subsequently synchronized to 881c85ec726d8a32eb84b00955b6b9db7912fe1e (post-merge continuity). B-003 is MERGED FOUNDATION, not production complete.",
-    "PR #6 (PROMPT-009 / PROMPT-009R, Development Security Governance / Handoff Hardening) is open against main."
+    "PR #6 (PROMPT-009 / PROMPT-009R, Development Security Governance / Handoff Hardening) is open against main.",
+    "PROMPT-009R4 closed the recursive 'last Devin task archived' checklist rule and recorded PROMPT-009R3. ANOX-GOVREV-009R-005 and ANOX-GOVREV-009R-006 are FIX_READY for independent retest."
   ]
 }

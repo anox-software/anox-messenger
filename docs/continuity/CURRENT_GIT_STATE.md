@@ -25,8 +25,8 @@
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: PR #6 — PROMPT-009 / PROMPT-009R governance, open against `main`
-- Current task: `PROMPT-009 GOVERNANCE REMEDIATION / REVIEW`
-- Current gate: `PROMPT-009 GOVERNANCE REMEDIATION / REVIEW`
+- Current task: `PROMPT-009R4 — Final Continuity Closure / Recursive Bookkeeping Fix`
+- Current gate: `INDEPENDENT RETEST OF ANOX-GOVREV-009R-005 AND ANOX-GOVREV-009R-006`
 
 ## Merged history on main
 
