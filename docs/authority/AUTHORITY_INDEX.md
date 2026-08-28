@@ -14,8 +14,8 @@
 5. `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` — S0–S4 workflow, AI audit timing, PR-only-main governance.
 6. `GITHUB_REMOTE_ACTIVITY_SAFETY.md` — GitHub remote activity safety, no rapid repetitive remote automation.
 7. `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` — consolidated V1 target architecture.
-7. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025.
-8. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
+8. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025.
+9. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
 
 ---
 

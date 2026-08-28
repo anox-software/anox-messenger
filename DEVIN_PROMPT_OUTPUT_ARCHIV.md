@@ -530,3 +530,34 @@ validation modes with baseline drift detection.
 - Test handoff archive validation PASS.
 - `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`; no remote CI, push, PR, or credential reconfiguration occurred.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## PROMPT-010R1 — Governance Review Finding Remediation
+
+**Objective:** Remediate the two findings from the independent PROMPT-010 review: `ANOX-GOVREV-010-001` (duplicate numbering in `docs/authority/AUTHORITY_INDEX.md`) and `ANOX-GOVREV-010-002` (missing `AI remote-write authority assumed?` quick-reference row in `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`).
+
+**START_HEAD:** `257b1e14aac92472f3366b85b68a441bab83488e`
+
+**FINAL_HEAD:** resolve at handoff generation
+
+**Result:** PASS — `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002` are `FIX_READY` for independent retest
+
+**Changed files:**
+- `docs/authority/AUTHORITY_INDEX.md`
+- `docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md`
+- `FORTSCHRITT.md`
+- `PROJECT_STATE.md`
+- `docs/continuity/CURRENT_HANDOFF.md`
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`
+- `docs/continuity/CURRENT_OPEN_WORK.md`
+- `docs/continuity/CURRENT_STATE.json`
+- `docs/continuity/CURRENT_GIT_STATE.md`
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+**Validation:**
+- `python3 tools/continuity/test_handoff_and_validator.py`: 24 tests PASS.
+- `python3 tools/continuity/validate_continuity.py --mode live`: `LIVE_GIT_VERIFICATION: PASS`.
+- `git diff --check`: clean.
+- Test handoff archive validation PASS.
+- `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`; no remote CI, push, PR, or credential reconfiguration occurred.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.

@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-28 (PROMPT-010 implementation)
+**Date:** 2026-08-28 (PROMPT-010R1 remediation)
 
 ---
 
@@ -29,7 +29,13 @@ Findings `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004` 
 
 `ANOX-GOVREV-009R-006` — Recursive bookkeeping invariant: `CLOSED` by independent R4 retest.
 
-`PROMPT-010` — GitHub Remote Activity Safety Governance: implemented and awaits independent review.
+`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced and reviewed.
+
+`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1;
+retest owner: independent governance reviewer.
+
+`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1;
+retest owner: independent governance reviewer.
 
 ## RELEASE BLOCKERS
 

@@ -312,3 +312,4 @@ These one-line answers are provided so a brand-new session can determine the cur
 | Is an external human audit still required? | **YES** |
 | Is `main` PR-only under the new governance? | **YES** |
 | Should model recommendations be embedded inside Devin prompts? | **NO** |
+|| Is AI remote-write authority assumed? | **NO** — `REMOTE WRITE AUTHORITY IS EXPLICIT, NEVER ASSUMED`; see `GITHUB_REMOTE_ACTIVITY_SAFETY.md` |

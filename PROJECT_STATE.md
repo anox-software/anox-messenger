@@ -19,7 +19,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `INDEPENDENT REVIEW OF PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE`
+- Current gate: `INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.

@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE
+**Handoff version:** PROMPT-010R1 — GOVERNANCE REVIEW FINDING REMEDIATION
 **Date:** 2026-08-28
 
 ---
@@ -66,13 +66,22 @@ PROMPT-010 — GitHub Remote Activity Safety Governance: introduced
 `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`, `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`, `HANDOFF_WORKFLOW.md`,
 and current-state surfaces. Hard invariant: `NO RAPID REPETITIVE REMOTE AUTOMATION`.
 
+PROMPT-010R1 — Governance review finding remediation: corrected the duplicate numbering in
+`AUTHORITY_INDEX.md` and added the `AI remote-write authority assumed? → NO` quick-reference row
+to `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`.
+
 ## Current open work
 
 `ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `CLOSED` by independent R4 retest.
 
 `ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: `CLOSED` by independent R4 retest.
 
-`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced and awaits independent review.
+`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1.
+
+`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1.
+
+`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced; now awaiting retest of
+010-001/002.
 
 ## Current test baseline
 
@@ -106,13 +115,14 @@ and current-state surfaces. Hard invariant: `NO RAPID REPETITIVE REMOTE AUTOMATI
 
 ## Next architecture gate
 
-`INDEPENDENT REVIEW OF PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE`
+`INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
 
 ## Next engineering task
 
-PROMPT-010 GitHub remote activity safety governance is implemented and awaits independent review.
-No B-004/B-005/B-017-Lite/B-027 implementation is authorized until the governance branch is
-reviewed, merged, and remote activity is re-enabled under the new safety policy.
+PROMPT-010R1 corrected the two governance review findings. The originating independent reviewer
+must retest `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002`. No B-004/B-005/B-017-Lite/B-027
+implementation is authorized until all governance findings are CLOSED and the branch is reviewed
+and merged.
 
 ## Do-not-touch foundation
 

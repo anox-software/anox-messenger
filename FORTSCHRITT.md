@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-010 — GITHUB REMOTE ACTIVITY SAFETY GOVERNANCE; AWAITING INDEPENDENT REVIEW
+**Status:** PROMPT-010R1 — REMEDIATION OF GOVERNANCE REVIEW FINDINGS; AWAITING INDEPENDENT RETEST OF 010-001/002
 **Updated:** 2026-08-28
 
 ## Architecture / governance
@@ -39,10 +39,12 @@ PROMPT-009R2 hardened the validator and tests; independent retest CLOSED finding
 synchronized continuity surfaces. PROMPT-009R4 amended the `PROMPT-009R2` archive entry with the
 missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
 "last Devin task archived" checklist rule. The independent R4 retest CLOSED
-`ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. PROMPT-010 introduced
-`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md` and updated continuity surfaces to enforce
-`NO RAPID REPETITIVE REMOTE AUTOMATION`. The next local gate is independent review of PROMPT-010.
-GitHub remote remains blocked.
+`ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. PROMPT-010 introduced `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md` and updated
+continuity surfaces. The independent PROMPT-010 review found `ANOX-GOVREV-010-001` (duplicate
+authority-index numbering) and `ANOX-GOVREV-010-002` (missing remote-write quick-reference row).
+PROMPT-010R1 corrected the numbering in `AUTHORITY_INDEX.md` and added the quick-reference row to
+`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`. `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002` are now
+`FIX_READY` for independent retest. GitHub remote remains blocked.
 
 ## Functional progress
 
