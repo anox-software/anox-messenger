@@ -39,21 +39,18 @@ B-027 does **not** redefine Messenger product behavior.
 
 ## C. Frozen Authority Position
 
-Authority hierarchy (highest first):
+Canonical authority precedence is defined only in `docs/authority/AUTHORITY_INDEX.md`.
+This document must not duplicate or redefine the full numbered precedence list.
 
-1. Security Invariants
-2. B-026 Continuous Development Governance
-3. Freeze Registry
-4. Cloud AI Secret Protection
-5. Development Security Workflow
-6. GitHub Remote Activity Safety
-7. Ultimate MAIN Architecture
-8. B0xx / Track Specifications
-9. B-027 AI Workforce / Work-Control Governance
-10. Role Contracts
-11. Task Packages
-12. concrete Agent / Devin prompts
-13. historical / superseded / legacy material
+Within the B-027 execution layer the subordinate hierarchy is (highest first):
+
+1. B-027 AI Workforce / Work-Control Governance
+2. Role Contracts
+3. Task Packages
+4. concrete Agent / Devin prompts
+5. historical / superseded / legacy material
+
+B-027 is subordinate to all higher authority defined by `docs/authority/AUTHORITY_INDEX.md`.
 
 Invariant:
 
@@ -89,6 +86,20 @@ Stable IDs:
 
 Only ROLE-001 through ROLE-004 are initially active. Other roles are gate-activated or on-demand.
 
+### Role ≠ Model
+
+A role is a stable workforce identity/capability. A model/provider is a replaceable
+runtime assignment. For example:
+
+`ROLE-008 = AppSec & Penetration Security Operator`
+
+not:
+
+`ROLE-008 = Claude / Devin`
+
+The Model/Provider Matrix determines which models/providers may be assigned to which
+roles. Changing a model or provider does not renumber, rename, or redefine a role.
+
 ---
 
 ## E. Frozen Security Principles
@@ -102,6 +113,21 @@ Only ROLE-001 through ROLE-004 are initially active. Other roles are gate-activa
 - `D4 AI ACCESS = PROHIBITED`
 
 AI may not possess production signing keys or activate Break-Glass. ROLE-003 is an Orchestrator, not a Superuser.
+
+### Finding Security
+
+1. Findings cannot silently disappear.
+2. Persistent Finding records must remain audit-traceable.
+3. A fixer cannot solely close an independent Finding.
+4. Independent closure requires appropriate reviewer/retest evidence.
+5. Severity downgrade requires:
+   - rationale,
+   - evidence,
+   - authorized actor/role,
+   - audit event.
+6. Normal remediation sequence:
+
+`FINDING → TARGETED FIX → DELTA RETEST → CLOSURE`
 
 ---
 
@@ -147,6 +173,15 @@ Stable IDs:
 - `ANOX-WORK-XXXXXX`
 
 No actual Workforce directories or files are created by this freeze.
+
+### Gate Resolver
+
+The Gate Resolver is deterministic, fail-closed, and operates on structured canonical inputs.
+
+- `UNKNOWN OR AMBIGUOUS GATE STATE = BLOCKED`
+- A Derived Work Candidate cannot self-authorize.
+- Findings, logs, or support input cannot directly cause writable execution.
+- Only the Authority + Resolver path can produce an authorized executable Task.
 
 ---
 
@@ -223,7 +258,23 @@ Cold Recovery requirement:
 
 `FRESH CONTEXT + ONLY HANDOFF ZIP + NO PRIOR CHAT MEMORY`
 
-must be able to reconstruct the authorized workforce state.
+must be able to determine at minimum:
+
+- canonical repository
+- Handoff snapshot SHA
+- highest Authority
+- Workforce Authority
+- its Role / Role Registry
+- active Roles
+- active/non-closed Tasks
+- open/non-closed Findings
+- active Decisions
+- current Gate
+- Human-Controlled Remote Write Mode
+- next authorized action
+
+It must also understand `HANDOFF SNAPSHOT != LIVE SOURCE` and reconcile with live Git
+before writable work.
 
 ---
 

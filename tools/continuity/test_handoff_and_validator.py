@@ -80,6 +80,13 @@ class LiveFixture:
         self._write("FORTSCHRITT.md", "# Fortschritt\nApproximately **33%**.\nB-003 merged.\n")
         self._write("DEVIN_PROMPT_OUTPUT_ARCHIV.md", "# Archive\n")
 
+        # Historical provenance file with stale phrases. It must not falsely fail
+        # current-state validation because stale-phrase checks do not scan docs/history/.
+        self._write(
+            "docs/history/old_fortschritt.md",
+            "Approximately **27%**.\nDevice Authentication work has not started.\n",
+        )
+
     def _impl_md(self, stale_claims=None):
         base = "# Impl\nB-002 MERGED.\nB-003 MERGED FOUNDATION.\n"
         if stale_claims:
@@ -121,7 +128,9 @@ class LiveFixture:
             '  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",\n'
             '  "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",\n'
             '  "current_task": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",\n'
-            '  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW"\n'
+            '  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",\n'
+            f'  "latest_merge_to_baseline": "{described_head}",\n'
+            f'  "previous_baseline_head": "{described_head}"\n'
             '}\n'
         )
 
@@ -237,7 +246,6 @@ class TestContinuityValidator(unittest.TestCase):
         """L. historical old entries do not falsely fail current-state validation."""
         f = LiveFixture()
         try:
-            f._write("docs/history/old_fortschritt.md", "Approximately **27%**.\nDevice Authentication work has not started.\n")
             f._run(["git", "add", "."])
             f._run(["git", "commit", "-m", "history"])
             r = f.validate()
@@ -694,6 +702,353 @@ class TestDescribedHeadSemantics(unittest.TestCase):
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
             # live_head is a descendant, not equal to described_head, yet validation passes.
             self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class TestRenameAndPrefixSecurity(unittest.TestCase):
+    """ANOX-PREB027REV-001, -003, -010: rename and historical-prefix bypass tests."""
+
+    def _run_rename_scenario(self, source_rel, dest_rel, source_text="substantive\n"):
+        """Create source, commit, rename to dest, commit; expect validation FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            (f.root / source_rel).parent.mkdir(parents=True, exist_ok=True)
+            (f.root / source_rel).write_text(source_text, encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add source"])
+            (f.root / dest_rel).parent.mkdir(parents=True, exist_ok=True)
+            f._run(["git", "mv", source_rel, dest_rel])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "rename"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_rename_ci_to_history_fails(self):
+        """Rename .github/workflows/ci.yml into docs/history/ fails."""
+        self._run_rename_scenario(".github/workflows/ci.yml", "docs/history/ci.yml")
+
+    def test_rename_product_to_history_fails(self):
+        """Rename product source into docs/history/ fails."""
+        self._run_rename_scenario("android/src/Foo.kt", "docs/history/Foo.kt")
+
+    def test_rename_tool_to_history_fails(self):
+        """Rename tool into docs/history/ fails."""
+        self._run_rename_scenario(
+            "tools/continuity/evil.py", "docs/history/evil.py"
+        )
+
+    def test_rename_authority_to_history_fails(self):
+        """Rename authority file into docs/history/ fails."""
+        self._run_rename_scenario(
+            "docs/authority/NEW_POLICY.md", "docs/history/NEW_POLICY.md"
+        )
+
+    def _add_file_and_expect_substantive(self, rel, content="content\n"):
+        """Add a file after described_head and expect validation to fail."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(rel, content)
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add file"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_history_arbitrary_markdown_fails(self):
+        self._add_file_and_expect_substantive("docs/history/ARBITRARY_SECURITY_INSTRUCTIONS.md")
+
+    def test_history_arbitrary_nested_fails(self):
+        self._add_file_and_expect_substantive("docs/history/foo/bar/unexpected.md")
+
+    def test_history_arbitrary_script_fails(self):
+        self._add_file_and_expect_substantive("docs/history/evil.py", "print('evil')\n")
+
+    def test_history_arbitrary_shell_fails(self):
+        self._add_file_and_expect_substantive("docs/history/evil.sh", "#!/bin/sh\nexit\n")
+
+    def test_history_arbitrary_js_fails(self):
+        self._add_file_and_expect_substantive("docs/history/deploy.js", "console.log(1);\n")
+
+    def test_historical_handoff_zip_fails(self):
+        self._add_file_and_expect_substantive(
+            "docs/continuity/HISTORICAL_HANDOFFS/anything.zip", b"PK\x00".decode("latin-1")
+        )
+
+    def test_historical_handoff_nested_script_fails(self):
+        self._add_file_and_expect_substantive(
+            "docs/continuity/HISTORICAL_HANDOFFS/sub/dir/x.py", "print(1)\n"
+        )
+
+    def test_git_diff_files_exposes_rename_sides(self):
+        """--no-renames causes git_diff_files to return both sides of a rename."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(".github/workflows/ci.yml", "name: ci\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add ci"])
+            (f.root / "docs/history").mkdir(parents=True, exist_ok=True)
+            f._run(["git", "mv", ".github/workflows/ci.yml", "docs/history/ci.yml"])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "rename"])
+            live = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            changed = vc.git_diff_files(f.baseline_head, live, cwd=str(f.root))
+            self.assertIn(".github/workflows/ci.yml", changed)
+            self.assertIn("docs/history/ci.yml", changed)
+        finally:
+            f.cleanup()
+
+
+class TestArchiveRequiredKeys(unittest.TestCase):
+    """ANOX-PREB027REV-002, -010: archive mode must enforce mandatory state keys."""
+
+    @staticmethod
+    def _recompute_sha_manifest(archive_root):
+        """Recompute SHA256_MANIFEST.txt entries for CURRENT_STATE.json after editing it."""
+        import hashlib
+        sha_manifest_path = archive_root / "SHA256_MANIFEST.txt"
+        rel = "docs/continuity/CURRENT_STATE.json"
+        new_digest = hashlib.sha256((archive_root / rel).read_bytes()).hexdigest()
+        lines = []
+        for line in sha_manifest_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("#") or not line.strip():
+                lines.append(line)
+                continue
+            parts = line.split(None, 1)
+            if len(parts) == 2 and parts[1] == rel:
+                lines.append(f"{new_digest}  {rel}")
+            else:
+                lines.append(line)
+        sha_manifest_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def _archive_missing_key(self, key_to_remove):
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "generate"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                import json
+                state_path = a.root / "docs" / "continuity" / "CURRENT_STATE.json"
+                data = json.loads(state_path.read_text(encoding="utf-8"))
+                data.pop(key_to_remove, None)
+                state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    def test_archive_missing_current_gate_fails(self):
+        self._archive_missing_key("current_gate")
+
+    def test_archive_missing_security_invariants_path_fails(self):
+        self._archive_missing_key("security_invariants_path")
+
+    def test_archive_missing_freeze_registry_path_fails(self):
+        self._archive_missing_key("freeze_registry_path")
+
+    def test_archive_missing_described_and_baseline_head_fails(self):
+        self._archive_missing_key("described_head")
+
+    def test_archive_legacy_baseline_head_allowed(self):
+        """Archive with legacy baseline_head but no described_head still passes."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "generate"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                import json
+                state_path = a.root / "docs" / "continuity" / "CURRENT_STATE.json"
+                data = json.loads(state_path.read_text(encoding="utf-8"))
+                data["baseline_head"] = data.pop("described_head")
+                state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+
+class TestMissingHeadDeclaration(unittest.TestCase):
+    """ANOX-PREB027REV-009, -010: current continuity surfaces must declare described_head."""
+
+    def _missing_declaration(self, rel, content):
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(rel, content)
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "remove head declaration"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("does not declare described_head", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_handoff_missing_described_head_fails(self):
+        self._missing_declaration(
+            "docs/continuity/CURRENT_HANDOFF.md",
+            "# Handoff\n- Current work branch: `governance/development-security-handoff-v1`\n",
+        )
+
+    def test_git_state_missing_described_head_fails(self):
+        self._missing_declaration(
+            "docs/continuity/CURRENT_GIT_STATE.md",
+            "# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n",
+        )
+
+    def test_git_state_legacy_baseline_decl_passes(self):
+        """Legacy 'Current baseline HEAD' declaration remains accepted."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(
+                "docs/continuity/CURRENT_GIT_STATE.md",
+                f"# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n"
+                f"- Current baseline HEAD: `{f.baseline_head}`\n",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "legacy baseline declaration"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class TestBaselineAncestry(unittest.TestCase):
+    """ANOX-PREB027REV-004, -010: non-self-referential baseline ancestry."""
+
+    def _main_head(self):
+        r = subprocess.run(
+            ["git", "rev-parse", "main"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+        )
+        return r.stdout.strip()
+
+    def test_valid_ancestors_pass(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+            "previous_baseline_head": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertTrue(result)
+
+    def test_unrelated_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "1111111111111111111111111111111111111111",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_malformed_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "notavalidsha",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_nonexistent_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "0000000000000000000000000000000000000000",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_invalid_order_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+            "previous_baseline_head": main,
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+
+class TestHeadPrecedence(unittest.TestCase):
+    """ANOX-PREB027REV-008, -010: described_head wins over legacy baseline_head."""
+
+    def test_resolve_described_head_precedence(self):
+        self.assertEqual(
+            vc._resolve_described_head({"described_head": "a" * 40, "baseline_head": "b" * 40}),
+            "a" * 40,
+        )
+        self.assertEqual(
+            vc._resolve_described_head({"baseline_head": "b" * 40}),
+            "b" * 40,
+        )
+
+    def test_generator_prefers_described_head(self):
+        """If baseline branch does not resolve, generator manifest falls back to described_head."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            described = "a68eca5248f1ab315c34ba00387030bfd58c138e"
+            fallback = "1111111111111111111111111111111111111111"
+            f._write(
+                "docs/continuity/CURRENT_STATE.json",
+                '{'
+                f'"handoff_branch": "governance/development-security-handoff-v1",'
+                f'"described_head": "{described}",'
+                f'"baseline_head": "{fallback}",'
+                f'"baseline_branch": "nonexistent-branch",'
+                '"security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",'
+                '"freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",'
+                '"current_gate": "TEST",'
+                '"continuity_001_status": "ACCEPTED"'
+                '}\n',
+            )
+            # Also update handoff surface to match described_head
+            f._write(
+                "docs/continuity/CURRENT_HANDOFF.md",
+                "# Handoff\n- Current work branch: `governance/development-security-handoff-v1`\n"
+                f"- Described HEAD: `{described}`\n",
+            )
+            f._write(
+                "docs/continuity/CURRENT_GIT_STATE.md",
+                "# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n"
+                f"- Described HEAD: `{described}`\n",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "precedence"])
+            r = f.generate(emergency=True)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            names = f.list_zip()
+            with zipfile.ZipFile(f.zip_path()) as zf:
+                manifest = zf.read("MANIFEST.txt").decode("utf-8")
+            self.assertIn(f"Baseline HEAD: {described}", manifest)
+            self.assertNotIn(f"Baseline HEAD: {fallback}", manifest)
         finally:
             f.cleanup()
 

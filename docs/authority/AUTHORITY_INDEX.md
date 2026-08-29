@@ -9,7 +9,7 @@
 
 1. `B025/SECURITY_INVARIANTS_V1_1.md` — always first.
 2. `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` — development continuity and handoff governance.
-3. `B_FREEZE_REGISTRY.md` — current registry of frozen Track B specifications B-001…B-026.
+3. `B_FREEZE_REGISTRY.md` — current registry of frozen Track B specifications B-001…B-027.
 4. `CLOUD_AI_SECRET_PROTECTION.md` — cloud-AI secret / private-key protection.
 5. `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` — S0–S4 workflow, AI audit timing, PR-only-main governance.
 6. `GITHUB_REMOTE_ACTIVITY_SAFETY.md` — GitHub remote activity safety, no rapid repetitive remote automation.
@@ -25,7 +25,7 @@
 |----------|-----------|---------|
 | `B025/SECURITY_INVARIANTS_V1_1.md` | Binding | anoX V1 security invariants |
 | `B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` | Frozen | Chat handoff, governance, and Devin output contracts |
-| `B_FREEZE_REGISTRY.md` | Current | Track B freeze registry B-001…B-026 |
+| `B_FREEZE_REGISTRY.md` | Current | Track B freeze registry B-001…B-027 |
 | `CLOUD_AI_SECRET_PROTECTION.md` | Binding | Cloud-AI secret / private-key protection |
 | `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` | Current | S0–S4 workflow, AI audit timing, PR-only-main governance |
 | `GITHUB_REMOTE_ACTIVITY_SAFETY.md` | Current | GitHub remote activity safety, no rapid repetitive remote automation |
