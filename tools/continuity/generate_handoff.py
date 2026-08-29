@@ -299,7 +299,7 @@ def main():
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
         baseline_branch = state.get("baseline_branch", "main")
-        baseline_head = state.get("baseline_head", "")
+        baseline_head = state.get("baseline_head", "") or state.get("described_head", "")
     except (FileNotFoundError, json.JSONDecodeError):
         pass
     # If possible, resolve the real baseline branch HEAD

@@ -140,6 +140,51 @@ def git_branch_head(branch, cwd=None):
     return out
 
 
+METADATA_ONLY_ALLOWLIST = frozenset(
+    {
+        "FORTSCHRITT.md",
+        "PROJECT_STATE.md",
+        "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
+        "docs/continuity/CURRENT_STATE.json",
+        "docs/continuity/CURRENT_GIT_STATE.md",
+        "docs/continuity/CURRENT_HANDOFF.md",
+        "docs/continuity/CURRENT_IMPLEMENTATION_STATE.md",
+        "docs/continuity/CURRENT_OPEN_WORK.md",
+        "docs/continuity/CURRENT_NEXT_DEVIN_TASK.md",
+        "docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md",
+        "docs/continuity/HANDOFF_WORKFLOW.md",
+        "docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md",
+    }
+)
+
+# Historical provenance directories are not active governance/product; changes there
+# must not falsely fail a metadata-only state advance.
+HISTORICAL_PREFIXES = ("docs/history/", "docs/continuity/HISTORICAL_HANDOFFS/")
+
+
+def _is_allowed_metadata_path(rel):
+    if rel in METADATA_ONLY_ALLOWLIST:
+        return True
+    return any(rel.startswith(prefix) for prefix in HISTORICAL_PREFIXES)
+
+
+def is_valid_sha(text):
+    return bool(re.fullmatch(r"[0-9a-f]{40}", text or ""))
+
+
+def git_is_ancestor(ancestor, descendant, cwd=None):
+    out, _, code = run_git(["merge-base", "--is-ancestor", ancestor, descendant], cwd=cwd)
+    return code == 0
+
+
+def git_diff_files(from_sha, to_sha, cwd=None):
+    """Return list of paths changed between two Git SHAs."""
+    out, _, code = run_git(["diff", "--name-only", f"{from_sha}..{to_sha}"], cwd=cwd)
+    if code != 0 or out is None:
+        return None
+    return [line.strip() for line in out.splitlines() if line.strip()]
+
+
 def load_current_state(root):
     path = root / "docs" / "continuity" / "CURRENT_STATE.json"
     try:
@@ -180,15 +225,28 @@ def validate_authority_paths(root, all_ok, label):
     return all_ok
 
 
-def validate_state_json(state, root, all_ok, label, live_branch=None, live_baseline_head=None):
+def _resolve_described_head(state):
+    """Return the described_head, migrating legacy baseline_head if needed."""
+    return state.get("described_head") or state.get("baseline_head") or ""
+
+
+def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=None, mode=None):
     print(f"\n[{label}] CURRENT_STATE.json")
     if state is None:
         print("  FAIL CURRENT_STATE.json missing or invalid JSON")
         return False
 
-    for key in ("handoff_branch", "baseline_head", "security_invariants_path", "freeze_registry_path", "current_gate", "continuity_001_status"):
-        if key not in state:
-            print(f"  FAIL CURRENT_STATE.json missing key: {key}")
+    required_new_keys = ("handoff_branch", "described_head", "security_invariants_path",
+                         "freeze_registry_path", "current_gate", "continuity_001_status")
+    if mode == "live":
+        for key in required_new_keys:
+            if key not in state:
+                print(f"  FAIL CURRENT_STATE.json missing key: {key}")
+                all_ok = False
+    else:
+        # Archive mode: allow historical baseline_head, but prefer described_head
+        if "described_head" not in state and "baseline_head" not in state:
+            print("  FAIL CURRENT_STATE.json missing described_head (or legacy baseline_head)")
             all_ok = False
 
     if state.get("continuity_001_status") != "ACCEPTED":
@@ -197,13 +255,16 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_basel
     else:
         print("  OK   continuity_001_status = ACCEPTED")
 
-    if live_baseline_head is not None:
-        recorded_baseline = state.get("baseline_head")
-        if recorded_baseline and recorded_baseline != live_baseline_head:
-            print(f"  FAIL BASELINE DRIFT: CURRENT_STATE.json baseline_head {recorded_baseline} != live {live_baseline_head}")
+    if live_head is not None:
+        described_head = _resolve_described_head(state)
+        if not described_head:
+            print("  FAIL CURRENT_STATE.json described_head missing/unresolved")
             all_ok = False
-        elif recorded_baseline:
-            print(f"  OK   CURRENT_STATE.json baseline_head matches live {live_baseline_head[:12]}")
+        elif not is_valid_sha(described_head):
+            print(f"  FAIL CURRENT_STATE.json described_head is not a valid 40-char hex SHA: {described_head}")
+            all_ok = False
+        else:
+            all_ok = validate_described_head(described_head, live_head, root, all_ok, label)
 
     if live_branch is not None:
         expected_branch = state.get("handoff_branch")
@@ -213,6 +274,40 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_basel
         else:
             print(f"  OK   handoff_branch matches live {live_branch}")
 
+    return all_ok
+
+
+def validate_described_head(described_head, live_head, root, all_ok, label):
+    print(f"\n[{label}] Described HEAD verification")
+    print(f"  described_head: {described_head[:12]}")
+    print(f"  live_head:      {live_head[:12]}")
+
+    if described_head == live_head:
+        print("  OK   described_head == live_head (CASE 1)")
+        return all_ok
+
+    if not is_valid_sha(live_head):
+        print("  FAIL live HEAD is not a valid SHA")
+        return False
+
+    if not git_is_ancestor(described_head, live_head):
+        print("  FAIL described_head is not an ancestor of live_head (CASE 4)")
+        return False
+
+    changed = git_diff_files(described_head, live_head)
+    if changed is None:
+        print("  FAIL could not determine diff between described_head and live_head")
+        return False
+
+    print(f"  described_head is an ancestor; {len(changed)} file(s) changed")
+    disallowed = [p for p in changed if not _is_allowed_metadata_path(p)]
+    if disallowed:
+        print("  FAIL changes contain non-metadata-only files (CASE 3):")
+        for p in disallowed[:10]:
+            print(f"    - {p}")
+        return False
+
+    print("  OK   only metadata-only files changed (CASE 2 — METADATA-ONLY STATE ADVANCE)")
     return all_ok
 
 
@@ -470,7 +565,7 @@ def validate_authority_precedence(root, all_ok, label):
 
 
 def validate_baseline_consistency(root, all_ok, label):
-    print(f"\n[{label}] Baseline current-state consistency")
+    print(f"\n[{label}] Described HEAD consistency")
 
     handoff_path = root / "docs/continuity/CURRENT_HANDOFF.md"
     git_state_path = root / "docs/continuity/CURRENT_GIT_STATE.md"
@@ -480,7 +575,7 @@ def validate_baseline_consistency(root, all_ok, label):
         print("  FAIL CURRENT_STATE.json missing/invalid")
         return False
 
-    declared_baseline = state.get("baseline_head")
+    declared_head = _resolve_described_head(state)
 
     for path in (handoff_path, git_state_path):
         if not path.exists():
@@ -488,15 +583,17 @@ def validate_baseline_consistency(root, all_ok, label):
             all_ok = False
             continue
         text = path.read_text(encoding="utf-8")
-        # accept either "Current baseline HEAD" or "Merged baseline HEAD"
-        m = re.search(r"(?:Current|Merged)\s+baseline\s+HEAD:\s*`?([^`\n]+)`?", text, re.MULTILINE)
-        if m and declared_baseline:
-            doc_baseline = m.group(1).strip()
-            if doc_baseline != declared_baseline:
-                print(f"  FAIL {path.name} baseline {doc_baseline} != CURRENT_STATE.json {declared_baseline}")
+        # Prefer explicit described_head. Fallback to legacy baseline HEAD forms.
+        m = re.search(r"(?:described_head|Described HEAD):\s*`?([^`\n]+)`?", text, re.IGNORECASE | re.MULTILINE)
+        if not m:
+            m = re.search(r"(?:Current\s+baseline\s+HEAD|Merged\s+baseline\s+HEAD):\s*`?([^`\n]+)`?", text, re.IGNORECASE | re.MULTILINE)
+        if m and declared_head:
+            doc_head = m.group(1).strip()
+            if doc_head != declared_head:
+                print(f"  FAIL {path.name} head {doc_head} != CURRENT_STATE.json {declared_head}")
                 all_ok = False
             else:
-                print(f"  OK   {path.name} baseline matches CURRENT_STATE.json")
+                print(f"  OK   {path.name} described_head matches CURRENT_STATE.json")
 
     return all_ok
 
@@ -635,10 +732,11 @@ def live_validation():
     print(f"\n[LIVE] Branch / HEAD")
     print(f"  current branch: {branch or 'FAIL'}")
     print(f"  current HEAD: {head or 'FAIL'}")
+    print(f"  described_head: {(_resolve_described_head(state) or 'unresolved')[:12] if state else 'FAIL'}")
     print(f"  baseline branch: {baseline_branch}")
     print(f"  live baseline HEAD: {live_baseline_head or 'FAIL'}")
 
-    all_ok = validate_state_json(state, REPO_ROOT, all_ok, mode_label, live_branch=branch, live_baseline_head=live_baseline_head)
+    all_ok = validate_state_json(state, REPO_ROOT, all_ok, mode_label, live_branch=branch, live_head=head, mode="live")
     all_ok = validate_baseline_consistency(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_authority_precedence(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch)

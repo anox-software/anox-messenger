@@ -91,25 +91,23 @@ class LiveFixture:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
-    def _handoff_md(self, baseline_head, handoff_branch=None):
+    def _handoff_md(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Handoff\n"
             f"- Current work branch: `{branch}`\n"
-            f"- Current baseline HEAD: `{baseline_head}`\n"
-            f"- Merged baseline HEAD: `{baseline_head}`\n"
+            f"- Described HEAD: `{described_head}`\n"
         )
 
-    def _git_state_md(self, baseline_head, handoff_branch=None):
+    def _git_state_md(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Git\n"
             f"- Current handoff branch: `{branch}`\n"
-            f"- Current baseline HEAD: `{baseline_head}`\n"
-            f"- Merged baseline HEAD: `{baseline_head}`\n"
+            f"- Described HEAD: `{described_head}`\n"
         )
 
-    def _state_json(self, baseline_head, handoff_branch=None):
+    def _state_json(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             '{\n'
@@ -117,7 +115,7 @@ class LiveFixture:
             f'  "handoff_branch": "{branch}",\n'
             '  "handoff_head": "__HANDOFF_HEAD__",\n'
             f'  "baseline_branch": "main",\n'
-            f'  "baseline_head": "{baseline_head}",\n'
+            f'  "described_head": "{described_head}",\n'
             '  "working_tree": "__WORKING_TREE__",\n'
             '  "continuity_001_status": "ACCEPTED",\n'
             '  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",\n'
@@ -355,14 +353,15 @@ class Test009RRegression(unittest.TestCase):
     """009R-A through L."""
 
     def test_009r_a_live_baseline_drift(self):
-        """A. recorded baseline != live baseline fails."""
+        """A. recorded described_head not an ancestor of live HEAD fails."""
         f = LiveFixture(baseline_override="1111111111111111111111111111111111111111")
         try:
             f._run(["git", "add", "."])
             f._run(["git", "commit", "-m", "wrong baseline"])
             r = f.validate()
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertIn("BASELINE DRIFT", r.stdout + r.stderr)
+            self.assertIn("described_head", r.stdout + r.stderr)
+            self.assertIn("not an ancestor", r.stdout + r.stderr)
         finally:
             f.cleanup()
 
@@ -543,6 +542,158 @@ class Test009RRegression(unittest.TestCase):
             r = f.validate()
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertIn("CURRENT_GIT_STATE.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+import validate_continuity as vc
+
+
+class TestDescribedHeadSemantics(unittest.TestCase):
+    """PRE-B027-0: described_head semantics, metadata-only advancement, and self-reference regression."""
+
+    def test_case_1_equal_heads(self):
+        """1. live_head == described_head -> PASS."""
+        same = "0" * 40
+        result = vc.validate_described_head(same, same, Path("."), True, "TEST")
+        self.assertTrue(result)
+
+    def test_case_2_metadata_only_advance(self):
+        """2. described_head is an ancestor and only metadata files changed -> PASS."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            described = f.baseline_head
+            live = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotEqual(described, live)
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_3_product_code_change(self):
+        """3. Product code change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// product code\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add product code"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_4_ci_workflow_change(self):
+        """4. CI workflow change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            ci = f.root / ".github" / "workflows" / "ci.yml"
+            ci.parent.mkdir(parents=True, exist_ok=True)
+            ci.write_text("name: ci\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add ci"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(".github/workflows/ci.yml", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_5_authority_change(self):
+        """5. Authority file change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            ai = f.root / "docs" / "authority" / "AUTHORITY_INDEX.md"
+            ai.write_text("# changed\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "change authority"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("AUTHORITY_INDEX.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_6_validator_change(self):
+        """6. Validator/tool code change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            sec = f.root / "tools" / "security" / "validate_apk_contents.py"
+            sec.write_text("# changed\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "change tool"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("tools/security/validate_apk_contents.py", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_7_unknown_file(self):
+        """7. Unknown file change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            evil = f.root / "evil.txt"
+            evil.write_text("unknown\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "unknown file"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("evil.txt", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_9_malformed_sha(self):
+        """9. malformed described_head -> FAIL."""
+        f = LiveFixture(baseline_override="notavalidsha")
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "malformed"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("not a valid 40-char", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_10_unresolved_placeholder(self):
+        """10. unresolved placeholder described_head -> FAIL."""
+        f = LiveFixture(baseline_override="__HANDOFF_HEAD__")
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "placeholder"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("not a valid 40-char", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_no_self_reference_required(self):
+        """Regression: a tracked state file no longer needs to contain its own future commit SHA."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            # live_head is a descendant, not equal to described_head, yet validation passes.
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
         finally:
             f.cleanup()
 

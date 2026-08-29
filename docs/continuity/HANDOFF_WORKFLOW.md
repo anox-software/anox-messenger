@@ -67,3 +67,16 @@ follow-on run to archive the current run. Its provenance is the resulting Git co
 `DEVIN_PROMPT_OUTPUT_ARCHIV.md` record of the prior substantive task, and the updated `CURRENT_*`,
 `PROJECT_STATE.md`, and `FORTSCHRITT.md` surfaces. Substantive Devin tasks must still be archived in
 `DEVIN_PROMPT_OUTPUT_ARCHIV.md` as completed historical records.
+
+## HEAD semantics
+
+Tracked continuity state stores `described_head`: the substantive Git commit the
+metadata describes. `live_head` is always `git rev-parse HEAD` and is not stored
+as authoritative truth. A generated Handoff ZIP records `handoff_snapshot_head`
+in its external manifest.
+
+A `described_head` that is an ancestor of `live_head` is valid only when every
+intermediate change is on the explicit metadata-only allowlist (e.g.,
+`CURRENT_*.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`). Any product, CI,
+authority, or tool/validator change requires a new substantive commit and a new
+`described_head`.
