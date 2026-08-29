@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-23 (post PROMPT-008 merge)
+**Date:** 2026-08-28 (PROMPT-010R1 remediation)
 
 ---
 
@@ -17,29 +17,33 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
   foundation, security review remediation, and final commit-uncertainty closure. Merged into
   `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5).
 
-## IN MERGE GATE
+## IN REVIEW / RETEST
 
-None. Next gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`.
+`PROMPT-009` — Development Security Governance / Handoff Hardening on
+`governance/development-security-handoff-v1`, PR #6 open against `main`.
 
-## IMPLEMENTATION MISSING
+`PROMPT-009R2` — Validator and test hardening: implementation PASS, independent retest PASS.
+Findings `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004` are CLOSED.
 
-All B-004…B-020 product features are not implemented. B-002 and B-003 client foundations are
-merged, but no backend, license generation, or DB enforcement exists yet. See
-`CURRENT_IMPLEMENTATION_STATE.md` and `docs/authority/B025/IMPLEMENTATION_GAP_MATRIX.md`.
+`ANOX-GOVREV-009R-005` — Continuity bookkeeping: `CLOSED` by independent R4 retest.
 
-## VERIFICATION MISSING
+`ANOX-GOVREV-009R-006` — Recursive bookkeeping invariant: `CLOSED` by independent R4 retest.
 
-- GrapheneOS physical-device tests
-- D2D transfer runtime verification
-- Connected Android instrumentation in CI (run and passing on a local emulator during
-  PROMPT-008, 58/58, but CI itself still has no emulator)
-- Physical StrongBox/TEE Device Auth key behaviour
-- Independent security audit (B-022)
-- Release DoD (B-023)
+`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced and reviewed.
+
+`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1;
+retest owner: independent governance reviewer.
+
+`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1;
+retest owner: independent governance reviewer.
 
 ## RELEASE BLOCKERS
 
 None yet. V1 release is gated by B-021…B-023, all future release gates.
+
+## EXTERNAL BLOCKERS
+
+- GitHub `origin` access suspended (`403`). `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`.
 
 ## FUTURE / OUT OF V1
 

@@ -2,6 +2,20 @@
 
 **Authority:** B-026
 
+## New-AI bootstrap modes
+
+A handoff recipient may be in one of two modes:
+
+- **LIVE SOURCE MODE:** The new AI can access the repository. It should run `validate_continuity.py`
+  in `--mode live`, inspect live Git, and compare it with the archive records.
+- **SNAPSHOT MODE:** The new AI has only the `ANOX_HANDOFF_*.zip`. It should run `validate_continuity.py`
+  in `--mode archive` and reconstruct state from the package. It must NOT conflate snapshot
+  reconstruction with live verification.
+
+Before any new product/governance write task from a pure snapshot bootstrap:
+`LIVE SOURCE RECONCILIATION REQUIRED` unless operating under an explicitly documented
+emergency/degraded process.
+
 ## Preferred workflow
 
 ### If the new AI has direct repository access

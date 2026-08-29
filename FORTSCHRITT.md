@@ -1,7 +1,7 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B-003 MERGED — Next: DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
-**Updated:** 2026-08-23
+**Status:** PROMPT-010R1 — REMEDIATION OF GOVERNANCE REVIEW FINDINGS; AWAITING INDEPENDENT RETEST OF 010-001/002
+**Updated:** 2026-08-28
 
 ## Architecture / governance
 
@@ -28,9 +28,23 @@
 
 ## Current repository
 
-`main` is the active branch. PR #5 was merged at `e7ee54a713e08950c63cf2d61ec97931864b66bc`.
-B-002 Device Authentication client foundation is merged. B-003 Account/License client
-foundation is merged (PROMPT-008 / 008C / 008D).
+`governance/development-security-handoff-v1` is the active branch. `main` baseline is
+`881c85ec726d8a32eb84b00955b6b9db7912fe1e`. B-003 was merged into `main` at
+`e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). PR #6 for PROMPT-009 / PROMPT-009R is
+open against `main`.
+
+PROMPT-009R2 hardened the validator and tests; independent retest CLOSED findings
+`ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004`. The retest discovered
+`ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` and
+synchronized continuity surfaces. PROMPT-009R4 amended the `PROMPT-009R2` archive entry with the
+missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
+"last Devin task archived" checklist rule. The independent R4 retest CLOSED
+`ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. PROMPT-010 introduced `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md` and updated
+continuity surfaces. The independent PROMPT-010 review found `ANOX-GOVREV-010-001` (duplicate
+authority-index numbering) and `ANOX-GOVREV-010-002` (missing remote-write quick-reference row).
+PROMPT-010R1 corrected the numbering in `AUTHORITY_INDEX.md` and added the quick-reference row to
+`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`. `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002` are now
+`FIX_READY` for independent retest. GitHub remote remains blocked.
 
 ## Functional progress
 

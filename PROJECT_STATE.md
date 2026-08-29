@@ -1,15 +1,15 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-23
+**Date:** 2026-08-28
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
 **Functional implementation:** approximately 33%.
 
 ## Repository truth
 
-- Branch: `main`
+- Branch: `governance/development-security-handoff-v1`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- Merged baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
 - Merged PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; merged
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
@@ -19,7 +19,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING`
+- Current gate: `INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.

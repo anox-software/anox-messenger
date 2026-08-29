@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B-003 MERGED — DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING
-**Date:** 2026-08-23
+**Handoff version:** PROMPT-010R1 — GOVERNANCE REVIEW FINDING REMEDIATION
+**Date:** 2026-08-28
 
 ---
 
@@ -11,23 +11,19 @@ anoX Messenger V1 — closed-source native Android/GrapheneOS messenger with vod
 
 ## Architecture authority
 
-Highest to lowest:
-
-1. `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`
-2. `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
-3. `docs/authority/B_FREEZE_REGISTRY.md`
-4. `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
-5. `docs/authority/B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025_NEW_CHAT_HANDOFF.md`
+Authority precedence is canonical in `docs/authority/AUTHORITY_INDEX.md`.
+New sessions must read that file first.
 
 ## Current repository state
 
 - Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Current work branch: `main`
-- Merged baseline branch: `main`
-- Merged baseline HEAD: `e7ee54a713e08950c63cf2d61ec97931864b66bc`
+- Current work branch: `governance/development-security-handoff-v1`
+- Current baseline branch: `main`
+- Current baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
 - Working tree: expected clean at handoff generation
-- Open PR: none
-- Latest merge: PR #5 PROMPT-008 / B-003 Account/License foundation into `main`
+- Open PR: PR #6 — PROMPT-009 / PROMPT-009R governance, open against `main`
+- Latest merge into `main`: PR #5 `e7ee54a713e08950c63cf2d61ec97931864b66bc` — PROMPT-008 / B-003
+  Account/License client foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -43,28 +39,57 @@ Highest to lowest:
 - PROMPT-007 — B-002 Device Authentication client foundation (PR #4): MERGED into `main` at
   `d281df66a3471dfd6a9bab0bd899be701317afb4`.
 - PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
-- PROMPT-007C — dependency-tree empirically verified (BouncyCastle/Tink not resolved), merge
-  gate finalized, PR #4 merged, continuity synchronized.
-- PROMPT-008 — B-003 Account/License client domain/state foundation implemented on
-  `feature/b003-account-license-foundation`; PR `#5` open against `main`, not merged.
+- PROMPT-007C — merge gate verification, dependency-tree empirical confirmation, merge, and
+  continuity synchronization.
+- PROMPT-008 / PROMPT-008C / PROMPT-008D — B-003 Account/License client domain/state foundation,
+  security review remediation, and final commit-uncertainty closure: MERGED into `main` at
+  `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). B-003 is MERGED FOUNDATION, not
+  production complete.
+- Post-PROMPT-008 main continuity synchronization: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`.
 
 ## Latest completed work
 
-PROMPT-008 — B-003 Account/License client foundation implementation, awaiting architect review.
+PROMPT-009R2 — Governance Validator Final Hardening: closed `ANOX-GOVREV-009R-001`,
+`ANOX-GOVREV-009R-002`, and `ANOX-GOVREV-009R-004`.
+
+PROMPT-009R3 — Continuity Bookkeeping Closure: recorded `PROMPT-009R2` in
+`DEVIN_PROMPT_OUTPUT_ARCHIV.md` and synchronized current-state surfaces.
+
+PROMPT-009R4 — Final Continuity Closure: amended the `PROMPT-009R2` archive entry with the
+missing `ANOX-GOVREV-009R-005` discovery and `REMOTE_SYNC_STATUS` evidence, recorded
+`PROMPT-009R3`, and replaced the recursive "last Devin task archived" checklist rule with a
+finite, auditable distinction between substantive tasks and continuity-sync runs. The independent
+R4 retest CLOSED `ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`.
+
+PROMPT-010 — GitHub Remote Activity Safety Governance: introduced
+`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`, added it to the authority index, updated
+`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`, `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`, `HANDOFF_WORKFLOW.md`,
+and current-state surfaces. Hard invariant: `NO RAPID REPETITIVE REMOTE AUTOMATION`.
+
+PROMPT-010R1 — Governance review finding remediation: corrected the duplicate numbering in
+`AUTHORITY_INDEX.md` and added the `AI remote-write authority assumed? → NO` quick-reference row
+to `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`.
 
 ## Current open work
 
-PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license-foundation`, PR
-`#5` open against `main`. Awaiting architect review before any merge decision.
+`ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `CLOSED` by independent R4 retest.
+
+`ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: `CLOSED` by independent R4 retest.
+
+`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1.
+
+`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1.
+
+`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced; now awaiting retest of
+010-001/002.
 
 ## Current test baseline
 
 - Rust crypto tests: 15/15 PASS
-- Android JVM unit tests: 146/146 PASS
+- Android JVM unit tests: 161/161 PASS
 - Android debug build + APK content validation: PASS
 - Android release compile + APK content validation: PASS
-- Android connected instrumentation: 58/58 PASS on a real emulator (API 34), including the
-  B-002 `AndroidKeystoreDeviceAuthKeyManagerTest` suite for the first time; NOT run in CI
+- Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
 
 ## Historical provenance
@@ -78,11 +103,8 @@ PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license
 ## Known unverified items
 
 - GrapheneOS physical-device testing
-- Local Android release build tooling
-- Connected Android instrumentation in CI (no emulator; run and passing locally on an emulator
-  during PROMPT-008, but that is not CI)
+- Connected Android instrumentation in CI (no emulator; run and passing locally)
 - Physical StrongBox / TEE Device Auth key behaviour
-- GrapheneOS physical-device Device Auth behaviour
 - FCM/push runtime behavior
 - Network messaging/sync at scale
 
@@ -93,19 +115,21 @@ PROMPT-008 — B-003 Account/License foundation on `feature/b003-account-license
 
 ## Next architecture gate
 
-`PROMPT-008 ARCHITECT REVIEW / PR MERGE GATE`
+`INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
 
 ## Next engineering task
 
-PROMPT-008 is in review. No further B-003/B-004 backend work or messaging work is authorized
-until the architect reviews the PROMPT-008 PR.
+PROMPT-010R1 corrected the two governance review findings. The originating independent reviewer
+must retest `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002`. No B-004/B-005/B-017-Lite/B-027
+implementation is authorized until all governance findings are CLOSED and the branch is reviewed
+and merged.
 
 ## Do-not-touch foundation
 
 - `crypto/rust/` source (identity, session, serialization, lib, error)
 - `CryptoNative.kt`, `CryptoBridge.kt`
 - vodozemac 0.10.0
-- JNI typed-handle architecture
+- Typed JNI identity/session handle architecture
 - `K_STATE` / AES-256-GCM protected local state
 - `[ANOX][0x01]` envelope
 - Android Keystore state-key wrapping
