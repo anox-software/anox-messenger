@@ -1,7 +1,7 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING REVIEW RETEST
-**Task ID:** `B-017-Lite-R1 — Review finding remediation`
+**Status:** AWAITING FINAL REVIEW RETEST
+**Task ID:** `B-017-Lite-R3 — Validator enforcement gap remediation`
 **Date:** 2026-08-29
 
 ---

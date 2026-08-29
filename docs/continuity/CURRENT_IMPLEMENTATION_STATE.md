@@ -33,6 +33,9 @@
 - B-017-Lite-R1 review finding remediation: removed `actions: write`, rebuilt validator with
   18 regression tests, added wrapper JAR validation, repinned `nttld/setup-ndk`, preserved `main`
   CI evidence, fixed `find | head`.
+- B-017-Lite-R3 validator enforcement gap remediation: fixed `uses:` detection for real step styles,
+  added quoted/inline permission enforcement, multi-component Gradle dynamic-version and range
+  detection, and `[dependencies.NAME]` Cargo sub-table parsing; 35/35 policy tests PASS.
 
 ## PARTIAL
 

@@ -69,20 +69,23 @@ B-017-Lite does not claim to fully secure the supply chain. It establishes a det
 - Workflow checks:
   - inspect `*.yml` and `*.yaml`;
   - deny `pull_request_target` and `workflow_run` in block, inline, and list forms;
-  - deny any `permissions: write` scope at workflow or job level (deny by default);
+  - deny any `permissions: write` scope at workflow or job level in scalar, block, inline, and quoted-key forms (deny by default);
   - deny `permissions: write-all`;
-  - require external `uses:` to be pinned to a 40-character commit SHA (or a SHA-digest Docker image);
-  - flag mutable `docker://image:tag` references.
+  - identify `uses:` keys inside GitHub Actions `steps:` blocks in both `- uses:` and `- name:`/`  uses:` step forms, skipping `run:` script bodies;
+  - require external `uses:` to be pinned to a 40-character lowercase commit SHA (or a SHA-digest Docker image);
+  - reject uppercase, short, missing or mutable named refs such as `@v4`, `@main`, `@stable`;
+  - flag mutable `docker://image:tag` references;
 - Gradle checks:
   - `distributionSha256Sum` and `validateDistributionUrl=true` in wrapper properties;
-  - no `+`, `1.+`, `1.*`, `latest.release`, `latest.integration`, `SNAPSHOT`, or Maven ranges;
+  - no `+`, `1.+`, `1.2.+`, `1.2.*`, `latest.release`, `latest.integration`, `SNAPSHOT`, or Maven ranges with arbitrary version-component counts;
   - no `mavenLocal()`, `jcenter()`, `allowInsecureProtocol=true`;
   - only HTTPS and only allow-listed repository hosts;
   - `FAIL_ON_PROJECT_REPOS` in `settings.gradle`/`settings.gradle.kts`.
 - Rust checks:
   - `Cargo.lock` present and not ignored;
-  - no `*` or `[` version values in dependency sections;
-  - no `git = "..."` without `rev = "..."`.
+  - no `*`, `1.*` or `[` version values in dependency inline tables or version fields;
+  - no bare/branch/tag Git dependencies, including `[dependencies.NAME]` sub-tables;
+  - no unsupported Cargo syntax accepted without a fail-closed error.
 
 **Known limitations (documented):** the offline validator cannot distinguish a 40-character annotated-tag object from a 40-character commit. The implementation already repinned `nttld/setup-ndk` to the peeled commit. Any new annotated-tag pin is a provenance defect that must be caught by independent review, not by this offline tool.
 
@@ -135,7 +138,7 @@ Note: `cargo generate-lockfile --locked` is **not** used because it is not a rel
 ## 8. Validation performed
 
 - `python3 tools/security/b017_lite_policy_validator.py` → PASS
-- `python3 -m unittest tools.security.test_b017_lite_policy_validator` → **21/21 PASS** (includes the 18 independent-review regression cases)
+- `python3 -m unittest tools.security.test_b017_lite_policy_validator` → **35/35 PASS** (18 original + 10 R3 regression cases + real-workflow integration + 2 style sanity + extra);
 - `cd crypto/rust && cargo test --locked` → 15/15 PASS
 - `python3 tools/continuity/test_handoff_and_validator.py` → 24 PASS
 - `python3 tools/continuity/validate_continuity.py --mode live` → PASS
@@ -146,7 +149,7 @@ Note: `cargo generate-lockfile --locked` is **not** used because it is not a rel
 | Finding | Status | Evidence |
 |---|---|---|
 | ANOX-B017REV-001 | CLOSED | no `actions: write`; `grep -c 'write' .github/workflows/ci.yml` returns 0 |
-| ANOX-B017REV-002 | CLOSED | 21/21 validator tests PASS, including 18 adversarial bypasses now rejected |
+| ANOX-B017REV-002 | CLOSED | validator now inspects real step styles; 35/35 tests PASS; independent 50-case harness shows 0 bypasses |
 | ANOX-B017REV-003 | CLOSED | report CI gate list matches actual `.github/workflows/ci.yml`; false `generate-lockfile` claim removed |
 | ANOX-B017REV-004 | CLOSED | `nttld/setup-ndk` repinned to peeled commit `afb4c996…`; commits API verified |
 | ANOX-B017REV-005 | CLOSED | `gradle/actions/wrapper-validation` added as required gate before `./gradlew` |

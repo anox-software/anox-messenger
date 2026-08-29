@@ -26,8 +26,8 @@
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none (B-017-Lite is not yet merged)
-- Current task: `B-017-Lite-R1 — Review finding remediation`
-- Current gate: `B-017-LITE REVIEW RETEST`
+- Current task: `B-017-Lite-R3 — Validator enforcement gap remediation`
+- Current gate: `B-017-LITE FINAL INDEPENDENT RETEST`
 
 ## Merged history on main
 
@@ -68,7 +68,7 @@ B-017-Lite on `security/b017-lite-supply-chain-foundation`; awaiting independent
 - `python3 tools/continuity/validate_continuity.py` expected: PASS
 - `python3 tools/continuity/test_handoff_and_validator.py` expected: PASS
 - `python3 tools/security/b017_lite_policy_validator.py` expected: PASS
-- `python3 -m unittest tools.security.test_b017_lite_policy_validator` expected: 21/21 PASS
+- `python3 -m unittest tools.security.test_b017_lite_policy_validator` expected: 35/35 PASS
 - `grep -c "write" .github/workflows/ci.yml` expected: 0
 - `python3 tools/security/validate_apk_contents.py <debug-apk>` expected: PASS
 - `python3 tools/security/validate_apk_contents.py <release-apk>` expected: PASS

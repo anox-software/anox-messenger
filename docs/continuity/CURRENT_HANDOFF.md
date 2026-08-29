@@ -78,6 +78,7 @@ B-017-Lite-R1 — Independent review finding remediation:
   adversarial bypasses (21/21 unit tests PASS).
 - Repinned `nttld/setup-ndk` to the peeled commit `afb4c9964b521afb97c864b7d40b11e6911bd410`.
 - Added `gradle/actions/wrapper-validation@v6.3.0` as a required gate before any `./gradlew` run (commit `9c971963bec38e04b3d30dcc455b5382be2fdbfb`).
+- Rewrote `tools/security/b017_lite_policy_validator.py` to inspect real workflow step styles (`- name:` + `uses:`), reject quoted/inline permission write maps, detect multi-component Gradle dynamic versions, and parse `[dependencies.NAME]` Cargo sub-tables; 35/35 policy tests PASS.
 - Preserved `main` CI evidence by disabling `cancel-in-progress` on `refs/heads/main`.
 - Replaced `find | head` with `find ... -print -quit` in APK validation steps.
 - Corrected `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` to match actual controls.
@@ -124,7 +125,7 @@ avaiting `B-017-LITE REVIEW RETEST`.
 
 ## Next architecture gate
 
-`B-017-LITE REVIEW RETEST`
+`B-017-LITE FINAL INDEPENDENT RETEST`
 
 ## Next engineering task
 
