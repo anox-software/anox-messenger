@@ -1,7 +1,7 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING INDEPENDENT REVIEW
-**Task ID:** `B-017-Lite — CI / Supply-Chain Security Foundation`
+**Status:** AWAITING REVIEW RETEST
+**Task ID:** `B-017-Lite-R1 — Review finding remediation`
 **Date:** 2026-08-29
 
 ---

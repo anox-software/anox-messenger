@@ -24,11 +24,12 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 ## IN REVIEW / RETEST
 
 `B-017-Lite` — CI / Supply-Chain Security Foundation: implemented on
-`security/b017-lite-supply-chain-foundation` and awaiting independent security review.
+`security/b017-lite-supply-chain-foundation`. Independent review findings have been remediated
+in B-017-Lite-R1 and the branch is awaiting `B-017-LITE REVIEW RETEST`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`B-017-LITE INDEPENDENT SECURITY REVIEW`
+`B-017-LITE REVIEW RETEST`
 
 ## RELEASE BLOCKERS
 

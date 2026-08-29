@@ -13,7 +13,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   supply-chain-policy:
@@ -25,6 +25,17 @@ jobs:
 
       - name: Validate B-017-Lite supply-chain policy
         run: python3 tools/security/b017_lite_policy_validator.py
+
+  gradle-wrapper-validation:
+    name: Gradle wrapper JAR validation
+    runs-on: ubuntu-latest
+    needs: supply-chain-policy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Validate Gradle wrapper JAR
+        uses: gradle/wrapper-validation-action@56b90f209b02bf6d1deae490e9ef18b21a389cd4 # v1.1.0
 
   rust:
     name: Rust crypto tests
@@ -44,10 +55,9 @@ jobs:
   android-debug:
     name: Android debug build
     runs-on: ubuntu-latest
-    needs: rust
-    permissions:
-      contents: read
-      actions: write
+    needs:
+      - rust
+      - gradle-wrapper-validation
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -69,7 +79,7 @@ jobs:
           sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
 
       - name: Set up NDK r26c
-        uses: nttld/setup-ndk@1e00e161fa5fe726a48dfe290a9549362c9621fc # v1.5.0
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410 # v1.5.0
         with:
           ndk-version: r26c
           link-to-sdk: true
@@ -92,7 +102,7 @@ jobs:
       - name: Validate debug APK contents
         run: |
           set -euo pipefail
-          APK=$(find android -path '*/debug/*.apk' -type f | head -n 1)
+          APK=$(find android -path '*/debug/*.apk' -type f -print -quit)
           if [ -z "$APK" ]; then
             echo "ERROR: no debug APK found"
             exit 1
@@ -103,7 +113,9 @@ jobs:
   android-release:
     name: Android release compile smoke
     runs-on: ubuntu-latest
-    needs: android-debug
+    needs:
+      - android-debug
+      - gradle-wrapper-validation
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -125,7 +137,7 @@ jobs:
           sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
 
       - name: Set up NDK r26c
-        uses: nttld/setup-ndk@1e00e161fa5fe726a48dfe290a9549362c9621fc # v1.5.0
+        uses: nttld/setup-ndk@afb4c9964b521afb97c864b7d40b11e6911bd410 # v1.5.0
         with:
           ndk-version: r26c
           link-to-sdk: true
@@ -137,7 +149,7 @@ jobs:
       - name: Validate release APK contents
         run: |
           set -euo pipefail
-          APK=$(find android -path '*/release/*.apk' -type f | head -n 1)
+          APK=$(find android -path '*/release/*.apk' -type f -print -quit)
           if [ -z "$APK" ]; then
             echo "ERROR: no release APK found"
             exit 1

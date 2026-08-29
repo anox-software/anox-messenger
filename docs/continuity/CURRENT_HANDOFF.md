@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B-017-Lite — CI / Supply-Chain Security Foundation
+**Handoff version:** B-017-Lite-R1 — Review finding remediation
 **Date:** 2026-08-29
 
 ---
@@ -51,11 +51,12 @@ New sessions must read that file first.
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main reconciliation: `main` at
   `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
 - B-017-Lite — CI / Supply-Chain Security Foundation: implemented on
-  `security/b017-lite-supply-chain-foundation` and awaiting independent security review.
+  `security/b017-lite-supply-chain-foundation`; independent review findings remediated by
+  B-017-Lite-R1; next gate is `B-017-LITE REVIEW RETEST`.
 
 ## Latest completed work
 
-B-017-Lite — CI / Supply-Chain Security Foundation:
+B-017-Lite — CI / Supply-Chain Security Foundation (initial):
 
 - Hardened `.github/workflows/ci.yml` with least-privilege `GITHUB_TOKEN` permissions,
   immutable action SHA pinning, bounded concurrency, and fail-closed shell semantics.
@@ -63,20 +64,30 @@ B-017-Lite — CI / Supply-Chain Security Foundation:
   from `services.gradle.org`.
 - Confirmed Gradle dependencies are pinned and no `+`, `latest.release`, `latest.integration`,
   `SNAPSHOT`, `mavenLocal()`, or insecure repositories are used.
-- Switched Rust CI to `cargo test --locked` and added `cargo generate-lockfile --locked` freshness
-  check.
+- Switched Rust CI to `cargo test --locked`.
 - Created `tools/security/b017_lite_policy_validator.py` with deterministic, local, fail-closed
   supply-chain/CI checks and `tools/security/test_b017_lite_policy_validator.py` with PASS/FAIL
   test cases.
-- Created `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` documenting threat, controls,
-  residual risks, and deferred hardening.
+- Created `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md`.
+
+B-017-Lite-R1 — Independent review finding remediation:
+
+- Removed all `GITHUB_TOKEN` write permissions from `.github/workflows/ci.yml`.
+- Rebuilt `tools/security/b017_lite_policy_validator.py` to use deny-by-default permissions,
+  detect triggers in any YAML form, detect `.yaml` workflows, and close all 18 demonstrated
+  adversarial bypasses (21/21 unit tests PASS).
+- Repinned `nttld/setup-ndk` to the peeled commit `afb4c9964b521afb97c864b7d40b11e6911bd410`.
+- Added `gradle/wrapper-validation-action` as a required gate before any `./gradlew` run.
+- Preserved `main` CI evidence by disabling `cancel-in-progress` on `refs/heads/main`.
+- Replaced `find | head` with `find ... -print -quit` in APK validation steps.
+- Corrected `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` to match actual controls.
 
 No product code, cryptographic behavior, or architecture changed.
 
 ## Current open work
 
-`B-017-Lite` — CI / Supply-Chain Security Foundation: implemented, awaiting independent security
-review.
+`B-017-Lite` — CI / Supply-Chain Security Foundation: implemented, review findings R1 remediated,
+avaiting `B-017-LITE REVIEW RETEST`.
 
 ## Current test baseline
 
@@ -87,7 +98,7 @@ review.
 - Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
-- B-017-Lite policy validator unit tests: 9/9 PASS
+- B-017-Lite policy validator unit tests: 21/21 PASS (18 independent-review regression cases + 3 base cases)
 
 ## Historical provenance
 
@@ -113,7 +124,7 @@ review.
 
 ## Next architecture gate
 
-`B-017-LITE INDEPENDENT SECURITY REVIEW`
+`B-017-LITE REVIEW RETEST`
 
 ## Next engineering task
 

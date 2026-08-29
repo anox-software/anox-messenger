@@ -1,6 +1,6 @@
 {
   "schema_version": "B026-1.0",
-  "recorded_at": "2026-08-29 (B-017-Lite implementation)",
+  "recorded_at": "2026-08-29 (B-017-Lite-R1 review finding remediation)",
   "repository": "https://github.com/anox-software/anox-messenger",
   "legacy_repository": "https://github.com/anox-admin/ax-messenger.git",
   "baseline_branch": "main",
@@ -15,8 +15,8 @@
   "open_pr": null,
   "open_pr_target": "main",
   "continuity_001_status": "ACCEPTED",
-  "current_task": "B-017-Lite — CI / Supply-Chain Security Foundation",
-  "current_gate": "B-017-LITE INDEPENDENT SECURITY REVIEW",
+  "current_task": "B-017-Lite-R1 — Review finding remediation",
+  "current_gate": "B-017-LITE REVIEW RETEST",
   "authority_index": "docs/authority/AUTHORITY_INDEX.md",
   "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
   "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",
@@ -30,7 +30,7 @@
     "Governance PR #1 (anox-software/anox-messenger#1) merged into main at 9c3fb08c30b743274e2c0779937502bb30b313b0. main was subsequently synchronized to 043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff.",
     "Remote-write governance remains in HUMAN-CONTROLLED REMOTE WRITE MODE. AI must not autonomously push, merge, or mutate GitHub state.",
     "GitHub Free plan: private-repository Rulesets / Branch Protection are unavailable. This is a known platform constraint, not a repository defect.",
-    "B-017-Lite is implemented on branch security/b017-lite-supply-chain-foundation. Next gate is independent security review.",
+    "B-017-Lite was implemented and the independent security review identified findings. B-017-Lite-R1 has remediated ANOX-B017REV-001 through -007. All seven findings are CLOSED in the working tree. Next gate is B-017-LITE REVIEW RETEST.",
     "B-002 client foundation is MERGED and VERIFIED where tested. Backend server-side, shared replay cache, device registry, entitlement enforcement, and physical StrongBox/TEE/GrapheneOS verification remain future/unverified work.",
     "B-003 is MERGED FOUNDATION, not production complete. B-004/B-005 remain future work."
   ]

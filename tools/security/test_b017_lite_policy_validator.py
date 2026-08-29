@@ -1,17 +1,48 @@
 #!/usr/bin/env python3
-"""Unit tests for the B-017-Lite policy validator."""
+"""Unit tests for the B-017-Lite policy validator.
+
+Includes the 18 adversarial regression cases identified in the independent
+B-017-Lite security review, plus legitimate-configuration PASS cases.
+"""
 
 import importlib
+import io
 import os
 import shutil
+import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 try:
     import b017_lite_policy_validator as pv
 except ImportError:
     from tools.security import b017_lite_policy_validator as pv
+
+
+GOOD_ACTION_SHA = "a" * 40
+DOCKER_DIGEST_REF = (
+    "docker://alpine@sha256:"
+    "a8451eeda314d0568b5340498b36edf147a8f0d692c5ff58082d477abe9146e4"
+)
+
+
+def _good_workflow(extra=""):
+    return (
+        "on:\n"
+        "  push:\n"
+        "    branches: [main]\n"
+        "\n"
+        "permissions:\n"
+        "  contents: read\n"
+        "\n"
+        "jobs:\n"
+        "  test:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@" + GOOD_ACTION_SHA + " # v4\n" + extra
+    )
 
 
 class B017LitePolicyValidatorTests(unittest.TestCase):
@@ -26,13 +57,7 @@ class B017LitePolicyValidatorTests(unittest.TestCase):
 
     def _write_good_files(self):
         (self.td / ".github" / "workflows").mkdir(parents=True)
-        (self.td / ".github" / "workflows" / "ci.yml").write_text(
-            "on:\n  push:\n    branches: [main]\n\n"
-            "permissions:\n  contents: read\n\n"
-            "jobs:\n  test:\n    runs-on: ubuntu-latest\n"
-            "    steps:\n      - uses: actions/checkout@" + ("a" * 40) + " # v4\n",
-            encoding="utf-8",
-        )
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(_good_workflow(), encoding="utf-8")
 
         (self.td / "gradle" / "wrapper").mkdir(parents=True)
         (self.td / "gradle" / "wrapper" / "gradle-wrapper.properties").write_text(
@@ -63,7 +88,9 @@ class B017LitePolicyValidatorTests(unittest.TestCase):
         (self.td / "crypto" / "rust").mkdir(parents=True)
         (self.td / "crypto" / "rust" / "Cargo.toml").write_text(
             "[package]\nname = \"anox_crypto\"\nversion = \"0.1.0\"\n\n"
-            "[dependencies]\nvodozemac = \"0.10.0\"\n",
+            "[dependencies]\n"
+            "vodozemac = \"0.10.0\"\n"
+            "serde = { version = \"1.0\", features = [\"derive\"] }\n",
             encoding="utf-8",
         )
         (self.td / "crypto" / "rust" / "Cargo.lock").write_text(
@@ -71,63 +98,214 @@ class B017LitePolicyValidatorTests(unittest.TestCase):
         )
         (self.td / ".gitignore").write_text("/local.properties\n", encoding="utf-8")
 
+    def _run_validator(self):
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            rc = pv.main()
+        return rc, buf.getvalue()
+
+    # ---- LEGITIMATE PASS CASES ----
+
     def test_all_good_passes(self):
         self._write_good_files()
-        self.assertEqual(pv.main(), 0)
+        self.assertEqual(self._run_validator()[0], 0)
 
-    def test_floating_action_ref_fails(self):
+    def test_docker_action_with_sha_digest_passes(self):
         self._write_good_files()
-        ci = self.td / ".github" / "workflows" / "ci.yml"
-        text = ci.read_text(encoding="utf-8")
-        ci.write_text(text.replace(("a" * 40) + " # v4", "v4"), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace(
+                "actions/checkout@" + GOOD_ACTION_SHA + " # v4",
+                DOCKER_DIGEST_REF,
+                1,
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 0)
 
-    def test_pull_request_target_fails(self):
+    # ---- ADDITIONAL POSITIVE: lockfile ignored ----
+
+    def test_good_ignoring_cargo_lock_fails(self):
         self._write_good_files()
-        ci = self.td / ".github" / "workflows" / "ci.yml"
-        text = ci.read_text(encoding="utf-8")
-        ci.write_text(text.replace("on:\n  push:\n    branches: [main]", "on:\n  pull_request_target:\n    branches: [main]"), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        (self.td / ".gitignore").write_text("/crypto/rust/Cargo.lock\n", encoding="utf-8")
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_contents_write_permission_fails(self):
+    # ---- 18 INDEPENDENT-REVIEW REGRESSION CASES ----
+
+    def test_001_workflow_permissions_write_all(self):
         self._write_good_files()
-        ci = self.td / ".github" / "workflows" / "ci.yml"
-        text = ci.read_text(encoding="utf-8")
-        ci.write_text(text.replace("permissions:\n  contents: read", "permissions:\n  contents: write"), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace("permissions:\n  contents: read", "permissions: write-all"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_missing_gradle_wrapper_checksum_fails(self):
+    def test_002_job_permissions_write_all(self):
         self._write_good_files()
-        props = self.td / "gradle" / "wrapper" / "gradle-wrapper.properties"
-        text = props.read_text(encoding="utf-8")
-        props.write_text(text.replace("distributionSha256Sum=b266d5ff6b90eada6dc3b20cb090e3731302e553a27c5d3e4df1f0d76beaff06\n", ""), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace(
+                "    runs-on: ubuntu-latest",
+                "    runs-on: ubuntu-latest\n    permissions: write-all",
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_dynamic_gradle_version_fails(self):
+    def test_003_pull_requests_write(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace("  contents: read", "  contents: read\n  pull-requests: write"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_004_id_token_write(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace("  contents: read", "  contents: read\n  id-token: write"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_005_actions_write(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace("  contents: read", "  contents: read\n  actions: write"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_006_pull_request_target_inline(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace(
+                "on:\n  push:\n    branches: [main]",
+                "on:\n  pull_request_target: {branches: [main]}",
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_007_pull_request_target_list(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace(
+                "on:\n  push:\n    branches: [main]",
+                "on: [pull_request_target]",
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_008_workflow_run_inline(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace(
+                "on:\n  push:\n    branches: [main]",
+                "on:\n  workflow_run: {workflows: [CI], types: [completed]}",
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_009_unpinned_action_in_yaml_file(self):
+        self._write_good_files()
+        (self.td / ".github" / "workflows" / "evil.yaml").write_text(
+            _good_workflow().replace("actions/checkout@" + GOOD_ACTION_SHA + " # v4", "actions/checkout@v4"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_010_mutable_docker_image_tag(self):
+        self._write_good_files()
+        wf = (self.td / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        (self.td / ".github" / "workflows" / "ci.yml").write_text(
+            wf.replace("actions/checkout@" + GOOD_ACTION_SHA + " # v4", "docker://alpine:latest"),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_011_gradle_dynamic_version_1_dot_plus(self):
         self._write_good_files()
         build = self.td / "build.gradle.kts"
         text = build.read_text(encoding="utf-8")
-        build.write_text(text.replace(":1.12.0\"", ":+\""), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        build.write_text(text.replace(":1.12.0\"", ":1.+\""), encoding="utf-8")
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_insecure_gradle_repo_fails(self):
+    def test_012_gradle_version_range(self):
+        self._write_good_files()
+        build = self.td / "build.gradle.kts"
+        text = build.read_text(encoding="utf-8")
+        build.write_text(text.replace(":1.12.0\"", ":[1.12,2.0)\""), encoding="utf-8")
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_013_groovy_http_repository(self):
         self._write_good_files()
         settings = self.td / "settings.gradle.kts"
         text = settings.read_text(encoding="utf-8")
-        settings.write_text(text.replace("google()", 'maven { url = uri("http://insecure.example.com") }\n    google()'), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        settings.write_text(
+            text.replace("google()", 'maven { url "http://evil.example/m2" }\n    google()'),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_missing_cargo_lock_fails(self):
+    def test_014_gradle_seturl_http(self):
         self._write_good_files()
-        (self.td / "crypto" / "rust" / "Cargo.lock").unlink()
-        self.assertEqual(pv.main(), 1)
+        settings = self.td / "settings.gradle.kts"
+        text = settings.read_text(encoding="utf-8")
+        settings.write_text(
+            text.replace("google()", 'maven { setUrl("http://evil.example/m2") }\n    google()'),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
 
-    def test_wildcard_cargo_dependency_fails(self):
+    def test_015_unauthorized_https_maven_repo(self):
+        self._write_good_files()
+        settings = self.td / "settings.gradle.kts"
+        text = settings.read_text(encoding="utf-8")
+        settings.write_text(
+            text.replace("google()", 'maven { url = uri("https://evil.example/m2") }\n    google()'),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_016_cargo_bare_git_dep(self):
         self._write_good_files()
         cargo = self.td / "crypto" / "rust" / "Cargo.toml"
         text = cargo.read_text(encoding="utf-8")
-        cargo.write_text(text.replace('vodozemac = "0.10.0"', 'vodozemac = "*"'), encoding="utf-8")
-        self.assertEqual(pv.main(), 1)
+        cargo.write_text(
+            text.replace('vodozemac = "0.10.0"', 'vodozemac = { git = "https://evil.example/v.git" }'),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_017_cargo_git_dep_reordered_keys(self):
+        self._write_good_files()
+        cargo = self.td / "crypto" / "rust" / "Cargo.toml"
+        text = cargo.read_text(encoding="utf-8")
+        cargo.write_text(
+            text.replace(
+                'vodozemac = "0.10.0"',
+                'vodozemac = { branch = "main", git = "https://evil.example/v.git" }',
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual(self._run_validator()[0], 1)
+
+    def test_018_cargo_wildcard_1_dot_star(self):
+        self._write_good_files()
+        cargo = self.td / "crypto" / "rust" / "Cargo.toml"
+        text = cargo.read_text(encoding="utf-8")
+        cargo.write_text(text.replace('vodozemac = "0.10.0"', 'vodozemac = "1.*"'), encoding="utf-8")
+        self.assertEqual(self._run_validator()[0], 1)
 
 
 if __name__ == "__main__":

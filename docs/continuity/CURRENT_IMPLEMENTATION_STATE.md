@@ -30,6 +30,9 @@
 - Continuity tools: `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py`.
 - B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper
   checksum, Rust locked builds) on `security/b017-lite-supply-chain-foundation`.
+- B-017-Lite-R1 review finding remediation: removed `actions: write`, rebuilt validator with
+  18 regression tests, added wrapper JAR validation, repinned `nttld/setup-ndk`, preserved `main`
+  CI evidence, fixed `find | head`.
 
 ## PARTIAL
 
