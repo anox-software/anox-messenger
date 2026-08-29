@@ -36,7 +36,7 @@ B-017-Lite does not claim to fully secure the supply chain. It establishes a det
 | `android-actions/setup-android` | `40fd30fb8d7440372e1316f5d1809ec01dcd3699` | v4.0.1, lightweight tag |
 | `nttld/setup-ndk` | `afb4c9964b521afb97c864b7d40b11e6911bd410` | v1.5.0, peeled annotated-tag commit |
 | `actions/upload-artifact` | `ea165f8d65b6e75b540449e92b4886f43607fa02` | v4, lightweight tag |
-| `gradle/wrapper-validation-action` | `56b90f209b02bf6d1deae490e9ef18b21a389cd4` | v1.1.0, peeled annotated-tag commit |
+| `gradle/actions/wrapper-validation` | `9c971963bec38e04b3d30dcc455b5382be2fdbfb` | v6.3.0, peeled annotated-tag commit |
 
 - No `pull_request_target`, `workflow_run`, `workflow_dispatch`, or other privileged triggers.
 - `concurrency` is scoped to `${{ github.workflow }}-${{ github.ref }}`; `cancel-in-progress` is disabled for `refs/heads/main` to preserve gate evidence for every mainline commit.
@@ -46,7 +46,7 @@ B-017-Lite does not claim to fully secure the supply chain. It establishes a det
 ### 2.2 Android / Gradle hardening
 
 - `gradle/wrapper/gradle-wrapper.properties` contains `distributionSha256Sum` for the Gradle 9.3.1 distribution; the value was verified against `https://services.gradle.org/distributions/gradle-9.3.1-bin.zip.sha256`.
-- CI runs `gradle/wrapper-validation-action` before any `./gradlew` invocation. This validates the committed `gradle-wrapper.jar` against Gradle's published wrapper checksums.
+- CI runs `gradle/actions/wrapper-validation` before any `./gradlew` invocation. This validates the committed `gradle-wrapper.jar` against Gradle's published wrapper checksums.
 - No `+`, `latest.release`, `latest.integration`, `SNAPSHOT`, or Maven version ranges in dependency declarations.
 - No `allowInsecureProtocol = true`, no HTTP repositories, no `mavenLocal()`, no `jcenter()`.
 - `settings.gradle.kts` restricts repositories to `google()`, `mavenCentral()`, and `gradlePluginPortal()` under `FAIL_ON_PROJECT_REPOS`.
@@ -100,7 +100,7 @@ No product source, cryptography, or architectural files were changed.
 ## 4. CI gate list
 
 1. **B-017-Lite supply-chain policy** (`tools/security/b017_lite_policy_validator.py`)
-2. **Gradle wrapper JAR validation** (`gradle/wrapper-validation-action`)
+2. **Gradle wrapper JAR validation** (`gradle/actions/wrapper-validation`)
 3. **Rust crypto tests** (`cargo test --locked`)
 4. **JVM unit tests** (`./gradlew :android:testDebugUnitTest`)
 5. **Android debug build and APK content validation**
@@ -149,7 +149,7 @@ Note: `cargo generate-lockfile --locked` is **not** used because it is not a rel
 | ANOX-B017REV-002 | CLOSED | 21/21 validator tests PASS, including 18 adversarial bypasses now rejected |
 | ANOX-B017REV-003 | CLOSED | report CI gate list matches actual `.github/workflows/ci.yml`; false `generate-lockfile` claim removed |
 | ANOX-B017REV-004 | CLOSED | `nttld/setup-ndk` repinned to peeled commit `afb4c996…`; commits API verified |
-| ANOX-B017REV-005 | CLOSED | `gradle/wrapper-validation-action` added as required gate before `./gradlew` |
+| ANOX-B017REV-005 | CLOSED | `gradle/actions/wrapper-validation` added as required gate before `./gradlew` |
 | ANOX-B017REV-006 | CLOSED | `cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}` |
 | ANOX-B017REV-007 | CLOSED | APK lookups use `find ... -print -quit` |
 
