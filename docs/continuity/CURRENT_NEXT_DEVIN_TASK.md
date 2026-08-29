@@ -1,6 +1,6 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING AUTHORIZATION
+**Status:** AWAITING INDEPENDENT REVIEW
 **Task ID:** `B-017-Lite — CI / Supply-Chain Security Foundation`
 **Date:** 2026-08-29
 
@@ -8,47 +8,53 @@
 
 ## Purpose
 
-The governance and migration gates are complete. PR #1 of `anox-software/anox-messenger` has
-merged the PROMPT-009 / PROMPT-010 governance work into `main`. The next authorized engineering
-gate is `B-017-Lite — CI / Supply-Chain Security Foundation`.
+B-017-Lite has been implemented on `security/b017-lite-supply-chain-foundation`. The next gate is
+an independent security review of the CI and supply-chain hardening before it can be merged.
 
 ## Preconditions satisfied
 
-- `PROMPT-009` / `PROMPT-009R` governance is merged.
-- `PROMPT-010` / `PROMPT-010R1` is `ACCEPTED`.
-- `REMOTE-MIGRATION-SYNC-001` post-merge reconciliation is complete.
-- `main` HEAD is `9c3fb08c30b743274e2c0779937502bb30b313b0`.
+- `PROMPT-009` / `PROMPT-010` governance is merged to `main`.
+- `main` HEAD is `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
 - Repository is `anox-software/anox-messenger`.
 - `GITHUB_REMOTE_ACTIVITY_SAFETY.md` is binding.
 - Remote-write authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE`.
+- `.github/workflows/ci.yml` is pinned and hardened.
+- `gradle/wrapper/gradle-wrapper.properties` has `distributionSha256Sum`.
+- `tools/security/b017_lite_policy_validator.py` and its tests are implemented.
+- `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` is created.
 
-## Scope (when authorized)
+## Scope of the next task
 
-- Android lint / static analysis
-- Repository secret scanning
-- Diff-aware secret scanning
-- History-aware secret scanning where practical
-- `cargo audit`
-- Dependency vulnerability scanning
-- OSV or equivalent advisory checks
-- Dependency locking / verification improvements
-- GitHub Actions immutable SHA pinning where practical
-- CI hardening
-- Android instrumentation CI where technically reliable
-- Supply-chain evidence foundation
+- Independently review `.github/workflows/ci.yml` for least privilege, immutable action SHAs,
+  dangerous triggers, and concurrency.
+- Independently review `gradle/wrapper/gradle-wrapper.properties` for checksum provenance.
+- Independently review `tools/security/b017_lite_policy_validator.py` for correctness and
+  completeness.
+- Independently review `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` for threat, controls,
+  residual risks, and deferred work.
+- Run `python3 tools/security/b017_lite_policy_validator.py` and confirm PASS.
+- Run `python3 -m unittest tools/security/test_b017_lite_policy_validator.py` and confirm PASS.
+- Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm 24 tests PASS.
+- Run `python3 tools/continuity/validate_continuity.py --mode live` and confirm PASS.
+- Run `git diff --check` and confirm PASS.
+- If all checks pass, declare `B-017-Lite` ready for merge.
 
 ## Out of scope
 
-- B-004 backend implementation
-- B-005 database/RLS implementation
-- B-027 AI Workforce policy implementation (may run in parallel if explicitly authorized)
-- Messaging UI, accounts, transport, attachments, multi-device, push
+- GitHub account/repository migration (already complete).
+- Credential or remote URL configuration.
+- Pushing, PR creation, or remote automation.
+- B-027 Workforce implementation.
+- B-004 backend implementation.
+- B-005 database/RLS implementation.
+- Any Messenger product code change.
 
-## Next authorized sequence after B-017-Lite
+## Next authorized sequence after this review
 
-1. B-017-Lite implementation, review, and merge.
-2. B-027 AI Workforce / work-control governance (if not done in parallel).
-3. Resume remaining anoX product-development blocks per architecture authority.
+1. If review PASS, preserve the clean local branch.
+2. Human-controlled remote actions: create PR, merge to `main`.
+3. Synchronize `main` continuity surfaces and generate a fresh canonical handoff.
+4. Authorize `B-027` or remaining product engineering according to architecture authority.
 
 ## Remote safety
 

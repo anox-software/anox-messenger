@@ -15,19 +15,19 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Current baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - Latest merge into baseline: PR #1 `9c3fb08c30b743274e2c0779937502bb30b313b0` — Governance: development security and GitHub remote safety hardening
-- Previous main before PR #1: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
+- Previous baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
-- Current handoff branch: `main`
+- Current handoff branch: `security/b017-lite-supply-chain-foundation`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: none (governance PR #1 merged)
-- Current task: `REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation`
-- Current gate: `B-017-LITE — CI / SUPPLY-CHAIN SECURITY FOUNDATION`
+- Open relevant PR: none (B-017-Lite is not yet merged)
+- Current task: `B-017-Lite — CI / Supply-Chain Security Foundation`
+- Current gate: `B-017-LITE INDEPENDENT SECURITY REVIEW`
 
 ## Merged history on main
 
@@ -47,11 +47,12 @@
 - PROMPT-008D — durable pre-commit guard and legacy cleanup — MERGED
 - PROMPT-009 — Development Security Governance / Handoff Hardening (old PR #6) — MERGED via new PR #1
 - PROMPT-010 — GitHub Remote Activity Safety Governance — MERGED via new PR #1
-- Post-migration continuity synchronization — `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation — MERGED to `main` at `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
+- B-017-Lite — CI / Supply-Chain Security Foundation — IN REVIEW on `security/b017-lite-supply-chain-foundation`
 
 ## Unmerged work
 
-None. All governance work is merged into `main` of the new canonical repository.
+B-017-Lite on `security/b017-lite-supply-chain-foundation`; awaiting independent security review.
 
 ## B-003 status after this task
 
@@ -65,6 +66,9 @@ None. All governance work is merged into `main` of the new canonical repository.
 ## Verification
 
 - `python3 tools/continuity/validate_continuity.py` expected: PASS
+- `python3 tools/continuity/test_handoff_and_validator.py` expected: PASS
+- `python3 tools/security/b017_lite_policy_validator.py` expected: PASS
+- `python3 -m unittest tools/security/test_b017_lite_policy_validator.py` expected: PASS
 - `python3 tools/security/validate_apk_contents.py <debug-apk>` expected: PASS
 - `python3 tools/security/validate_apk_contents.py <release-apk>` expected: PASS
 - `git diff --check` expected: PASS
