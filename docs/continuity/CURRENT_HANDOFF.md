@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B-017-Lite-R1 — Review finding remediation
+**Handoff version:** PRE-B027-0 — Continuity semantics / baseline reconciliation
 **Date:** 2026-08-29
 
 ---
@@ -19,12 +19,13 @@ New sessions must read that file first.
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
-- Current work branch: `security/b017-lite-supply-chain-foundation`
+- Current work branch: `governance/pre-b027-continuity-reconciliation`
 - Current baseline branch: `main`
-- Current baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
+- Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
+- Described HEAD: `a68eca5248f1ab315c34ba00387030bfd58c138e`
 - Working tree: expected clean at handoff generation
-- Open PR: none (B-017-Lite is not yet merged)
-- Latest merge into `main`: PR #1 `9c3fb08c30b743274e2c0779937502bb30b313b0` — Governance: development security and GitHub remote safety hardening
+- Open PR: none (PRE-B027-0 is local and not yet pushed)
+- Latest merge into `main`: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -37,8 +38,7 @@ New sessions must read that file first.
 - CONTINUITY-001.4 APK content / secret leakage release gate merged.
 - CONTINUITY-001.5 final main continuity state synchronization fix applied.
 - CONTINUITY-001: ACCEPTED.
-- PROMPT-007 — B-002 Device Authentication client foundation (PR #4): MERGED into `main` at
-  `d281df66a3471dfd6a9bab0bd899be701317afb4`.
+- PROMPT-007 — B-002 Device Authentication client foundation (PR #4): MERGED into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4`.
 - PROMPT-007B — independent security/architecture review: APPROVE, no merge-blocking findings.
 - PROMPT-007C — merge gate verification, dependency-tree empirical confirmation, merge, and
   continuity synchronization.
@@ -50,48 +50,39 @@ New sessions must read that file first.
 - PROMPT-010 — GitHub Remote Activity Safety Governance: MERGED via new PR #1.
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main reconciliation: `main` at
   `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
-- B-017-Lite — CI / Supply-Chain Security Foundation: implemented on
-  `security/b017-lite-supply-chain-foundation`; independent review findings remediated by
-  B-017-Lite-R1; next gate is `B-017-LITE REVIEW RETEST`.
+- B-017-Lite — CI / Supply-Chain Security Foundation (PR #2): MERGED into `main` at
+  `283c1a1fdda012aab51b0164b4b16636e870f3b5`; all five CI gates PASS; ANOX-B017REV-001 through -007 CLOSED.
+- PRE-B027-0 — B-027 AI Workforce / Work-Control Governance architecture freeze and continuity
+  head-semantic fix implemented on `governance/pre-b027-continuity-reconciliation`; no B-027
+  runtime files created yet; awaiting independent review.
 
 ## Latest completed work
 
-B-017-Lite — CI / Supply-Chain Security Foundation (initial):
+PRE-B027-0 — Continuity semantics / baseline reconciliation:
 
-- Hardened `.github/workflows/ci.yml` with least-privilege `GITHUB_TOKEN` permissions,
-  immutable action SHA pinning, bounded concurrency, and fail-closed shell semantics.
-- Added `distributionSha256Sum` to `gradle/wrapper/gradle-wrapper.properties` with checksum
-  from `services.gradle.org`.
-- Confirmed Gradle dependencies are pinned and no `+`, `latest.release`, `latest.integration`,
-  `SNAPSHOT`, `mavenLocal()`, or insecure repositories are used.
-- Switched Rust CI to `cargo test --locked`.
-- Created `tools/security/b017_lite_policy_validator.py` with deterministic, local, fail-closed
-  supply-chain/CI checks and `tools/security/test_b017_lite_policy_validator.py` with PASS/FAIL
-  test cases.
-- Created `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md`.
-
-B-017-Lite-R1 — Independent review finding remediation:
-
-- Removed all `GITHUB_TOKEN` write permissions from `.github/workflows/ci.yml`.
-- Rebuilt `tools/security/b017_lite_policy_validator.py` to use deny-by-default permissions,
-  detect triggers in any YAML form, detect `.yaml` workflows, and close all 18 demonstrated
-  adversarial bypasses (21/21 unit tests PASS).
-- Repinned `nttld/setup-ndk` to the peeled commit `afb4c9964b521afb97c864b7d40b11e6911bd410`.
-- Added `gradle/actions/wrapper-validation@v6.3.0` as a required gate before any `./gradlew` run (commit `9c971963bec38e04b3d30dcc455b5382be2fdbfb`).
-- Rewrote `tools/security/b017_lite_policy_validator.py` to inspect real workflow step styles (`- name:` + `uses:`), reject quoted/inline permission write maps, detect multi-component Gradle dynamic versions, and parse `[dependencies.NAME]` Cargo sub-tables; 35/35 policy tests PASS.
-- Preserved `main` CI evidence by disabling `cancel-in-progress` on `refs/heads/main`.
-- Replaced `find | head` with `find ... -print -quit` in APK validation steps.
-- Corrected `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` to match actual controls.
-
-No product code, cryptographic behavior, or architecture changed.
+- Introduced three distinct HEAD concepts:
+  - `described_head` — the substantive Git commit the tracked metadata describes.
+  - `live_head` — the runtime `git rev-parse HEAD`, never stored as authoritative.
+  - `handoff_snapshot_head` — the external Handoff ZIP manifest value.
+- Replaced the self-referential `baseline_head == live HEAD` invariant with a metadata-only
+  advancement check between `described_head` and `live_head`.
+- Updated `validate_continuity.py` and `test_handoff_and_validator.py` to enforce the new semantics.
+- Added focused negative tests for product code, CI, authority, tool, unknown, non-ancestor,
+  malformed, and unresolved `described_head` cases.
+- Created `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` capturing the frozen B-027
+  purpose, authority hierarchy, 19 roles, security principles, cost/review rule, state design,
+  evidence model, data-egress model, priority model, handoff requirement, implementation order,
+  and HEAD semantics.
+- Added B-027 to `docs/authority/B_FREEZE_REGISTRY.md`.
 
 ## Current open work
 
-`B-017-Lite` — CI / Supply-Chain Security Foundation: implemented, review findings R1 remediated,
-avaiting `B-017-LITE REVIEW RETEST`.
+`PRE-B027-0` — Continuity semantics / baseline reconciliation and B-027 architecture freeze:
+implemented on `governance/pre-b027-continuity-reconciliation`, awaiting `PRE-B027-0 FOCUSED INDEPENDENT REVIEW`.
 
 ## Current test baseline
 
+- B-017-Lite CI gates: 5/5 PASS
 - Rust crypto tests: 15/15 PASS
 - Android JVM unit tests: 161/161 PASS
 - Android debug build + APK content validation: PASS
@@ -99,7 +90,8 @@ avaiting `B-017-LITE REVIEW RETEST`.
 - Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
-- B-017-Lite policy validator unit tests: 21/21 PASS (18 independent-review regression cases + 3 base cases)
+- B-017-Lite policy validator unit tests: 35/35 PASS
+- Continuity unit tests: 34/34 PASS
 
 ## Historical provenance
 
@@ -122,15 +114,16 @@ avaiting `B-017-LITE REVIEW RETEST`.
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
+- No PRE-B027 architecture blockers; the architecture is frozen and awaiting review.
 
 ## Next architecture gate
 
-`B-017-LITE FINAL INDEPENDENT RETEST`
+`PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
 
 ## Next engineering task
 
-B-017-Lite is implemented and awaits independent security review. No B-004/B-005/B-027
-implementation is authorized until B-017-Lite is reviewed and merged.
+If the focused review passes, the authorized next gate is `B-027 IMPLEMENTATION`.
+No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
 
 ## Do-not-touch foundation
 
@@ -148,4 +141,4 @@ implementation is authorized until B-017-Lite is reviewed and merged.
 
 - `docs/history/` and `docs/history/B025/` are provenance only.
 - Never reactivate superseded RAW rules.
-- B-025 and B-026 are current governance.
+- B-025, B-026, and the B-027 PRE-FROZEN report are current governance.

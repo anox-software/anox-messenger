@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-29 (B-017-Lite implemented, awaiting independent review)
+**Date:** 2026-08-29 (PRE-B027-0 metadata sync complete)
 
 ---
 
@@ -16,6 +16,8 @@
 - B-026 Android APK content and secret-leakage release gate; `tools/security/validate_apk_contents.py` integrated into CI.
 - B-002 Device Authentication client foundation: MERGED into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4). Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS. Independent security/architecture review: APPROVE, no merge-blocking findings. Its `AndroidKeystoreDeviceAuthKeyManagerTest` instrumentation suite ran on a local emulator.
 - B-003 Account/License client domain/state foundation: MERGED into `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). Includes identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage, `BinaryRegistrationStateCodec`, `DeviceAuthBindingStore.isArmed`, `RegistrationState.CommitArmed`, and legacy plaintext artifact cleanup. 161 JVM unit tests PASS; 62 Android instrumentation tests PASS on a local API-34 emulator. B-003 is MERGED FOUNDATION, not production complete.
+- B-017-Lite CI / supply-chain security foundation: MERGED into `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2). Five GitHub CI gates PASS. Review findings ANOX-B017REV-001 through -007 CLOSED.
+- PRE-B027-0 continuity semantics / baseline reconciliation: COMPLETE on `governance/pre-b027-continuity-reconciliation`. Continuity head semantics fixed, described_head introduced, B-027 architecture freeze persisted in `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`, B-027 added to `docs/authority/B_FREEZE_REGISTRY.md`.
 
 ## IMPLEMENTED
 
@@ -28,14 +30,7 @@
 - CI workflow with Rust and Android build jobs.
 - Git governance and B-025 authority area.
 - Continuity tools: `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py`.
-- B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper
-  checksum, Rust locked builds) on `security/b017-lite-supply-chain-foundation`.
-- B-017-Lite-R1 review finding remediation: removed `actions: write`, rebuilt validator with
-  18 regression tests, added wrapper JAR validation, repinned `nttld/setup-ndk`, preserved `main`
-  CI evidence, fixed `find | head`.
-- B-017-Lite-R3 validator enforcement gap remediation: fixed `uses:` detection for real step styles,
-  added quoted/inline permission enforcement, multi-component Gradle dynamic-version and range
-  detection, and `[dependencies.NAME]` Cargo sub-table parsing; 35/35 policy tests PASS.
+- B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper checksum, Rust locked builds).
 
 ## PARTIAL
 
@@ -45,13 +40,9 @@
 
 ## MISSING
 
-- Device Authentication (B-002) server side: token issuance/storage/revocation, device
-  registry, shared production replay cache, entitlement enforcement. The client foundation is
-  merged (see VERIFIED above).
-- Account/license (B-003) server side: backend implementation of `RegistrationApi`, license
-  generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client
-  domain/state foundation is merged (see VERIFIED above); this is MERGED FOUNDATION, not
-  production complete.
+- B-027 AI Workforce / Work-Control Governance runtime (architecture frozen, implementation not authorized until focused review passes).
+- Device Authentication (B-002) server side: token issuance/storage/revocation, device registry, shared production replay cache, entitlement enforcement. The client foundation is merged (see VERIFIED above).
+- Account/license (B-003) server side: backend implementation of `RegistrationApi`, license generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client domain/state foundation is merged (see VERIFIED above); this is MERGED FOUNDATION, not production complete.
 - Backend service (B-004)
 - Database/RLS (B-005)
 - Server key distribution (B-006)
@@ -65,7 +56,6 @@
 - Privacy/retention workers (B-014)
 - Abuse controls (B-015)
 - Production infrastructure (B-016)
-- Hardened CI/supply chain (B-017)
 - Release signing/updates (B-018)
 - Operations/IR (B-019)
 - Full product UX (B-020)

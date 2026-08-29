@@ -15,19 +15,20 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
-- Latest merge into baseline: PR #1 `9c3fb08c30b743274e2c0779937502bb30b313b0` — Governance: development security and GitHub remote safety hardening
-- Previous baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
+- Latest merge into baseline: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
+- Previous baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
-- Current handoff branch: `security/b017-lite-supply-chain-foundation`
+- Current handoff branch: `governance/pre-b027-continuity-reconciliation`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
+- Described HEAD: `a68eca5248f1ab315c34ba00387030bfd58c138e`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: none (B-017-Lite is not yet merged)
-- Current task: `B-017-Lite-R3 — Validator enforcement gap remediation`
-- Current gate: `B-017-LITE FINAL INDEPENDENT RETEST`
+- Open relevant PR: none (PRE-B027-0 is local and not yet pushed)
+- Current task: `PRE-B027-0 metadata sync complete`
+- Current gate: `PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
 
 ## Merged history on main
 
@@ -48,11 +49,11 @@
 - PROMPT-009 — Development Security Governance / Handoff Hardening (old PR #6) — MERGED via new PR #1
 - PROMPT-010 — GitHub Remote Activity Safety Governance — MERGED via new PR #1
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation — MERGED to `main` at `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
-- B-017-Lite — CI / Supply-Chain Security Foundation — IN REVIEW on `security/b017-lite-supply-chain-foundation`
+- B-017-Lite — CI / Supply-Chain Security Foundation (PR #2) — MERGED to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`
 
 ## Unmerged work
 
-B-017-Lite on `security/b017-lite-supply-chain-foundation`; awaiting independent security review.
+PRE-B027-0 — Continuity semantics / baseline reconciliation and B-027 architecture freeze on `governance/pre-b027-continuity-reconciliation`; awaiting independent review.
 
 ## B-003 status after this task
 
