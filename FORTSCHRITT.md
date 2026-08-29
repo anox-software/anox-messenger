@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PROMPT-010R1 — REMEDIATION OF GOVERNANCE REVIEW FINDINGS; AWAITING INDEPENDENT RETEST OF 010-001/002
+**Status:** B-017-LITE-R1 — INDEPENDENT REVIEW FINDING REMEDIATION COMPLETE; AWAITING B-017-LITE REVIEW RETEST
 **Updated:** 2026-08-28
 
 ## Architecture / governance
@@ -48,7 +48,11 @@ PROMPT-010R1 corrected the numbering in `AUTHORITY_INDEX.md` and added the quick
 
 REMOTE-MIGRATION-SYNC-001 completed the controlled migration to `anox-software/anox-messenger`,
 merged governance PR #1 into `main` at `9c3fb08c30b743274e2c0779937502bb30b313b0`, and reconciled
-all current continuity surfaces. The next authorized gate is `B-017-Lite`.
+all current continuity surfaces. `B-017-Lite` was implemented on
+`security/b017-lite-supply-chain-foundation`, hardening `.github/workflows/ci.yml`,
+`gradle/wrapper/gradle-wrapper.properties`, Rust `cargo test --locked`, and adding
+`tools/security/b017_lite_policy_validator.py` with tests. The next authorized gate is
+`B-017-LITE INDEPENDENT SECURITY REVIEW`.
 
 ## Functional progress
 

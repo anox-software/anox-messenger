@@ -6,12 +6,12 @@
 
 ## Repository truth
 
-- Branch: `main`
+- Branch: `security/b017-lite-supply-chain-foundation`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Legacy repository: `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Merged baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - Merged PR: `#1` → `main`, Governance: development security and GitHub remote safety hardening
 - Previous baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
 - PR #5 (PROMPT-008 / B-003 Account/License foundation): merged at
@@ -23,7 +23,7 @@
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `B-017-LITE — CI / SUPPLY-CHAIN SECURITY FOUNDATION`
+- Current gate: `B-017-LITE REVIEW RETEST`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.

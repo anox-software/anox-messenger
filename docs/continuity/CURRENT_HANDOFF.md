@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PROMPT-010R1 — GOVERNANCE REVIEW FINDING REMEDIATION
-**Date:** 2026-08-28
+**Handoff version:** B-017-Lite-R1 — Review finding remediation
+**Date:** 2026-08-29
 
 ---
 
@@ -16,14 +16,15 @@ New sessions must read that file first.
 
 ## Current repository state
 
-- Repository: `https://github.com/anox-software/anox-messenger` (SSH: `git@github.com:anox-software/anox-messenger.git`)
+- Canonical repository: `https://github.com/anox-software/anox-messenger`
+- Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
-- Current work branch: `main`
+- Current work branch: `security/b017-lite-supply-chain-foundation`
 - Current baseline branch: `main`
-- Current baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Current baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - Working tree: expected clean at handoff generation
-- Open PR: none (governance PR #1 merged)
-- Latest merge into `main`: PR #1 (`anox-software/anox-messenger#1`) — Governance: development security and GitHub remote safety hardening; merge commit `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Open PR: none (B-017-Lite is not yet merged)
+- Latest merge into `main`: PR #1 `9c3fb08c30b743274e2c0779937502bb30b313b0` — Governance: development security and GitHub remote safety hardening
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -45,49 +46,49 @@ New sessions must read that file first.
   security review remediation, and final commit-uncertainty closure: MERGED into `main` at
   `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). B-003 is MERGED FOUNDATION, not
   production complete.
-- Post-PROMPT-008 main continuity synchronization: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`.
+- PROMPT-009 — Development Security Governance / Handoff Hardening: MERGED via new PR #1.
+- PROMPT-010 — GitHub Remote Activity Safety Governance: MERGED via new PR #1.
+- REMOTE-MIGRATION-SYNC-001 — New GitHub main reconciliation: `main` at
+  `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
+- B-017-Lite — CI / Supply-Chain Security Foundation: implemented on
+  `security/b017-lite-supply-chain-foundation`; independent review findings remediated by
+  B-017-Lite-R1; next gate is `B-017-LITE REVIEW RETEST`.
 
 ## Latest completed work
 
-PROMPT-009R2 — Governance Validator Final Hardening: closed `ANOX-GOVREV-009R-001`,
-`ANOX-GOVREV-009R-002`, and `ANOX-GOVREV-009R-004`.
+B-017-Lite — CI / Supply-Chain Security Foundation (initial):
 
-PROMPT-009R3 — Continuity Bookkeeping Closure: recorded `PROMPT-009R2` in
-`DEVIN_PROMPT_OUTPUT_ARCHIV.md` and synchronized current-state surfaces.
+- Hardened `.github/workflows/ci.yml` with least-privilege `GITHUB_TOKEN` permissions,
+  immutable action SHA pinning, bounded concurrency, and fail-closed shell semantics.
+- Added `distributionSha256Sum` to `gradle/wrapper/gradle-wrapper.properties` with checksum
+  from `services.gradle.org`.
+- Confirmed Gradle dependencies are pinned and no `+`, `latest.release`, `latest.integration`,
+  `SNAPSHOT`, `mavenLocal()`, or insecure repositories are used.
+- Switched Rust CI to `cargo test --locked`.
+- Created `tools/security/b017_lite_policy_validator.py` with deterministic, local, fail-closed
+  supply-chain/CI checks and `tools/security/test_b017_lite_policy_validator.py` with PASS/FAIL
+  test cases.
+- Created `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md`.
 
-PROMPT-009R4 — Final Continuity Closure: amended the `PROMPT-009R2` archive entry with the
-missing `ANOX-GOVREV-009R-005` discovery and `REMOTE_SYNC_STATUS` evidence, recorded
-`PROMPT-009R3`, and replaced the recursive "last Devin task archived" checklist rule with a
-finite, auditable distinction between substantive tasks and continuity-sync runs. The independent
-R4 retest CLOSED `ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`.
+B-017-Lite-R1 — Independent review finding remediation:
 
-PROMPT-010 — GitHub Remote Activity Safety Governance: introduced
-`docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md`, added it to the authority index, updated
-`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`, `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`, `HANDOFF_WORKFLOW.md`,
-and current-state surfaces. Hard invariant: `NO RAPID REPETITIVE REMOTE AUTOMATION`.
+- Removed all `GITHUB_TOKEN` write permissions from `.github/workflows/ci.yml`.
+- Rebuilt `tools/security/b017_lite_policy_validator.py` to use deny-by-default permissions,
+  detect triggers in any YAML form, detect `.yaml` workflows, and close all 18 demonstrated
+  adversarial bypasses (21/21 unit tests PASS).
+- Repinned `nttld/setup-ndk` to the peeled commit `afb4c9964b521afb97c864b7d40b11e6911bd410`.
+- Added `gradle/actions/wrapper-validation@v6.3.0` as a required gate before any `./gradlew` run (commit `9c971963bec38e04b3d30dcc455b5382be2fdbfb`).
+- Rewrote `tools/security/b017_lite_policy_validator.py` to inspect real workflow step styles (`- name:` + `uses:`), reject quoted/inline permission write maps, detect multi-component Gradle dynamic versions, and parse `[dependencies.NAME]` Cargo sub-tables; 35/35 policy tests PASS.
+- Preserved `main` CI evidence by disabling `cancel-in-progress` on `refs/heads/main`.
+- Replaced `find | head` with `find ... -print -quit` in APK validation steps.
+- Corrected `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` to match actual controls.
 
-PROMPT-010R1 — Governance review finding remediation: corrected the duplicate numbering in
-`AUTHORITY_INDEX.md` and added the `AI remote-write authority assumed? → NO` quick-reference row
-to `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`.
-
-REMOTE-MIGRATION-SYNC-001 — Controlled migration to `anox-software/anox-messenger`: repository
-re-published under SSH origin, legacy `anox-admin/ax-messenger` demoted to historical provenance,
-governance PR #1 merged into `main` at `9c3fb08c30b743274e2c0779937502bb30b313b0`, and all
-current continuity surfaces reconciled to the new canonical remote/main state.
+No product code, cryptographic behavior, or architecture changed.
 
 ## Current open work
 
-`ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `CLOSED` by independent R4 retest.
-
-`ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: `CLOSED` by independent R4 retest.
-
-`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `CLOSED` by independent retest.
-
-`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `CLOSED` by independent retest.
-
-`PROMPT-010` — GitHub Remote Activity Safety Governance: `ACCEPTED` and merged via PR #1.
-
-`REMOTE-MIGRATION-SYNC-001` — New GitHub main post-merge continuity reconciliation: `COMPLETE`.
+`B-017-Lite` — CI / Supply-Chain Security Foundation: implemented, review findings R1 remediated,
+avaiting `B-017-LITE REVIEW RETEST`.
 
 ## Current test baseline
 
@@ -97,6 +98,8 @@ current continuity surfaces reconciled to the new canonical remote/main state.
 - Android release compile + APK content validation: PASS
 - Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
+- B-017-Lite policy validator: PASS
+- B-017-Lite policy validator unit tests: 21/21 PASS (18 independent-review regression cases + 3 base cases)
 
 ## Historical provenance
 
@@ -116,19 +119,18 @@ current continuity surfaces reconciled to the new canonical remote/main state.
 
 ## Current blockers
 
-- GitHub free plan: branch protection and secret scanning unavailable under the current private plan.
+- GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
 
 ## Next architecture gate
 
-`B-017-LITE — CI / SUPPLY-CHAIN SECURITY FOUNDATION`
+`B-017-LITE FINAL INDEPENDENT RETEST`
 
 ## Next engineering task
 
-The governance branch has been merged into `main` of the new canonical repository.
-`B-017-Lite — CI / Supply-Chain Security Foundation` is the next authorized engineering gate.
-No B-004/B-005/B-027 implementation is authorized before B-017-Lite is scoped and accepted.
+B-017-Lite is implemented and awaits independent security review. No B-004/B-005/B-027
+implementation is authorized until B-017-Lite is reviewed and merged.
 
 ## Do-not-touch foundation
 

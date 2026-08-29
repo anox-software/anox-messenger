@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-29 (REMOTE-MIGRATION-SYNC-001 complete)
+**Date:** 2026-08-29 (B-017-Lite implementation)
 
 ---
 
@@ -11,25 +11,25 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 ## RECENTLY MERGED
 
 - `PROMPT-007` — B-002 Device Authentication client foundation. Merged into `main` at
-  `d281df66a3471dfd6a9bab0bd899be701317afb4` (old remote, PR #4) after independent security/architecture
-  review (APPROVE, no merge-blocking findings) and empirical dependency-tree verification.
+  `d281df66a3471dfd6a9bab0bd899be701317afb4` (old remote, PR #4).
 - `PROMPT-008` / `PROMPT-008C` / `PROMPT-008D` — B-003 Account/License client domain/state
-  foundation, security review remediation, and final commit-uncertainty closure. Merged into
-  `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old remote, PR #5).
+  foundation. Merged into `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old remote, PR #5).
 - `PROMPT-009` / `PROMPT-009R` — Development Security Governance / Handoff Hardening. Merged into
   `main` of `anox-software/anox-messenger` via PR #1 at `9c3fb08c30b743274e2c0779937502bb30b313b0`.
 - `PROMPT-010` / `PROMPT-010R1` — GitHub Remote Activity Safety Governance. Merged into `main` of
-  `anox-software/anox-messenger` via PR #1 at `9c3fb08c30b743274e2c0779937502bb30b313b0`.
-- `REMOTE-MIGRATION-SYNC-001` — New GitHub main / post-merge continuity reconciliation. Current
-  `main` HEAD `9c3fb08c30b743274e2c0779937502bb30b313b0`.
+  `anox-software/anox-messenger` via PR #1.
+- `REMOTE-MIGRATION-SYNC-001` — New GitHub main / post-merge continuity reconciliation. `main`
+  synchronized to `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
 
 ## IN REVIEW / RETEST
 
-None. All governance findings are CLOSED. All governance work is merged to `main`.
+`B-017-Lite` — CI / Supply-Chain Security Foundation: implemented on
+`security/b017-lite-supply-chain-foundation`. Independent review findings have been remediated
+in B-017-Lite-R3; the validator enforcement gap has been remediated and the branch is awaiting `B-017-LITE FINAL INDEPENDENT RETEST`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`B-017-Lite` — CI / Supply-Chain Security Foundation.
+`B-017-LITE FINAL INDEPENDENT RETEST`
 
 ## RELEASE BLOCKERS
 

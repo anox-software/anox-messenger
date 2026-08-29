@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-29 (post migration to anox-software/anox-messenger, governance PR #1 merged)
+**Date:** 2026-08-29 (B-017-Lite implemented, awaiting independent review)
 
 ---
 
@@ -28,6 +28,14 @@
 - CI workflow with Rust and Android build jobs.
 - Git governance and B-025 authority area.
 - Continuity tools: `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py`.
+- B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper
+  checksum, Rust locked builds) on `security/b017-lite-supply-chain-foundation`.
+- B-017-Lite-R1 review finding remediation: removed `actions: write`, rebuilt validator with
+  18 regression tests, added wrapper JAR validation, repinned `nttld/setup-ndk`, preserved `main`
+  CI evidence, fixed `find | head`.
+- B-017-Lite-R3 validator enforcement gap remediation: fixed `uses:` detection for real step styles,
+  added quoted/inline permission enforcement, multi-component Gradle dynamic-version and range
+  detection, and `[dependencies.NAME]` Cargo sub-table parsing; 35/35 policy tests PASS.
 
 ## PARTIAL
 
