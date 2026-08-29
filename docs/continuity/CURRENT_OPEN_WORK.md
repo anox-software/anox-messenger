@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-29 (PRE-B027-0 metadata sync complete)
+**Date:** 2026-08-29 (PRE-B027-0R remediation metadata sync complete)
 
 ---
 
@@ -26,15 +26,15 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 
 ## IN REVIEW / RETEST
 
-`PRE-B027-0` — Continuity semantics / baseline reconciliation and B-027 architecture freeze on
-`governance/pre-b027-continuity-reconciliation`. The implementation is complete and the next gate is
-`PRE-B027-0 FOCUSED INDEPENDENT REVIEW`.
+`PRE-B027-0R` — Targeted remediation of the PRE-B027-0 focused independent review findings on
+`governance/pre-b027-continuity-reconciliation`. The remediation is complete and the next gate is
+`PRE-B027-0R INDEPENDENT DELTA RETEST`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
+`PRE-B027-0R INDEPENDENT DELTA RETEST`
 
-After that review and controlled human merge:
+After that retest and controlled human merge:
 
 `B-027 IMPLEMENTATION AUTHORIZED`
 

@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-0 — Continuity semantics / baseline reconciliation
+**Handoff version:** PRE-B027-0R — Continuity remediation / review finding closure
 **Date:** 2026-08-29
 
 ---
@@ -22,9 +22,9 @@ New sessions must read that file first.
 - Current work branch: `governance/pre-b027-continuity-reconciliation`
 - Current baseline branch: `main`
 - Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Described HEAD: `a68eca5248f1ab315c34ba00387030bfd58c138e`
+- Described HEAD: `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242`
 - Working tree: expected clean at handoff generation
-- Open PR: none (PRE-B027-0 is local and not yet pushed)
+- Open PR: none (PRE-B027-0R is local and not yet pushed)
 - Latest merge into `main`: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
@@ -55,6 +55,9 @@ New sessions must read that file first.
 - PRE-B027-0 — B-027 AI Workforce / Work-Control Governance architecture freeze and continuity
   head-semantic fix implemented on `governance/pre-b027-continuity-reconciliation`; no B-027
   runtime files created yet; awaiting independent review.
+- PRE-B027-0R — Targeted remediation of the PRE-B027-0 focused independent review findings
+  (ANOX-PREB027REV-001 through -010) on `governance/pre-b027-continuity-reconciliation`;
+  all findings closed locally; awaiting independent Delta Retest.
 
 ## Latest completed work
 
@@ -75,10 +78,26 @@ PRE-B027-0 — Continuity semantics / baseline reconciliation:
   and HEAD semantics.
 - Added B-027 to `docs/authority/B_FREEZE_REGISTRY.md`.
 
+PRE-B027-0R — Review finding remediation:
+
+- Fixed rename-into-allowlist bypass by inspecting every commit in the metadata-only range with
+  `git log --name-only --no-renames`.
+- Restored archive-mode required-key enforcement with legacy `baseline_head` compatibility.
+- Removed broad `docs/history/**` and `docs/continuity/HISTORICAL_HANDOFFS/**` prefix trust.
+- Added non-self-referential baseline ancestry validation.
+- Completed the PRE-B027 freeze report with Finding Security, Role≠Model, Gate Resolver, and
+  Cold Recovery requirements.
+- Replaced the duplicated authority precedence list with a canonical reference.
+- Updated `docs/authority/AUTHORITY_INDEX.md` freeze registry scope.
+- Aligned generator and validator `described_head` / `baseline_head` precedence.
+- Enforced described_head declaration in current continuity surfaces.
+- Added adversarial regression tests for all ten findings.
+
 ## Current open work
 
-`PRE-B027-0` — Continuity semantics / baseline reconciliation and B-027 architecture freeze:
-implemented on `governance/pre-b027-continuity-reconciliation`, awaiting `PRE-B027-0 FOCUSED INDEPENDENT REVIEW`.
+`PRE-B027-0R` — Targeted remediation of the PRE-B027-0 focused independent review findings:
+implemented on `governance/pre-b027-continuity-reconciliation`, awaiting
+`PRE-B027-0R INDEPENDENT DELTA RETEST`.
 
 ## Current test baseline
 
@@ -114,15 +133,16 @@ implemented on `governance/pre-b027-continuity-reconciliation`, awaiting `PRE-B0
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and awaiting review.
+- No PRE-B027 architecture blockers; the architecture is frozen and the remediation is
+  awaiting independent Delta Retest.
 
 ## Next architecture gate
 
-`PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
+`PRE-B027-0R INDEPENDENT DELTA RETEST`
 
 ## Next engineering task
 
-If the focused review passes, the authorized next gate is `B-027 IMPLEMENTATION`.
+If the Delta Retest passes, the authorized next gate is `B-027 IMPLEMENTATION`.
 No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
 
 ## Do-not-touch foundation

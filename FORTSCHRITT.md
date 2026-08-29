@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PRE-B027-0 — CONTINUITY SEMANTICS / BASELINE RECONCILIATION COMPLETE; AWAITING PRE-B027-0 FOCUSED INDEPENDENT REVIEW
+**Status:** PRE-B027-0R — CONTINUITY REMEDIATION COMPLETE; AWAITING PRE-B027-0R INDEPENDENT DELTA RETEST
 **Updated:** 2026-08-29
 
 ## Architecture / governance
@@ -45,6 +45,11 @@ PRE-B027-0 is implemented on `governance/pre-b027-continuity-reconciliation`. It
   `described_head` semantics and a metadata-only advancement check;
 - updated `validate_continuity.py`, `test_handoff_and_validator.py`, `generate_handoff.py`, and
   `docs/continuity/HANDOFF_WORKFLOW.md` accordingly.
+
+PRE-B027-0 focused independent review found 2 blocking and 8 non-blocking findings
+(ANOX-PREB027REV-001 through -010). PRE-B027-0R remediation closed all ten findings and
+updated `docs/authority/AUTHORITY_INDEX.md` and `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
+Next gate: `PRE-B027-0R INDEPENDENT DELTA RETEST`.
 
 No `workforce/**`, `docs/workforce/**`, or product/CI/dependency changes are present.
 

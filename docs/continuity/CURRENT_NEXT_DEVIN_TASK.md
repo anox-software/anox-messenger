@@ -1,16 +1,16 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING FOCUSED INDEPENDENT REVIEW
-**Task ID:** `PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
+**Status:** AWAITING INDEPENDENT DELTA RETEST
+**Task ID:** `PRE-B027-0R INDEPENDENT DELTA RETEST`
 **Date:** 2026-08-29
 
 ---
 
 ## Purpose
 
-PRE-B027-0 is complete on `governance/pre-b027-continuity-reconciliation`. It freezes the B-027 AI
-Workforce / Work-Control Governance architecture and fixes the continuity `described_head` self-reference
-defect. The next gate is a focused independent review before controlled human push/PR/merge.
+PRE-B027-0R targeted remediation is complete on `governance/pre-b027-continuity-reconciliation`. It closes
+all ten findings from the PRE-B027-0 focused independent review (ANOX-PREB027REV-001 through -010). The
+next gate is an independent Delta Retest by a reviewer that did not implement this remediation.
 
 ## Preconditions satisfied
 
@@ -20,30 +20,30 @@ defect. The next gate is a focused independent review before controlled human pu
 - `GITHUB_REMOTE_ACTIVITY_SAFETY.md` is binding.
 - Remote-write authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE`.
 - B-017-Lite is merged to `main` and all five CI gates pass.
-- `validate_continuity.py` enforces the new `described_head` semantics.
-- `test_handoff_and_validator.py` includes focused negative tests.
-- `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` captures the frozen B-027 architecture.
-- `docs/authority/B_FREEZE_REGISTRY.md` references the B-027 freeze report.
+- PRE-B027-0 initial implementation and independent focused review are complete.
+- PRE-B027-0R remediation is committed at `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242` and described by the
+  metadata-only sync at the current HEAD.
+- `validate_continuity.py` now enforces rename-aware metadata-only classification, archive required-key
+  validation, non-self-referential baseline ancestry, missing described_head declarations, and a narrow
+  metadata-only allowlist.
+- `test_handoff_and_validator.py` includes adversarial regression tests for rename bypass, prefix boundary,
+  archive required keys, missing head declarations, baseline ancestry, and head precedence.
+- `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` contains the complete frozen architecture with
+  Finding Security, Role≠Model, Gate Resolver, and Cold Recovery requirements.
+- `docs/authority/AUTHORITY_INDEX.md` references the canonical authority precedence and updated freeze
+  registry scope.
 - No `docs/workforce/**` or `workforce/**` files have been created.
 - No Android, Rust/crypto, CI, dependency, or product code changes are present.
 
 ## Scope of the next task
 
-- Independently review `tools/continuity/validate_continuity.py` for the new `described_head` semantics
-  and metadata-only advancement logic.
-- Independently review `tools/continuity/test_handoff_and_validator.py` for the new negative tests,
-  including the self-reference regression test.
-- Independently review `docs/continuity/HANDOFF_WORKFLOW.md` HEAD semantics documentation.
-- Independently review `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` for correctness and
-  completeness against the approved PRE-B027-A/B/C/D architecture.
-- Independently review the metadata-only allowlist in `validate_continuity.py` for security boundary
-  correctness.
+- Independently retest the targeted remediation for ANOX-PREB027REV-001 through -010.
 - Run `python3 tools/continuity/validate_continuity.py --mode live` and confirm PASS.
 - Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm PASS.
 - Run `python3 tools/continuity/generate_handoff.py` and confirm a clean Handoff ZIP is produced.
-- Run `python3 -m unittest tools/continuity.test_handoff_and_validator` and confirm PASS.
-- Run `git diff --check` and confirm PASS.
-- If all checks pass, declare `PRE-B027-0` ready for controlled human PR/merge.
+- Run `git diff --check 283c1a1...HEAD` and confirm PASS.
+- Verify archive/Handoff validation against a freshly generated ZIP.
+- If all checks pass, declare `PRE-B027-0R` ready for controlled human PR/merge.
 
 ## Out of scope
 
@@ -55,9 +55,9 @@ defect. The next gate is a focused independent review before controlled human pu
 - B-005 database/RLS implementation.
 - Any Messenger product code change.
 
-## Next authorized sequence after this review
+## Next authorized sequence after this retest
 
-1. If review PASS, preserve the clean local `governance/pre-b027-continuity-reconciliation` branch.
+1. If Delta Retest PASS, preserve the clean local `governance/pre-b027-continuity-reconciliation` branch.
 2. Human-controlled remote actions: create PR, merge to `main`.
 3. After merge: `B-027 IMPLEMENTATION AUTHORIZED`.
 

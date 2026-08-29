@@ -24,11 +24,11 @@
 
 - Current handoff branch: `governance/pre-b027-continuity-reconciliation`
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `a68eca5248f1ab315c34ba00387030bfd58c138e`
+- Described HEAD: `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: none (PRE-B027-0 is local and not yet pushed)
-- Current task: `PRE-B027-0 metadata sync complete`
-- Current gate: `PRE-B027-0 FOCUSED INDEPENDENT REVIEW`
+- Open relevant PR: none (PRE-B027-0R is local and not yet pushed)
+- Current task: `PRE-B027-0R remediation metadata sync complete`
+- Current gate: `PRE-B027-0R INDEPENDENT DELTA RETEST`
 
 ## Merged history on main
 
