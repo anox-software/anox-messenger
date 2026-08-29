@@ -1,7 +1,7 @@
 # anoX V1 GitHub Remote Activity Safety Governance
 
-**Authority:** Additive development-governance authority under B-026.  
-**Status:** CURRENT  
+**Authority:** Additive development-governance authority under B-026.
+**Status:** CURRENT
 **Date:** 2026-08-28
 
 ---

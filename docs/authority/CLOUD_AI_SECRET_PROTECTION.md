@@ -1,7 +1,7 @@
 # Cloud-AI Secret / Private-Key Protection
 
-**Authority:** Binding development / security authority.  
-**Status:** CURRENT  
+**Authority:** Binding development / security authority.
+**Status:** CURRENT
 **Date:** 2026-08-23
 
 ---

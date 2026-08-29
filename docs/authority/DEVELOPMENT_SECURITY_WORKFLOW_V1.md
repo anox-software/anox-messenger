@@ -1,7 +1,7 @@
 # anoX V1 Development Security Workflow
 
-**Authority:** Additive development-governance authority under B-026.  
-**Status:** CURRENT  
+**Authority:** Additive development-governance authority under B-026.
+**Status:** CURRENT
 **Date:** 2026-08-23
 
 ---

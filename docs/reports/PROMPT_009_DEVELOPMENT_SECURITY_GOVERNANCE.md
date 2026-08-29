@@ -1,8 +1,8 @@
 # PROMPT-009 — Development Security Governance / Handoff Hardening
 
-**Date:** 2026-08-23  
-**Branch:** `governance/development-security-handoff-v1`  
-**Starting baseline:** `main` @ `881c85ec726d8a32eb84b00955b6b9db7912fe1e`  
+**Date:** 2026-08-23
+**Branch:** `governance/development-security-handoff-v1`
+**Starting baseline:** `main` @ `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
 **Status:** Governance / handoff security hardening; no product feature changes.
 
 ---
@@ -165,18 +165,18 @@ All current-state surfaces now record:
 
 Added `tools/continuity/test_handoff_and_validator.py` covering:
 
-A. new governance files required by validation  
-B. `CURRENT_HANDOFF.md` required  
-C. handoff includes new governance  
-D. handoff excludes `.git/`  
-E. handoff includes `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`  
-F. `.env` style file blocks handoff  
-G. private-key PEM marker blocks handoff  
-H. key/high-risk filename blocks handoff  
-I. secret contents not printed in error output  
-J. bootstrap references new governance  
-K. validator catches inconsistent current-state  
-L. historical entries do not falsely fail validation  
+A. new governance files required by validation
+B. `CURRENT_HANDOFF.md` required
+C. handoff includes new governance
+D. handoff excludes `.git/`
+E. handoff includes `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`
+F. `.env` style file blocks handoff
+G. private-key PEM marker blocks handoff
+H. key/high-risk filename blocks handoff
+I. secret contents not printed in error output
+J. bootstrap references new governance
+K. validator catches inconsistent current-state
+L. historical entries do not falsely fail validation
 
 Result: **12/12 PASS**.
 
