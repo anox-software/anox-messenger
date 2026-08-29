@@ -16,14 +16,14 @@ New sessions must read that file first.
 
 ## Current repository state
 
-- Repository: `https://github.com/anox-admin/ax-messenger.git`
-- Current work branch: `governance/development-security-handoff-v1`
+- Repository: `https://github.com/anox-software/anox-messenger` (SSH: `git@github.com:anox-software/anox-messenger.git`)
+- Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
+- Current work branch: `main`
 - Current baseline branch: `main`
-- Current baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
+- Current baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
 - Working tree: expected clean at handoff generation
-- Open PR: PR #6 — PROMPT-009 / PROMPT-009R governance, open against `main`
-- Latest merge into `main`: PR #5 `e7ee54a713e08950c63cf2d61ec97931864b66bc` — PROMPT-008 / B-003
-  Account/License client foundation
+- Open PR: none (governance PR #1 merged)
+- Latest merge into `main`: PR #1 (`anox-software/anox-messenger#1`) — Governance: development security and GitHub remote safety hardening; merge commit `9c3fb08c30b743274e2c0779937502bb30b313b0`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -70,18 +70,24 @@ PROMPT-010R1 — Governance review finding remediation: corrected the duplicate 
 `AUTHORITY_INDEX.md` and added the `AI remote-write authority assumed? → NO` quick-reference row
 to `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`.
 
+REMOTE-MIGRATION-SYNC-001 — Controlled migration to `anox-software/anox-messenger`: repository
+re-published under SSH origin, legacy `anox-admin/ax-messenger` demoted to historical provenance,
+governance PR #1 merged into `main` at `9c3fb08c30b743274e2c0779937502bb30b313b0`, and all
+current continuity surfaces reconciled to the new canonical remote/main state.
+
 ## Current open work
 
 `ANOX-GOVREV-009R-005` — Continuity Bookkeeping Closure: `CLOSED` by independent R4 retest.
 
 `ANOX-GOVREV-009R-006` — Recursive Bookkeeping Invariant: `CLOSED` by independent R4 retest.
 
-`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1.
+`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `CLOSED` by independent retest.
 
-`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1.
+`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `CLOSED` by independent retest.
 
-`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced; now awaiting retest of
-010-001/002.
+`PROMPT-010` — GitHub Remote Activity Safety Governance: `ACCEPTED` and merged via PR #1.
+
+`REMOTE-MIGRATION-SYNC-001` — New GitHub main post-merge continuity reconciliation: `COMPLETE`.
 
 ## Current test baseline
 
@@ -110,19 +116,19 @@ to `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`.
 
 ## Current blockers
 
-- GitHub free plan: branch protection and secret scanning unavailable.
+- GitHub free plan: branch protection and secret scanning unavailable under the current private plan.
 - No product/security blockers.
+- No governance blockers.
 
 ## Next architecture gate
 
-`INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
+`B-017-LITE — CI / SUPPLY-CHAIN SECURITY FOUNDATION`
 
 ## Next engineering task
 
-PROMPT-010R1 corrected the two governance review findings. The originating independent reviewer
-must retest `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002`. No B-004/B-005/B-017-Lite/B-027
-implementation is authorized until all governance findings are CLOSED and the branch is reviewed
-and merged.
+The governance branch has been merged into `main` of the new canonical repository.
+`B-017-Lite — CI / Supply-Chain Security Foundation` is the next authorized engineering gate.
+No B-004/B-005/B-027 implementation is authorized before B-017-Lite is scoped and accepted.
 
 ## Do-not-touch foundation
 

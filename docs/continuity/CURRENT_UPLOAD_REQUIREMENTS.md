@@ -23,7 +23,7 @@ emergency/degraded process.
 Provide only:
 
 - `artifacts/handoff/ANOX_HANDOFF_*.zip` (latest generated package)
-- Repository URL: `https://github.com/anox-admin/ax-messenger.git`
+- Canonical repository: `https://github.com/anox-software/anox-messenger` (SSH: `git@github.com:anox-software/anox-messenger.git`)
 
 The new AI reads the live repository and the handoff package.
 

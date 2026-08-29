@@ -28,10 +28,10 @@
 
 ## Current repository
 
-`governance/development-security-handoff-v1` is the active branch. `main` baseline is
-`881c85ec726d8a32eb84b00955b6b9db7912fe1e`. B-003 was merged into `main` at
-`e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). PR #6 for PROMPT-009 / PROMPT-009R is
-open against `main`.
+`main` is the active branch in the canonical repository `anox-software/anox-messenger`
+(`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
+`9c3fb08c30b743274e2c0779937502bb30b313b0` (PR #1 merged). The legacy remote
+`anox-admin/ax-messenger` remains historical provenance only.
 
 PROMPT-009R2 hardened the validator and tests; independent retest CLOSED findings
 `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004`. The retest discovered
@@ -43,8 +43,12 @@ missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
 continuity surfaces. The independent PROMPT-010 review found `ANOX-GOVREV-010-001` (duplicate
 authority-index numbering) and `ANOX-GOVREV-010-002` (missing remote-write quick-reference row).
 PROMPT-010R1 corrected the numbering in `AUTHORITY_INDEX.md` and added the quick-reference row to
-`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`. `ANOX-GOVREV-010-001` and `ANOX-GOVREV-010-002` are now
-`FIX_READY` for independent retest. GitHub remote remains blocked.
+`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`. The independent retest CLOSED `ANOX-GOVREV-010-001` and
+`ANOX-GOVREV-010-002`; `PROMPT-010` is ACCEPTED.
+
+REMOTE-MIGRATION-SYNC-001 completed the controlled migration to `anox-software/anox-messenger`,
+merged governance PR #1 into `main` at `9c3fb08c30b743274e2c0779937502bb30b313b0`, and reconciled
+all current continuity surfaces. The next authorized gate is `B-017-Lite`.
 
 ## Functional progress
 

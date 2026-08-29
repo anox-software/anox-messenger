@@ -1,25 +1,29 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-28
+**Date:** 2026-08-29
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
 **Functional implementation:** approximately 33%.
 
 ## Repository truth
 
-- Branch: `governance/development-security-handoff-v1`
+- Branch: `main`
 - Current HEAD: resolve from `CURRENT_GIT_STATE.md` or `GIT_SNAPSHOT.txt`
+- Canonical repository: `https://github.com/anox-software/anox-messenger`
+- Legacy repository: `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
-- Merged PR: `#5` → `main`, PROMPT-008 / B-003 Account/License foundation; merged
-- Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+- Merged baseline HEAD: `9c3fb08c30b743274e2c0779937502bb30b313b0`
+- Merged PR: `#1` → `main`, Governance: development security and GitHub remote safety hardening
+- Previous baseline HEAD: `881c85ec726d8a32eb84b00955b6b9db7912fe1e`
+- PR #5 (PROMPT-008 / B-003 Account/License foundation): merged at
+  `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old remote)
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
-  `d281df66a3471dfd6a9bab0bd899be701317afb4`
-- B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33`
-- PR #3: merged at `7320253f27a1eef32847b992f13292d77178c4db`
+  `d281df66a3471dfd6a9bab0bd899be701317afb4` (old remote)
+- B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33` (old remote)
+- PR #3: merged at `7320253f27a1eef32847b992f13292d77178c4db` (old remote)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- Current gate: `INDEPENDENT RETEST OF ANOX-GOVREV-010-001 AND ANOX-GOVREV-010-002`
+- Current gate: `B-017-LITE — CI / SUPPLY-CHAIN SECURITY FOUNDATION`
 - Latest main CI: see `FORTSCHRITT.md` / `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.

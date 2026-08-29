@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-28 (post PROMPT-008 merge, PROMPT-010R1 review finding remediation)
+**Date:** 2026-08-29 (post migration to anox-software/anox-messenger, governance PR #1 merged)
 
 ---
 
@@ -33,7 +33,7 @@
 
 - Release signing and artifact distribution — not configured.
 - Physical Android/GrapheneOS runtime — unverified.
-- Cloud-AI secret protection governance — added in PROMPT-009, awaiting merge review.
+- Cloud-AI secret protection governance — added in PROMPT-009 and merged into `main` of the new canonical repository.
 
 ## MISSING
 

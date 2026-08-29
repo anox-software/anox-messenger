@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-28 (PROMPT-010R1 remediation)
+**Date:** 2026-08-29 (REMOTE-MIGRATION-SYNC-001 complete)
 
 ---
 
@@ -11,31 +11,25 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 ## RECENTLY MERGED
 
 - `PROMPT-007` — B-002 Device Authentication client foundation. Merged into `main` at
-  `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4) after independent security/architecture
+  `d281df66a3471dfd6a9bab0bd899be701317afb4` (old remote, PR #4) after independent security/architecture
   review (APPROVE, no merge-blocking findings) and empirical dependency-tree verification.
 - `PROMPT-008` / `PROMPT-008C` / `PROMPT-008D` — B-003 Account/License client domain/state
   foundation, security review remediation, and final commit-uncertainty closure. Merged into
-  `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5).
+  `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old remote, PR #5).
+- `PROMPT-009` / `PROMPT-009R` — Development Security Governance / Handoff Hardening. Merged into
+  `main` of `anox-software/anox-messenger` via PR #1 at `9c3fb08c30b743274e2c0779937502bb30b313b0`.
+- `PROMPT-010` / `PROMPT-010R1` — GitHub Remote Activity Safety Governance. Merged into `main` of
+  `anox-software/anox-messenger` via PR #1 at `9c3fb08c30b743274e2c0779937502bb30b313b0`.
+- `REMOTE-MIGRATION-SYNC-001` — New GitHub main / post-merge continuity reconciliation. Current
+  `main` HEAD `9c3fb08c30b743274e2c0779937502bb30b313b0`.
 
 ## IN REVIEW / RETEST
 
-`PROMPT-009` — Development Security Governance / Handoff Hardening on
-`governance/development-security-handoff-v1`, PR #6 open against `main`.
+None. All governance findings are CLOSED. All governance work is merged to `main`.
 
-`PROMPT-009R2` — Validator and test hardening: implementation PASS, independent retest PASS.
-Findings `ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004` are CLOSED.
+## NEXT AUTHORIZED ENGINEERING GATE
 
-`ANOX-GOVREV-009R-005` — Continuity bookkeeping: `CLOSED` by independent R4 retest.
-
-`ANOX-GOVREV-009R-006` — Recursive bookkeeping invariant: `CLOSED` by independent R4 retest.
-
-`PROMPT-010` — GitHub Remote Activity Safety Governance: introduced and reviewed.
-
-`ANOX-GOVREV-010-001` — Duplicate authority-index numbering: `FIX_READY` after PROMPT-010R1;
-retest owner: independent governance reviewer.
-
-`ANOX-GOVREV-010-002` — Missing remote-write quick-reference row: `FIX_READY` after PROMPT-010R1;
-retest owner: independent governance reviewer.
+`B-017-Lite` — CI / Supply-Chain Security Foundation.
 
 ## RELEASE BLOCKERS
 
@@ -43,7 +37,8 @@ None yet. V1 release is gated by B-021…B-023, all future release gates.
 
 ## EXTERNAL BLOCKERS
 
-- GitHub `origin` access suspended (`403`). `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`.
+None. The controlled migration to `anox-software/anox-messenger` is complete. Remote-write
+authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE` per `GITHUB_REMOTE_ACTIVITY_SAFETY.md`.
 
 ## FUTURE / OUT OF V1
 

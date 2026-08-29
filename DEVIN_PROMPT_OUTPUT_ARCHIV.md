@@ -561,3 +561,34 @@ validation modes with baseline drift detection.
 - Test handoff archive validation PASS.
 - `REMOTE_SYNC_STATUS = BLOCKED — HUMAN ACTION REQUIRED`; no remote CI, push, PR, or credential reconfiguration occurred.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## REMOTE-MIGRATION-SYNC-001 — New GitHub Main / Post-Merge Continuity Reconciliation
+
+**Objective:** Synchronize the canonical current-state and continuity surfaces after the controlled
+migration to `anox-software/anox-messenger` and the merge of governance PR #1.
+
+**START_HEAD:** `583c68f5a4c5291b1a1efc0ce3ab429792546ef8`
+
+**FINAL_HEAD:** resolve at handoff generation
+
+**Result:** PASS — migration reconciled, canonical remote/main state recorded
+
+**Changed files:**
+- `FORTSCHRITT.md`
+- `PROJECT_STATE.md`
+- `docs/continuity/CURRENT_HANDOFF.md`
+- `docs/continuity/CURRENT_GIT_STATE.md`
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md`
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`
+- `docs/continuity/CURRENT_OPEN_WORK.md`
+- `docs/continuity/CURRENT_STATE.json`
+- `docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+**Validation:**
+- `python3 tools/continuity/test_handoff_and_validator.py`: 24 tests PASS.
+- `python3 tools/continuity/validate_continuity.py --mode live`: `LIVE_GIT_VERIFICATION: PASS`.
+- `git diff --check`: clean.
+- Test handoff archive validation PASS.
+- `REMOTE MUTATION = NONE` during this synchronization.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
