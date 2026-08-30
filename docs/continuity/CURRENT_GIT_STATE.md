@@ -26,7 +26,7 @@
 - Delivery branch: `governance/canonical-merge-lifecycle-v1`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `352c82c180ef8491ea4e0ecad330a2cd3466fe77`
+- Described HEAD: `c36e45f8cf94baa40913215a2c34389138472fd1`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
 - Current task: `CANONICAL MERGE LIFECYCLE V1 IMPLEMENTATION`
@@ -58,7 +58,7 @@
 
 ## Unmerged work
 
-PRE-B027-M1R — Permanent canonical merge lifecycle hardening on `governance/canonical-merge-lifecycle-v1`; awaiting focused independent review and controlled human merge.
+PRE-B027-M1R1 — Canonical merge lifecycle remediation on `governance/canonical-merge-lifecycle-v1`; implemented locally and awaiting `CANONICAL MERGE LIFECYCLE INDEPENDENT DELTA RETEST`.
 
 ## B-003 status after this task
 

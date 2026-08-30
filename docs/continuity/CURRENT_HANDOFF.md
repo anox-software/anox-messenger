@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-0R2 — Continuity remediation / review finding closure
+**Handoff version:** PRE-B027-M1R1 — Canonical merge lifecycle remediation
 **Date:** 2026-08-30
 
 ---
@@ -24,7 +24,7 @@ New sessions must read that file first.
 - Current work branch: `governance/canonical-merge-lifecycle-v1`
 - Current baseline branch: `main`
 - Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
-- Described HEAD: `352c82c180ef8491ea4e0ecad330a2cd3466fe77`
+- Described HEAD: `c36e45f8cf94baa40913215a2c34389138472fd1`
 - Working tree: expected clean at handoff generation
 - Pre-merge gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
 - Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
@@ -120,7 +120,7 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT 
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
-- Continuity unit tests: 66/66 PASS
+- Continuity unit tests: 112/112 PASS
 
 ## Historical provenance
 
