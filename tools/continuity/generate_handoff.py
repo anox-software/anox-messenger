@@ -358,6 +358,14 @@ def main():
             return 1
 
     rel_files = collect_files()
+    # Ensure the canonical project-memory ledger and surface index are included.
+    for mandatory in (
+        "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
+        "docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md",
+    ):
+        if mandatory not in rel_files:
+            rel_files.append(mandatory)
+    rel_files.sort()
     if not check_unresolved_placeholders(rel_files):
         return 1
     if not preflight_security(rel_files):

@@ -1,7 +1,7 @@
 # DEVIN PROMPT OUTPUT ARCHIV
 
 **Status:** CURRENT
-**Last updated:** 2026-08-20
+**Last updated:** 2026-08-30
 
 ---
 
@@ -686,3 +686,53 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - `git status --short`: clean.
 - No Android, Rust/crypto, CI, dependency, authority, or product code changes.
 - `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+
+## PRE-B027-M1R2 — CML ARCHIVE SEMANTIC REMEDIATION
+
+**Date:** 2026-08-30
+**Branch:** `governance/canonical-merge-lifecycle-v1`
+**Task result:** PASS — archive trust-model and semantic scope remediated
+**Substantive commit:** `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
+**Metadata commit:** `e83d4b9cbf7cbe4b3c3b56830019ad1bf7ed5a4a`
+**Event ID:** `ANOX-EVENT-0018`
+
+- Remediated `ANOX-CMLR1REV-001` (closed), `ANOX-CMLR1REV-002` and `ANOX-CMLREV-002`.
+- Added archive lifecycle tamper and N-1 cross-surface checks.
+- Discovered `ANOX-CMLR2REV-001..003`.
+- Continuity tests: 132/132 PASS.
+
+## PRE-B027-M1R3 — CML SCHEMA-DOWNGRADE REMEDIATION
+
+**Date:** 2026-08-30
+**Branch:** `governance/canonical-merge-lifecycle-v1`
+**Task result:** PASS — schema-downgrade and placeholder regression defects remediated
+**Substantive commit:** `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
+**Metadata commit:** `d745f4795aecda54120ebb73c3f7e121d18bea10`
+**Event ID:** `ANOX-EVENT-0019`
+
+- Remediated `ANOX-CMLR2REV-001..003` and remaining archive semantic root cause.
+- Continuity tests: 154/154 PASS.
+- No final independent M1R3 Delta Review occurred; human authorized proceeding after automated verification.
+
+## PRE-B027-M1R MERGE — PR #4 CANONICAL MERGE LIFECYCLE V1 HUMAN-MERGED
+
+**Date:** 2026-08-30
+**Branch:** `governance/canonical-merge-lifecycle-v1` → `main`
+**Task result:** PASS — CML V1 merged to canonical `main`
+**Merge commit:** `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
+**Event ID:** `ANOX-EVENT-0020`
+
+- Canonical parent: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Delivery parent: `d745f4795aecda54120ebb73c3f7e121d18bea10`
+- Final live validator on `main`: `LIVE_GIT_VERIFICATION: PASS`.
+- `REMOTE MUTATION = NONE` during AI execution; human performed PR/merge.
+
+## B-027 IMPLEMENTATION AUTHORIZED
+
+**Date:** 2026-08-30
+**Branch:** `main`
+**Event ID:** `ANOX-EVENT-0021`
+
+- Effective gate: `B-027 IMPLEMENTATION AUTHORIZED`.
+- Basis: canonical `main` live validation PASS at `9bbd4ea...`; CML V1 human-merged.
+- B-027 workforce runtime not yet implemented.
