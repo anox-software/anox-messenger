@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PRE-B027-0R2 — CONTINUITY REMEDIATION COMPLETE; AWAITING PRE-B027-0R2 INDEPENDENT DELTA RETEST
+**Status:** PRE-B027-M1R — CANONICAL MERGE LIFECYCLE HARDENING COMPLETE; AWAITING FOCUSED INDEPENDENT REVIEW
 **Updated:** 2026-08-30
 
 ## Architecture / governance
@@ -29,27 +29,26 @@
 
 ## Current repository
 
-`main` is the active branch in the canonical repository `anox-software/anox-messenger`
+`main` is the canonical branch in `anox-software/anox-messenger`
 (`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
-`283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2, B-017-Lite merged). The legacy remote
+`3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3, PRE-B027-0R2 merged). The legacy remote
 `anox-admin/ax-messenger` remains historical provenance only.
 
 B-017-Lite merged to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`. All five GitHub CI
 gates pass. Independent review findings `ANOX-B017REV-001` through `ANOX-B017REV-007` are CLOSED.
 
-PRE-B027-0 is implemented on `governance/pre-b027-continuity-reconciliation`. It:
-- froze the B-027 AI Workforce / Work-Control Governance architecture in
-  `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`;
-- added B-027 to `docs/authority/B_FREEZE_REGISTRY.md`;
-- replaced the self-referential `baseline_head == live HEAD` continuity invariant with
-  `described_head` semantics and a metadata-only advancement check;
-- updated `validate_continuity.py`, `test_handoff_and_validator.py`, `generate_handoff.py`, and
-  `docs/continuity/HANDOFF_WORKFLOW.md` accordingly.
+PRE-B027-0R2 merged to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All
+PRE-B027 findings are closed.
 
-PRE-B027-0 focused independent review found 2 blocking and 8 non-blocking findings
-(ANOX-PREB027REV-001 through -010). PRE-B027-0R remediation closed all ten findings and
-updated `docs/authority/AUTHORITY_INDEX.md` and `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
-Next gate: `PRE-B027-0R INDEPENDENT DELTA RETEST`.
+PRE-B027-M1R — permanent canonical merge lifecycle hardening — is implemented on
+`governance/canonical-merge-lifecycle-v1`. It:
+- separates `canonical_branch` (`main`) and `delivery_branch` (`governance/canonical-merge-lifecycle-v1`);
+- distinguishes reviewed delivery tail, merge-resolution, and post-merge canonical tail;
+- enforces fail-closed merge-resolution payload detection in `validate_continuity.py`;
+- adds handoff-branch and effective-gate placeholders to `generate_handoff.py`;
+- records the canonical merge lifecycle rule in `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+
+Next gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
 
 No `workforce/**`, `docs/workforce/**`, or product/CI/dependency changes are present.
 

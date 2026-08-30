@@ -19,13 +19,15 @@ New sessions must read that file first.
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
-- Current work branch: `governance/pre-b027-continuity-reconciliation`
+- Canonical branch: `main`
+- Delivery branch: `governance/canonical-merge-lifecycle-v1`
+- Current work branch: `governance/canonical-merge-lifecycle-v1`
 - Current baseline branch: `main`
-- Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Described HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51`
+- Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Described HEAD: `352c82c180ef8491ea4e0ecad330a2cd3466fe77`
 - Working tree: expected clean at handoff generation
-- Open PR: none (PRE-B027-0R2 is local and not yet pushed)
-- Latest merge into `main`: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
+- Open PR: none (PRE-B027-M1R is local and not yet pushed)
+- Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -102,9 +104,8 @@ PRE-B027-0R — Review finding remediation:
 
 ## Current open work
 
-`PRE-B027-0R2` — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) and final
-remediation of `ANOX-PREB027REV-001` on `governance/pre-b027-continuity-reconciliation`;
-implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M1R` — Permanent canonical merge lifecycle hardening on `governance/canonical-merge-lifecycle-v1`;
+implemented locally and awaiting `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
 
 ## Current test baseline
 
@@ -147,11 +148,11 @@ implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
 
 ## Next architecture gate
 
-`PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+`CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
 
 ## Next engineering task
 
-If the R2 Delta Retest passes, the authorized next gate is `B-027 IMPLEMENTATION`.
+After the independent review and controlled human merge, the authorized next gate is `B-027 IMPLEMENTATION AUTHORIZED`.
 No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
 
 ## Do-not-touch foundation

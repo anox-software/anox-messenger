@@ -26,15 +26,14 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 
 ## IN REVIEW / RETEST
 
-`PRE-B027-0R2` — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) and final
-remediation of `ANOX-PREB027REV-001` on `governance/pre-b027-continuity-reconciliation`.
-The remediation is complete locally and the next gate is `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M1R` — Permanent canonical merge lifecycle hardening on `governance/canonical-merge-lifecycle-v1`.
+The implementation is complete locally and the next gate is `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+`CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
 
-After that retest and controlled human merge:
+After that review and controlled human merge:
 
 `B-027 IMPLEMENTATION AUTHORIZED`
 

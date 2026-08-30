@@ -6,25 +6,25 @@
 
 ## Repository truth
 
-- Branch: `governance/pre-b027-continuity-reconciliation`
-- Current HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51` (described_head); live HEAD from `CURRENT_GIT_STATE.md`
+- Branch: `governance/canonical-merge-lifecycle-v1`
+- Current HEAD: `352c82c180ef8491ea4e0ecad330a2cd3466fe77` (described_head); live HEAD from `CURRENT_GIT_STATE.md`
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Legacy repository: `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - Merged baseline branch: `main`
-- Merged baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Merged PR: `#2` → `main`, B-017-Lite CI / supply-chain security foundation
-- Previous baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
+- Merged baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Merged PR: `#3` → `main`, PRE-B027-0R2 continuity reconciliation
+- Previous baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
 - PR #5 (PROMPT-008 / B-003 Account/License foundation): merged at
   `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old remote)
 - PR #4 (PROMPT-007 / B-002 Device Auth foundation): merged at
   `d281df66a3471dfd6a9bab0bd899be701317afb4` (old remote)
 - B-025 PR #2: merged at `75c11c823ec68cea576912b4095fa7a26ed33a33` (old remote)
-- PR #3: merged at `7320253f27a1eef32847b992f13292d77178c4db` (old remote)
+- PR #3: merged at `3e127c7a80e9835ea5631e21c10f066401a884dc` (canonical new remote)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
-- B-027: PRE-FROZEN / approved for implementation
-- Current gate: `PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+- B-027: PRE-FROZEN / approved for implementation; authorized next gate after merge
+- Current gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
 - Latest main CI: B-017-Lite 5/5 PASS
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.

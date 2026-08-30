@@ -641,3 +641,48 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - No `docs/workforce/**` or `workforce/**` created.
 - No Android, Rust/crypto, CI, dependency, authority, or product code changes.
 - `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+
+## PRE-B027-M1R — PERMANENT CANONICAL MERGE LIFECYCLE HARDENING
+
+**Date:** 2026-08-30
+**Branch:** `governance/canonical-merge-lifecycle-v1`
+**Task result:** PASS — canonical merge lifecycle implemented and verified in scratch
+
+**Summary:**
+- Created `governance/canonical-merge-lifecycle-v1` directly from canonical `main` `3e127c7a80e9835ea5631e21c10f066401a884dc`.
+- The accidental one-off `governance/pre-b027-post-merge-reconciliation` commit `2ee3f9d8...` is NOT in ancestry.
+- Implemented canonical merge lifecycle in `validate_continuity.py`:
+  - separates `canonical_branch` and `delivery_branch`;
+  - distinguishes reviewed delivery tail, merge resolution, and post-merge canonical tail;
+  - fails closed on evil merge-resolution product/CI/authority/tool payloads and substantive deletions;
+  - supports only two-parent `--no-ff` merges; squash/rebase/octopus/ambiguous topologies fail closed.
+- Updated `generate_handoff.py` to resolve `__HANDOFF_BRANCH__` and `__EFFECTIVE_GATE__` placeholders.
+- Added the canonical merge lifecycle rule to `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+- Synchronized continuity/project-state surfaces to the two-commit model:
+  - Commit 1 (`352c82c180ef8491ea4e0ecad330a2cd3466fe77`) — substantive lifecycle validator, generator, B026 rule.
+  - Commit 2 — metadata-only state sync with `described_head = 352c82c180ef8491ea4e0ecad330a2cd3466fe77`.
+
+**Files touched:**
+- `tools/continuity/validate_continuity.py`
+- `tools/continuity/generate_handoff.py`
+- `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`
+- `docs/continuity/CURRENT_STATE.json`
+- `docs/continuity/CURRENT_GIT_STATE.md`
+- `docs/continuity/CURRENT_HANDOFF.md`
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md`
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`
+- `docs/continuity/CURRENT_OPEN_WORK.md`
+- `PROJECT_STATE.md`
+- `FORTSCHRITT.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+**Validation:**
+- `python3 tools/continuity/test_handoff_and_validator.py`: PASS.
+- `python3 tools/continuity/validate_continuity.py --mode live` on delivery branch: `LIVE_GIT_VERIFICATION: PASS`.
+- Scratch `--no-ff` merge into `main`: `CANONICAL MERGE TRANSITION: PASS`.
+- Scratch evil product merge-resolution: FAIL (expected).
+- `python3 tools/continuity/generate_handoff.py` on simulated `main`: `HANDOFF_ARCHIVE_VALIDATION: PASS`.
+- `git diff --check 3e127c7...HEAD`: clean.
+- `git status --short`: clean.
+- No Android, Rust/crypto, CI, dependency, authority, or product code changes.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
