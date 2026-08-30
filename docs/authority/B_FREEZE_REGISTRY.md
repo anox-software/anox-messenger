@@ -43,6 +43,7 @@
 | B-024 | Final MAIN Consistency Audit | PASS with mandatory amendments | `docs/authority/B025/TRACK_B/B024_FINAL_MAIN_CONSISTENCY_AUDIT.md` |
 | B-025 | New-Chat Handoff Package | COMPLETE | `docs/authority/B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` |
 | B-026 | Continuous Development Governance | FROZEN | `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` |
+| B-027 | AI Workforce / Work-Control Governance | PRE-FROZEN / approved for implementation | `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` |
 
 ---
 

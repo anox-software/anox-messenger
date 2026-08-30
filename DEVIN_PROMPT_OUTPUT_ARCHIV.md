@@ -1,6 +1,6 @@
 # DEVIN PROMPT OUTPUT ARCHIV
 
-**Status:** CURRENT  
+**Status:** CURRENT
 **Last updated:** 2026-08-20
 
 ---
@@ -592,3 +592,52 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Test handoff archive validation PASS.
 - `REMOTE MUTATION = NONE` during this synchronization.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+
+## PRE-B027-0 — CONTINUITY SEMANTICS / BASELINE RECONCILIATION
+
+**Date:** 2026-08-29
+**Branch:** `governance/pre-b027-continuity-reconciliation`
+**Task result:** PASS — B-027 architecture frozen, continuity head semantics fixed
+
+**Summary:**
+- Preserved the stale local continuity draft at `local/archive/pre-b027-stale-continuity-aab39f5`.
+- Created the work branch from canonical `origin/main` `283c1a1fdda012aab51b0164b4b16636e870f3b5`.
+- Restored local `main` to `283c1a1fdda012aab51b0164b4b16636e870f3b5`.
+- Replaced the self-referential `baseline_head` invariant with `described_head` semantics:
+  - `described_head` is stored in tracked state.
+  - `live_head` is `git rev-parse HEAD` only.
+  - `handoff_snapshot_head` is recorded only in the external Handoff ZIP manifest.
+- Updated `validate_continuity.py`, `generate_handoff.py`, `test_handoff_and_validator.py`, and
+  `docs/continuity/HANDOFF_WORKFLOW.md`.
+- Created `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` and added B-027 to
+  `docs/authority/B_FREEZE_REGISTRY.md`.
+- Synchronized all continuity/project-state surfaces to the two-commit model:
+  - Commit 1 (`a68eca5248f1ab315c34ba00387030bfd58c138e`) — substantive validator, tests, freeze.
+  - Commit 2 — metadata-only state sync with `described_head = a68eca5248f1ab315c34ba00387030bfd58c138e`.
+
+**Files touched:**
+- `tools/continuity/validate_continuity.py`
+- `tools/continuity/generate_handoff.py`
+- `tools/continuity/test_handoff_and_validator.py`
+- `docs/authority/B_FREEZE_REGISTRY.md`
+- `docs/continuity/HANDOFF_WORKFLOW.md`
+- `docs/continuity/CURRENT_STATE.json`
+- `docs/continuity/CURRENT_GIT_STATE.md`
+- `docs/continuity/CURRENT_HANDOFF.md`
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md`
+- `docs/continuity/CURRENT_OPEN_WORK.md`
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md`
+- `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`
+- `PROJECT_STATE.md`
+- `FORTSCHRITT.md`
+- `DEVIN_PROMPT_OUTPUT_ARCHIV.md`
+
+**Validation:**
+- `python3 tools/continuity/test_handoff_and_validator.py`: PASS.
+- `python3 tools/continuity/validate_continuity.py --mode live`: `LIVE_GIT_VERIFICATION: PASS`.
+- `git diff --check origin/main...HEAD`: clean.
+- `git status --short`: clean.
+- No `docs/workforce/**` or `workforce/**` created.
+- No Android, Rust/crypto, CI, dependency, authority, or product code changes.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.

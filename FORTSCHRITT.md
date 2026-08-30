@@ -1,7 +1,7 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B-017-LITE-R1 — INDEPENDENT REVIEW FINDING REMEDIATION COMPLETE; AWAITING B-017-LITE REVIEW RETEST
-**Updated:** 2026-08-28
+**Status:** PRE-B027-0R2 — CONTINUITY REMEDIATION COMPLETE; AWAITING PRE-B027-0R2 INDEPENDENT DELTA RETEST
+**Updated:** 2026-08-30
 
 ## Architecture / governance
 
@@ -10,6 +10,7 @@
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN on `main`.
+- B-027 AI Workforce / Work-Control Governance: PRE-FROZEN / approved for implementation.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -30,29 +31,27 @@
 
 `main` is the active branch in the canonical repository `anox-software/anox-messenger`
 (`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
-`9c3fb08c30b743274e2c0779937502bb30b313b0` (PR #1 merged). The legacy remote
+`283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2, B-017-Lite merged). The legacy remote
 `anox-admin/ax-messenger` remains historical provenance only.
 
-PROMPT-009R2 hardened the validator and tests; independent retest CLOSED findings
-`ANOX-GOVREV-009R-001`, `ANOX-GOVREV-009R-002`, `ANOX-GOVREV-009R-004`. The retest discovered
-`ANOX-GOVREV-009R-005` (missing archive record). PROMPT-009R3 recorded `PROMPT-009R2` and
-synchronized continuity surfaces. PROMPT-009R4 amended the `PROMPT-009R2` archive entry with the
-missing 005/remote provenance, recorded `PROMPT-009R3`, and fixed the recursive
-"last Devin task archived" checklist rule. The independent R4 retest CLOSED
-`ANOX-GOVREV-009R-005` and `ANOX-GOVREV-009R-006`. PROMPT-010 introduced `docs/authority/GITHUB_REMOTE_ACTIVITY_SAFETY.md` and updated
-continuity surfaces. The independent PROMPT-010 review found `ANOX-GOVREV-010-001` (duplicate
-authority-index numbering) and `ANOX-GOVREV-010-002` (missing remote-write quick-reference row).
-PROMPT-010R1 corrected the numbering in `AUTHORITY_INDEX.md` and added the quick-reference row to
-`DEVELOPMENT_SECURITY_WORKFLOW_V1.md`. The independent retest CLOSED `ANOX-GOVREV-010-001` and
-`ANOX-GOVREV-010-002`; `PROMPT-010` is ACCEPTED.
+B-017-Lite merged to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`. All five GitHub CI
+gates pass. Independent review findings `ANOX-B017REV-001` through `ANOX-B017REV-007` are CLOSED.
 
-REMOTE-MIGRATION-SYNC-001 completed the controlled migration to `anox-software/anox-messenger`,
-merged governance PR #1 into `main` at `9c3fb08c30b743274e2c0779937502bb30b313b0`, and reconciled
-all current continuity surfaces. `B-017-Lite` was implemented on
-`security/b017-lite-supply-chain-foundation`, hardening `.github/workflows/ci.yml`,
-`gradle/wrapper/gradle-wrapper.properties`, Rust `cargo test --locked`, and adding
-`tools/security/b017_lite_policy_validator.py` with tests. The next authorized gate is
-`B-017-LITE INDEPENDENT SECURITY REVIEW`.
+PRE-B027-0 is implemented on `governance/pre-b027-continuity-reconciliation`. It:
+- froze the B-027 AI Workforce / Work-Control Governance architecture in
+  `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`;
+- added B-027 to `docs/authority/B_FREEZE_REGISTRY.md`;
+- replaced the self-referential `baseline_head == live HEAD` continuity invariant with
+  `described_head` semantics and a metadata-only advancement check;
+- updated `validate_continuity.py`, `test_handoff_and_validator.py`, `generate_handoff.py`, and
+  `docs/continuity/HANDOFF_WORKFLOW.md` accordingly.
+
+PRE-B027-0 focused independent review found 2 blocking and 8 non-blocking findings
+(ANOX-PREB027REV-001 through -010). PRE-B027-0R remediation closed all ten findings and
+updated `docs/authority/AUTHORITY_INDEX.md` and `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
+Next gate: `PRE-B027-0R INDEPENDENT DELTA RETEST`.
+
+No `workforce/**`, `docs/workforce/**`, or product/CI/dependency changes are present.
 
 ## Functional progress
 

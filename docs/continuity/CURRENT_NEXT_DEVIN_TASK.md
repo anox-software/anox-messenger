@@ -1,60 +1,69 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING FINAL REVIEW RETEST
-**Task ID:** `B-017-Lite-R3 — Validator enforcement gap remediation`
-**Date:** 2026-08-29
+**Status:** AWAITING INDEPENDENT DELTA RETEST
+**Task ID:** `PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+**Date:** 2026-08-30
 
 ---
 
 ## Purpose
 
-B-017-Lite has been implemented on `security/b017-lite-supply-chain-foundation`. The next gate is
-an independent security review of the CI and supply-chain hardening before it can be merged.
+PRE-B027-0R2 targeted remediation is complete on `governance/pre-b027-continuity-reconciliation`. It
+addresses the merge-commit payload visibility gap (ANOX-PREB027RREV-001) and completes the remediation
+of `ANOX-PREB027REV-001`. Findings 002 through 010 remain independently closed. The next gate is an
+independent Delta Retest by a reviewer that did not implement this remediation.
 
 ## Preconditions satisfied
 
 - `PROMPT-009` / `PROMPT-010` governance is merged to `main`.
-- `main` HEAD is `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
+- `main` HEAD is `283c1a1fdda012aab51b0164b4b16636e870f3b5`.
 - Repository is `anox-software/anox-messenger`.
 - `GITHUB_REMOTE_ACTIVITY_SAFETY.md` is binding.
 - Remote-write authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE`.
-- `.github/workflows/ci.yml` is pinned and hardened.
-- `gradle/wrapper/gradle-wrapper.properties` has `distributionSha256Sum`.
-- `tools/security/b017_lite_policy_validator.py` and its tests are implemented.
-- `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` is created.
+- B-017-Lite is merged to `main` and all five CI gates pass.
+- PRE-B027-0 initial implementation and independent focused review are complete.
+- PRE-B027-0R remediation is committed at `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242` and the original
+  metadata-only sync at `99815a811b9c93710ee17b5485dbc307327fdf79`.
+- PRE-B027-0R2 remediation is committed at `53e8d630bc078aa040a0f8f788046c3984472c51` and described by the
+  current metadata-only sync.
+- `validate_continuity.py` now enforces rename-aware and merge-aware metadata-only classification, archive
+  required-key validation, non-self-referential baseline ancestry, missing described_head declarations, and a
+  narrow metadata-only allowlist.
+- `test_handoff_and_validator.py` includes adversarial regression tests for rename bypass, prefix boundary,
+  archive required keys, missing head declarations, baseline ancestry, head precedence, and merge-commit
+  payload visibility.
+- `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` contains the complete frozen architecture with
+  Finding Security, Role≠Model, Gate Resolver, and Cold Recovery requirements.
+- `docs/authority/AUTHORITY_INDEX.md` references the canonical authority precedence and updated freeze
+  registry scope.
+- No `docs/workforce/**` or `workforce/**` files have been created.
+- No Android, Rust/crypto, CI, dependency, or product code changes are present.
 
 ## Scope of the next task
 
-- Independently review `.github/workflows/ci.yml` for least privilege, immutable action SHAs,
-  dangerous triggers, and concurrency.
-- Independently review `gradle/wrapper/gradle-wrapper.properties` for checksum provenance.
-- Independently review `tools/security/b017_lite_policy_validator.py` for correctness and
-  completeness.
-- Independently review `docs/reports/B017_LITE_CI_SUPPLY_CHAIN_SECURITY.md` for threat, controls,
-  residual risks, and deferred work.
-- Run `python3 tools/security/b017_lite_policy_validator.py` and confirm PASS.
-- Run `python3 -m unittest tools/security/test_b017_lite_policy_validator.py` and confirm PASS.
-- Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm 24 tests PASS.
+- Independently retest `ANOX-PREB027RREV-001` and the final closure of `ANOX-PREB027REV-001`.
 - Run `python3 tools/continuity/validate_continuity.py --mode live` and confirm PASS.
-- Run `git diff --check` and confirm PASS.
-- If all checks pass, declare `B-017-Lite` ready for merge.
+- Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm PASS.
+- Run `python3 tools/continuity/generate_handoff.py` and confirm a clean Handoff ZIP is produced.
+- Run `git diff --check 283c1a1...HEAD` and confirm PASS.
+- Verify archive/Handoff validation against a freshly generated ZIP.
+- If all checks pass, declare `PRE-B027-0R` ready for controlled human PR/merge.
 
 ## Out of scope
 
 - GitHub account/repository migration (already complete).
 - Credential or remote URL configuration.
 - Pushing, PR creation, or remote automation.
-- B-027 Workforce implementation.
+- B-027 Workforce runtime implementation.
 - B-004 backend implementation.
 - B-005 database/RLS implementation.
 - Any Messenger product code change.
 
-## Next authorized sequence after this review
+## Next authorized sequence after this retest
 
-1. If review PASS, preserve the clean local branch.
+1. If Delta Retest PASS, preserve the clean local `governance/pre-b027-continuity-reconciliation` branch.
 2. Human-controlled remote actions: create PR, merge to `main`.
-3. Synchronize `main` continuity surfaces and generate a fresh canonical handoff.
-4. Authorize `B-027` or remaining product engineering according to architecture authority.
+3. After merge: `B-027 IMPLEMENTATION AUTHORIZED`.
 
 ## Remote safety
 

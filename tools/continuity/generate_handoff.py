@@ -299,12 +299,14 @@ def main():
     try:
         state = json.loads(state_path.read_text(encoding="utf-8"))
         baseline_branch = state.get("baseline_branch", "main")
-        baseline_head = state.get("baseline_head", "")
+        # Canonical precedence: described_head wins; baseline_head is legacy fallback.
+        baseline_head = state.get("described_head", "") or state.get("baseline_head", "")
     except (FileNotFoundError, json.JSONDecodeError):
         pass
-    # If possible, resolve the real baseline branch HEAD
-    real_baseline_head, _ = git_cmd(["rev-parse", baseline_branch]) if baseline_branch else ("", 0)
-    if real_baseline_head:
+    # If possible, resolve the real baseline branch HEAD. Use --verify so an
+    # unresolvable ref returns empty and the fallback precedence is preserved.
+    real_baseline_head, code = git_cmd(["rev-parse", "--verify", baseline_branch]) if baseline_branch else ("", -1)
+    if real_baseline_head and code == 0:
         baseline_head = real_baseline_head
 
     dirty = status.strip() != ""

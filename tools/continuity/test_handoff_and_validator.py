@@ -80,6 +80,13 @@ class LiveFixture:
         self._write("FORTSCHRITT.md", "# Fortschritt\nApproximately **33%**.\nB-003 merged.\n")
         self._write("DEVIN_PROMPT_OUTPUT_ARCHIV.md", "# Archive\n")
 
+        # Historical provenance file with stale phrases. It must not falsely fail
+        # current-state validation because stale-phrase checks do not scan docs/history/.
+        self._write(
+            "docs/history/old_fortschritt.md",
+            "Approximately **27%**.\nDevice Authentication work has not started.\n",
+        )
+
     def _impl_md(self, stale_claims=None):
         base = "# Impl\nB-002 MERGED.\nB-003 MERGED FOUNDATION.\n"
         if stale_claims:
@@ -91,25 +98,23 @@ class LiveFixture:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
 
-    def _handoff_md(self, baseline_head, handoff_branch=None):
+    def _handoff_md(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Handoff\n"
             f"- Current work branch: `{branch}`\n"
-            f"- Current baseline HEAD: `{baseline_head}`\n"
-            f"- Merged baseline HEAD: `{baseline_head}`\n"
+            f"- Described HEAD: `{described_head}`\n"
         )
 
-    def _git_state_md(self, baseline_head, handoff_branch=None):
+    def _git_state_md(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             "# Git\n"
             f"- Current handoff branch: `{branch}`\n"
-            f"- Current baseline HEAD: `{baseline_head}`\n"
-            f"- Merged baseline HEAD: `{baseline_head}`\n"
+            f"- Described HEAD: `{described_head}`\n"
         )
 
-    def _state_json(self, baseline_head, handoff_branch=None):
+    def _state_json(self, described_head, handoff_branch=None):
         branch = handoff_branch or "governance/development-security-handoff-v1"
         return (
             '{\n'
@@ -117,13 +122,15 @@ class LiveFixture:
             f'  "handoff_branch": "{branch}",\n'
             '  "handoff_head": "__HANDOFF_HEAD__",\n'
             f'  "baseline_branch": "main",\n'
-            f'  "baseline_head": "{baseline_head}",\n'
+            f'  "described_head": "{described_head}",\n'
             '  "working_tree": "__WORKING_TREE__",\n'
             '  "continuity_001_status": "ACCEPTED",\n'
             '  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",\n'
             '  "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",\n'
             '  "current_task": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",\n'
-            '  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW"\n'
+            '  "current_gate": "PROMPT-009 GOVERNANCE REMEDIATION / REVIEW",\n'
+            f'  "latest_merge_to_baseline": "{described_head}",\n'
+            f'  "previous_baseline_head": "{described_head}"\n'
             '}\n'
         )
 
@@ -239,7 +246,6 @@ class TestContinuityValidator(unittest.TestCase):
         """L. historical old entries do not falsely fail current-state validation."""
         f = LiveFixture()
         try:
-            f._write("docs/history/old_fortschritt.md", "Approximately **27%**.\nDevice Authentication work has not started.\n")
             f._run(["git", "add", "."])
             f._run(["git", "commit", "-m", "history"])
             r = f.validate()
@@ -355,14 +361,15 @@ class Test009RRegression(unittest.TestCase):
     """009R-A through L."""
 
     def test_009r_a_live_baseline_drift(self):
-        """A. recorded baseline != live baseline fails."""
+        """A. recorded described_head not an ancestor of live HEAD fails."""
         f = LiveFixture(baseline_override="1111111111111111111111111111111111111111")
         try:
             f._run(["git", "add", "."])
             f._run(["git", "commit", "-m", "wrong baseline"])
             r = f.validate()
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertIn("BASELINE DRIFT", r.stdout + r.stderr)
+            self.assertIn("described_head", r.stdout + r.stderr)
+            self.assertIn("not an ancestor", r.stdout + r.stderr)
         finally:
             f.cleanup()
 
@@ -543,6 +550,668 @@ class Test009RRegression(unittest.TestCase):
             r = f.validate()
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertIn("CURRENT_GIT_STATE.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+import validate_continuity as vc
+
+
+class TestDescribedHeadSemantics(unittest.TestCase):
+    """PRE-B027-0: described_head semantics, metadata-only advancement, and self-reference regression."""
+
+    def test_case_1_equal_heads(self):
+        """1. live_head == described_head -> PASS."""
+        same = "0" * 40
+        result = vc.validate_described_head(same, same, Path("."), True, "TEST")
+        self.assertTrue(result)
+
+    def test_case_2_metadata_only_advance(self):
+        """2. described_head is an ancestor and only metadata files changed -> PASS."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            described = f.baseline_head
+            live = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertNotEqual(described, live)
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_3_product_code_change(self):
+        """3. Product code change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// product code\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add product code"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_4_ci_workflow_change(self):
+        """4. CI workflow change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            ci = f.root / ".github" / "workflows" / "ci.yml"
+            ci.parent.mkdir(parents=True, exist_ok=True)
+            ci.write_text("name: ci\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add ci"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(".github/workflows/ci.yml", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_5_authority_change(self):
+        """5. Authority file change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            ai = f.root / "docs" / "authority" / "AUTHORITY_INDEX.md"
+            ai.write_text("# changed\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "change authority"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("AUTHORITY_INDEX.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_6_validator_change(self):
+        """6. Validator/tool code change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            sec = f.root / "tools" / "security" / "validate_apk_contents.py"
+            sec.write_text("# changed\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "change tool"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("tools/security/validate_apk_contents.py", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_7_unknown_file(self):
+        """7. Unknown file change after described_head -> FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            evil = f.root / "evil.txt"
+            evil.write_text("unknown\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "unknown file"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("evil.txt", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_9_malformed_sha(self):
+        """9. malformed described_head -> FAIL."""
+        f = LiveFixture(baseline_override="notavalidsha")
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "malformed"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("not a valid 40-char", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_case_10_unresolved_placeholder(self):
+        """10. unresolved placeholder described_head -> FAIL."""
+        f = LiveFixture(baseline_override="__HANDOFF_HEAD__")
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "placeholder"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("not a valid 40-char", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_no_self_reference_required(self):
+        """Regression: a tracked state file no longer needs to contain its own future commit SHA."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            # live_head is a descendant, not equal to described_head, yet validation passes.
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class TestRenameAndPrefixSecurity(unittest.TestCase):
+    """ANOX-PREB027REV-001, -003, -010: rename and historical-prefix bypass tests."""
+
+    def _run_rename_scenario(self, source_rel, dest_rel, source_text="substantive\n"):
+        """Create source, commit, rename to dest, commit; expect validation FAIL."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            (f.root / source_rel).parent.mkdir(parents=True, exist_ok=True)
+            (f.root / source_rel).write_text(source_text, encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add source"])
+            (f.root / dest_rel).parent.mkdir(parents=True, exist_ok=True)
+            f._run(["git", "mv", source_rel, dest_rel])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "rename"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_rename_ci_to_history_fails(self):
+        """Rename .github/workflows/ci.yml into docs/history/ fails."""
+        self._run_rename_scenario(".github/workflows/ci.yml", "docs/history/ci.yml")
+
+    def test_rename_product_to_history_fails(self):
+        """Rename product source into docs/history/ fails."""
+        self._run_rename_scenario("android/src/Foo.kt", "docs/history/Foo.kt")
+
+    def test_rename_tool_to_history_fails(self):
+        """Rename tool into docs/history/ fails."""
+        self._run_rename_scenario(
+            "tools/continuity/evil.py", "docs/history/evil.py"
+        )
+
+    def test_rename_authority_to_history_fails(self):
+        """Rename authority file into docs/history/ fails."""
+        self._run_rename_scenario(
+            "docs/authority/NEW_POLICY.md", "docs/history/NEW_POLICY.md"
+        )
+
+    def _add_file_and_expect_substantive(self, rel, content="content\n"):
+        """Add a file after described_head and expect validation to fail."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(rel, content)
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add file"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_history_arbitrary_markdown_fails(self):
+        self._add_file_and_expect_substantive("docs/history/ARBITRARY_SECURITY_INSTRUCTIONS.md")
+
+    def test_history_arbitrary_nested_fails(self):
+        self._add_file_and_expect_substantive("docs/history/foo/bar/unexpected.md")
+
+    def test_history_arbitrary_script_fails(self):
+        self._add_file_and_expect_substantive("docs/history/evil.py", "print('evil')\n")
+
+    def test_history_arbitrary_shell_fails(self):
+        self._add_file_and_expect_substantive("docs/history/evil.sh", "#!/bin/sh\nexit\n")
+
+    def test_history_arbitrary_js_fails(self):
+        self._add_file_and_expect_substantive("docs/history/deploy.js", "console.log(1);\n")
+
+    def test_historical_handoff_zip_fails(self):
+        self._add_file_and_expect_substantive(
+            "docs/continuity/HISTORICAL_HANDOFFS/anything.zip", b"PK\x00".decode("latin-1")
+        )
+
+    def test_historical_handoff_nested_script_fails(self):
+        self._add_file_and_expect_substantive(
+            "docs/continuity/HISTORICAL_HANDOFFS/sub/dir/x.py", "print(1)\n"
+        )
+
+    def test_git_diff_files_exposes_rename_sides(self):
+        """--no-renames causes git_diff_files to return both sides of a rename."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(".github/workflows/ci.yml", "name: ci\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add ci"])
+            (f.root / "docs/history").mkdir(parents=True, exist_ok=True)
+            f._run(["git", "mv", ".github/workflows/ci.yml", "docs/history/ci.yml"])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "rename"])
+            live = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            changed = vc.git_diff_files(f.baseline_head, live, cwd=str(f.root))
+            self.assertIn(".github/workflows/ci.yml", changed)
+            self.assertIn("docs/history/ci.yml", changed)
+        finally:
+            f.cleanup()
+
+
+class TestArchiveRequiredKeys(unittest.TestCase):
+    """ANOX-PREB027REV-002, -010: archive mode must enforce mandatory state keys."""
+
+    @staticmethod
+    def _recompute_sha_manifest(archive_root):
+        """Recompute SHA256_MANIFEST.txt entries for CURRENT_STATE.json after editing it."""
+        import hashlib
+        sha_manifest_path = archive_root / "SHA256_MANIFEST.txt"
+        rel = "docs/continuity/CURRENT_STATE.json"
+        new_digest = hashlib.sha256((archive_root / rel).read_bytes()).hexdigest()
+        lines = []
+        for line in sha_manifest_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("#") or not line.strip():
+                lines.append(line)
+                continue
+            parts = line.split(None, 1)
+            if len(parts) == 2 and parts[1] == rel:
+                lines.append(f"{new_digest}  {rel}")
+            else:
+                lines.append(line)
+        sha_manifest_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def _archive_missing_key(self, key_to_remove):
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "generate"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                import json
+                state_path = a.root / "docs" / "continuity" / "CURRENT_STATE.json"
+                data = json.loads(state_path.read_text(encoding="utf-8"))
+                data.pop(key_to_remove, None)
+                state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    def test_archive_missing_current_gate_fails(self):
+        self._archive_missing_key("current_gate")
+
+    def test_archive_missing_security_invariants_path_fails(self):
+        self._archive_missing_key("security_invariants_path")
+
+    def test_archive_missing_freeze_registry_path_fails(self):
+        self._archive_missing_key("freeze_registry_path")
+
+    def test_archive_missing_described_and_baseline_head_fails(self):
+        self._archive_missing_key("described_head")
+
+    def test_archive_legacy_baseline_head_allowed(self):
+        """Archive with legacy baseline_head but no described_head still passes."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "generate"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                import json
+                state_path = a.root / "docs" / "continuity" / "CURRENT_STATE.json"
+                data = json.loads(state_path.read_text(encoding="utf-8"))
+                data["baseline_head"] = data.pop("described_head")
+                state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+
+class TestMissingHeadDeclaration(unittest.TestCase):
+    """ANOX-PREB027REV-009, -010: current continuity surfaces must declare described_head."""
+
+    def _missing_declaration(self, rel, content):
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(rel, content)
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "remove head declaration"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("does not declare described_head", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_handoff_missing_described_head_fails(self):
+        self._missing_declaration(
+            "docs/continuity/CURRENT_HANDOFF.md",
+            "# Handoff\n- Current work branch: `governance/development-security-handoff-v1`\n",
+        )
+
+    def test_git_state_missing_described_head_fails(self):
+        self._missing_declaration(
+            "docs/continuity/CURRENT_GIT_STATE.md",
+            "# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n",
+        )
+
+    def test_git_state_legacy_baseline_decl_passes(self):
+        """Legacy 'Current baseline HEAD' declaration remains accepted."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._write(
+                "docs/continuity/CURRENT_GIT_STATE.md",
+                f"# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n"
+                f"- Current baseline HEAD: `{f.baseline_head}`\n",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "legacy baseline declaration"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class TestBaselineAncestry(unittest.TestCase):
+    """ANOX-PREB027REV-004, -010: non-self-referential baseline ancestry."""
+
+    def _main_head(self):
+        r = subprocess.run(
+            ["git", "rev-parse", "main"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+        )
+        return r.stdout.strip()
+
+    def test_valid_ancestors_pass(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+            "previous_baseline_head": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertTrue(result)
+
+    def test_unrelated_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "1111111111111111111111111111111111111111",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_malformed_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "notavalidsha",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_nonexistent_sha_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "0000000000000000000000000000000000000000",
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+    def test_invalid_order_fails(self):
+        main = self._main_head()
+        state = {
+            "latest_merge_to_baseline": "043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff",
+            "previous_baseline_head": main,
+        }
+        result = vc.validate_baseline_ancestry(state, main, True, "TEST")
+        self.assertFalse(result)
+
+
+class TestHeadPrecedence(unittest.TestCase):
+    """ANOX-PREB027REV-008, -010: described_head wins over legacy baseline_head."""
+
+    def test_resolve_described_head_precedence(self):
+        self.assertEqual(
+            vc._resolve_described_head({"described_head": "a" * 40, "baseline_head": "b" * 40}),
+            "a" * 40,
+        )
+        self.assertEqual(
+            vc._resolve_described_head({"baseline_head": "b" * 40}),
+            "b" * 40,
+        )
+
+    def test_generator_prefers_described_head(self):
+        """If baseline branch does not resolve, generator manifest falls back to described_head."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            described = "a68eca5248f1ab315c34ba00387030bfd58c138e"
+            fallback = "1111111111111111111111111111111111111111"
+            f._write(
+                "docs/continuity/CURRENT_STATE.json",
+                '{'
+                f'"handoff_branch": "governance/development-security-handoff-v1",'
+                f'"described_head": "{described}",'
+                f'"baseline_head": "{fallback}",'
+                f'"baseline_branch": "nonexistent-branch",'
+                '"security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",'
+                '"freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",'
+                '"current_gate": "TEST",'
+                '"continuity_001_status": "ACCEPTED"'
+                '}\n',
+            )
+            # Also update handoff surface to match described_head
+            f._write(
+                "docs/continuity/CURRENT_HANDOFF.md",
+                "# Handoff\n- Current work branch: `governance/development-security-handoff-v1`\n"
+                f"- Described HEAD: `{described}`\n",
+            )
+            f._write(
+                "docs/continuity/CURRENT_GIT_STATE.md",
+                "# Git\n- Current handoff branch: `governance/development-security-handoff-v1`\n"
+                f"- Described HEAD: `{described}`\n",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "precedence"])
+            r = f.generate(emergency=True)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            names = f.list_zip()
+            with zipfile.ZipFile(f.zip_path()) as zf:
+                manifest = zf.read("MANIFEST.txt").decode("utf-8")
+            self.assertIn(f"Baseline HEAD: {described}", manifest)
+            self.assertNotIn(f"Baseline HEAD: {fallback}", manifest)
+        finally:
+            f.cleanup()
+
+
+class TestMergeCommitSecurity(unittest.TestCase):
+    """ANOX-PREB027RREV-001: merge commit classification must not hide substantive work."""
+
+    def test_merge_resolution_product_change_fails(self):
+        """Substantive Product code introduced only in merge resolution fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            # Create two side branches, each with an allowed metadata-only change
+            f._run(["git", "checkout", "-b", "side-a"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside A metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side a metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            f._run(["git", "checkout", "-b", "side-b"])
+            f._write("PROJECT_STATE.md", "# State\n- Branch: `governance/development-security-handoff-v1`\nside B metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side b metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Prepare a no-ff merge and inject product code during the merge resolution
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side-a"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side-b"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// product merge payload\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with product payload"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_merge_then_revert_substantive_still_fails(self):
+        """Substantive work introduced in merge and reverted later is still detected."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "side"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// transient product payload\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with transient product payload"])
+            merge = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            # Revert the merge-introduced product file in an ordinary follow-up commit
+            f._run(["git", "rm", "-f", str(evil.relative_to(f.root))])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "revert product change"])
+            # Endpoint diff from described to HEAD no longer contains the product file,
+            # but the full-range scan must still detect it.
+            ep = subprocess.run(
+                ["git", "diff", "--name-only", f.baseline_head, "HEAD"],
+                cwd=f.root, capture_output=True, text=True
+            ).stdout.split()
+            self.assertNotIn(str(evil.relative_to(f.root)), ep)
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_clean_metadata_only_merge_passes(self):
+        """Two metadata-only branches merged with no substantive resolution pass."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "side-a"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside A\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side a metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            f._run(["git", "checkout", "-b", "side-b"])
+            f._write("PROJECT_STATE.md", "# State\n- Branch: `governance/development-security-handoff-v1`\nside B\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side b metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Merge both branches with a clean, no-conflict resolution (no extra files)
+            for side in ("side-a", "side-b"):
+                subprocess.run(
+                    ["git", "merge", "--no-commit", "--no-ff", side],
+                    cwd=f.root, check=False, capture_output=True, text=True
+                )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge metadata branches"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_substantive_branch_merged_fails(self):
+        """A branch containing substantive Product code, merged cleanly, fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "feature"])
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// feature product code\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "feature with product code"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            subprocess.run(
+                ["git", "merge", "--no-ff", "feature"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_merge_resolution_into_allowlist_fails(self):
+        """Merge resolution that renames substantive work into allowlisted path still fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            # Put a substantive file on a feature branch
+            f._run(["git", "checkout", "-b", "feature"])
+            f._write("docs/authority/NEW_POLICY.md", "# New policy\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add authority proposal"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Prepare merge, then rename the authority file into an allowlisted metadata filename
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "feature"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            f._run(["git", "rm", "-f", "docs/authority/NEW_POLICY.md"])
+            f._write("docs/continuity/CURRENT_OPEN_WORK.md", "# Open\nmerge-resolved evil\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge and route into allowlist"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("docs/authority/NEW_POLICY.md", r.stdout + r.stderr)
         finally:
             f.cleanup()
 
