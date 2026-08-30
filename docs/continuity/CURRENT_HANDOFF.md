@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-M1R1 — Canonical merge lifecycle remediation
+**Handoff version:** PRE-B027-M1R2 — Canonical merge lifecycle M1R2 delta remediation
 **Date:** 2026-08-30
 
 ---
@@ -24,9 +24,9 @@ New sessions must read that file first.
 - Current work branch: `governance/canonical-merge-lifecycle-v1`
 - Current baseline branch: `main`
 - Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
-- Described HEAD: `c36e45f8cf94baa40913215a2c34389138472fd1`
+- Described HEAD: `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
 - Working tree: expected clean at handoff generation
-- Pre-merge gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`
 - Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 - Open PR: none (PRE-B027-M1R is local and not yet pushed)
 - Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
@@ -106,8 +106,8 @@ PRE-B027-0R — Review finding remediation:
 
 ## Current open work
 
-`PRE-B027-M1R` — Permanent canonical merge lifecycle hardening on `governance/canonical-merge-lifecycle-v1`;
-implemented locally and awaiting `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
+`PRE-B027-M1R2` — Canonical merge lifecycle M1R2 delta remediation on `governance/canonical-merge-lifecycle-v1`;
+implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`.
 
 ## Current test baseline
 
@@ -120,7 +120,7 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT 
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
-- Continuity unit tests: 112/112 PASS
+- Continuity unit tests: 132/132 PASS
 
 ## Historical provenance
 
@@ -140,17 +140,20 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT 
 
 ## Current blockers
 
-- No PRE-B027 security blockers; the R2 classifier fix closes the merge-commit payload visibility gap locally.
-
+- `ANOX-CMLR1REV-001` and `ANOX-CMLR1REV-002` are remediated locally and are `READY FOR RETEST`.
+  Closure is reserved for the independent M1R2 Delta Reviewer.
+- `PRE-B027-M2 PROJECT MEMORY / PROGRESS INTEGRITY` is BLOCKED until M1R2
+  independent Delta Retest PASS, controlled Human Push, PR, CI PASS, Human Merge,
+  and final canonical main live validation.
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and the R2
+- No PRE-B027 architecture blockers; the architecture is frozen and the M1R2
   remediation is awaiting independent Delta Retest.
 
 ## Next architecture gate
 
-`CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
+`CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`
 
 ## Next engineering task
 

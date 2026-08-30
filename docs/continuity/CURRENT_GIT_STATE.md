@@ -26,11 +26,11 @@
 - Delivery branch: `governance/canonical-merge-lifecycle-v1`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `c36e45f8cf94baa40913215a2c34389138472fd1`
+- Described HEAD: `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `CANONICAL MERGE LIFECYCLE V1 IMPLEMENTATION`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
+- Current task: `CANONICAL MERGE LIFECYCLE M1R2 REMEDIATION`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
 - Pre-merge gate: `__PRE_MERGE_GATE__`
 - Post-merge gate: `__POST_MERGE_GATE__`
 
