@@ -245,19 +245,31 @@ def resolve_placeholders(content, state):
     working_tree = "clean" if status.strip() == "" else "dirty"
     branch, _ = git_cmd(["branch", "--show-current"])
 
+    canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+    delivery_branch = state.get("delivery_branch", branch)
+    if branch == canonical_branch:
+        effective_gate = state.get("post_merge_gate", state.get("current_gate", ""))
+    elif branch == delivery_branch:
+        effective_gate = state.get("pre_merge_gate", state.get("current_gate", ""))
+    else:
+        effective_gate = state.get("current_gate", "")
+
     # CURRENT_GIT_STATE placeholders
     content = content.replace("__HANDOFF_HEAD__", head)
     content = content.replace("__WORKING_TREE__", working_tree)
+    content = content.replace("__HANDOFF_BRANCH__", branch)
+    content = content.replace("__EFFECTIVE_GATE__", effective_gate)
 
     # CURRENT_STATE.json placeholder object support
     if "__HANDOFF_HEAD__" in content:
-        # for JSON strings
         content = content.replace('"__HANDOFF_HEAD__"', json.dumps(head))
     if "__WORKING_TREE__" in content:
         content = content.replace('"__WORKING_TREE__"', json.dumps(working_tree))
+    if "__HANDOFF_BRANCH__" in content:
+        content = content.replace('"__HANDOFF_BRANCH__"', json.dumps(branch))
+    if "__EFFECTIVE_GATE__" in content:
+        content = content.replace('"__EFFECTIVE_GATE__"', json.dumps(effective_gate))
 
-    # Additional simple state placeholders for future use
-    content = content.replace("__HANDOFF_BRANCH__", branch)
     return content
 
 
@@ -302,7 +314,7 @@ def main():
         # Canonical precedence: described_head wins; baseline_head is legacy fallback.
         baseline_head = state.get("described_head", "") or state.get("baseline_head", "")
     except (FileNotFoundError, json.JSONDecodeError):
-        pass
+        state = {}
     # If possible, resolve the real baseline branch HEAD. Use --verify so an
     # unresolvable ref returns empty and the fallback precedence is preserved.
     real_baseline_head, code = git_cmd(["rev-parse", "--verify", baseline_branch]) if baseline_branch else ("", -1)
@@ -352,11 +364,11 @@ def main():
     # Load current state template
     state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
     state_text = state_path.read_text(encoding="utf-8") if state_path.exists() else ""
-    resolved_state = resolve_placeholders(state_text, {})
+    resolved_state = resolve_placeholders(state_text, state)
 
     git_state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
     git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
-    resolved_git_state = resolve_placeholders(git_state_text, {})
+    resolved_git_state = resolve_placeholders(git_state_text, state)
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for rel in rel_files:

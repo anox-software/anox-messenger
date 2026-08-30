@@ -356,3 +356,35 @@ B-026 implementations must not modify:
 - native libraries
 - application features
 - backend code
+
+---
+
+## Canonical merge lifecycle rule
+
+A reviewed and approved delivery payload is NOT a new merge payload.
+
+### Authority
+
+`tools/continuity/validate_continuity.py` is the canonical enforcement of this rule. It must distinguish:
+
+1. **Reviewed delivery tail** — changes between the described checkpoint and the reviewed delivery branch head.
+2. **Merge resolution** — changes introduced between the reviewed delivery head and the final canonical merge result.
+3. **Post-merge canonical tail** — any commits after the canonical integration merge.
+
+A normal clean merge into `main` has an empty merge-resolution range. The merge result must equal the reviewed delivery result, or differ only in explicitly allowlisted metadata.
+
+### Failure semantics
+
+- Any Product, CI, Authority, Tool/Validator, Rust/Crypto, B0xx spec, or security report change introduced only through merge resolution fails closed.
+- Deletion of substantive content during merge resolution fails closed.
+- Unknown or ambiguous merge topologies fail closed.
+- Squash, rebase, octopus, and rewritten delivery lineage are not supported by V1.
+
+### Branch separation
+
+The continuity state must declare both `canonical_branch` and `delivery_branch`. The runtime branch is derived from Git. The effective next gate is determined by verified lifecycle state, not by a manually edited `current_gate` prediction.
+
+- Runtime `delivery_branch` → effective gate is `pre_merge_gate`.
+- Runtime `canonical_branch` with a verified canonical integration merge → effective gate is `post_merge_gate`.
+
+This rule is frozen as B-026 lifecycle invariant.

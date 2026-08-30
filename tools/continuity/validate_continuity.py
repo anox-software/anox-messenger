@@ -58,7 +58,7 @@ REQUIRED_AUTHORITY_PATHS = {
     "ultimate_main": "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md",
 }
 
-PLACEHOLDER_MARKERS = ("__HANDOFF_HEAD__", "__WORKING_TREE__")
+PLACEHOLDER_MARKERS = ("__HANDOFF_HEAD__", "__WORKING_TREE__", "__HANDOFF_BRANCH__", "__EFFECTIVE_GATE__")
 
 # Files where runtime placeholders are intentional repository templates.
 # In a generated handoff archive these placeholders MUST already be resolved.
@@ -208,6 +208,176 @@ def git_diff_files(from_sha, to_sha, cwd=None):
     return sorted(paths)
 
 
+def git_diff_endpoint(from_sha, to_sha, cwd=None):
+    """Return paths where tree(to_sha) differs from tree(from_sha).
+
+    This is a direct endpoint tree diff. It is used for the merge-resolution
+    range (P2 -> merge commit) where the critical question is whether the merge
+    result differs from the reviewed delivery result. It does NOT walk
+    intermediate commit history; for that, use git_diff_files.
+    """
+    out, err, code = run_git(["diff", "--name-only", "--no-renames", from_sha, to_sha], cwd=cwd)
+    if code != 0 or out is None:
+        print(f"  FAIL git_diff_endpoint({from_sha[:12]}..{to_sha[:12]}) could not be read: {err}")
+        return None
+    paths = set()
+    for line in out.splitlines():
+        line = line.strip()
+        if line:
+            paths.add(line)
+    return sorted(paths)
+
+
+def git_merge_parents(sha, cwd=None):
+    """Return the parent SHAs of a commit, or None on failure / not a merge."""
+    out, _, code = run_git(["rev-list", "--parents", "-n", "1", sha], cwd=cwd)
+    if code != 0 or out is None:
+        return None
+    parts = out.split()
+    if len(parts) < 2:
+        return None
+    return parts[1:]
+
+
+def git_find_canonical_merge(described_head, live_head, canonical_branch, delivery_branch, cwd=None):
+    """Identify the canonical integration merge M and its delivery/canonical parents.
+
+    Returns (merge_sha, delivery_parent, canonical_parent) or (None, None, None).
+    The delivery_parent is the parent that has described_head in its ancestry.
+    The canonical_parent is the other parent and must be on the canonical branch.
+    Only two-parent merges are supported. Ambiguous topologies return None.
+    """
+    # Find merge commits on the ancestry path from described_head to live_head.
+    out, err, code = run_git(
+        ["rev-list", "--merges", "--ancestry-path", f"{described_head}..{live_head}"],
+        cwd=cwd,
+    )
+    if code != 0 or out is None:
+        return None, None, None
+    candidates = out.splitlines()
+    if not candidates:
+        return None, None, None
+
+    canonical_ref = git_branch_head(canonical_branch, cwd=cwd) or canonical_branch
+    # rev-list returns newest first; the oldest matching merge is the integration.
+    for merge_sha in reversed(candidates):
+        parents = git_merge_parents(merge_sha, cwd=cwd)
+        if not parents:
+            continue
+        if len(parents) != 2:
+            # V1 supports only two-parent merge commits.
+            return None, None, None
+
+        has_desc = [git_is_ancestor(described_head, p, cwd=cwd) for p in parents]
+        if has_desc.count(True) != 1:
+            # No parent or both parents have described_head: ambiguous delivery lineage.
+            continue
+
+        delivery_idx = has_desc.index(True)
+        delivery_parent = parents[delivery_idx]
+        canonical_parent = parents[1 - delivery_idx]
+
+        if not git_is_ancestor(canonical_parent, canonical_ref, cwd=cwd):
+            # The canonical parent is not on the canonical branch.
+            continue
+
+        # Also verify described_head is an ancestor of the delivery parent (redundant safety).
+        if not git_is_ancestor(described_head, delivery_parent, cwd=cwd):
+            continue
+
+        return merge_sha, delivery_parent, canonical_parent
+
+    return None, None, None
+
+
+def _paths_are_metadata_only(paths, label, quiet=False):
+    """Check a path list against the fail-closed metadata-only allowlist."""
+    disallowed = [p for p in paths if not _is_allowed_metadata_path(p)]
+    if disallowed:
+        if not quiet:
+            print(f"  FAIL {label} contains non-metadata-only paths:")
+            for p in disallowed[:10]:
+                print(f"    - {p}")
+        return False, disallowed
+    return True, []
+
+
+def validate_canonical_merge_lifecycle(described_head, live_head, state, live_branch, root, all_ok, label):
+    """Validate the canonical merge transition and compute the effective gate.
+
+    Returns (all_ok, effective_gate).
+    """
+    canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+    delivery_branch = state.get("delivery_branch")
+    pre_gate = state.get("pre_merge_gate", state.get("current_gate", ""))
+    post_gate = state.get("post_merge_gate", state.get("current_gate", ""))
+
+    if live_branch == delivery_branch:
+        # Delivery context: preserve all previously reviewed R2 protections.
+        changed = git_diff_files(described_head, live_head)
+        if changed is None:
+            return False, None
+        ok, _ = _paths_are_metadata_only(changed, f"delivery tail {described_head[:12]}..{live_head[:12]}")
+        if not ok:
+            return all_ok and False, None
+        print(f"  OK   delivery context; only metadata-only files changed")
+        print(f"  OK   effective gate: {pre_gate}")
+        return all_ok, pre_gate
+
+    if live_branch != canonical_branch:
+        print(f"  FAIL runtime branch {live_branch} is neither canonical {canonical_branch} nor delivery {delivery_branch}")
+        return False, None
+
+    # Canonical context: identify the controlled integration merge.
+    merge, delivery_parent, canonical_parent = git_find_canonical_merge(
+        described_head, live_head, canonical_branch, delivery_branch
+    )
+    if merge is None:
+        print("  FAIL cannot identify the canonical integration merge for the delivery lineage")
+        print("       Supported: two-parent --no-ff merge of the reviewed delivery branch.")
+        return False, None
+
+    print(f"\n[{label}] Canonical merge transition")
+    print(f"  canonical merge: {merge[:12]}  canonical parent: {canonical_parent[:12]}  delivery parent: {delivery_parent[:12]}")
+
+    # Range 1 — reviewed delivery tail.
+    r1 = git_diff_files(described_head, delivery_parent)
+    if r1 is None:
+        return False, None
+    ok, _ = _paths_are_metadata_only(r1, f"delivery tail {described_head[:12]}..{delivery_parent[:12]}")
+    if not ok:
+        all_ok = False
+    else:
+        print(f"  OK   range 1 (described..delivery parent) is metadata-only")
+
+    # Range 2 — merge resolution (endpoint tree diff to catch resolution-only payload).
+    r2 = git_diff_endpoint(delivery_parent, merge)
+    if r2 is None:
+        return False, None
+    ok, _ = _paths_are_metadata_only(r2, f"merge resolution {delivery_parent[:12]}..{merge[:12]}")
+    if not ok:
+        all_ok = False
+    else:
+        print(f"  OK   range 2 (merge resolution) is metadata-only")
+
+    # Range 3 — post-merge canonical tail.
+    r3 = git_diff_files(merge, live_head)
+    if r3 is None:
+        return False, None
+    ok, _ = _paths_are_metadata_only(r3, f"post-merge tail {merge[:12]}..{live_head[:12]}")
+    if not ok:
+        all_ok = False
+    else:
+        print(f"  OK   range 3 (post-merge tail) is metadata-only")
+
+    if all_ok:
+        print(f"  OK   canonical merge transition verified")
+        print(f"  OK   effective gate: {post_gate}")
+        return all_ok, post_gate
+
+    return all_ok, None
+
+
 def load_current_state(root):
     path = root / "docs" / "continuity" / "CURRENT_STATE.json"
     try:
@@ -275,7 +445,7 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=
     print(f"\n[{label}] CURRENT_STATE.json")
     if state is None:
         print("  FAIL CURRENT_STATE.json missing or invalid JSON")
-        return False
+        return False, None
 
     keys_ok, missing = _check_required_state_keys(state)
     if not keys_ok:
@@ -289,6 +459,7 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=
     else:
         print("  OK   continuity_001_status = ACCEPTED")
 
+    effective_gate = None
     described_head = _resolve_described_head(state)
     if not described_head:
         print("  FAIL CURRENT_STATE.json described_head missing/unresolved")
@@ -298,20 +469,37 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=
         all_ok = False
     else:
         if live_head is not None:
-            all_ok = validate_described_head(described_head, live_head, root, all_ok, label)
+            canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+            delivery_branch = state.get("delivery_branch")
+            if canonical_branch and delivery_branch and state.get("pre_merge_gate") and state.get("post_merge_gate"):
+                # Canonical merge lifecycle path.
+                all_ok, effective_gate = validate_canonical_merge_lifecycle(
+                    described_head, live_head, state, live_branch, root, all_ok, label
+                )
+            else:
+                # Legacy single-branch path.
+                all_ok = validate_described_head(described_head, live_head, root, all_ok, label)
+                effective_gate = state.get("current_gate", "")
         else:
             # Archive mode: we cannot verify ancestry without .git, but we can require the value.
             print(f"  OK   described_head {described_head[:12]} present (archive mode)")
+            effective_gate = state.get("current_gate", "")
 
     if live_branch is not None:
         expected_branch = state.get("handoff_branch")
-        if expected_branch != live_branch:
-            print(f"  FAIL CURRENT_STATE.json handoff_branch {expected_branch} != live branch {live_branch}")
-            all_ok = False
+        if expected_branch == "__HANDOFF_BRANCH__":
+            print(f"  OK   handoff_branch placeholder resolvable to {live_branch}")
+        elif expected_branch != live_branch:
+            lifecycle_branches = {state.get("canonical_branch"), state.get("delivery_branch")}
+            if lifecycle_branches and live_branch in lifecycle_branches and expected_branch in lifecycle_branches:
+                print(f"  OK   handoff_branch {expected_branch} is a recognized lifecycle branch; live is {live_branch}")
+            else:
+                print(f"  FAIL CURRENT_STATE.json handoff_branch {expected_branch} != live branch {live_branch}")
+                all_ok = False
         else:
             print(f"  OK   handoff_branch matches live {live_branch}")
 
-    return all_ok
+    return all_ok, effective_gate
 
 
 def validate_described_head(described_head, live_head, root, all_ok, label):
@@ -348,8 +536,15 @@ def validate_described_head(described_head, live_head, root, all_ok, label):
     return all_ok
 
 
-def validate_current_state_surfaces(root, all_ok, label, live_branch=None):
+def validate_current_state_surfaces(root, all_ok, label, live_branch=None, state=None):
     print(f"\n[{label}] Current-state surface consistency")
+
+    allowed_branches = set()
+    if state:
+        for key in ("canonical_branch", "delivery_branch", "handoff_branch", "baseline_branch"):
+            b = state.get(key)
+            if b:
+                allowed_branches.add(b)
 
     project_state_path = root / "PROJECT_STATE.md"
     project_state_text = project_state_path.read_text(encoding="utf-8") if project_state_path.exists() else ""
@@ -361,9 +556,14 @@ def validate_current_state_surfaces(root, all_ok, label, live_branch=None):
     m = re.search(r"^[-*]\s*Branch:\s*`?([^`\n]+)`?", project_state_text, re.MULTILINE)
     if m:
         declared_branch = m.group(1).strip()
-        if live_branch and declared_branch != live_branch:
-            print(f"  FAIL PROJECT_STATE.md declares branch {declared_branch} but live branch is {live_branch}")
-            all_ok = False
+        if declared_branch == "__HANDOFF_BRANCH__":
+            print(f"  OK   PROJECT_STATE.md branch is a resolvable placeholder")
+        elif live_branch and declared_branch != live_branch:
+            if allowed_branches and declared_branch in allowed_branches and live_branch in allowed_branches:
+                print(f"  OK   PROJECT_STATE.md branch {declared_branch} is a recognized lifecycle branch; live is {live_branch}")
+            else:
+                print(f"  FAIL PROJECT_STATE.md declares branch {declared_branch} but live branch is {live_branch}")
+                all_ok = False
         elif live_branch:
             print(f"  OK   PROJECT_STATE.md branch = {declared_branch}")
     else:
@@ -462,7 +662,17 @@ def validate_placeholders(root, all_ok, label, mode, live_state=None):
     # CURRENT_STATE.json template handling
     state_path = root / "docs/continuity/CURRENT_STATE.json"
     if state_path.exists() and state is not None:
-        for key, marker in (("handoff_head", "__HANDOFF_HEAD__"), ("working_tree", "__WORKING_TREE__")):
+        def _live_value_for_marker(marker):
+            if live_state is None:
+                return ""
+            return {
+                "__HANDOFF_HEAD__": live_state.get("head", ""),
+                "__WORKING_TREE__": live_state.get("working_tree", ""),
+                "__HANDOFF_BRANCH__": live_state.get("branch", ""),
+                "__EFFECTIVE_GATE__": live_state.get("effective_gate", ""),
+            }.get(marker, "")
+
+        for key, marker in (("handoff_head", "__HANDOFF_HEAD__"), ("working_tree", "__WORKING_TREE__"), ("handoff_branch", "__HANDOFF_BRANCH__"), ("current_gate", "__EFFECTIVE_GATE__")):
             value = state.get(key, "")
             if value == marker:
                 if mode == "archive":
@@ -470,7 +680,7 @@ def validate_placeholders(root, all_ok, label, mode, live_state=None):
                     all_ok = False
                 elif live_state is not None:
                     # live repository template; confirm it is resolvable
-                    resolved_value = live_state.get("head" if key == "handoff_head" else "working_tree", "")
+                    resolved_value = _live_value_for_marker(marker)
                     expected = marker if resolved_value == "" else resolved_value
                     if resolved_value == "" or (resolved_value != "" and resolved_value not in (marker, "")):
                         print(f"  OK   CURRENT_STATE.json {key} placeholder is resolvable to live {key}")
@@ -487,7 +697,7 @@ def validate_placeholders(root, all_ok, label, mode, live_state=None):
                     # resolved in archive; no further check needed
                     print(f"  OK   CURRENT_STATE.json {key} = {value[:24]}...")
                 elif live_state is not None:
-                    expected = live_state.get("head" if key == "handoff_head" else "working_tree", "")
+                    expected = _live_value_for_marker(marker)
                     if expected and value != expected:
                         print(f"  FAIL CURRENT_STATE.json {key} {value} != live {expected}")
                         all_ok = False
@@ -504,7 +714,7 @@ def validate_placeholders(root, all_ok, label, mode, live_state=None):
                     print(f"  UNRESOLVED HANDOFF PLACEHOLDER: CURRENT_GIT_STATE.md contains {marker}")
                     all_ok = False
                 elif live_state is not None:
-                    expected = live_state.get("head" if marker == "__HANDOFF_HEAD__" else "working_tree", "")
+                    expected = _live_value_for_marker(marker)
                     if expected and expected not in (marker, ""):
                         resolved_text = git_state_text.replace(marker, expected)
                         if expected in resolved_text:
@@ -823,11 +1033,12 @@ def live_validation():
     print(f"  baseline branch: {baseline_branch}")
     print(f"  live baseline HEAD: {live_baseline_head or 'FAIL'}")
 
-    all_ok = validate_state_json(state, REPO_ROOT, all_ok, mode_label, live_branch=branch, live_head=head, mode="live")
+    all_ok, effective_gate = validate_state_json(state, REPO_ROOT, all_ok, mode_label, live_branch=branch, live_head=head, mode="live")
     all_ok = validate_baseline_consistency(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_baseline_ancestry(state, live_baseline_head, all_ok, mode_label)
     all_ok = validate_authority_precedence(REPO_ROOT, all_ok, mode_label)
-    all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch)
+    all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch, state=state)
+    live_state["effective_gate"] = effective_gate or ""
     all_ok = validate_placeholders(REPO_ROOT, all_ok, mode_label, "live", live_state=live_state)
 
     print("\n" + "=" * 60)
@@ -855,11 +1066,11 @@ def archive_validation(archive_root):
     all_ok = validate_archive_snapshot_agreement(archive_root, all_ok)
 
     state = load_current_state(archive_root)
-    all_ok = validate_state_json(state, archive_root, all_ok, "ARCHIVE")
+    all_ok, _ = validate_state_json(state, archive_root, all_ok, "ARCHIVE")
     all_ok = validate_baseline_consistency(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_authority_precedence(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_placeholders(archive_root, all_ok, "ARCHIVE", "archive", live_state=None)
-    all_ok = validate_current_state_surfaces(archive_root, all_ok, "ARCHIVE", live_branch=None)
+    all_ok = validate_current_state_surfaces(archive_root, all_ok, "ARCHIVE", live_branch=None, state=state)
 
     print("\n" + "=" * 60)
     if all_ok:
