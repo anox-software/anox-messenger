@@ -184,7 +184,7 @@ def preflight_security(rel_files):
     return True
 
 
-def build_git_snapshot():
+def build_git_snapshot(state, effective_gate=""):
     lines = []
     for cmd, label in [
         (["remote", "-v"], "git remote -v"),
@@ -198,6 +198,25 @@ def build_git_snapshot():
         lines.append(f"### {label}")
         lines.append(out if out else "(empty)")
         lines.append("")
+
+    # Resolved lifecycle metadata for archive-mode consistency checks.
+    # This is NOT a cryptographic authentication; it is a materialized copy of the
+    # state that the generator resolved at packaging time.
+    #
+    # Only emit the block for explicitly current-lifecycle archives, so a legacy
+    # archive cannot be confused with a current one. The presence of this block
+    # in an archive forces current-lifecycle validation regardless of what an
+    # attacker writes in CURRENT_STATE.json.
+    if state.get("canonical_branch") and state.get("delivery_branch") and state.get("pre_merge_gate") and state.get("post_merge_gate"):
+        lines.append("### Resolved lifecycle metadata")
+        lines.append(f"canonical_branch: {state.get('canonical_branch')}")
+        lines.append(f"delivery_branch: {state.get('delivery_branch')}")
+        lines.append(f"described_head: {state.get('described_head') or state.get('baseline_head', '')}")
+        lines.append(f"pre_merge_gate: {state.get('pre_merge_gate')}")
+        lines.append(f"post_merge_gate: {state.get('post_merge_gate')}")
+        lines.append(f"effective_gate: {effective_gate}")
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -224,7 +243,7 @@ def check_unresolved_placeholders(rel_files):
         try:
             with open(full, "rb") as f:
                 data = f.read()
-            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__"):
+            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__", b"__HANDOFF_BRANCH__", b"__EFFECTIVE_GATE__", b"__PRE_MERGE_GATE__", b"__POST_MERGE_GATE__"):
                 if marker in data:
                     placeholder_files.append(f"{rel} ({marker.decode('utf-8')})")
                     break
@@ -245,19 +264,37 @@ def resolve_placeholders(content, state):
     working_tree = "clean" if status.strip() == "" else "dirty"
     branch, _ = git_cmd(["branch", "--show-current"])
 
+    canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+    delivery_branch = state.get("delivery_branch", branch)
+    if branch == canonical_branch:
+        effective_gate = state.get("post_merge_gate", state.get("current_gate", ""))
+    elif branch == delivery_branch:
+        effective_gate = state.get("pre_merge_gate", state.get("current_gate", ""))
+    else:
+        effective_gate = state.get("current_gate", "")
+
     # CURRENT_GIT_STATE placeholders
     content = content.replace("__HANDOFF_HEAD__", head)
     content = content.replace("__WORKING_TREE__", working_tree)
+    content = content.replace("__HANDOFF_BRANCH__", branch)
+    content = content.replace("__EFFECTIVE_GATE__", effective_gate)
+    content = content.replace("__PRE_MERGE_GATE__", state.get("pre_merge_gate", ""))
+    content = content.replace("__POST_MERGE_GATE__", state.get("post_merge_gate", ""))
 
     # CURRENT_STATE.json placeholder object support
     if "__HANDOFF_HEAD__" in content:
-        # for JSON strings
         content = content.replace('"__HANDOFF_HEAD__"', json.dumps(head))
     if "__WORKING_TREE__" in content:
         content = content.replace('"__WORKING_TREE__"', json.dumps(working_tree))
+    if "__HANDOFF_BRANCH__" in content:
+        content = content.replace('"__HANDOFF_BRANCH__"', json.dumps(branch))
+    if "__EFFECTIVE_GATE__" in content:
+        content = content.replace('"__EFFECTIVE_GATE__"', json.dumps(effective_gate))
+    if '"__PRE_MERGE_GATE__"' in content:
+        content = content.replace('"__PRE_MERGE_GATE__"', json.dumps(state.get("pre_merge_gate", "")))
+    if '"__POST_MERGE_GATE__"' in content:
+        content = content.replace('"__POST_MERGE_GATE__"', json.dumps(state.get("post_merge_gate", "")))
 
-    # Additional simple state placeholders for future use
-    content = content.replace("__HANDOFF_BRANCH__", branch)
     return content
 
 
@@ -302,7 +339,7 @@ def main():
         # Canonical precedence: described_head wins; baseline_head is legacy fallback.
         baseline_head = state.get("described_head", "") or state.get("baseline_head", "")
     except (FileNotFoundError, json.JSONDecodeError):
-        pass
+        state = {}
     # If possible, resolve the real baseline branch HEAD. Use --verify so an
     # unresolvable ref returns empty and the fallback precedence is preserved.
     real_baseline_head, code = git_cmd(["rev-parse", "--verify", baseline_branch]) if baseline_branch else ("", -1)
@@ -347,48 +384,58 @@ def main():
     sha_manifest.write(f"# SHA-256 manifest for {zip_name}\n")
     sha_manifest.write(f"# HEAD: {head}\n\n")
 
-    git_snapshot = build_git_snapshot()
+    effective_gate = resolve_placeholders("__EFFECTIVE_GATE__", state)
+    git_snapshot = build_git_snapshot(state, effective_gate)
 
     # Load current state template
     state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
     state_text = state_path.read_text(encoding="utf-8") if state_path.exists() else ""
-    resolved_state = resolve_placeholders(state_text, {})
+    resolved_state = resolve_placeholders(state_text, state)
 
     git_state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
     git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
-    resolved_git_state = resolve_placeholders(git_state_text, {})
+    resolved_git_state = resolve_placeholders(git_state_text, state)
+
+    # Collect all archive entries (relative path, bytes) before writing any
+    # manifest, so the SHA-256 manifest can cover every file except itself.
+    entries = []
+    for rel in rel_files:
+        if rel == "docs/continuity/CURRENT_STATE.json":
+            entries.append((rel, resolved_state.encode("utf-8")))
+        elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
+            entries.append((rel, resolved_git_state.encode("utf-8")))
+        else:
+            entries.append((rel, (REPO_ROOT / rel).read_bytes()))
+
+    # Git snapshot is a generated integrity-critical surface.
+    entries.append(("GIT_SNAPSHOT.txt", git_snapshot.encode("utf-8")))
+
+    # Build the human-readable manifest now that the file list is final.
+    manifest.write("GIT_SNAPSHOT.txt\n")
+    for rel, _ in entries:
+        manifest.write(f"{rel}\n")
+    manifest_text = manifest.getvalue().encode("utf-8")
+    entries.append(("MANIFEST.txt", manifest_text))
+
+    # Build SHA-256 manifest covering every regular file except SHA256_MANIFEST.txt.
+    sha_entries = []
+    for rel, data in entries:
+        sha_entries.append((hashlib.sha256(data).hexdigest(), rel))
+    sha_manifest_text = sha_manifest.getvalue()
+    for digest, rel in sha_entries:
+        sha_manifest_text += f"{digest}  {rel}\n"
 
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for rel in rel_files:
-            if rel == "docs/continuity/CURRENT_STATE.json":
-                zf.writestr(rel, resolved_state)
-                digest = hashlib.sha256(resolved_state.encode("utf-8")).hexdigest()
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-            elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
-                zf.writestr(rel, resolved_git_state)
-                digest = hashlib.sha256(resolved_git_state.encode("utf-8")).hexdigest()
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-            else:
-                full = REPO_ROOT / rel
-                zf.write(full, rel)
-                digest = sha256_file(full)
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-
-        # Git snapshot
-        zf.writestr("GIT_SNAPSHOT.txt", git_snapshot)
-
-        # Manifests
-        zf.writestr("MANIFEST.txt", manifest.getvalue())
-        zf.writestr("SHA256_MANIFEST.txt", sha_manifest.getvalue())
+        for rel, data in entries:
+            zf.writestr(rel, data)
+        zf.writestr("SHA256_MANIFEST.txt", sha_manifest_text)
 
     zip_digest = sha256_file(zip_path)
-    total_files = len(rel_files) + 3  # 3 generated text files
+    total_files = len(entries) + 1  # +1 for SHA256_MANIFEST.txt
 
     print(f"ZIP PATH:     {zip_path}")
     print(f"ZIP SHA-256:  {zip_digest}")
+    print(f"HANDOFF_SHA256: {zip_digest}")
     print(f"FILE COUNT:   {total_files}")
     print(f"HEAD:         {head}")
     print(f"STATUS:       {status_label}")

@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-0R2 — Continuity remediation / review finding closure
+**Handoff version:** PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation
 **Date:** 2026-08-30
 
 ---
@@ -19,13 +19,17 @@ New sessions must read that file first.
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
-- Current work branch: `governance/pre-b027-continuity-reconciliation`
+- Canonical branch: `main`
+- Delivery branch: `governance/canonical-merge-lifecycle-v1`
+- Current work branch: `governance/canonical-merge-lifecycle-v1`
 - Current baseline branch: `main`
-- Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Described HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51`
+- Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
 - Working tree: expected clean at handoff generation
-- Open PR: none (PRE-B027-0R2 is local and not yet pushed)
-- Latest merge into `main`: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
+- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
+- Open PR: none (PRE-B027-M1R is local and not yet pushed)
+- Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -102,9 +106,8 @@ PRE-B027-0R — Review finding remediation:
 
 ## Current open work
 
-`PRE-B027-0R2` — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) and final
-remediation of `ANOX-PREB027REV-001` on `governance/pre-b027-continuity-reconciliation`;
-implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M1R3` — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`;
+implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
 
 ## Current test baseline
 
@@ -117,7 +120,7 @@ implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
-- Continuity unit tests: 66/66 PASS
+- Continuity unit tests: 132/132 PASS
 
 ## Historical provenance
 
@@ -137,21 +140,25 @@ implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
 
 ## Current blockers
 
-- No PRE-B027 security blockers; the R2 classifier fix closes the merge-commit payload visibility gap locally.
-
+- `ANOX-CMLR1REV-001` is independently CLOSED.
+- `ANOX-CMLR2REV-001`, `ANOX-CMLR2REV-002`, and `ANOX-CMLR2REV-003` are remediated locally and are `READY FOR RETEST`.
+  Closure is reserved for the independent M1R3 Delta Reviewer.
+- `PRE-B027-M2 PROJECT MEMORY / PROGRESS INTEGRITY` is BLOCKED until M1R3
+  independent Delta Retest PASS, controlled Human Push, PR, CI PASS, Human Merge,
+  and final canonical main live validation.
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and the R2
+- No PRE-B027 architecture blockers; the architecture is frozen and the M1R3
   remediation is awaiting independent Delta Retest.
 
 ## Next architecture gate
 
-`PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+`CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
 
 ## Next engineering task
 
-If the R2 Delta Retest passes, the authorized next gate is `B-027 IMPLEMENTATION`.
+After the independent review and controlled human merge, the authorized next gate is `B-027 IMPLEMENTATION AUTHORIZED`.
 No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
 
 ## Do-not-touch foundation

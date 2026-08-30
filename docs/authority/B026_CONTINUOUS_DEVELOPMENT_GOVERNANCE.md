@@ -356,3 +356,140 @@ B-026 implementations must not modify:
 - native libraries
 - application features
 - backend code
+
+---
+
+## Canonical merge lifecycle rule
+
+A reviewed and approved delivery payload is NOT a new merge payload.
+
+### Authority
+
+`tools/continuity/validate_continuity.py` is the canonical enforcement of this rule. It must distinguish:
+
+1. **Reviewed delivery tail** — changes between the described checkpoint and the reviewed delivery branch head.
+2. **Merge resolution** — changes introduced between the reviewed delivery head and the final canonical merge result.
+3. **Post-merge canonical tail** — any commits after the canonical integration merge.
+
+A normal clean merge into `main` has an empty merge-resolution range. The merge result must equal the reviewed delivery result, or differ only in explicitly allowlisted metadata.
+
+### Range-2 union and reviewed-content discard
+
+Range 2 is the merge resolution. It is evaluated as the **union** of:
+
+1. **Three-way resolution payload** — paths whose final merge blob differs from *both* the canonical-parent blob and the reviewed delivery-parent blob.
+2. **Delivery-endpoint delta** — paths where the final merge tree differs from the reviewed delivery-parent tree.
+
+The delivery-endpoint delta is required because a merge that silently reverts reviewed delivery content back to the canonical-parent version is still a merge-resolution mutation. In that case the final blob matches the canonical parent, so the three-way rule alone would not flag it, but the reviewed delivery content has nevertheless disappeared.
+
+```text
+FINAL MERGE RESULT MUST NOT SILENTLY DISCARD REVIEWED DELIVERY CONTENT
+```
+
+A path where:
+
+```text
+blob(M, path) == blob(P1, path)
+blob(M, path) != blob(P2, path)
+```
+
+is classified as `DISCARDED REVIEWED DELIVERY CONTENT` and must be allowlisted as metadata-only before it can be accepted. Substantive Product, CI, Authority, Tool/Validator, or unknown reverts fail closed.
+
+### Failure semantics
+
+- Any Product, CI, Authority, Tool/Validator, Rust/Crypto, B0xx spec, or security report change introduced only through merge resolution fails closed.
+- Deletion of substantive content during merge resolution fails closed.
+- Unknown or ambiguous merge topologies fail closed.
+- Squash, rebase, octopus, and rewritten delivery lineage are not supported by V1.
+
+### Branch separation
+
+The continuity state must declare both `canonical_branch` and `delivery_branch`. The runtime branch is derived from Git. The effective next gate is determined by verified lifecycle state, not by a manually edited `current_gate` prediction.
+
+- Runtime `delivery_branch` → effective gate is `pre_merge_gate`.
+- Runtime `canonical_branch` with a verified canonical integration merge → effective gate is `post_merge_gate`.
+
+This rule is frozen as B-026 lifecycle invariant.
+
+---
+
+## Canonical base-drift policy
+
+### V1 rule
+
+For Canonical Merge Lifecycle V1, the canonical integration base must not have advanced with **substantive** work after the reviewed delivery branch was created.
+
+- A `canonical_parent` that is not an ancestor of the `delivery_parent` indicates the canonical branch has diverged since the delivery lineage was established.
+- The validator compares the merge base between the canonical parent and the delivery parent against the canonical parent.
+- If the drift contains only metadata-only changes (per the fail-closed `METADATA_ONLY_ALLOWLIST`), the merge may proceed and is recorded as `metadata-only canonical base drift accepted`.
+- If the drift contains Product, CI, Authority, Tool/Validator, or unknown path changes, the merge is:
+
+`MERGE BLOCKED — SUBSTANTIVE CANONICAL BASE DRIFT — RESYNCHRONIZATION REQUIRED`
+
+### Resynchronization workflow
+
+When substantive canonical drift is detected:
+
+1. STOP the final merge.
+2. Record the delivery branch as stale against the current canonical base.
+3. Create a controlled resynchronization branch from the latest canonical `main`.
+4. Merge the reviewed delivery payload into the resynchronization branch (do not rebase/squash and silently reuse the old review).
+5. Establish a new substantive checkpoint representing the reconciled state.
+6. Update `described_head` to that already-existing checkpoint through the finite metadata-sync commit model.
+7. Rerun the full relevant test suite.
+8. Obtain a focused independent Delta Review because the reviewed code ancestry changed.
+9. Only after the Delta Review passes may the controlled human PR/merge resume.
+
+### Review-approval invalidation
+
+`OLD REVIEW APPROVAL != APPROVAL OF RESYNCHRONIZED DELIVERY`
+
+Any substantive synchronization changes the reviewed object. The old review or approval cannot be reused for the resynchronized delivery.
+
+### Authorized canonical base
+
+Where the continuity state records `latest_merge_to_baseline`, that value represents the canonical base the reviewed delivery assumed. The canonical parent in the final `--no-ff` merge must be that base or a metadata-only descendant of it. Substantial divergence from that base triggers the resynchronization workflow.
+
+### Multiple canonical merges
+
+If the lifecycle validator identifies more than one qualifying two-parent canonical integration merge for the same `described_head`, the topology is **ambiguous** and the result is:
+
+`FAIL — AMBIGUOUS/MULTIPLE CANONICAL INTEGRATION MERGES`
+
+Only a single clean `--no-ff` integration merge is supported per lifecycle task. Later merges must be represented by a new `described_head` in a new lifecycle task.
+
+---
+
+## Archive trust model
+
+### Internal archive integrity
+
+A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. The SHA-256 manifest covers every regular file in the archive **except `SHA256_MANIFEST.txt` itself**, which prevents self-reference paradoxes. In particular, the independently generated `GIT_SNAPSHOT.txt` and the human-readable `MANIFEST.txt` are now included in the SHA-256 manifest; an archive file not listed in the manifest, or a manifest entry for a missing file, or a duplicate manifest path, fails validation.
+
+`tools/continuity/generate_handoff.py` materializes an independent `### Resolved lifecycle metadata` block inside `GIT_SNAPSHOT.txt` at packaging time, containing canonical branch, delivery branch, described head, pre/post merge gates, and the resolved effective gate. This block is generated only for explicitly current-lifecycle archives (schema version `B026-1.2` with the full lifecycle key set); legacy archives do not contain it.
+
+The archive validator uses explicit, fail-closed schema classification:
+
+- **Recognized current lifecycle schemas** (e.g. `B026-1.2`) require the `### Resolved lifecycle metadata` block in `GIT_SNAPSHOT.txt`, all required lifecycle keys in `CURRENT_STATE.json`, and a consistent current/effective gate.
+- **Recognized legacy schemas** (e.g. `B026-1.0`) may use legacy compatibility rules, but only if the archive positively identifies itself as legacy and does **not** carry current-lifecycle evidence (lifecycle block, current lifecycle keys, or current lifecycle human labels).
+- **Unknown or ambiguous schemas** (missing `schema_version`, unknown version, or a mix of current and legacy signals) **FAIL CLOSED**.
+
+The core security invariant is: **an archive must never be able to downgrade its own validation schema by deleting security-relevant fields.** If the `### Resolved lifecycle metadata` block is present in `GIT_SNAPSHOT.txt`, lifecycle enforcement is active regardless of what an attacker writes in `CURRENT_STATE.json`. Partial lifecycle state (some but not all lifecycle keys) is treated as malformed and fails.
+
+A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces — including the independently generated `GIT_SNAPSHOT.txt` block — FAILS archive validation. A fully coherent attacker rewrite of every archive-controlled surface can still pass internal consistency, but it cannot establish authenticity.
+
+### Archive authenticity
+
+A self-contained unsigned ZIP with an internal manifest is **NOT cryptographically authenticated**. An attacker who controls the archive contents and the manifest can rewrite both coherently and recompute the manifest.
+
+Authenticity requires a trust anchor outside the archive, such as:
+
+- a trusted externally stored SHA-256 digest,
+- a detached digital signature,
+- or a human-controlled release/signing mechanism.
+
+`tools/continuity/generate_handoff.py` emits the final ZIP SHA-256 as `HANDOFF_SHA256: <digest>` so that an external trust anchor can record it. If the attacker also controls the external channel storing the digest, authenticity is still not established.
+
+Cold recovery from a handoff ZIP may reconstruct internal project state with `ARCHIVE INTERNAL VALIDATION = PASS`, but it MUST report `ARCHIVE AUTHENTICITY = UNVERIFIED — NO EXTERNAL TRUST ANCHOR PROVIDED` unless a trusted external anchor is supplied.
+
+This is a trust-level distinction, not a reason to make ordinary Handoff unusable.

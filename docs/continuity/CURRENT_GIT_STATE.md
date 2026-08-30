@@ -15,20 +15,24 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Latest merge into baseline: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
-- Previous baseline HEAD: `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
+- Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Latest merge into baseline: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation merged
+- Previous baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
-- Current handoff branch: `governance/pre-b027-continuity-reconciliation`
+- Canonical branch: `main`
+- Delivery branch: `governance/canonical-merge-lifecycle-v1`
+- Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51`
+- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
-- Open relevant PR: none (PRE-B027-0R is local and not yet pushed)
-- Current task: `PRE-B027-0R2 remediation metadata sync complete`
-- Current gate: `PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+- Open relevant PR: none
+- Current task: `CANONICAL MERGE LIFECYCLE M1R3 SCHEMA-DOWNGRADE REMEDIATION`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
+- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 
 ## Merged history on main
 
@@ -50,10 +54,11 @@
 - PROMPT-010 — GitHub Remote Activity Safety Governance — MERGED via new PR #1
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation — MERGED to `main` at `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - B-017-Lite — CI / Supply-Chain Security Foundation (PR #2) — MERGED to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`
+- PRE-B027-0R2 — Merge-commit payload visibility fix and final continuity remediation — MERGED to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3); all PRE-B027 findings closed
 
 ## Unmerged work
 
-PRE-B027-0 — Continuity semantics / baseline reconciliation and B-027 architecture freeze on `governance/pre-b027-continuity-reconciliation`; awaiting independent review.
+PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`; implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
 
 ## B-003 status after this task
 
@@ -68,9 +73,5 @@ PRE-B027-0 — Continuity semantics / baseline reconciliation and B-027 architec
 
 - `python3 tools/continuity/validate_continuity.py` expected: PASS
 - `python3 tools/continuity/test_handoff_and_validator.py` expected: PASS
-- `python3 tools/security/b017_lite_policy_validator.py` expected: PASS
-- `python3 -m unittest tools.security.test_b017_lite_policy_validator` expected: 35/35 PASS
-- `grep -c "write" .github/workflows/ci.yml` expected: 0
-- `python3 tools/security/validate_apk_contents.py <debug-apk>` expected: PASS
-- `python3 tools/security/validate_apk_contents.py <release-apk>` expected: PASS
+- `python3 tools/continuity/generate_handoff.py` expected: PASS
 - `git diff --check` expected: PASS
