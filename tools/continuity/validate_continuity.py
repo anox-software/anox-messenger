@@ -257,12 +257,20 @@ def git_diff_files(from_sha, to_sha, cwd=None):
 
 
 def git_merge_resolution_paths(merge, delivery_parent, canonical_parent, cwd=None):
-    """Return paths that are in `merge` but differ from both parents.
+    """Return the merge resolution range as the union of:
 
-    This is the true merge resolution payload. Files inherited from either parent
-    (identical blob in `merge` and one parent) are not resolution changes. Only
-    paths whose merge tree blob differs from the blob in both parents, or exist in
-    only one tree (a true resolution addition/deletion), are returned.
+    1. Three-way resolution paths (merge tree differs from both parents).
+    2. The delivery-endpoint delta (merge tree differs from the reviewed
+       delivery parent tree).
+
+    The delivery-endpoint delta is required because a merge that silently
+    reverts reviewed delivery content back to the canonical-parent version
+    is still a merge-resolution mutation. The union is then classified by the
+    fail-closed metadata-only allowlist.
+
+    Returns a 4-tuple:
+      (all_paths, three_way_paths, endpoint_paths, reverted_paths)
+    or None on Git failure.
     """
     def tree_blobs(sha):
         """Return {path: blob} for the tree at `sha`."""
@@ -285,16 +293,27 @@ def git_merge_resolution_paths(merge, delivery_parent, canonical_parent, cwd=Non
     if merge_tree is None or delivery_tree is None or canonical_tree is None:
         return None
 
-    resolution = []
-    all_paths = set(merge_tree) | set(delivery_tree) | set(canonical_tree)
-    for p in all_paths:
+    three_way = set()
+    all_tree_paths = set(merge_tree) | set(delivery_tree) | set(canonical_tree)
+    for p in all_tree_paths:
         m = merge_tree.get(p)
         d = delivery_tree.get(p)
         c = canonical_tree.get(p)
-        # Resolution if merge differs from *both* parents.
+        # Three-way resolution: merge result differs from both parents.
         if m != d and m != c:
-            resolution.append(p)
-    return sorted(resolution)
+            three_way.add(p)
+
+    # Delivery endpoint delta: any path where the final merge tree differs from
+    # the reviewed delivery parent tree. This catches silent reversion to the
+    # canonical parent, which the three-way rule alone would not flag.
+    endpoint = git_diff_endpoint(delivery_parent, merge, cwd=cwd)
+    if endpoint is None:
+        return None
+    endpoint = set(endpoint)
+
+    union = sorted(three_way | endpoint)
+    reverted = sorted(endpoint - three_way)
+    return union, sorted(three_way), endpoint, reverted
 
 
 def git_diff_endpoint(from_sha, to_sha, cwd=None):
@@ -472,12 +491,22 @@ def validate_canonical_merge_lifecycle(described_head, live_head, state, live_br
     else:
         print(f"  OK   range 1 (described..delivery parent) is metadata-only")
 
-    # Range 2 — merge resolution (three-way comparison to catch resolution-only payload).
+    # Range 2 — merge resolution (three-way + delivery-endpoint comparison).
     r2 = git_merge_resolution_paths(merge, delivery_parent, canonical_parent)
     if r2 is None:
         return False, None
-    ok, _ = _paths_are_metadata_only(r2, f"merge resolution {merge[:12]} (vs delivery/canonical parents)")
+    r2_paths, r2_three, r2_endpoint, r2_reverted = r2
+    ok, disallowed = _paths_are_metadata_only(r2_paths, f"merge resolution {merge[:12]} (vs delivery/canonical parents)")
     if not ok:
+        reverted_disallowed = [p for p in disallowed if p in r2_reverted]
+        if reverted_disallowed:
+            print("  FAIL merge resolution DISCARDED REVIEWED DELIVERY CONTENT:")
+            for p in reverted_disallowed[:10]:
+                print(f"    - {p}")
+        else:
+            print(f"  FAIL merge resolution {merge[:12]} (vs delivery/canonical parents) contains non-metadata-only paths:")
+            for p in disallowed[:10]:
+                print(f"    - {p}")
         all_ok = False
     else:
         print(f"  OK   range 2 (merge resolution) is metadata-only")
@@ -1144,6 +1173,89 @@ def _parse_git_snapshot(snapshot_text):
     return result
 
 
+LIFECYCLE_SNAPSHOT_KEYS = {
+    "canonical_branch",
+    "delivery_branch",
+    "described_head",
+    "pre_merge_gate",
+    "post_merge_gate",
+    "effective_gate",
+}
+
+
+def _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=False):
+    """Parse the resolved lifecycle metadata block from GIT_SNAPSHOT.txt.
+
+    Returns (values, errors). `values` is a dict of parsed fields or None if
+    the block is absent and not required. `errors` is a list of fail-closed
+    diagnostics for malformed, duplicate, missing, or unresolved values.
+    """
+    errors = []
+    values = {}
+    marker = "### Resolved lifecycle metadata"
+
+    block_start = None
+    lines = snapshot_text.splitlines()
+    for i, line in enumerate(lines):
+        if line.strip() == marker:
+            if block_start is not None:
+                errors.append("duplicate resolved lifecycle metadata block")
+                return None, errors
+            block_start = i
+
+    if block_start is None:
+        if requires_lifecycle:
+            errors.append("missing resolved lifecycle metadata block")
+        return (None, errors)
+
+    seen = set()
+    i = block_start + 1
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("### "):
+            break
+        stripped = line.strip()
+        if not stripped:
+            i += 1
+            continue
+        if ":" not in stripped:
+            errors.append(f"malformed lifecycle snapshot line: {stripped!r}")
+            i += 1
+            continue
+        key, raw = stripped.split(":", 1)
+        key = key.strip()
+        value = raw.strip()
+        if key not in LIFECYCLE_SNAPSHOT_KEYS:
+            errors.append(f"unknown lifecycle snapshot key: {key}")
+            i += 1
+            continue
+        if key in seen:
+            errors.append(f"duplicate lifecycle snapshot key: {key}")
+            i += 1
+            continue
+        seen.add(key)
+        if not value:
+            errors.append(f"empty lifecycle snapshot value for {key}")
+            i += 1
+            continue
+        if value in PLACEHOLDER_MARKERS:
+            errors.append(f"unresolved placeholder in lifecycle snapshot {key}: {value}")
+            i += 1
+            continue
+        values[key] = value
+        i += 1
+
+    if requires_lifecycle:
+        for key in LIFECYCLE_SNAPSHOT_KEYS:
+            if key not in seen:
+                errors.append(f"missing lifecycle snapshot key: {key}")
+
+    if not requires_lifecycle and not values:
+        return None, errors
+
+    return values, errors
+
+
 def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok):
     """Cross-check state against handoff/git-state surfaces and git snapshot."""
 
@@ -1271,6 +1383,53 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
                     elif declared not in PLACEHOLDER_MARKERS:
                         print(f"  OK   {rel} post-merge gate matches CURRENT_STATE.json")
 
+    # Cross-check the independently generated GIT_SNAPSHOT.txt lifecycle block.
+    snapshot_lifecycle = snapshot.get("lifecycle")
+    if _is_lifecycle_state(state) and snapshot_lifecycle:
+        def _extract_effective_gate(text):
+            m = re.search(
+                r"^(?:[-*]\s*)?(?:Current gate|Effective gate)\s*[:=]\s*(?:`([^`\n]+)`|([^`\n]+?))(?:\s+\([^)]+\))?$",
+                text,
+                re.MULTILINE | re.IGNORECASE,
+            )
+            return (m.group(1) or m.group(2)).strip() if m else None
+
+        lifecycle_fields = (
+            ("canonical_branch", ("Canonical branch",), state.get("canonical_branch") or state.get("baseline_branch")),
+            ("delivery_branch", ("Delivery branch",), state.get("delivery_branch")),
+            ("described_head", ("Described HEAD", "described_head"), _resolve_described_head(state)),
+            ("pre_merge_gate", ("Pre-merge gate", "pre_merge_gate"), state.get("pre_merge_gate", "")),
+            ("post_merge_gate", ("Post-merge gate", "post_merge_gate"), state.get("post_merge_gate", "")),
+            ("effective_gate", None, state.get("current_gate", "")),
+        )
+        for key, labels, expected in lifecycle_fields:
+            if not expected:
+                continue
+            snap = snapshot_lifecycle.get(key)
+            _ok_or_fail(
+                snap == expected,
+                f"GIT_SNAPSHOT {key} matches CURRENT_STATE.json",
+                f"GIT_SNAPSHOT {key} {snap} != CURRENT_STATE.json {expected}",
+            )
+            if key == "effective_gate" and snap:
+                for surface, text in surfaces.items():
+                    val = _extract_effective_gate(text)
+                    if val:
+                        _ok_or_fail(
+                            val == snap,
+                            f"{surface} effective gate matches GIT_SNAPSHOT",
+                            f"{surface} effective gate {val} != GIT_SNAPSHOT {snap}",
+                        )
+            elif labels:
+                for surface, text in surfaces.items():
+                    val = _extract_labeled_value(text, labels)
+                    if val:
+                        _ok_or_fail(
+                            val == snap,
+                            f"{surface} {key} matches GIT_SNAPSHOT",
+                            f"{surface} {key} {val} != GIT_SNAPSHOT {snap}",
+                        )
+
     return all_ok
 
 
@@ -1309,6 +1468,13 @@ def validate_archive_snapshot_agreement(archive_root, all_ok):
     return all_ok
 
 
+def _is_lifecycle_state(state):
+    """Return True when state declares canonical merge lifecycle fields."""
+    if not state:
+        return False
+    return all(state.get(k) for k in ("canonical_branch", "delivery_branch", "pre_merge_gate", "post_merge_gate"))
+
+
 def validate_archive_surface_consistency(archive_root, all_ok):
     print("\n[ARCHIVE] Surface semantic consistency")
 
@@ -1320,6 +1486,14 @@ def validate_archive_surface_consistency(archive_root, all_ok):
     snapshot_path = archive_root / "GIT_SNAPSHOT.txt"
     snapshot_text = snapshot_path.read_text(encoding="utf-8") if snapshot_path.exists() else ""
     snapshot = _parse_git_snapshot(snapshot_text)
+
+    requires_lifecycle = _is_lifecycle_state(state)
+    lifecycle_values, lifecycle_errors = _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=requires_lifecycle)
+    if requires_lifecycle:
+        for err in lifecycle_errors:
+            print(f"  FAIL GIT_SNAPSHOT.txt lifecycle block: {err}")
+            all_ok = False
+    snapshot["lifecycle"] = lifecycle_values
 
     surfaces = {}
     for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):

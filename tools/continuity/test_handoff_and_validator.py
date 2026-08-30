@@ -2018,6 +2018,114 @@ class TestCanonicalMergeLifecycle(unittest.TestCase):
         finally:
             f.cleanup()
 
+    # M1R2: reviewed-content discard (revert to canonical parent) must fail.
+
+    def _revert_to_canonical(self, path, new_content, drift_commit=None):
+        """Helper: put a substantive change on delivery, then force the merge back to main's version."""
+        f = CMLFixture()
+        try:
+            if drift_commit:
+                f._run(["git", "checkout", "main"])
+                f._write("FORTSCHRITT.md", "# Fortschritt\nmain metadata\n")
+                f._run(["git", "add", "."])
+                f._run(["git", "commit", "-m", "main metadata"])
+            f._run(["git", "checkout", "delivery"])
+            f._write(path, new_content)
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "reviewed change"])
+            f.set_described_head(f._run(["git", "rev-parse", "delivery"]).stdout.strip())
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "--no-commit", "delivery"])
+            # Force the merge tree back to the canonical-parent version of this path.
+            # --no-overlay copies the tree from main faithfully, deleting the path if main does not have it.
+            f._run(["git", "checkout", "--no-overlay", "main", "--", path])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with revert"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("DISCARDED REVIEWED DELIVERY CONTENT", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_product_revert_to_canonical_no_drift_fails(self):
+        """Product file added on delivery, deleted in merge to restore canonical (empty) version."""
+        self._revert_to_canonical("android/src/Product.kt", "// reviewed product\n")
+
+    def test_product_revert_to_canonical_with_metadata_drift_fails(self):
+        """Metadata base drift accepted, but product revert in merge still fails."""
+        self._revert_to_canonical("android/src/Product.kt", "// reviewed product\n", drift_commit=True)
+
+    def test_ci_revert_to_canonical_no_drift_fails(self):
+        """CI workflow added on delivery, deleted in merge to restore canonical (empty) version."""
+        self._revert_to_canonical(".github/workflows/ci-revert.yml", "name: evil\n")
+
+    def test_ci_revert_to_canonical_with_metadata_drift_fails(self):
+        """Metadata base drift accepted, but CI revert in merge still fails."""
+        self._revert_to_canonical(".github/workflows/ci-revert.yml", "name: evil\n", drift_commit=True)
+
+    def test_authority_revert_to_canonical_no_drift_fails(self):
+        """Authority file modified on delivery, reverted to canonical version in merge."""
+        self._revert_to_canonical("docs/authority/AUTHORITY_INDEX.md", "# changed\n")
+
+    def test_authority_revert_to_canonical_with_metadata_drift_fails(self):
+        """Metadata base drift accepted, but authority revert in merge still fails."""
+        self._revert_to_canonical("docs/authority/AUTHORITY_INDEX.md", "# changed\n", drift_commit=True)
+
+    def test_tool_revert_to_canonical_no_drift_fails(self):
+        """Tool file modified on delivery, reverted to canonical version in merge."""
+        self._revert_to_canonical("tools/security/validate_apk_contents.py", "# reviewed\n")
+
+    def test_tool_revert_to_canonical_with_metadata_drift_fails(self):
+        """Metadata base drift accepted, but tool revert in merge still fails."""
+        self._revert_to_canonical("tools/security/validate_apk_contents.py", "# reviewed\n", drift_commit=True)
+
+    # M1R2: base-drift matrix items 34-36 (CI/Authority/Tool substantive drift).
+
+    def test_ci_base_drift_fails(self):
+        """Substantive CI change on canonical main before merge requires resynchronization."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._write(".github/workflows/ci-drift.yml", "name: drift\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "ci drift"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("SUBSTANTIVE CANONICAL BASE DRIFT", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_authority_base_drift_fails(self):
+        """Substantive Authority change on canonical main before merge requires resynchronization."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._write("docs/authority/B_FREEZE_REGISTRY.md", "drift\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "authority drift"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("SUBSTANTIVE CANONICAL BASE DRIFT", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_tool_base_drift_fails(self):
+        """Substantive Tool change on canonical main before merge requires resynchronization."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._write("tools/security/validate_apk_contents.py", "# drift\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "tool drift"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("SUBSTANTIVE CANONICAL BASE DRIFT", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
 
 class TestArchiveLifecycleTamper(unittest.TestCase):
     """ANOX-CMLREV-002: archive semantic cross-checks and trust model."""
@@ -2144,6 +2252,116 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
             p.write_text(json.dumps(data, indent=2), encoding="utf-8")
         self._tamper_and_fail(t)
 
+    # M1R2: N-1 cross-surface tampering (three state/human surfaces rewritten,
+    # GIT_SNAPSHOT.txt resolved lifecycle block left untouched).
+
+    def _n_minus_1_tamper(self, root, state_key, new_value, human_pattern=None):
+        """Change a lifecycle value in CURRENT_STATE.json and both human surfaces, but NOT GIT_SNAPSHOT."""
+        state_path = root / "docs" / "continuity" / "CURRENT_STATE.json"
+        data = json.loads(state_path.read_text(encoding="utf-8"))
+        original = data.get(state_key, "")
+        data[state_key] = new_value
+        state_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+            p = root / rel
+            text = p.read_text(encoding="utf-8")
+            if original:
+                text = text.replace(original, new_value)
+            if human_pattern:
+                text = text.replace(human_pattern[0], human_pattern[1])
+            p.write_text(text, encoding="utf-8")
+
+    def test_n1_canonical_branch_tamper_fails(self):
+        """Canonical branch rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            self._n_minus_1_tamper(root, "canonical_branch", "attacker-main")
+        self._tamper_and_fail(t)
+
+    def test_n1_delivery_branch_tamper_fails(self):
+        """Delivery branch rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            self._n_minus_1_tamper(root, "delivery_branch", "attacker-delivery")
+        self._tamper_and_fail(t)
+
+    def test_n1_described_head_tamper_fails(self):
+        """Described head rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            self._n_minus_1_tamper(root, "described_head", "a" * 40)
+        self._tamper_and_fail(t)
+
+    def test_n1_pre_merge_gate_tamper_fails(self):
+        """Pre-merge gate rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            state = json.loads((root / "docs" / "continuity" / "CURRENT_STATE.json").read_text(encoding="utf-8"))
+            self._n_minus_1_tamper(root, "pre_merge_gate", "ATTACKER PRE", (f"Pre-merge gate: `{state['pre_merge_gate']}`", "Pre-merge gate: `ATTACKER PRE`"))
+        self._tamper_and_fail(t)
+
+    def test_n1_post_merge_gate_tamper_fails(self):
+        """Post-merge gate rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            state = json.loads((root / "docs" / "continuity" / "CURRENT_STATE.json").read_text(encoding="utf-8"))
+            self._n_minus_1_tamper(root, "post_merge_gate", "ATTACKER POST", (f"Post-merge gate: `{state['post_merge_gate']}`", "Post-merge gate: `ATTACKER POST`"))
+        self._tamper_and_fail(t)
+
+    def test_n1_effective_gate_tamper_fails(self):
+        """Resolved current/effective gate rewritten on state/human surfaces but not GIT_SNAPSHOT."""
+        def t(root):
+            state = json.loads((root / "docs" / "continuity" / "CURRENT_STATE.json").read_text(encoding="utf-8"))
+            state["current_gate"] = "ATTACKER GATE"
+            (root / "docs" / "continuity" / "CURRENT_STATE.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+            for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+                p = root / rel
+                text = p.read_text(encoding="utf-8")
+                # Replace the resolved current-gate value and its parenthetical references.
+                text = text.replace(f"Current gate: `{state['pre_merge_gate']}`", "Current gate: `ATTACKER GATE`")
+                text = text.replace(f"delivery -> `{state['pre_merge_gate']}`", "delivery -> `ATTACKER GATE`")
+                text = text.replace(f"canonical -> `{state['post_merge_gate']}`", "canonical -> `ATTACKER GATE`")
+                p.write_text(text, encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    # M1R2: GIT_SNAPSHOT.txt lifecycle block integrity.
+
+    def test_missing_lifecycle_snapshot_block_fails(self):
+        """Current-schema archive missing the resolved lifecycle metadata block fails."""
+        def t(root):
+            text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+            # Remove the lifecycle block entirely.
+            lines = text.splitlines()
+            new = []
+            skip = False
+            for line in lines:
+                if line.strip() == "### Resolved lifecycle metadata":
+                    skip = True
+                    continue
+                if skip and line.startswith("### "):
+                    skip = False
+                if not skip:
+                    new.append(line)
+            (root / "GIT_SNAPSHOT.txt").write_text("\n".join(new), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_duplicate_lifecycle_snapshot_field_fails(self):
+        """Duplicate field in the resolved lifecycle metadata block fails."""
+        def t(root):
+            text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+            text = text.replace(
+                "### Resolved lifecycle metadata",
+                "### Resolved lifecycle metadata\ncanonical_branch: extra",
+            )
+            (root / "GIT_SNAPSHOT.txt").write_text(text, encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_unresolved_lifecycle_snapshot_placeholder_fails(self):
+        """Unresolved placeholder in the resolved lifecycle metadata block fails."""
+        def t(root):
+            text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+            text = text.replace(
+                "effective_gate:",
+                "effective_gate: __EFFECTIVE_GATE__",
+            )
+            (root / "GIT_SNAPSHOT.txt").write_text(text, encoding="utf-8")
+        self._tamper_and_fail(t)
+
     def test_untampered_archive_passes(self):
         f = CMLFixture()
         try:
@@ -2206,12 +2424,66 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
                     # update pre/post gate declarations
                     text = text.replace(f"Pre-merge gate: `{original_pre}`", f"Pre-merge gate: `{new_gate}`")
                     text = text.replace(f"Post-merge gate: `{original_post}`", f"Post-merge gate: `{new_gate}`")
+                    # update the resolved current/effective gate and its parenthetical references
+                    text = text.replace(f"Current gate: `{original_pre}`", f"Current gate: `{new_gate}`")
+                    text = text.replace(f"Current gate: `{original_post}`", f"Current gate: `{new_gate}`")
                     p.write_text(text, encoding="utf-8")
 
                 snapshot = (a.root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
-                snapshot = snapshot.replace(original_head, new_head)
-                snapshot = snapshot.replace(original_branch, new_branch)
-                (a.root / "GIT_SNAPSHOT.txt").write_text(snapshot, encoding="utf-8")
+                snapshot_lines = snapshot.splitlines()
+                new_snapshot = []
+                in_lifecycle = False
+                i = 0
+                while i < len(snapshot_lines):
+                    line = snapshot_lines[i]
+                    if line.strip() == "### Resolved lifecycle metadata":
+                        in_lifecycle = True
+                        new_snapshot.append(line)
+                        i += 1
+                        continue
+                    if in_lifecycle and line.startswith("### "):
+                        in_lifecycle = False
+                    if in_lifecycle and ":" in line:
+                        key = line.split(":", 1)[0].strip()
+                        if key == "canonical_branch":
+                            new_snapshot.append(f"canonical_branch: {new_canonical}")
+                        elif key == "delivery_branch":
+                            new_snapshot.append(f"delivery_branch: {new_delivery}")
+                        elif key == "described_head":
+                            new_snapshot.append(f"described_head: {new_described}")
+                        elif key == "pre_merge_gate":
+                            new_snapshot.append(f"pre_merge_gate: {new_gate}")
+                        elif key == "post_merge_gate":
+                            new_snapshot.append(f"post_merge_gate: {new_gate}")
+                        elif key == "effective_gate":
+                            new_snapshot.append(f"effective_gate: {new_gate}")
+                        else:
+                            new_snapshot.append(line)
+                        i += 1
+                        continue
+                    if "git branch --show-current" in line:
+                        new_snapshot.append(line)
+                        i += 1
+                        while i < len(snapshot_lines) and not snapshot_lines[i].strip():
+                            new_snapshot.append(snapshot_lines[i])
+                            i += 1
+                        if i < len(snapshot_lines):
+                            new_snapshot.append(new_branch)
+                            i += 1
+                        continue
+                    if "git rev-parse HEAD" in line:
+                        new_snapshot.append(line)
+                        i += 1
+                        while i < len(snapshot_lines) and not snapshot_lines[i].strip():
+                            new_snapshot.append(snapshot_lines[i])
+                            i += 1
+                        if i < len(snapshot_lines):
+                            new_snapshot.append(new_head)
+                            i += 1
+                        continue
+                    new_snapshot.append(line)
+                    i += 1
+                (a.root / "GIT_SNAPSHOT.txt").write_text("\n".join(new_snapshot), encoding="utf-8")
 
                 manifest = (a.root / "MANIFEST.txt").read_text(encoding="utf-8")
                 manifest = manifest.replace(f"Handoff branch: {original_branch}", f"Handoff branch: {new_branch}")

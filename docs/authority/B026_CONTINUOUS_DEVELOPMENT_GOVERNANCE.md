@@ -373,6 +373,28 @@ A reviewed and approved delivery payload is NOT a new merge payload.
 
 A normal clean merge into `main` has an empty merge-resolution range. The merge result must equal the reviewed delivery result, or differ only in explicitly allowlisted metadata.
 
+### Range-2 union and reviewed-content discard
+
+Range 2 is the merge resolution. It is evaluated as the **union** of:
+
+1. **Three-way resolution payload** — paths whose final merge blob differs from *both* the canonical-parent blob and the reviewed delivery-parent blob.
+2. **Delivery-endpoint delta** — paths where the final merge tree differs from the reviewed delivery-parent tree.
+
+The delivery-endpoint delta is required because a merge that silently reverts reviewed delivery content back to the canonical-parent version is still a merge-resolution mutation. In that case the final blob matches the canonical parent, so the three-way rule alone would not flag it, but the reviewed delivery content has nevertheless disappeared.
+
+```text
+FINAL MERGE RESULT MUST NOT SILENTLY DISCARD REVIEWED DELIVERY CONTENT
+```
+
+A path where:
+
+```text
+blob(M, path) == blob(P1, path)
+blob(M, path) != blob(P2, path)
+```
+
+is classified as `DISCARDED REVIEWED DELIVERY CONTENT` and must be allowlisted as metadata-only before it can be accepted. Substantive Product, CI, Authority, Tool/Validator, or unknown reverts fail closed.
+
 ### Failure semantics
 
 - Any Product, CI, Authority, Tool/Validator, Rust/Crypto, B0xx spec, or security report change introduced only through merge resolution fails closed.
@@ -442,9 +464,11 @@ Only a single clean `--no-ff` integration merge is supported per lifecycle task.
 
 ### Internal archive integrity
 
-A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. The archive validator cross-checks lifecycle fields (canonical branch, delivery branch, described head, handoff branch, handoff head, working tree, current/effective gate) across `CURRENT_STATE.json`, `CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, and `GIT_SNAPSHOT.txt`.
+A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. `tools/continuity/generate_handoff.py` materializes an independent `### Resolved lifecycle metadata` block inside `GIT_SNAPSHOT.txt` at packaging time, containing canonical branch, delivery branch, described head, pre/post merge gates, and the resolved effective gate.
 
-A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces FAILS archive validation.
+The archive validator parses this resolved lifecycle block with fail-closed semantics (reject missing, duplicate, malformed, empty, or unresolved values for current lifecycle schema archives). It then cross-checks every field against `CURRENT_STATE.json` and the human-readable `CURRENT_HANDOFF.md` / `CURRENT_GIT_STATE.md` surfaces.
+
+A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces — including the independently generated `GIT_SNAPSHOT.txt` block — FAILS archive validation.
 
 ### Archive authenticity
 
