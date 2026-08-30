@@ -1,16 +1,17 @@
 # CURRENT NEXT DEVIN TASK
 
 **Status:** AWAITING INDEPENDENT DELTA RETEST
-**Task ID:** `PRE-B027-0R INDEPENDENT DELTA RETEST`
-**Date:** 2026-08-29
+**Task ID:** `PRE-B027-0R2 INDEPENDENT DELTA RETEST`
+**Date:** 2026-08-30
 
 ---
 
 ## Purpose
 
-PRE-B027-0R targeted remediation is complete on `governance/pre-b027-continuity-reconciliation`. It closes
-all ten findings from the PRE-B027-0 focused independent review (ANOX-PREB027REV-001 through -010). The
-next gate is an independent Delta Retest by a reviewer that did not implement this remediation.
+PRE-B027-0R2 targeted remediation is complete on `governance/pre-b027-continuity-reconciliation`. It
+addresses the merge-commit payload visibility gap (ANOX-PREB027RREV-001) and completes the remediation
+of `ANOX-PREB027REV-001`. Findings 002 through 010 remain independently closed. The next gate is an
+independent Delta Retest by a reviewer that did not implement this remediation.
 
 ## Preconditions satisfied
 
@@ -21,13 +22,16 @@ next gate is an independent Delta Retest by a reviewer that did not implement th
 - Remote-write authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE`.
 - B-017-Lite is merged to `main` and all five CI gates pass.
 - PRE-B027-0 initial implementation and independent focused review are complete.
-- PRE-B027-0R remediation is committed at `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242` and described by the
-  metadata-only sync at the current HEAD.
-- `validate_continuity.py` now enforces rename-aware metadata-only classification, archive required-key
-  validation, non-self-referential baseline ancestry, missing described_head declarations, and a narrow
-  metadata-only allowlist.
+- PRE-B027-0R remediation is committed at `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242` and the original
+  metadata-only sync at `99815a811b9c93710ee17b5485dbc307327fdf79`.
+- PRE-B027-0R2 remediation is committed at `53e8d630bc078aa040a0f8f788046c3984472c51` and described by the
+  current metadata-only sync.
+- `validate_continuity.py` now enforces rename-aware and merge-aware metadata-only classification, archive
+  required-key validation, non-self-referential baseline ancestry, missing described_head declarations, and a
+  narrow metadata-only allowlist.
 - `test_handoff_and_validator.py` includes adversarial regression tests for rename bypass, prefix boundary,
-  archive required keys, missing head declarations, baseline ancestry, and head precedence.
+  archive required keys, missing head declarations, baseline ancestry, head precedence, and merge-commit
+  payload visibility.
 - `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` contains the complete frozen architecture with
   Finding Security, Role≠Model, Gate Resolver, and Cold Recovery requirements.
 - `docs/authority/AUTHORITY_INDEX.md` references the canonical authority precedence and updated freeze
@@ -37,7 +41,7 @@ next gate is an independent Delta Retest by a reviewer that did not implement th
 
 ## Scope of the next task
 
-- Independently retest the targeted remediation for ANOX-PREB027REV-001 through -010.
+- Independently retest `ANOX-PREB027RREV-001` and the final closure of `ANOX-PREB027REV-001`.
 - Run `python3 tools/continuity/validate_continuity.py --mode live` and confirm PASS.
 - Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm PASS.
 - Run `python3 tools/continuity/generate_handoff.py` and confirm a clean Handoff ZIP is produced.

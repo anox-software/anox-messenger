@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-29 (PRE-B027-0R remediation metadata sync complete)
+**Date:** 2026-08-30 (PRE-B027-0R2 remediation metadata sync complete)
 
 ---
 
@@ -26,13 +26,13 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
 
 ## IN REVIEW / RETEST
 
-`PRE-B027-0R` — Targeted remediation of the PRE-B027-0 focused independent review findings on
-`governance/pre-b027-continuity-reconciliation`. The remediation is complete and the next gate is
-`PRE-B027-0R INDEPENDENT DELTA RETEST`.
+`PRE-B027-0R2` — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) and final
+remediation of `ANOX-PREB027REV-001` on `governance/pre-b027-continuity-reconciliation`.
+The remediation is complete locally and the next gate is `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`PRE-B027-0R INDEPENDENT DELTA RETEST`
+`PRE-B027-0R2 INDEPENDENT DELTA RETEST`
 
 After that retest and controlled human merge:
 

@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-0R — Continuity remediation / review finding closure
-**Date:** 2026-08-29
+**Handoff version:** PRE-B027-0R2 — Continuity remediation / review finding closure
+**Date:** 2026-08-30
 
 ---
 
@@ -22,9 +22,9 @@ New sessions must read that file first.
 - Current work branch: `governance/pre-b027-continuity-reconciliation`
 - Current baseline branch: `main`
 - Current baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- Described HEAD: `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242`
+- Described HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51`
 - Working tree: expected clean at handoff generation
-- Open PR: none (PRE-B027-0R is local and not yet pushed)
+- Open PR: none (PRE-B027-0R2 is local and not yet pushed)
 - Latest merge into `main`: PR #2 `283c1a1fdda012aab51b0164b4b16636e870f3b5` — B-017-Lite CI / supply-chain security foundation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
@@ -57,7 +57,14 @@ New sessions must read that file first.
   runtime files created yet; awaiting independent review.
 - PRE-B027-0R — Targeted remediation of the PRE-B027-0 focused independent review findings
   (ANOX-PREB027REV-001 through -010) on `governance/pre-b027-continuity-reconciliation`;
-  all findings closed locally; awaiting independent Delta Retest.
+  Findings 002 through 010 closed locally; Finding 001 partially closed; awaiting
+  independent Delta Retest.
+- PRE-B027-0R2 — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) implemented on
+  `governance/pre-b027-continuity-reconciliation`; the validator now uses a merge-aware
+  `git log -m --name-only --no-renames` history scan and includes regression tests for
+  evil-merge, merge-then-revert, clean metadata merge, substantive branch merge, and
+  merge-resolution-into-allowlist scenarios. All findings are now remediated locally; awaiting
+  the final `PRE-B027-0R2 INDEPENDENT DELTA RETEST` for closure.
 
 ## Latest completed work
 
@@ -95,9 +102,9 @@ PRE-B027-0R — Review finding remediation:
 
 ## Current open work
 
-`PRE-B027-0R` — Targeted remediation of the PRE-B027-0 focused independent review findings:
-implemented on `governance/pre-b027-continuity-reconciliation`, awaiting
-`PRE-B027-0R INDEPENDENT DELTA RETEST`.
+`PRE-B027-0R2` — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) and final
+remediation of `ANOX-PREB027REV-001` on `governance/pre-b027-continuity-reconciliation`;
+implemented locally and awaiting `PRE-B027-0R2 INDEPENDENT DELTA RETEST`.
 
 ## Current test baseline
 
@@ -110,7 +117,7 @@ implemented on `governance/pre-b027-continuity-reconciliation`, awaiting
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
-- Continuity unit tests: 34/34 PASS
+- Continuity unit tests: 66/66 PASS
 
 ## Historical provenance
 
@@ -130,19 +137,21 @@ implemented on `governance/pre-b027-continuity-reconciliation`, awaiting
 
 ## Current blockers
 
+- No PRE-B027 security blockers; the R2 classifier fix closes the merge-commit payload visibility gap locally.
+
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and the remediation is
-  awaiting independent Delta Retest.
+- No PRE-B027 architecture blockers; the architecture is frozen and the R2
+  remediation is awaiting independent Delta Retest.
 
 ## Next architecture gate
 
-`PRE-B027-0R INDEPENDENT DELTA RETEST`
+`PRE-B027-0R2 INDEPENDENT DELTA RETEST`
 
 ## Next engineering task
 
-If the Delta Retest passes, the authorized next gate is `B-027 IMPLEMENTATION`.
+If the R2 Delta Retest passes, the authorized next gate is `B-027 IMPLEMENTATION`.
 No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
 
 ## Do-not-touch foundation

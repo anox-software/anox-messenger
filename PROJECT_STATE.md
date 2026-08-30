@@ -1,13 +1,13 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-29
+**Date:** 2026-08-30
 **Architecture:** Track B B-001…B-023 frozen/defined, B-024 PASS, B-025 COMPLETE, B-026 FROZEN.
 **Functional implementation:** approximately 33%.
 
 ## Repository truth
 
 - Branch: `governance/pre-b027-continuity-reconciliation`
-- Current HEAD: `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242` (described_head); live HEAD from `CURRENT_GIT_STATE.md`
+- Current HEAD: `53e8d630bc078aa040a0f8f788046c3984472c51` (described_head); live HEAD from `CURRENT_GIT_STATE.md`
 - Canonical repository: `https://github.com/anox-software/anox-messenger`
 - Legacy repository: `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - Merged baseline branch: `main`
@@ -24,7 +24,7 @@
 - CONTINUITY-001: ACCEPTED
 - B-026: FROZEN on `main`
 - B-027: PRE-FROZEN / approved for implementation
-- Current gate: `PRE-B027-0R INDEPENDENT DELTA RETEST`
+- Current gate: `PRE-B027-0R2 INDEPENDENT DELTA RETEST`
 - Latest main CI: B-017-Lite 5/5 PASS
 - GIT-001: FULL PASS in repo documentation.
 - TOOLCHAIN-001: PR #1 merged; main CI green.
