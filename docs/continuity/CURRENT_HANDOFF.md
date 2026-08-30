@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-M1R2 — Canonical merge lifecycle M1R2 delta remediation
+**Handoff version:** PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation
 **Date:** 2026-08-30
 
 ---
@@ -24,9 +24,9 @@ New sessions must read that file first.
 - Current work branch: `governance/canonical-merge-lifecycle-v1`
 - Current baseline branch: `main`
 - Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
-- Described HEAD: `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
+- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
 - Working tree: expected clean at handoff generation
-- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
 - Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 - Open PR: none (PRE-B027-M1R is local and not yet pushed)
 - Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
@@ -106,8 +106,8 @@ PRE-B027-0R — Review finding remediation:
 
 ## Current open work
 
-`PRE-B027-M1R2` — Canonical merge lifecycle M1R2 delta remediation on `governance/canonical-merge-lifecycle-v1`;
-implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M1R3` — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`;
+implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
 
 ## Current test baseline
 
@@ -140,20 +140,21 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DEL
 
 ## Current blockers
 
-- `ANOX-CMLR1REV-001` and `ANOX-CMLR1REV-002` are remediated locally and are `READY FOR RETEST`.
-  Closure is reserved for the independent M1R2 Delta Reviewer.
-- `PRE-B027-M2 PROJECT MEMORY / PROGRESS INTEGRITY` is BLOCKED until M1R2
+- `ANOX-CMLR1REV-001` is independently CLOSED.
+- `ANOX-CMLR2REV-001`, `ANOX-CMLR2REV-002`, and `ANOX-CMLR2REV-003` are remediated locally and are `READY FOR RETEST`.
+  Closure is reserved for the independent M1R3 Delta Reviewer.
+- `PRE-B027-M2 PROJECT MEMORY / PROGRESS INTEGRITY` is BLOCKED until M1R3
   independent Delta Retest PASS, controlled Human Push, PR, CI PASS, Human Merge,
   and final canonical main live validation.
 - GitHub free plan: branch protection and secret scanning unavailable.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and the M1R2
+- No PRE-B027 architecture blockers; the architecture is frozen and the M1R3
   remediation is awaiting independent Delta Retest.
 
 ## Next architecture gate
 
-`CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`
+`CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
 
 ## Next engineering task
 

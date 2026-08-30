@@ -26,13 +26,13 @@
 - Delivery branch: `governance/canonical-merge-lifecycle-v1`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
+- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `CANONICAL MERGE LIFECYCLE M1R2 REMEDIATION`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
-- Pre-merge gate: `__PRE_MERGE_GATE__`
-- Post-merge gate: `__POST_MERGE_GATE__`
+- Current task: `CANONICAL MERGE LIFECYCLE M1R3 SCHEMA-DOWNGRADE REMEDIATION`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
+- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 
 ## Merged history on main
 
@@ -58,7 +58,7 @@
 
 ## Unmerged work
 
-PRE-B027-M1R1 — Canonical merge lifecycle remediation on `governance/canonical-merge-lifecycle-v1`; implemented locally and awaiting `CANONICAL MERGE LIFECYCLE INDEPENDENT DELTA RETEST`.
+PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`; implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
 
 ## B-003 status after this task
 

@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-30 (PRE-B027-M1R2 canonical merge lifecycle delta remediation complete)
+**Date:** 2026-08-30 (PRE-B027-M1R3 canonical merge lifecycle schema-downgrade remediation complete)
 
 ---
 
@@ -18,7 +18,7 @@
 - B-003 Account/License client domain/state foundation: MERGED into `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). Includes identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage, `BinaryRegistrationStateCodec`, `DeviceAuthBindingStore.isArmed`, `RegistrationState.CommitArmed`, and legacy plaintext artifact cleanup. 161 JVM unit tests PASS; 62 Android instrumentation tests PASS on a local API-34 emulator. B-003 is MERGED FOUNDATION, not production complete.
 - B-017-Lite CI / supply-chain security foundation: MERGED into `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2). Five GitHub CI gates PASS. Review findings ANOX-B017REV-001 through -007 CLOSED.
 - PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed; the merge-aware history classifier and targeted regression tests are on `main`.
-- PRE-B027-M1R2 canonical merge lifecycle delta remediation: COMPLETE on `governance/canonical-merge-lifecycle-v1` at `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`. Hardens Range 2 with the delivery-endpoint delta to catch reviewed-content reversion, parses and cross-checks the resolved lifecycle metadata block in `GIT_SNAPSHOT.txt`, and adds 20 focused M1R2 regression tests. Awaiting `CANONICAL MERGE LIFECYCLE M1R2 INDEPENDENT DELTA RETEST`.
+- PRE-B027-M1R3 canonical merge lifecycle schema-downgrade remediation: COMPLETE on `governance/canonical-merge-lifecycle-v1` at `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`. Prevents archive schema-class downgrade, forces lifecycle enforcement from the `GIT_SNAPSHOT.txt` resolved lifecycle metadata block, requires all lifecycle keys, hardens snapshot placeholder parsing, and covers `GIT_SNAPSHOT.txt`/`MANIFEST.txt` in the archive SHA-256 manifest. Awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
 
 ## IMPLEMENTED
 
