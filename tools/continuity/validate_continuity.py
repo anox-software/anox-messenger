@@ -58,7 +58,7 @@ REQUIRED_AUTHORITY_PATHS = {
     "ultimate_main": "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md",
 }
 
-PLACEHOLDER_MARKERS = ("__HANDOFF_HEAD__", "__WORKING_TREE__", "__HANDOFF_BRANCH__", "__EFFECTIVE_GATE__")
+PLACEHOLDER_MARKERS = ("__HANDOFF_HEAD__", "__WORKING_TREE__", "__HANDOFF_BRANCH__", "__EFFECTIVE_GATE__", "__PRE_MERGE_GATE__", "__POST_MERGE_GATE__")
 
 # Files where runtime placeholders are intentional repository templates.
 # In a generated handoff archive these placeholders MUST already be resolved.
@@ -183,29 +183,118 @@ def git_is_ancestor(ancestor, descendant, cwd=None):
     return code == 0
 
 
+def git_merge_base(sha1, sha2, cwd=None):
+    out, _, code = run_git(["merge-base", sha1, sha2], cwd=cwd)
+    if code != 0 or out is None:
+        return None
+    return out
+
+
 def git_diff_files(from_sha, to_sha, cwd=None):
     """Return all logical paths changed in the commit range [from_sha, to_sha].
 
-    Uses `git log -m --name-only --no-renames` so every commit in the range is
-    inspected, including merge-resolution changes. A file added in one commit and
-    renamed in a later commit within the same range is still visible to the
-    classifier, and a rename exposes both the deleted source path and the added
-    destination path. The metadata-only classifier must independently approve BOTH
-    sides of a rename.
+    Combines an endpoint tree diff (`git diff --name-only`) with a merge-aware
+    history walk (`git log -m --name-only`). The endpoint diff captures the final
+    state difference, while the history walk captures paths that were added in a
+    merge and later removed (merge-then-revert attacks). To avoid re-surfacing
+    files that are already present in `from_sha` (e.g. a nested side branch that
+    does not yet have the described payload), only history-only paths that do not
+    exist in the `from_sha` tree are kept. A file added in one commit and renamed
+    in a later commit within the same range is still visible to the classifier,
+    and a rename exposes both the deleted source path and the added destination
+    path. The metadata-only classifier must independently approve BOTH sides of a
+    rename.
 
     Returns None if Git history inspection fails, which the caller must treat as
     a reconciliation failure.
     """
-    out, err, code = run_git(["log", "-m", "--name-only", "--no-renames", "--format=", f"{from_sha}..{to_sha}"], cwd=cwd)
+    # 1. Final tree difference.
+    out, err, code = run_git(
+        ["diff", "--name-only", "--no-renames", from_sha, to_sha], cwd=cwd
+    )
     if code != 0 or out is None:
-        print(f"  FAIL git_diff_files({from_sha[:12]}..{to_sha[:12]}) could not be read: {err}")
+        print(f"  FAIL git_diff_files endpoint diff ({from_sha[:12]}..{to_sha[:12]}) could not be read: {err}")
         return None
-    paths = set()
+    endpoint_paths = set()
     for line in out.splitlines():
         line = line.strip()
         if line:
-            paths.add(line)
-    return sorted(paths)
+            endpoint_paths.add(line)
+
+    # 2. Merge-aware history walk to catch add-then-revert payloads.
+    out, err, code = run_git(
+        ["log", "-m", "--name-only", "--no-renames", "--format=", f"{from_sha}..{to_sha}"],
+        cwd=cwd,
+    )
+    if code != 0 or out is None:
+        print(f"  FAIL git_diff_files history walk ({from_sha[:12]}..{to_sha[:12]}) could not be read: {err}")
+        return None
+    history_paths = set()
+    for line in out.splitlines():
+        line = line.strip()
+        if line:
+            history_paths.add(line)
+
+    # 3. Tree of `from_sha` so we can ignore history-only paths that already
+    # existed there (nested merge false positives).
+    out, err, code = run_git(["ls-tree", "-r", "--name-only", from_sha], cwd=cwd)
+    if code != 0 or out is None:
+        print(f"  FAIL git_diff_files could not list tree {from_sha[:12]}: {err}")
+        return None
+    from_tree = set(line.strip() for line in out.splitlines() if line.strip())
+
+    extra = history_paths - endpoint_paths
+    for p in extra:
+        if p in from_tree:
+            # Already existed at `from_sha`; final tree is unchanged — this is a
+            # nested-merge false positive or a metadata churn that ended at the
+            # same state. Do not surface it to the classifier.
+            continue
+        # A path that was added after `from_sha` and then removed before `to_sha`.
+        endpoint_paths.add(p)
+
+    return sorted(endpoint_paths)
+
+
+def git_merge_resolution_paths(merge, delivery_parent, canonical_parent, cwd=None):
+    """Return paths that are in `merge` but differ from both parents.
+
+    This is the true merge resolution payload. Files inherited from either parent
+    (identical blob in `merge` and one parent) are not resolution changes. Only
+    paths whose merge tree blob differs from the blob in both parents, or exist in
+    only one tree (a true resolution addition/deletion), are returned.
+    """
+    def tree_blobs(sha):
+        """Return {path: blob} for the tree at `sha`."""
+        out, err, code = run_git(["ls-tree", "-r", sha], cwd=cwd)
+        if code != 0 or out is None:
+            print(f"  FAIL git_merge_resolution_paths: could not list tree {sha[:12]}: {err}")
+            return None
+        blobs = {}
+        for line in out.splitlines():
+            parts = line.split(maxsplit=3)
+            if len(parts) >= 4:
+                path = parts[3].strip()
+                blob = parts[2].strip()
+                blobs[path] = blob
+        return blobs
+
+    merge_tree = tree_blobs(merge)
+    delivery_tree = tree_blobs(delivery_parent)
+    canonical_tree = tree_blobs(canonical_parent)
+    if merge_tree is None or delivery_tree is None or canonical_tree is None:
+        return None
+
+    resolution = []
+    all_paths = set(merge_tree) | set(delivery_tree) | set(canonical_tree)
+    for p in all_paths:
+        m = merge_tree.get(p)
+        d = delivery_tree.get(p)
+        c = canonical_tree.get(p)
+        # Resolution if merge differs from *both* parents.
+        if m != d and m != c:
+            resolution.append(p)
+    return sorted(resolution)
 
 
 def git_diff_endpoint(from_sha, to_sha, cwd=None):
@@ -242,35 +331,42 @@ def git_merge_parents(sha, cwd=None):
 def git_find_canonical_merge(described_head, live_head, canonical_branch, delivery_branch, cwd=None):
     """Identify the canonical integration merge M and its delivery/canonical parents.
 
-    Returns (merge_sha, delivery_parent, canonical_parent) or (None, None, None).
+    Returns (merge_sha, delivery_parent, canonical_parent, error) where error is
+    None on success or a descriptive diagnostic on failure.
+
     The delivery_parent is the parent that has described_head in its ancestry.
     The canonical_parent is the other parent and must be on the canonical branch.
-    Only two-parent merges are supported. Ambiguous topologies return None.
+    Only two-parent merges are supported. Ambiguous topologies (zero or more than
+    one qualifying merge) fail closed.
     """
-    # Find merge commits on the ancestry path from described_head to live_head.
+    # Find merge commits on the canonical branch first-parent path from
+    # described_head to live_head. Using --first-parent ensures merges made inside
+    # the delivery branch (nested side-merges, etc.) are not mistaken for canonical
+    # integration merges, while still listing every main-line integration merge.
     out, err, code = run_git(
-        ["rev-list", "--merges", "--ancestry-path", f"{described_head}..{live_head}"],
+        ["rev-list", "--merges", "--first-parent", f"{described_head}..{live_head}"],
         cwd=cwd,
     )
     if code != 0 or out is None:
-        return None, None, None
+        return None, None, None, f"could not list canonical integration merges: {err}"
     candidates = out.splitlines()
     if not candidates:
-        return None, None, None
+        return None, None, None, "no canonical integration merge on the described..live ancestry path"
 
     canonical_ref = git_branch_head(canonical_branch, cwd=cwd) or canonical_branch
-    # rev-list returns newest first; the oldest matching merge is the integration.
-    for merge_sha in reversed(candidates):
+    qualifying = []
+    for merge_sha in candidates:
         parents = git_merge_parents(merge_sha, cwd=cwd)
         if not parents:
             continue
         if len(parents) != 2:
             # V1 supports only two-parent merge commits.
-            return None, None, None
+            return None, None, None, f"merge {merge_sha[:12]} is not a two-parent merge"
 
         has_desc = [git_is_ancestor(described_head, p, cwd=cwd) for p in parents]
         if has_desc.count(True) != 1:
-            # No parent or both parents have described_head: ambiguous delivery lineage.
+            # No parent or both parents have described_head: not a qualifying
+            # integration transition for this described_head.
             continue
 
         delivery_idx = has_desc.index(True)
@@ -285,9 +381,15 @@ def git_find_canonical_merge(described_head, live_head, canonical_branch, delive
         if not git_is_ancestor(described_head, delivery_parent, cwd=cwd):
             continue
 
-        return merge_sha, delivery_parent, canonical_parent
+        qualifying.append((merge_sha, delivery_parent, canonical_parent))
 
-    return None, None, None
+    if len(qualifying) == 0:
+        return None, None, None, "cannot identify the canonical integration merge for the delivery lineage"
+    if len(qualifying) > 1:
+        shas = ", ".join(m[:12] for m, _, _ in qualifying)
+        return None, None, None, f"ambiguous/multiple canonical integration merges: {shas}"
+
+    return qualifying[0][0], qualifying[0][1], qualifying[0][2], None
 
 
 def _paths_are_metadata_only(paths, label, quiet=False):
@@ -329,16 +431,36 @@ def validate_canonical_merge_lifecycle(described_head, live_head, state, live_br
         return False, None
 
     # Canonical context: identify the controlled integration merge.
-    merge, delivery_parent, canonical_parent = git_find_canonical_merge(
+    merge, delivery_parent, canonical_parent, error = git_find_canonical_merge(
         described_head, live_head, canonical_branch, delivery_branch
     )
     if merge is None:
-        print("  FAIL cannot identify the canonical integration merge for the delivery lineage")
-        print("       Supported: two-parent --no-ff merge of the reviewed delivery branch.")
+        print(f"  FAIL {error}")
+        print("       Supported: a single two-parent --no-ff merge of the reviewed delivery branch.")
         return False, None
 
     print(f"\n[{label}] Canonical merge transition")
     print(f"  canonical merge: {merge[:12]}  canonical parent: {canonical_parent[:12]}  delivery parent: {delivery_parent[:12]}")
+
+    # Base-drift policy: the canonical parent must be an ancestor of the delivery
+    # parent in a no-drift integration. If it is not, the canonical branch has
+    # advanced since the delivery lineage diverged; any substantive drift in the
+    # canonical base is unsupported in V1 and requires resynchronization.
+    if not git_is_ancestor(canonical_parent, delivery_parent):
+        common = git_merge_base(canonical_parent, delivery_parent)
+        if common is None:
+            print(f"  FAIL cannot determine merge base between canonical parent {canonical_parent[:12]} and delivery parent {delivery_parent[:12]}")
+            return False, None
+        drift = git_diff_endpoint(common, canonical_parent)
+        if drift is None:
+            return False, None
+        ok, disallowed = _paths_are_metadata_only(drift, f"canonical base drift {common[:12]}..{canonical_parent[:12]}")
+        if not ok:
+            print("  FAIL SUBSTANTIVE CANONICAL BASE DRIFT — RESYNCHRONIZATION REQUIRED")
+            for p in disallowed[:10]:
+                print(f"    - {p}")
+            return False, None
+        print(f"  OK   metadata-only canonical base drift accepted")
 
     # Range 1 — reviewed delivery tail.
     r1 = git_diff_files(described_head, delivery_parent)
@@ -350,11 +472,11 @@ def validate_canonical_merge_lifecycle(described_head, live_head, state, live_br
     else:
         print(f"  OK   range 1 (described..delivery parent) is metadata-only")
 
-    # Range 2 — merge resolution (endpoint tree diff to catch resolution-only payload).
-    r2 = git_diff_endpoint(delivery_parent, merge)
+    # Range 2 — merge resolution (three-way comparison to catch resolution-only payload).
+    r2 = git_merge_resolution_paths(merge, delivery_parent, canonical_parent)
     if r2 is None:
         return False, None
-    ok, _ = _paths_are_metadata_only(r2, f"merge resolution {delivery_parent[:12]}..{merge[:12]}")
+    ok, _ = _paths_are_metadata_only(r2, f"merge resolution {merge[:12]} (vs delivery/canonical parents)")
     if not ok:
         all_ok = False
     else:
@@ -670,6 +792,8 @@ def validate_placeholders(root, all_ok, label, mode, live_state=None):
                 "__WORKING_TREE__": live_state.get("working_tree", ""),
                 "__HANDOFF_BRANCH__": live_state.get("branch", ""),
                 "__EFFECTIVE_GATE__": live_state.get("effective_gate", ""),
+                "__PRE_MERGE_GATE__": live_state.get("pre_merge_gate", ""),
+                "__POST_MERGE_GATE__": live_state.get("post_merge_gate", ""),
             }.get(marker, "")
 
         for key, marker in (("handoff_head", "__HANDOFF_HEAD__"), ("working_tree", "__WORKING_TREE__"), ("handoff_branch", "__HANDOFF_BRANCH__"), ("current_gate", "__EFFECTIVE_GATE__")):
@@ -865,6 +989,10 @@ def validate_baseline_ancestry(state, live_baseline_head, all_ok, label):
         print(f"  FAIL live baseline HEAD is not a valid SHA: {live_baseline_head}")
         return False
 
+    if state is None:
+        print("  FAIL CURRENT_STATE.json missing/invalid; cannot validate baseline ancestry")
+        return False
+
     latest = state.get("latest_merge_to_baseline", "")
     previous = state.get("previous_baseline_head", "")
 
@@ -956,6 +1084,193 @@ def validate_archive_manifests(archive_root, all_ok):
         if key not in manifest_text:
             print(f"  WARN MANIFEST.txt missing {key} metadata")
 
+    # Cross-check manifest lifecycle fields against CURRENT_STATE.json
+    state = load_current_state(archive_root)
+    if state is not None:
+        handoff_branch = state.get("handoff_branch")
+        m = re.search(r"^Handoff branch:\s*(.+)$", manifest_text, re.MULTILINE)
+        if m and handoff_branch and handoff_branch not in PLACEHOLDER_MARKERS:
+            if m.group(1).strip() != handoff_branch:
+                print(f"  FAIL MANIFEST.txt Handoff branch {m.group(1).strip()} != CURRENT_STATE.json {handoff_branch}")
+                all_ok = False
+            else:
+                print(f"  OK   MANIFEST.txt Handoff branch matches CURRENT_STATE.json")
+
+        handoff_head = state.get("handoff_head")
+        m = re.search(r"^Handoff HEAD:\s*(.+)$", manifest_text, re.MULTILINE)
+        if m and handoff_head and handoff_head not in PLACEHOLDER_MARKERS:
+            if m.group(1).strip() != handoff_head:
+                print(f"  FAIL MANIFEST.txt Handoff HEAD {m.group(1).strip()} != CURRENT_STATE.json {handoff_head}")
+                all_ok = False
+            else:
+                print(f"  OK   MANIFEST.txt Handoff HEAD matches CURRENT_STATE.json")
+
+    return all_ok
+
+
+def _extract_labeled_value(text, labels):
+    """Extract the first value after one of the given labels in a markdown-ish file.
+
+    Labels are tried in order. The value may be backtick-quoted or plain.
+    Returns the value or None.
+    """
+    for label in labels:
+        # Markdown list item or plain line, optional backticks around value.
+        pattern = re.compile(
+            rf"^(?:[-*]\s*)?{re.escape(label)}\s*[:=]\s*`?([^`\n]+?)`?\s*$",
+            re.MULTILINE | re.IGNORECASE,
+        )
+        m = pattern.search(text)
+        if m:
+            return m.group(1).strip()
+    return None
+
+
+def _parse_git_snapshot(snapshot_text):
+    """Return {branch, head} from a generated GIT_SNAPSHOT.txt."""
+    result = {}
+    lines = snapshot_text.splitlines()
+    for i, line in enumerate(lines):
+        if "git branch --show-current" in line:
+            for j in range(i + 1, len(lines)):
+                if lines[j].strip():
+                    result["branch"] = lines[j].strip()
+                    break
+        if "git rev-parse HEAD" in line:
+            for j in range(i + 1, len(lines)):
+                if lines[j].strip():
+                    result["head"] = lines[j].strip()
+                    break
+    return result
+
+
+def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok):
+    """Cross-check state against handoff/git-state surfaces and git snapshot."""
+
+    def _ok_or_fail(condition, ok_msg, fail_msg):
+        nonlocal all_ok
+        if condition:
+            print(f"  OK   {ok_msg}")
+        else:
+            print(f"  FAIL {fail_msg}")
+            all_ok = False
+
+    # canonical_branch
+    canonical = state.get("canonical_branch") or state.get("baseline_branch")
+    for surface, text in surfaces.items():
+        val = _extract_labeled_value(text, ("Canonical branch",))
+        if val:
+            _ok_or_fail(
+                val == canonical,
+                f"{surface} canonical_branch matches CURRENT_STATE.json",
+                f"{surface} canonical_branch {val} != CURRENT_STATE.json {canonical}",
+            )
+
+    # delivery_branch
+    delivery = state.get("delivery_branch")
+    for surface, text in surfaces.items():
+        val = _extract_labeled_value(text, ("Delivery branch",))
+        if val:
+            _ok_or_fail(
+                val == delivery,
+                f"{surface} delivery_branch matches CURRENT_STATE.json",
+                f"{surface} delivery_branch {val} != CURRENT_STATE.json {delivery}",
+            )
+
+    # described_head
+    described = _resolve_described_head(state)
+    for surface, text in surfaces.items():
+        val = _extract_labeled_value(text, ("Described HEAD", "described_head"))
+        if val:
+            _ok_or_fail(
+                val == described,
+                f"{surface} described_head matches CURRENT_STATE.json",
+                f"{surface} described_head {val} != CURRENT_STATE.json {described}",
+            )
+
+    # handoff_branch / head against snapshot
+    handoff_branch = state.get("handoff_branch")
+    if handoff_branch and handoff_branch not in PLACEHOLDER_MARKERS:
+        if "branch" in snapshot:
+            _ok_or_fail(
+                handoff_branch == snapshot["branch"],
+                "CURRENT_STATE.json handoff_branch matches GIT_SNAPSHOT branch",
+                f"CURRENT_STATE.json handoff_branch {handoff_branch} != GIT_SNAPSHOT branch {snapshot['branch']}",
+            )
+        else:
+            print("  FAIL GIT_SNAPSHOT.txt does not contain branch")
+            all_ok = False
+
+    handoff_head = state.get("handoff_head")
+    if handoff_head and handoff_head not in PLACEHOLDER_MARKERS:
+        if "head" in snapshot:
+            _ok_or_fail(
+                handoff_head == snapshot["head"],
+                "CURRENT_STATE.json handoff_head matches GIT_SNAPSHOT HEAD",
+                f"CURRENT_STATE.json handoff_head {handoff_head} != GIT_SNAPSHOT HEAD {snapshot['head']}",
+            )
+        else:
+            print("  FAIL GIT_SNAPSHOT.txt does not contain HEAD")
+            all_ok = False
+
+    # working_tree
+    working_tree = state.get("working_tree")
+    if working_tree and working_tree not in PLACEHOLDER_MARKERS:
+        _ok_or_fail(
+            working_tree == "clean",
+            "CURRENT_STATE.json working_tree = clean",
+            f"CURRENT_STATE.json working_tree {working_tree} != clean",
+        )
+
+    # current/effective gate must be one of the lifecycle gates and consistent with handoff_branch
+    current_gate = state.get("current_gate")
+    pre_gate = state.get("pre_merge_gate", current_gate)
+    post_gate = state.get("post_merge_gate", current_gate)
+    if current_gate and current_gate not in PLACEHOLDER_MARKERS:
+        if current_gate not in (pre_gate, post_gate):
+            print(f"  FAIL CURRENT_STATE.json current_gate {current_gate} is neither pre_merge_gate nor post_merge_gate")
+            all_ok = False
+        elif handoff_branch == canonical and current_gate != post_gate:
+            print(f"  FAIL canonical context current_gate {current_gate} != post_merge_gate {post_gate}")
+            all_ok = False
+        elif handoff_branch == delivery and current_gate != pre_gate:
+            print(f"  FAIL delivery context current_gate {current_gate} != pre_merge_gate {pre_gate}")
+            all_ok = False
+        else:
+            print(f"  OK   current/effective gate {current_gate} is consistent with lifecycle state")
+
+    # Cross-check pre/post lifecycle gates against human-readable surfaces.
+    if pre_gate:
+        for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+            p = archive_root / rel
+            if not p.exists():
+                continue
+            text = p.read_text(encoding="utf-8")
+            for label in ("Pre-merge gate", "pre_merge_gate"):
+                m = re.search(rf"[-*]\s*{re.escape(label)}:\s*`?([^`\n]+)`?", text, re.IGNORECASE)
+                if m:
+                    declared = m.group(1).strip()
+                    if declared not in PLACEHOLDER_MARKERS and declared != pre_gate:
+                        print(f"  FAIL {rel} declares pre-merge gate {declared} != CURRENT_STATE.json {pre_gate}")
+                        all_ok = False
+                    elif declared not in PLACEHOLDER_MARKERS:
+                        print(f"  OK   {rel} pre-merge gate matches CURRENT_STATE.json")
+    if post_gate:
+        for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+            p = archive_root / rel
+            if not p.exists():
+                continue
+            text = p.read_text(encoding="utf-8")
+            for label in ("Post-merge gate", "post_merge_gate"):
+                m = re.search(rf"[-*]\s*{re.escape(label)}:\s*`?([^`\n]+)`?", text, re.IGNORECASE)
+                if m:
+                    declared = m.group(1).strip()
+                    if declared not in PLACEHOLDER_MARKERS and declared != post_gate:
+                        print(f"  FAIL {rel} declares post-merge gate {declared} != CURRENT_STATE.json {post_gate}")
+                        all_ok = False
+                    elif declared not in PLACEHOLDER_MARKERS:
+                        print(f"  OK   {rel} post-merge gate matches CURRENT_STATE.json")
+
     return all_ok
 
 
@@ -969,26 +1284,50 @@ def validate_archive_snapshot_agreement(archive_root, all_ok):
         return False
 
     snapshot_text = snapshot_path.read_text(encoding="utf-8") if snapshot_path.exists() else ""
+    snapshot = _parse_git_snapshot(snapshot_text)
 
     # recorded handoff head
     handoff_head = state.get("handoff_head")
     if handoff_head and handoff_head not in ("__HANDOFF_HEAD__", ""):
-        if handoff_head not in snapshot_text:
-            print(f"  FAIL CURRENT_STATE.json handoff_head {handoff_head} not found in GIT_SNAPSHOT.txt")
-            all_ok = False
+        expected = snapshot.get("head", "")
+        if expected and handoff_head == expected:
+            print(f"  OK   handoff_head {handoff_head[:12]} matches GIT_SNAPSHOT HEAD")
         else:
-            print(f"  OK   handoff_head {handoff_head[:12]} present in GIT_SNAPSHOT.txt")
+            print(f"  FAIL CURRENT_STATE.json handoff_head {handoff_head} does not match GIT_SNAPSHOT HEAD {expected}")
+            all_ok = False
 
     # recorded handoff branch
     handoff_branch = state.get("handoff_branch")
     if handoff_branch and handoff_branch not in ("__HANDOFF_BRANCH__", ""):
-        if handoff_branch not in snapshot_text:
-            print(f"  FAIL CURRENT_STATE.json handoff_branch {handoff_branch} not found in GIT_SNAPSHOT.txt")
-            all_ok = False
+        expected = snapshot.get("branch", "")
+        if expected and handoff_branch == expected:
+            print(f"  OK   handoff_branch {handoff_branch} matches GIT_SNAPSHOT branch")
         else:
-            print(f"  OK   handoff_branch {handoff_branch} present in GIT_SNAPSHOT.txt")
+            print(f"  FAIL CURRENT_STATE.json handoff_branch {handoff_branch} does not match GIT_SNAPSHOT branch {expected}")
+            all_ok = False
 
     return all_ok
+
+
+def validate_archive_surface_consistency(archive_root, all_ok):
+    print("\n[ARCHIVE] Surface semantic consistency")
+
+    state = load_current_state(archive_root)
+    if state is None:
+        print("  FAIL CURRENT_STATE.json missing/invalid in archive")
+        return False
+
+    snapshot_path = archive_root / "GIT_SNAPSHOT.txt"
+    snapshot_text = snapshot_path.read_text(encoding="utf-8") if snapshot_path.exists() else ""
+    snapshot = _parse_git_snapshot(snapshot_text)
+
+    surfaces = {}
+    for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+        p = archive_root / rel
+        if p.exists():
+            surfaces[rel] = p.read_text(encoding="utf-8")
+
+    return _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
 
 
 def live_validation():
@@ -1021,10 +1360,16 @@ def live_validation():
     branch = git_current_branch()
     head = git_current_head()
     state = load_current_state(REPO_ROOT)
-    baseline_branch = state.get("baseline_branch") if state else "main"
+    baseline_branch = state.get("baseline_branch", "main") if state else "main"
     live_baseline_head = git_branch_head(baseline_branch)
     working_tree = "clean" if (status is not None and status.strip() == "") else "dirty"
-    live_state = {"branch": branch, "head": head, "working_tree": working_tree}
+    live_state = {
+        "branch": branch,
+        "head": head,
+        "working_tree": working_tree,
+        "pre_merge_gate": state.get("pre_merge_gate", "") if state else "",
+        "post_merge_gate": state.get("post_merge_gate", "") if state else "",
+    }
 
     print(f"\n[LIVE] Branch / HEAD")
     print(f"  current branch: {branch or 'FAIL'}")
@@ -1064,6 +1409,7 @@ def archive_validation(archive_root):
     all_ok = validate_authority_paths(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_archive_manifests(archive_root, all_ok)
     all_ok = validate_archive_snapshot_agreement(archive_root, all_ok)
+    all_ok = validate_archive_surface_consistency(archive_root, all_ok)
 
     state = load_current_state(archive_root)
     all_ok, _ = validate_state_json(state, archive_root, all_ok, "ARCHIVE")
@@ -1076,11 +1422,13 @@ def archive_validation(archive_root):
     if all_ok:
         print("HANDOFF_ARCHIVE_VALIDATION: PASS")
         print("LIVE_GIT_VERIFICATION: UNAVAILABLE")
-        print("RESULT: PASS — archive handoff validation satisfied")
+        print("ARCHIVE AUTHENTICITY: UNVERIFIED — NO EXTERNAL TRUST ANCHOR PROVIDED")
+        print("RESULT: PASS — archive internal validation satisfied")
         return 0
     else:
         print("HANDOFF_ARCHIVE_VALIDATION: FAIL")
         print("LIVE_GIT_VERIFICATION: UNAVAILABLE")
+        print("ARCHIVE AUTHENTICITY: UNVERIFIED — NO EXTERNAL TRUST ANCHOR PROVIDED")
         print("RESULT: FAIL — archive handoff validation NOT satisfied")
         return 1
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Focused tests for the handoff generator and continuity validator."""
 
+import json
 import os
 import shutil
 import subprocess
@@ -1212,6 +1213,1018 @@ class TestMergeCommitSecurity(unittest.TestCase):
             self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
             self.assertIn("non-metadata-only", r.stdout + r.stderr)
             self.assertIn("docs/authority/NEW_POLICY.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class CMLFixture:
+    """Real-Git fixture for canonical merge lifecycle tests."""
+
+    DUMMY_SHA = "0" * 40
+
+    def __init__(self, pre_merge_gate="CML PRE-MERGE GATE", post_merge_gate="CML POST-MERGE GATE"):
+        self.tmp = tempfile.mkdtemp(prefix="anox_cml_test_")
+        self.root = Path(self.tmp)
+
+        tools_dir = self.root / "tools" / "continuity"
+        tools_dir.mkdir(parents=True)
+        for name in ("generate_handoff.py", "validate_continuity.py"):
+            src = REPO_ROOT / "tools" / "continuity" / name
+            dst = tools_dir / name
+            dst.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+
+        sec_dir = self.root / "tools" / "security"
+        sec_dir.mkdir(parents=True)
+        (sec_dir / "validate_apk_contents.py").write_text("# APK\n", encoding="utf-8")
+
+        self.pre_merge_gate = pre_merge_gate
+        self.post_merge_gate = post_merge_gate
+        self.delivery_branch = "delivery"
+        self._setup_files()
+
+        self._run(["git", "init"])
+        self._run(["git", "config", "user.email", "test@anox.local"])
+        self._run(["git", "config", "user.name", "Test"])
+
+        self._run(["git", "checkout", "-b", "main"])
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "base"])
+        self.base = self._run(["git", "rev-parse", "main"]).stdout.strip()
+
+        # Delivery branch starts with a substantive lifecycle payload.
+        self._run(["git", "checkout", "-b", "delivery"])
+        self._write("docs/continuity/CML_SUBSTANTIVE.md", "# Canonical merge lifecycle\n")
+        self._run(["git", "add", "."])
+        r = self._run(["git", "commit", "-m", "delivery init"])
+        if r.returncode != 0:
+            raise RuntimeError(f"delivery init commit failed: {r.stderr}")
+        self.described = self._run(["git", "rev-parse", "delivery"]).stdout.strip()
+
+        # Metadata-only state sync sets the real described_head.
+        self._write_state()
+        self._write_git_state_md()
+        self._write_handoff_md()
+        self._write_project_state_md("delivery")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "delivery state sync"])
+        self.delivery_head = self._run(["git", "rev-parse", "delivery"]).stdout.strip()
+
+    def _setup_files(self):
+        self._write(
+            "docs/authority/AUTHORITY_INDEX.md",
+            "# Authority Index\n## Precedence\n1. `B025/SECURITY_INVARIANTS_V1_1.md`\n## Canonical source\nThis file is canonical.\n",
+        )
+        self._write("docs/authority/CLOUD_AI_SECRET_PROTECTION.md", "# Cloud AI Secret\n")
+        self._write("docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md", "# Workflow\n")
+        self._write("docs/authority/B025/SECURITY_INVARIANTS_V1_1.md", "# Invariants\n")
+        self._write("docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md", "# B026\n")
+        self._write("docs/authority/B_FREEZE_REGISTRY.md", "# Freeze\n")
+        self._write("docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md", "# Arch\n")
+
+        self._write("docs/continuity/AUTHORITY_INDEX.md", "# C-Authority\n")
+        self._write("docs/continuity/CURRENT_CHAT_BOOTSTRAP_PROMPT.md", "# Bootstrap\n")
+        self._write("docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md", "# Upload\n")
+        self._write("docs/continuity/CURRENT_IMPLEMENTATION_STATE.md", "# Impl\nCML TEST\n")
+        self._write("docs/continuity/CURRENT_OPEN_WORK.md", "# Open\n")
+        self._write("docs/continuity/CURRENT_NEXT_DEVIN_TASK.md", "# Next\n")
+        self._write("docs/continuity/DEVIN_OUTPUT_CONTRACT.md", "# Contract\n")
+        self._write("docs/continuity/HANDOFF_WORKFLOW.md", "# Workflow\n")
+        self._write("docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md", "# Checklist\n")
+        self._write("FORTSCHRITT.md", "# Fortschritt\nCML TEST\n")
+        self._write("DEVIN_PROMPT_OUTPUT_ARCHIV.md", "# Archive\n")
+
+    def _write(self, rel, content):
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    def _state_json(self):
+        return (
+            "{\n"
+            '  "schema_version": "B026-1.2",\n'
+            '  "handoff_branch": "__HANDOFF_BRANCH__",\n'
+            '  "handoff_head": "__HANDOFF_HEAD__",\n'
+            '  "canonical_branch": "main",\n'
+            f'  "delivery_branch": "{self.delivery_branch}",\n'
+            f'  "described_head": "{self.described}",\n'
+            '  "working_tree": "__WORKING_TREE__",\n'
+            '  "continuity_001_status": "ACCEPTED",\n'
+            '  "current_task": "CML TEST",\n'
+            '  "current_gate": "__EFFECTIVE_GATE__",\n'
+            f'  "pre_merge_gate": "{self.pre_merge_gate}",\n'
+            f'  "post_merge_gate": "{self.post_merge_gate}",\n'
+            '  "security_invariants_path": "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",\n'
+            '  "freeze_registry_path": "docs/authority/B_FREEZE_REGISTRY.md",\n'
+            f'  "latest_merge_to_baseline": "{self.base}",\n'
+            f'  "previous_baseline_head": "{self.base}"\n'
+            "}\n"
+        )
+
+    def _git_state_md(self):
+        return (
+            "# Git\n"
+            "- Canonical branch: `main`\n"
+            f"- Delivery branch: `{self.delivery_branch}`\n"
+            "- Current handoff branch: `__HANDOFF_BRANCH__`\n"
+            "- Current handoff HEAD: `__HANDOFF_HEAD__`\n"
+            f"- Described HEAD: `{self.described}`\n"
+            "- Working tree: `__WORKING_TREE__`\n"
+            "- Current gate: `__EFFECTIVE_GATE__`\n"
+            f"- Pre-merge gate: `__PRE_MERGE_GATE__`\n"
+            f"- Post-merge gate: `__POST_MERGE_GATE__`\n"
+        )
+
+    def _handoff_md(self, work_branch="delivery"):
+        return (
+            "# Handoff\n"
+            "- Canonical branch: `main`\n"
+            f"- Delivery branch: `{self.delivery_branch}`\n"
+            f"- Current work branch: `{work_branch}`\n"
+            f"- Described HEAD: `{self.described}`\n"
+            f"- Pre-merge gate: `{self.pre_merge_gate}`\n"
+            f"- Post-merge gate: `{self.post_merge_gate}`\n"
+        )
+
+    def _project_state_md(self, branch):
+        return f"# State\n- Branch: `{branch}`\n"
+
+    def _write_state(self):
+        self._write("docs/continuity/CURRENT_STATE.json", self._state_json())
+
+    def _write_git_state_md(self):
+        self._write("docs/continuity/CURRENT_GIT_STATE.md", self._git_state_md())
+
+    def _write_handoff_md(self, work_branch="delivery"):
+        self._write("docs/continuity/CURRENT_HANDOFF.md", self._handoff_md(work_branch))
+
+    def _write_project_state_md(self, branch):
+        self._write("PROJECT_STATE.md", self._project_state_md(branch))
+
+    def _run(self, cmd, **kw):
+        kw.setdefault("cwd", str(self.root))
+        kw.setdefault("capture_output", True)
+        kw.setdefault("text", True)
+        return subprocess.run(cmd, **kw)
+
+    def commit_meta(self, msg, rel="FORTSCHRITT.md", text="metadata update\n"):
+        path = self.root / rel
+        path.write_text(path.read_text(encoding="utf-8") + text, encoding="utf-8")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", msg])
+
+    def checkout(self, branch):
+        self._run(["git", "checkout", branch])
+
+    def set_described_head(self, sha):
+        """Update described_head to the given SHA and commit the metadata sync."""
+        self.described = sha
+        self._write_state()
+        self._write_git_state_md()
+        self._write_handoff_md()
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "set described_head"])
+
+    def merge_no_ff(self, branch, msg, resolution_payload=None):
+        r = self._run(["git", "merge", "--no-ff", "--no-commit", branch])
+        if resolution_payload:
+            for rel, content in resolution_payload.items():
+                path = self.root / rel
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+                self._run(["git", "add", "."])
+        r2 = self._run(["git", "commit", "-m", msg])
+        return r2
+
+    def validate(self, mode="live"):
+        return self._run([sys.executable, "tools/continuity/validate_continuity.py", "--mode", mode])
+
+    def generate(self, emergency=False):
+        return self._run([sys.executable, "tools/continuity/generate_handoff.py"] + (["--emergency"] if emergency else []))
+
+    def head(self, branch):
+        return self._run(["git", "rev-parse", branch]).stdout.strip()
+
+    def cleanup(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def zip_path(self):
+        artifacts = sorted(self.root.glob("artifacts/handoff/*.zip"))
+        return artifacts[0] if artifacts else None
+
+
+class TestCanonicalMergeLifecycle(unittest.TestCase):
+    """ANOX-CMLREV-001: automated canonical merge lifecycle tests."""
+
+    # 1. delivery context normal PASS
+    def test_delivery_context_metadata_only_passes(self):
+        f = CMLFixture()
+        try:
+            f.commit_meta("metadata tail")
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("delivery context", r.stdout + r.stderr)
+            self.assertIn(f.pre_merge_gate, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 2. clean canonical --no-ff merge PASS
+    def test_clean_canonical_merge_passes(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            r = f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            f._write_project_state_md("main")
+            f._write_handoff_md("main")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "--amend", "--no-edit"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("canonical merge transition verified", r.stdout + r.stderr)
+            self.assertIn(f.post_merge_gate, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 3. clean canonical merge requires NO reconciliation commit
+    def test_clean_merge_no_reconciliation_commit(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            # Direct pass, no extra metadata reconciliation needed.
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 4. Product merge-resolution payload FAIL
+    def test_product_merge_resolution_payload_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f.merge_no_ff(
+                "delivery",
+                "merge with product payload",
+                resolution_payload={
+                    "android/src/main/java/com/anox/messenger/Evil.kt": "// evil\n"
+                },
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 5. CI merge-resolution payload FAIL
+    def test_ci_merge_resolution_payload_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f.merge_no_ff(
+                "delivery",
+                "merge with ci payload",
+                resolution_payload={".github/workflows/evil.yml": "name: evil\n"},
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("evil.yml", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 6. Authority merge-resolution payload FAIL
+    def test_authority_merge_resolution_payload_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f.merge_no_ff(
+                "delivery",
+                "merge with authority payload",
+                resolution_payload={"docs/authority/NEW_POLICY.md": "# evil\n"},
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("NEW_POLICY.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 7. Tool/validator merge-resolution payload FAIL
+    def test_tool_merge_resolution_payload_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f.merge_no_ff(
+                "delivery",
+                "merge with tool payload",
+                resolution_payload={"tools/security/validate_apk_contents.py": "# evil\n"},
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("validate_apk_contents.py", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 8. substantive deletion during merge resolution FAIL
+    def test_deletion_merge_resolution_fails(self):
+        f = CMLFixture()
+        try:
+            # Add a substantive file on delivery before the described point is not possible.
+            # Instead, create a side branch from delivery, add a file, merge side into delivery,
+            # then merge delivery into main and delete the file during the main merge.
+            f._run(["git", "checkout", "-b", "side"])
+            f._write("android/src/Foo.kt", "// foo\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side file"])
+            f._run(["git", "checkout", "delivery"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge side", "side"])
+            # The file is now in the reviewed delivery ancestry.
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "--no-commit", "delivery"])
+            f._run(["git", "rm", "-f", "android/src/Foo.kt"])
+            f._run(["git", "commit", "-m", "merge with deletion"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 9. explicitly permitted metadata-only merge-resolution PASS
+    def test_metadata_only_merge_resolution_passes(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f.merge_no_ff(
+                "delivery",
+                "merge with metadata resolution",
+                resolution_payload={"FORTSCHRITT.md": "merge resolved\n"},
+            )
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 10. substantive delivery tail after described_head FAIL
+    def test_substantive_delivery_tail_fails(self):
+        f = CMLFixture()
+        try:
+            f._write("android/src/Evil.kt", "// evil\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "product tail"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 11. ordinary substantive intermediate commit then revert FAIL
+    def test_intermediate_product_then_revert_fails(self):
+        f = CMLFixture()
+        try:
+            f._write("android/src/Evil.kt", "// evil\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add evil"])
+            f._run(["git", "rm", "-f", "android/src/Evil.kt"])
+            f._run(["git", "commit", "-m", "revert evil"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 12. merge intermediate substantive payload then revert FAIL
+    def test_merge_intermediate_payload_then_revert_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "--no-commit", "delivery"])
+            f._write("android/src/Evil.kt", "// transient\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with transient product"])
+            f._run(["git", "rm", "-f", "android/src/Evil.kt"])
+            f._run(["git", "commit", "-m", "revert product"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 13. rename bypass remains closed
+    def test_rename_bypass_fails(self):
+        f = CMLFixture()
+        try:
+            f._write(".github/workflows/ci.yml", "name: ci\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add ci"])
+            (f.root / "docs/history").mkdir(parents=True, exist_ok=True)
+            f._run(["git", "mv", ".github/workflows/ci.yml", "docs/history/ci.yml"])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "rename"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 14. historical broad-prefix bypass remains closed
+    def test_history_prefix_bypass_fails(self):
+        f = CMLFixture()
+        try:
+            f._write("docs/history/evil.py", "print('evil')\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "history evil"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 15. unknown path FAIL
+    def test_unknown_path_fails(self):
+        f = CMLFixture()
+        try:
+            f._write("evil.txt", "evil\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "unknown"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 16. squash integration FAIL CLOSED
+    def test_squash_merge_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--squash", "delivery"])
+            f._run(["git", "commit", "-m", "squash merge"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("canonical integration", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 17. rebase/linear integration FAIL CLOSED
+    def test_linear_merge_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--ff-only", "delivery"])
+            r = f.validate()
+            # fast-forward is not a merge, so no merge found.
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("canonical integration", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 18. octopus integration FAIL CLOSED
+    def test_octopus_merge_fails(self):
+        f = CMLFixture()
+        try:
+            # side1 must not be an ancestor/descendant of delivery for a real octopus.
+            f._run(["git", "checkout", "-b", "side1", f.base])
+            f._write("android/src/Side1.kt", "// side1\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side1"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "delivery", "side1", "-m", "octopus"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("two-parent", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 19. wrong canonical branch FAIL
+    def test_wrong_canonical_branch_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            # Set canonical_branch to a non-existent ref.
+            state = json.loads((f.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
+            state["canonical_branch"] = "not-the-real-main"
+            (f.root / "docs/continuity/CURRENT_STATE.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+            (f.root / "docs/continuity/CURRENT_HANDOFF.md").write_text(
+                f._handoff_md("main").replace("Canonical branch: `main`", "Canonical branch: `not-the-real-main`"),
+                encoding="utf-8",
+            )
+            (f.root / "docs/continuity/CURRENT_GIT_STATE.md").write_text(
+                f._git_state_md().replace("Canonical branch: `main`", "Canonical branch: `not-the-real-main`"),
+                encoding="utf-8",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync post merge"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("FAIL", r.stdout + r.stderr)
+            self.assertIn("canonical", (r.stdout + r.stderr).lower())
+        finally:
+            f.cleanup()
+
+    # 20. wrong/unrelated delivery lineage FAIL
+    def test_wrong_delivery_lineage_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            # Create an unrelated branch from the base (does not contain described).
+            f._run(["git", "checkout", "-b", "unrelated", f.base])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nunrelated\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "unrelated work"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge unrelated", "unrelated"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("FAIL", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 21. missing canonical branch FAIL
+    def test_missing_canonical_branch_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            state = json.loads((f.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
+            state["canonical_branch"] = "does-not-exist"
+            (f.root / "docs/continuity/CURRENT_STATE.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+            (f.root / "docs/continuity/CURRENT_HANDOFF.md").write_text(
+                f._handoff_md("main").replace("Canonical branch: `main`", "Canonical branch: `does-not-exist`"),
+                encoding="utf-8",
+            )
+            (f.root / "docs/continuity/CURRENT_GIT_STATE.md").write_text(
+                f._git_state_md().replace("Canonical branch: `main`", "Canonical branch: `does-not-exist`"),
+                encoding="utf-8",
+            )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "bad canonical"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("FAIL", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 22. missing delivery provenance FAIL
+    def test_missing_delivery_provenance_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            # Create an unrelated branch from the base (does not contain described).
+            f._run(["git", "checkout", "-b", "not-delivery", f.base])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nnot delivery\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "not delivery"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge not-delivery", "not-delivery"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("FAIL", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 23. pre-merge effective gate correct
+    def test_pre_merge_effective_gate(self):
+        f = CMLFixture()
+        try:
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn(f"effective gate: {f.pre_merge_gate}", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 24. post-merge effective gate correct
+    def test_post_merge_effective_gate(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            f._write_project_state_md("main")
+            f._write_handoff_md("main")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "--amend", "--no-edit"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn(f"effective gate: {f.post_merge_gate}", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 25. pre-merge Handoff does NOT authorize post-merge gate
+    def test_pre_merge_handoff_gate(self):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                state = json.loads((a.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["current_gate"], f.pre_merge_gate)
+                self.assertNotEqual(state["current_gate"], f.post_merge_gate)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    # 26. post-merge Handoff resolves post-merge gate
+    def test_post_merge_handoff_gate(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            f._write_project_state_md("main")
+            f._write_handoff_md("main")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "--amend", "--no-edit"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                state = json.loads((a.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
+                self.assertEqual(state["current_gate"], f.post_merge_gate)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    # 27. archive lifecycle partial-tamper FAIL
+    def test_archive_lifecycle_tamper_fails(self):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                state_path = a.root / "docs/continuity/CURRENT_STATE.json"
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                state["canonical_branch"] = "evil-main"
+                state_path.write_text(json.dumps(state, indent=2), encoding="utf-8")
+                TestArchiveLifecycleTamper._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    # 28. self-reference regression remains fixed
+    def test_no_self_reference_required(self):
+        f = CMLFixture()
+        try:
+            f.commit_meta("metadata tail")
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("delivery context; only metadata-only files changed", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+    # 29. baseline ancestry regression remains fixed
+    def test_baseline_ancestry_in_canonical_context(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("latest_merge_to_baseline", r.stdout + r.stderr)
+            self.assertIn("previous_baseline_head", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 30. multiple canonical-merge ambiguity policy
+    def test_multiple_qualifying_merges_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            # Second merge from an unrelated branch that does not contain described.
+            f._run(["git", "checkout", "-b", "side2", f.base])
+            f._write("android/src/Evil.kt", "// second\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side2 product"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge side2", "side2"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("ambiguous/multiple", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 31. substantive canonical base drift policy
+    def test_substantive_base_drift_fails(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            # Add product on main before the canonical merge.
+            f._write("android/src/MainProduct.kt", "// product on main\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "main product"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("SUBSTANTIVE CANONICAL BASE DRIFT", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    # 32. metadata-only canonical base drift policy if supported
+    def test_metadata_only_base_drift_passes(self):
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            # Add metadata on main before the canonical merge.
+            f._write("FORTSCHRITT.md", "# Fortschritt\nmain metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "main metadata"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("metadata-only canonical base drift", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_old_unrelated_merge_and_current_transition_passes(self):
+        """Older nested delivery merge must not be mistaken for canonical integration."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "checkout", "-b", "old-side"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nold side\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "old side"])
+            f._run(["git", "checkout", "delivery"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge old-side", "old-side"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("canonical merge transition verified", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_nested_delivery_merge_not_canonical(self):
+        """A merge inside the delivery branch is not a canonical integration."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "checkout", "-b", "nested"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nnested\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "nested work"])
+            f._run(["git", "checkout", "delivery"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge nested", "nested"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge delivery", "delivery"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_resynchronization_after_base_drift_passes(self):
+        """After substantive base drift, a fresh lifecycle from the new base passes."""
+        f = CMLFixture()
+        try:
+            f._run(["git", "checkout", "main"])
+            # Simulate canonical main advancing with product.
+            f._write("android/src/MainProduct.kt", "// product on main\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "main product"])
+            # New delivery from the new main.
+            new_main = f._run(["git", "rev-parse", "main"]).stdout.strip()
+            f._run(["git", "checkout", "-b", "delivery-resync", new_main])
+            f.base = new_main
+            f.delivery_branch = "delivery-resync"
+            # First commit on the new delivery is the described payload.
+            f._write("docs/continuity/CML_SUBSTANTIVE.md", "# Resync lifecycle payload\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "resync payload"])
+            f.described = f._run(["git", "rev-parse", "delivery-resync"]).stdout.strip()
+            # State sync commit updates metadata to point back at the payload.
+            f._write_state()
+            f._write_git_state_md()
+            f._write_handoff_md("delivery-resync")
+            f._write_project_state_md("delivery-resync")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "resync state"])
+            f._run(["git", "checkout", "main"])
+            f._run(["git", "merge", "--no-ff", "-m", "merge resync", "delivery-resync"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
+class TestArchiveLifecycleTamper(unittest.TestCase):
+    """ANOX-CMLREV-002: archive semantic cross-checks and trust model."""
+
+    @staticmethod
+    def _recompute_sha_manifest(archive_root):
+        """Recompute SHA256_MANIFEST.txt after editing a packaged file."""
+        sha_manifest_path = archive_root / "SHA256_MANIFEST.txt"
+        import hashlib
+        new_lines = []
+        for line in sha_manifest_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("#") or not line.strip():
+                new_lines.append(line)
+                continue
+            digest, name = line.split(None, 1)
+            p = archive_root / name
+            if p.exists():
+                new_digest = hashlib.sha256(p.read_bytes()).hexdigest()
+                new_lines.append(f"{new_digest}  {name}")
+            else:
+                new_lines.append(line)
+        sha_manifest_path.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+    def _generate_archive(self):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            return f.zip_path(), f
+        except Exception:
+            f.cleanup()
+            raise
+
+    def _tamper_and_fail(self, tamper_fn):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                tamper_fn(a.root)
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr, r2.stdout + r2.stderr)
+                return a
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    def test_canonical_branch_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["canonical_branch"] = "evil"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_delivery_branch_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["delivery_branch"] = "evil"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_current_gate_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["current_gate"] = "EVIL GATE"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_pre_merge_gate_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["pre_merge_gate"] = "EVIL PRE"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_post_merge_gate_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["post_merge_gate"] = "EVIL POST"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_handoff_head_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["handoff_head"] = "0" * 40
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_described_head_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["described_head"] = "0" * 40
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_snapshot_branch_tamper_fails(self):
+        def t(root):
+            snapshot = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+            lines = snapshot.splitlines()
+            for i, line in enumerate(lines):
+                if "git branch --show-current" in line:
+                    lines[i + 1] = "evil-branch"
+                    break
+            (root / "GIT_SNAPSHOT.txt").write_text("\n".join(lines), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_working_tree_tamper_fails(self):
+        def t(root):
+            p = root / "docs/continuity/CURRENT_STATE.json"
+            data = json.loads(p.read_text(encoding="utf-8"))
+            data["working_tree"] = "dirty"
+            p.write_text(json.dumps(data, indent=2), encoding="utf-8")
+        self._tamper_and_fail(t)
+
+    def test_untampered_archive_passes(self):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                r2 = a.validate()
+                self.assertEqual(r2.returncode, 0, r2.stdout + r2.stderr)
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r2.stdout + r2.stderr)
+                self.assertIn("ARCHIVE AUTHENTICITY: UNVERIFIED", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
+        finally:
+            f.cleanup()
+
+    def test_coherent_reauthored_archive_passes_but_unauthenticated(self):
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            try:
+                # Rewrite all internal surfaces to a new consistent but externally unverified state.
+                new_canonical = "reauthored-main"
+                new_delivery = "reauthored-delivery"
+                new_described = "1" * 40
+                new_head = "2" * 40
+                new_branch = "reauthored-branch"
+                new_gate = "REAUTHORED GATE"
+
+                state = json.loads((a.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
+                original_head = state["handoff_head"]
+                original_branch = state["handoff_branch"]
+                original_described = state["described_head"]
+                original_pre = state["pre_merge_gate"]
+                original_post = state["post_merge_gate"]
+                state.update({
+                    "canonical_branch": new_canonical,
+                    "delivery_branch": new_delivery,
+                    "described_head": new_described,
+                    "handoff_branch": new_branch,
+                    "handoff_head": new_head,
+                    "working_tree": "clean",
+                    "current_gate": new_gate,
+                    "pre_merge_gate": new_gate,
+                    "post_merge_gate": new_gate,
+                })
+                (a.root / "docs/continuity/CURRENT_STATE.json").write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+                for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+                    p = a.root / rel
+                    text = p.read_text(encoding="utf-8")
+                    text = text.replace("main", new_canonical)
+                    text = text.replace("delivery", new_delivery)
+                    # described_head appears in backticks
+                    text = text.replace(original_described, new_described)
+                    # update pre/post gate declarations
+                    text = text.replace(f"Pre-merge gate: `{original_pre}`", f"Pre-merge gate: `{new_gate}`")
+                    text = text.replace(f"Post-merge gate: `{original_post}`", f"Post-merge gate: `{new_gate}`")
+                    p.write_text(text, encoding="utf-8")
+
+                snapshot = (a.root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+                snapshot = snapshot.replace(original_head, new_head)
+                snapshot = snapshot.replace(original_branch, new_branch)
+                (a.root / "GIT_SNAPSHOT.txt").write_text(snapshot, encoding="utf-8")
+
+                manifest = (a.root / "MANIFEST.txt").read_text(encoding="utf-8")
+                manifest = manifest.replace(f"Handoff branch: {original_branch}", f"Handoff branch: {new_branch}")
+                manifest = manifest.replace(f"Handoff HEAD: {original_head}", f"Handoff HEAD: {new_head}")
+                (a.root / "MANIFEST.txt").write_text(manifest, encoding="utf-8")
+
+                self._recompute_sha_manifest(a.root)
+                r2 = a.validate()
+                self.assertEqual(r2.returncode, 0, r2.stdout + r2.stderr)
+                self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r2.stdout + r2.stderr)
+                self.assertIn("ARCHIVE AUTHENTICITY: UNVERIFIED", r2.stdout + r2.stderr)
+            finally:
+                a.cleanup()
         finally:
             f.cleanup()
 

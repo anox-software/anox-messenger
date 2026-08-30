@@ -26,6 +26,8 @@ New sessions must read that file first.
 - Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
 - Described HEAD: `352c82c180ef8491ea4e0ecad330a2cd3466fe77`
 - Working tree: expected clean at handoff generation
+- Pre-merge gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
+- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 - Open PR: none (PRE-B027-M1R is local and not yet pushed)
 - Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`

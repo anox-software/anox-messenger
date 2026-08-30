@@ -184,7 +184,7 @@ def preflight_security(rel_files):
     return True
 
 
-def build_git_snapshot():
+def build_git_snapshot(state, effective_gate=""):
     lines = []
     for cmd, label in [
         (["remote", "-v"], "git remote -v"),
@@ -198,6 +198,19 @@ def build_git_snapshot():
         lines.append(f"### {label}")
         lines.append(out if out else "(empty)")
         lines.append("")
+
+    # Resolved lifecycle metadata for archive-mode consistency checks.
+    # This is NOT a cryptographic authentication; it is a materialized copy of the
+    # state that the generator resolved at packaging time.
+    lines.append("### Resolved lifecycle metadata")
+    lines.append(f"canonical_branch: {state.get('canonical_branch') or state.get('baseline_branch', 'main')}")
+    lines.append(f"delivery_branch: {state.get('delivery_branch', '')}")
+    lines.append(f"described_head: {state.get('described_head') or state.get('baseline_head', '')}")
+    lines.append(f"pre_merge_gate: {state.get('pre_merge_gate', effective_gate)}")
+    lines.append(f"post_merge_gate: {state.get('post_merge_gate', effective_gate)}")
+    lines.append(f"effective_gate: {effective_gate}")
+    lines.append("")
+
     return "\n".join(lines)
 
 
@@ -224,7 +237,7 @@ def check_unresolved_placeholders(rel_files):
         try:
             with open(full, "rb") as f:
                 data = f.read()
-            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__"):
+            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__", b"__HANDOFF_BRANCH__", b"__EFFECTIVE_GATE__", b"__PRE_MERGE_GATE__", b"__POST_MERGE_GATE__"):
                 if marker in data:
                     placeholder_files.append(f"{rel} ({marker.decode('utf-8')})")
                     break
@@ -259,6 +272,8 @@ def resolve_placeholders(content, state):
     content = content.replace("__WORKING_TREE__", working_tree)
     content = content.replace("__HANDOFF_BRANCH__", branch)
     content = content.replace("__EFFECTIVE_GATE__", effective_gate)
+    content = content.replace("__PRE_MERGE_GATE__", state.get("pre_merge_gate", ""))
+    content = content.replace("__POST_MERGE_GATE__", state.get("post_merge_gate", ""))
 
     # CURRENT_STATE.json placeholder object support
     if "__HANDOFF_HEAD__" in content:
@@ -269,6 +284,10 @@ def resolve_placeholders(content, state):
         content = content.replace('"__HANDOFF_BRANCH__"', json.dumps(branch))
     if "__EFFECTIVE_GATE__" in content:
         content = content.replace('"__EFFECTIVE_GATE__"', json.dumps(effective_gate))
+    if '"__PRE_MERGE_GATE__"' in content:
+        content = content.replace('"__PRE_MERGE_GATE__"', json.dumps(state.get("pre_merge_gate", "")))
+    if '"__POST_MERGE_GATE__"' in content:
+        content = content.replace('"__POST_MERGE_GATE__"', json.dumps(state.get("post_merge_gate", "")))
 
     return content
 
@@ -359,7 +378,8 @@ def main():
     sha_manifest.write(f"# SHA-256 manifest for {zip_name}\n")
     sha_manifest.write(f"# HEAD: {head}\n\n")
 
-    git_snapshot = build_git_snapshot()
+    effective_gate = resolve_placeholders("__EFFECTIVE_GATE__", state)
+    git_snapshot = build_git_snapshot(state, effective_gate)
 
     # Load current state template
     state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
@@ -401,6 +421,7 @@ def main():
 
     print(f"ZIP PATH:     {zip_path}")
     print(f"ZIP SHA-256:  {zip_digest}")
+    print(f"HANDOFF_SHA256: {zip_digest}")
     print(f"FILE COUNT:   {total_files}")
     print(f"HEAD:         {head}")
     print(f"STATUS:       {status_label}")

@@ -31,6 +31,8 @@
 - Open relevant PR: none
 - Current task: `CANONICAL MERGE LIFECYCLE V1 IMPLEMENTATION`
 - Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
+- Pre-merge gate: `__PRE_MERGE_GATE__`
+- Post-merge gate: `__POST_MERGE_GATE__`
 
 ## Merged history on main
 

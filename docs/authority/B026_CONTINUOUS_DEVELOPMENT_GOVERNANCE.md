@@ -388,3 +388,76 @@ The continuity state must declare both `canonical_branch` and `delivery_branch`.
 - Runtime `canonical_branch` with a verified canonical integration merge → effective gate is `post_merge_gate`.
 
 This rule is frozen as B-026 lifecycle invariant.
+
+---
+
+## Canonical base-drift policy
+
+### V1 rule
+
+For Canonical Merge Lifecycle V1, the canonical integration base must not have advanced with **substantive** work after the reviewed delivery branch was created.
+
+- A `canonical_parent` that is not an ancestor of the `delivery_parent` indicates the canonical branch has diverged since the delivery lineage was established.
+- The validator compares the merge base between the canonical parent and the delivery parent against the canonical parent.
+- If the drift contains only metadata-only changes (per the fail-closed `METADATA_ONLY_ALLOWLIST`), the merge may proceed and is recorded as `metadata-only canonical base drift accepted`.
+- If the drift contains Product, CI, Authority, Tool/Validator, or unknown path changes, the merge is:
+
+`MERGE BLOCKED — SUBSTANTIVE CANONICAL BASE DRIFT — RESYNCHRONIZATION REQUIRED`
+
+### Resynchronization workflow
+
+When substantive canonical drift is detected:
+
+1. STOP the final merge.
+2. Record the delivery branch as stale against the current canonical base.
+3. Create a controlled resynchronization branch from the latest canonical `main`.
+4. Merge the reviewed delivery payload into the resynchronization branch (do not rebase/squash and silently reuse the old review).
+5. Establish a new substantive checkpoint representing the reconciled state.
+6. Update `described_head` to that already-existing checkpoint through the finite metadata-sync commit model.
+7. Rerun the full relevant test suite.
+8. Obtain a focused independent Delta Review because the reviewed code ancestry changed.
+9. Only after the Delta Review passes may the controlled human PR/merge resume.
+
+### Review-approval invalidation
+
+`OLD REVIEW APPROVAL != APPROVAL OF RESYNCHRONIZED DELIVERY`
+
+Any substantive synchronization changes the reviewed object. The old review or approval cannot be reused for the resynchronized delivery.
+
+### Authorized canonical base
+
+Where the continuity state records `latest_merge_to_baseline`, that value represents the canonical base the reviewed delivery assumed. The canonical parent in the final `--no-ff` merge must be that base or a metadata-only descendant of it. Substantial divergence from that base triggers the resynchronization workflow.
+
+### Multiple canonical merges
+
+If the lifecycle validator identifies more than one qualifying two-parent canonical integration merge for the same `described_head`, the topology is **ambiguous** and the result is:
+
+`FAIL — AMBIGUOUS/MULTIPLE CANONICAL INTEGRATION MERGES`
+
+Only a single clean `--no-ff` integration merge is supported per lifecycle task. Later merges must be represented by a new `described_head` in a new lifecycle task.
+
+---
+
+## Archive trust model
+
+### Internal archive integrity
+
+A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. The archive validator cross-checks lifecycle fields (canonical branch, delivery branch, described head, handoff branch, handoff head, working tree, current/effective gate) across `CURRENT_STATE.json`, `CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, and `GIT_SNAPSHOT.txt`.
+
+A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces FAILS archive validation.
+
+### Archive authenticity
+
+A self-contained unsigned ZIP with an internal manifest is **NOT cryptographically authenticated**. An attacker who controls the archive contents and the manifest can rewrite both coherently and recompute the manifest.
+
+Authenticity requires a trust anchor outside the archive, such as:
+
+- a trusted externally stored SHA-256 digest,
+- a detached digital signature,
+- or a human-controlled release/signing mechanism.
+
+`tools/continuity/generate_handoff.py` emits the final ZIP SHA-256 as `HANDOFF_SHA256: <digest>` so that an external trust anchor can record it. If the attacker also controls the external channel storing the digest, authenticity is still not established.
+
+Cold recovery from a handoff ZIP may reconstruct internal project state with `ARCHIVE INTERNAL VALIDATION = PASS`, but it MUST report `ARCHIVE AUTHENTICITY = UNVERIFIED — NO EXTERNAL TRUST ANCHOR PROVIDED` unless a trusted external anchor is supplied.
+
+This is a trust-level distinction, not a reason to make ordinary Handoff unusable.
