@@ -202,14 +202,20 @@ def build_git_snapshot(state, effective_gate=""):
     # Resolved lifecycle metadata for archive-mode consistency checks.
     # This is NOT a cryptographic authentication; it is a materialized copy of the
     # state that the generator resolved at packaging time.
-    lines.append("### Resolved lifecycle metadata")
-    lines.append(f"canonical_branch: {state.get('canonical_branch') or state.get('baseline_branch', 'main')}")
-    lines.append(f"delivery_branch: {state.get('delivery_branch', '')}")
-    lines.append(f"described_head: {state.get('described_head') or state.get('baseline_head', '')}")
-    lines.append(f"pre_merge_gate: {state.get('pre_merge_gate', effective_gate)}")
-    lines.append(f"post_merge_gate: {state.get('post_merge_gate', effective_gate)}")
-    lines.append(f"effective_gate: {effective_gate}")
-    lines.append("")
+    #
+    # Only emit the block for explicitly current-lifecycle archives, so a legacy
+    # archive cannot be confused with a current one. The presence of this block
+    # in an archive forces current-lifecycle validation regardless of what an
+    # attacker writes in CURRENT_STATE.json.
+    if state.get("canonical_branch") and state.get("delivery_branch") and state.get("pre_merge_gate") and state.get("post_merge_gate"):
+        lines.append("### Resolved lifecycle metadata")
+        lines.append(f"canonical_branch: {state.get('canonical_branch')}")
+        lines.append(f"delivery_branch: {state.get('delivery_branch')}")
+        lines.append(f"described_head: {state.get('described_head') or state.get('baseline_head', '')}")
+        lines.append(f"pre_merge_gate: {state.get('pre_merge_gate')}")
+        lines.append(f"post_merge_gate: {state.get('post_merge_gate')}")
+        lines.append(f"effective_gate: {effective_gate}")
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -390,34 +396,42 @@ def main():
     git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
     resolved_git_state = resolve_placeholders(git_state_text, state)
 
+    # Collect all archive entries (relative path, bytes) before writing any
+    # manifest, so the SHA-256 manifest can cover every file except itself.
+    entries = []
+    for rel in rel_files:
+        if rel == "docs/continuity/CURRENT_STATE.json":
+            entries.append((rel, resolved_state.encode("utf-8")))
+        elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
+            entries.append((rel, resolved_git_state.encode("utf-8")))
+        else:
+            entries.append((rel, (REPO_ROOT / rel).read_bytes()))
+
+    # Git snapshot is a generated integrity-critical surface.
+    entries.append(("GIT_SNAPSHOT.txt", git_snapshot.encode("utf-8")))
+
+    # Build the human-readable manifest now that the file list is final.
+    manifest.write("GIT_SNAPSHOT.txt\n")
+    for rel, _ in entries:
+        manifest.write(f"{rel}\n")
+    manifest_text = manifest.getvalue().encode("utf-8")
+    entries.append(("MANIFEST.txt", manifest_text))
+
+    # Build SHA-256 manifest covering every regular file except SHA256_MANIFEST.txt.
+    sha_entries = []
+    for rel, data in entries:
+        sha_entries.append((hashlib.sha256(data).hexdigest(), rel))
+    sha_manifest_text = sha_manifest.getvalue()
+    for digest, rel in sha_entries:
+        sha_manifest_text += f"{digest}  {rel}\n"
+
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for rel in rel_files:
-            if rel == "docs/continuity/CURRENT_STATE.json":
-                zf.writestr(rel, resolved_state)
-                digest = hashlib.sha256(resolved_state.encode("utf-8")).hexdigest()
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-            elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
-                zf.writestr(rel, resolved_git_state)
-                digest = hashlib.sha256(resolved_git_state.encode("utf-8")).hexdigest()
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-            else:
-                full = REPO_ROOT / rel
-                zf.write(full, rel)
-                digest = sha256_file(full)
-                manifest.write(f"{rel}\n")
-                sha_manifest.write(f"{digest}  {rel}\n")
-
-        # Git snapshot
-        zf.writestr("GIT_SNAPSHOT.txt", git_snapshot)
-
-        # Manifests
-        zf.writestr("MANIFEST.txt", manifest.getvalue())
-        zf.writestr("SHA256_MANIFEST.txt", sha_manifest.getvalue())
+        for rel, data in entries:
+            zf.writestr(rel, data)
+        zf.writestr("SHA256_MANIFEST.txt", sha_manifest_text)
 
     zip_digest = sha256_file(zip_path)
-    total_files = len(rel_files) + 3  # 3 generated text files
+    total_files = len(entries) + 1  # +1 for SHA256_MANIFEST.txt
 
     print(f"ZIP PATH:     {zip_path}")
     print(f"ZIP SHA-256:  {zip_digest}")

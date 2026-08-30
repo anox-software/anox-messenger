@@ -430,8 +430,13 @@ def validate_canonical_merge_lifecycle(described_head, live_head, state, live_br
     """
     canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
     delivery_branch = state.get("delivery_branch")
-    pre_gate = state.get("pre_merge_gate", state.get("current_gate", ""))
-    post_gate = state.get("post_merge_gate", state.get("current_gate", ""))
+    # In lifecycle mode, pre/post gates are independently required and must not
+    # fall back to current_gate (which would be self-satisfying).
+    pre_gate = state.get("pre_merge_gate", "")
+    post_gate = state.get("post_merge_gate", "")
+    if not pre_gate or not post_gate:
+        print(f"  FAIL CURRENT_STATE.json missing pre_merge_gate or post_merge_gate for canonical merge lifecycle")
+        return all_ok and False, None
 
     if live_branch == delivery_branch:
         # Delivery context: preserve all previously reviewed R2 protections.
@@ -578,10 +583,12 @@ def _resolve_described_head(state):
     return state.get("described_head") or state.get("baseline_head") or ""
 
 
-def _check_required_state_keys(state):
+def _check_required_state_keys(state, schema_class=None):
     """Return (ok, errors) for mandatory current-state keys shared by live and archive."""
-    required = ("handoff_branch", "security_invariants_path",
-                "freeze_registry_path", "current_gate", "continuity_001_status")
+    required = ["handoff_branch", "security_invariants_path",
+                "freeze_registry_path", "current_gate", "continuity_001_status", "schema_version"]
+    if schema_class == ArchiveSchemaClass.CURRENT_LIFECYCLE:
+        required.extend(REQUIRED_LIFECYCLE_STATE_KEYS)
     errors = []
     for key in required:
         if key not in state:
@@ -592,13 +599,29 @@ def _check_required_state_keys(state):
     return (len(errors) == 0, errors)
 
 
-def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=None, mode=None):
+def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=None, mode=None, schema_class=None):
     print(f"\n[{label}] CURRENT_STATE.json")
     if state is None:
         print("  FAIL CURRENT_STATE.json missing or invalid JSON")
         return False, None
 
-    keys_ok, missing = _check_required_state_keys(state)
+    # Determine schema class. In archive mode the class is supplied by
+    # validate_archive_surface_consistency; in live mode we compute it here.
+    if schema_class is None:
+        snapshot_path = root / "GIT_SNAPSHOT.txt"
+        snapshot_text = snapshot_path.read_text(encoding="utf-8") if snapshot_path.exists() else ""
+        surfaces = {}
+        for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+            p = root / rel
+            if p.exists():
+                surfaces[rel] = p.read_text(encoding="utf-8")
+        schema_class, schema_errors = _classify_schema(state, snapshot_text, surfaces, mode=mode or "live")
+        if schema_errors:
+            for err in schema_errors:
+                print(f"  FAIL CURRENT_STATE.json schema: {err}")
+            all_ok = False
+
+    keys_ok, missing = _check_required_state_keys(state, schema_class=schema_class)
     if not keys_ok:
         for key in missing:
             print(f"  FAIL CURRENT_STATE.json missing key: {key}")
@@ -620,20 +643,23 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=
         all_ok = False
     else:
         if live_head is not None:
-            canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
-            delivery_branch = state.get("delivery_branch")
-            if canonical_branch and delivery_branch and state.get("pre_merge_gate") and state.get("post_merge_gate"):
+            if schema_class == ArchiveSchemaClass.CURRENT_LIFECYCLE:
                 # Canonical merge lifecycle path.
                 all_ok, effective_gate = validate_canonical_merge_lifecycle(
                     described_head, live_head, state, live_branch, root, all_ok, label
                 )
-            else:
+            elif schema_class == ArchiveSchemaClass.LEGACY:
                 # Legacy single-branch path.
                 all_ok = validate_described_head(described_head, live_head, root, all_ok, label)
                 effective_gate = state.get("current_gate", "")
+            else:
+                print(f"  FAIL cannot validate described_head lineage for unknown schema")
+                all_ok = False
         else:
             # Archive mode: we cannot verify ancestry without .git, but we can require the value.
             print(f"  OK   described_head {described_head[:12]} present (archive mode)")
+            if schema_class == ArchiveSchemaClass.UNKNOWN:
+                all_ok = False
             effective_gate = state.get("current_gate", "")
 
     if live_branch is not None:
@@ -1071,15 +1097,49 @@ def validate_archive_manifests(archive_root, all_ok):
 
     # Parse SHA manifest
     entries = {}
+    duplicates = []
+    bad_paths = []
     with open(sha_manifest, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
             parts = line.split(None, 1)
-            if len(parts) == 2:
-                digest, name = parts
-                entries[name] = digest
+            if len(parts) != 2:
+                bad_paths.append(f"malformed line: {line!r}")
+                continue
+            digest, name = parts
+            # Reject path traversal, absolute paths, and the manifest hashing itself.
+            if name.startswith("/") or ".." in Path(name).parts or name == "SHA256_MANIFEST.txt":
+                bad_paths.append(f"disallowed path in SHA manifest: {name}")
+                continue
+            if name in entries:
+                duplicates.append(name)
+                continue
+            entries[name] = digest
+
+    if bad_paths:
+        print("  FAIL SHA-256 manifest contains invalid entries:")
+        for item in bad_paths[:10]:
+            print(f"    {item}")
+        all_ok = False
+    if duplicates:
+        print("  FAIL SHA-256 manifest contains duplicate paths:")
+        for item in duplicates[:10]:
+            print(f"    {item}")
+        all_ok = False
+
+    # Build the expected set of regular files that must be covered.
+    expected_files = set()
+    for p in archive_root.rglob("*"):
+        if p.is_dir():
+            continue
+        rel = str(p.relative_to(archive_root))
+        if rel.startswith(".git/"):
+            continue
+        if rel == "SHA256_MANIFEST.txt":
+            continue
+        expected_files.add(rel)
 
     missing_or_mismatch = []
     for rel, expected in entries.items():
@@ -1090,6 +1150,10 @@ def validate_archive_manifests(archive_root, all_ok):
         actual = sha256_file(full)
         if actual != expected:
             missing_or_mismatch.append(f"{rel} — hash mismatch (expected {expected[:16]}..., got {actual[:16]}...)")
+
+    uncovered = sorted(expected_files - set(entries))
+    if uncovered:
+        missing_or_mismatch.extend(f"{rel} — not listed in SHA-256 manifest" for rel in uncovered[:10])
 
     if missing_or_mismatch:
         print("  FAIL SHA-256 manifest does not match package files:")
@@ -1183,6 +1247,134 @@ LIFECYCLE_SNAPSHOT_KEYS = {
 }
 
 
+REQUIRED_LIFECYCLE_STATE_KEYS = (
+    "canonical_branch",
+    "delivery_branch",
+    "described_head",
+    "pre_merge_gate",
+    "post_merge_gate",
+)
+
+
+# Recognized schema versions. Only explicitly listed versions may use their
+# respective validation rules; anything else is treated as an unknown format.
+# Legacy archives may not contain current-lifecycle evidence, and current
+# lifecycle archives may not be silently downgraded by deleting fields.
+CURRENT_LIFECYCLE_SCHEMAS = frozenset({"B026-1.2"})
+LEGACY_SCHEMAS = frozenset({"B026-1.0"})
+
+
+class ArchiveSchemaClass:
+    """Explicit archive schema classification used for fail-closed enforcement."""
+
+    CURRENT_LIFECYCLE = "current_lifecycle"
+    LEGACY = "legacy"
+    UNKNOWN = "unknown"
+
+
+def _snapshot_has_lifecycle_block(snapshot_text):
+    """Return True if GIT_SNAPSHOT.txt contains the resolved lifecycle block."""
+    return "### Resolved lifecycle metadata" in (snapshot_text or "")
+
+
+def _state_has_lifecycle_keys(state):
+    """Return the set of distinguishing current-lifecycle keys present in state.
+
+    described_head is NOT a distinguishing signal because both legacy and current
+    schemas may use it (or its legacy alias baseline_head).
+    """
+    if not state:
+        return set()
+    distinguishing = ("canonical_branch", "delivery_branch", "pre_merge_gate", "post_merge_gate")
+    return {k for k in distinguishing if state.get(k) and state.get(k) not in PLACEHOLDER_MARKERS}
+
+
+def _surface_has_lifecycle_labels(surfaces):
+    """Return True if any human-readable surface carries current lifecycle labels."""
+    labels = ("Canonical branch", "Delivery branch", "Pre-merge gate", "Post-merge gate")
+    for text in (surfaces or {}).values():
+        for label in labels:
+            pattern = re.compile(
+                rf"^(?:[-*]\s*)?{re.escape(label)}\s*[:=]",
+                re.MULTILINE | re.IGNORECASE,
+            )
+            if pattern.search(text):
+                return True
+    return False
+
+
+def _schema_lifecycle_signals(state, snapshot_text, surfaces):
+    """Collect non-schema_version evidence of current lifecycle format."""
+    signals = []
+    if _snapshot_has_lifecycle_block(snapshot_text):
+        signals.append("GIT_SNAPSHOT.txt resolved lifecycle block")
+    for k in _state_has_lifecycle_keys(state):
+        signals.append(f"CURRENT_STATE.json {k}")
+    if _surface_has_lifecycle_labels(surfaces):
+        signals.append("human-readable lifecycle labels")
+    return signals
+
+
+def _classify_schema(state, snapshot_text=None, surfaces=None, mode="archive"):
+    """Return (class, errors).
+
+    class is one of ArchiveSchemaClass.CURRENT_LIFECYCLE, .LEGACY, .UNKNOWN.
+    errors is a list of fail-closed diagnostics; UNKNOWN archives and
+    contradictory archives produce errors.
+
+    In archive mode, a GIT_SNAPSHOT.txt lifecycle block always forces
+    current-lifecycle enforcement, even if CURRENT_STATE.json is downgraded.
+    In live mode, the snapshot does not exist; the decision is based on
+    CURRENT_STATE.json and human surfaces.
+    """
+    errors = []
+    version = state.get("schema_version") if state else None
+    lifecycle_signals = _schema_lifecycle_signals(state, snapshot_text, surfaces)
+
+    if version in CURRENT_LIFECYCLE_SCHEMAS:
+        # Explicitly recognized current lifecycle schema.
+        if mode == "archive" and not _snapshot_has_lifecycle_block(snapshot_text or ""):
+            errors.append("current lifecycle schema requires Resolved lifecycle metadata block in GIT_SNAPSHOT.txt")
+        for k in REQUIRED_LIFECYCLE_STATE_KEYS:
+            if not state or not state.get(k) or (mode == "archive" and state.get(k) in PLACEHOLDER_MARKERS):
+                errors.append(f"current lifecycle schema requires CURRENT_STATE.json {k}")
+        return ArchiveSchemaClass.CURRENT_LIFECYCLE, errors
+
+    if version in LEGACY_SCHEMAS:
+        # Explicitly recognized legacy schema; must not also carry current
+        # lifecycle evidence, otherwise this is a downgrade/forgery.
+        if lifecycle_signals:
+            errors.append(
+                f"legacy schema_version {version} is incompatible with current lifecycle evidence: {lifecycle_signals[0]}"
+            )
+        if mode == "archive" and _snapshot_has_lifecycle_block(snapshot_text or ""):
+            errors.append("legacy schema must not contain Resolved lifecycle metadata block in GIT_SNAPSHOT.txt")
+        return ArchiveSchemaClass.LEGACY, errors
+
+    # Unknown or missing schema_version.
+    if version:
+        errors.append(f"unknown schema_version: {version}")
+    else:
+        errors.append("missing schema_version")
+    if lifecycle_signals:
+        errors.append(
+            f"current lifecycle evidence present but schema_version is not recognized: {lifecycle_signals[0]}"
+        )
+    return ArchiveSchemaClass.UNKNOWN, errors
+
+
+def _is_lifecycle_state(state):
+    """Return True when state declares canonical merge lifecycle fields.
+
+    Kept as a quick helper for non-security contexts (e.g. live path decision
+    before full schema classification). Do NOT use as the sole classifier in
+    archive mode; use _classify_schema instead.
+    """
+    if not state:
+        return False
+    return all(state.get(k) for k in ("canonical_branch", "delivery_branch", "pre_merge_gate", "post_merge_gate"))
+
+
 def _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=False):
     """Parse the resolved lifecycle metadata block from GIT_SNAPSHOT.txt.
 
@@ -1238,7 +1430,7 @@ def _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=False):
             errors.append(f"empty lifecycle snapshot value for {key}")
             i += 1
             continue
-        if value in PLACEHOLDER_MARKERS:
+        if value in PLACEHOLDER_MARKERS or any(marker in value for marker in PLACEHOLDER_MARKERS):
             errors.append(f"unresolved placeholder in lifecycle snapshot {key}: {value}")
             i += 1
             continue
@@ -1256,7 +1448,7 @@ def _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=False):
     return values, errors
 
 
-def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok):
+def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok, schema_class=None):
     """Cross-check state against handoff/git-state surfaces and git snapshot."""
 
     def _ok_or_fail(condition, ok_msg, fail_msg):
@@ -1266,6 +1458,8 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
         else:
             print(f"  FAIL {fail_msg}")
             all_ok = False
+
+    is_current_lifecycle = schema_class == ArchiveSchemaClass.CURRENT_LIFECYCLE
 
     # canonical_branch
     canonical = state.get("canonical_branch") or state.get("baseline_branch")
@@ -1336,23 +1530,32 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
 
     # current/effective gate must be one of the lifecycle gates and consistent with handoff_branch
     current_gate = state.get("current_gate")
-    pre_gate = state.get("pre_merge_gate", current_gate)
-    post_gate = state.get("post_merge_gate", current_gate)
-    if current_gate and current_gate not in PLACEHOLDER_MARKERS:
-        if current_gate not in (pre_gate, post_gate):
-            print(f"  FAIL CURRENT_STATE.json current_gate {current_gate} is neither pre_merge_gate nor post_merge_gate")
-            all_ok = False
-        elif handoff_branch == canonical and current_gate != post_gate:
-            print(f"  FAIL canonical context current_gate {current_gate} != post_merge_gate {post_gate}")
-            all_ok = False
-        elif handoff_branch == delivery and current_gate != pre_gate:
-            print(f"  FAIL delivery context current_gate {current_gate} != pre_merge_gate {pre_gate}")
-            all_ok = False
-        else:
-            print(f"  OK   current/effective gate {current_gate} is consistent with lifecycle state")
+    # In current lifecycle mode, pre/post gates are required and must NOT fall back to current_gate.
+    pre_gate = state.get("pre_merge_gate", "")
+    post_gate = state.get("post_merge_gate", "")
+    if is_current_lifecycle:
+        if not pre_gate or not post_gate:
+            if not pre_gate:
+                print("  FAIL CURRENT_STATE.json pre_merge_gate missing in current lifecycle archive")
+                all_ok = False
+            if not post_gate:
+                print("  FAIL CURRENT_STATE.json post_merge_gate missing in current lifecycle archive")
+                all_ok = False
+        elif current_gate and current_gate not in PLACEHOLDER_MARKERS:
+            if current_gate not in (pre_gate, post_gate):
+                print(f"  FAIL CURRENT_STATE.json current_gate {current_gate} is neither pre_merge_gate nor post_merge_gate")
+                all_ok = False
+            elif handoff_branch == canonical and current_gate != post_gate:
+                print(f"  FAIL canonical context current_gate {current_gate} != post_merge_gate {post_gate}")
+                all_ok = False
+            elif handoff_branch == delivery and current_gate != pre_gate:
+                print(f"  FAIL delivery context current_gate {current_gate} != pre_merge_gate {pre_gate}")
+                all_ok = False
+            else:
+                print(f"  OK   current/effective gate {current_gate} is consistent with lifecycle state")
 
     # Cross-check pre/post lifecycle gates against human-readable surfaces.
-    if pre_gate:
+    if is_current_lifecycle and pre_gate:
         for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
             p = archive_root / rel
             if not p.exists():
@@ -1367,7 +1570,7 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
                         all_ok = False
                     elif declared not in PLACEHOLDER_MARKERS:
                         print(f"  OK   {rel} pre-merge gate matches CURRENT_STATE.json")
-    if post_gate:
+    if is_current_lifecycle and post_gate:
         for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
             p = archive_root / rel
             if not p.exists():
@@ -1385,7 +1588,7 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
 
     # Cross-check the independently generated GIT_SNAPSHOT.txt lifecycle block.
     snapshot_lifecycle = snapshot.get("lifecycle")
-    if _is_lifecycle_state(state) and snapshot_lifecycle:
+    if is_current_lifecycle and snapshot_lifecycle:
         def _extract_effective_gate(text):
             m = re.search(
                 r"^(?:[-*]\s*)?(?:Current gate|Effective gate)\s*[:=]\s*(?:`([^`\n]+)`|([^`\n]+?))(?:\s+\([^)]+\))?$",
@@ -1398,12 +1601,17 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
             ("canonical_branch", ("Canonical branch",), state.get("canonical_branch") or state.get("baseline_branch")),
             ("delivery_branch", ("Delivery branch",), state.get("delivery_branch")),
             ("described_head", ("Described HEAD", "described_head"), _resolve_described_head(state)),
-            ("pre_merge_gate", ("Pre-merge gate", "pre_merge_gate"), state.get("pre_merge_gate", "")),
-            ("post_merge_gate", ("Post-merge gate", "post_merge_gate"), state.get("post_merge_gate", "")),
-            ("effective_gate", None, state.get("current_gate", "")),
+            ("pre_merge_gate", ("Pre-merge gate", "pre_merge_gate"), pre_gate),
+            ("post_merge_gate", ("Post-merge gate", "post_merge_gate"), post_gate),
+            ("effective_gate", None, current_gate or ""),
         )
         for key, labels, expected in lifecycle_fields:
             if not expected:
+                _ok_or_fail(
+                    False,
+                    f"GIT_SNAPSHOT {key} matches CURRENT_STATE.json",
+                    f"GIT_SNAPSHOT {key} missing value in CURRENT_STATE.json",
+                )
                 continue
             snap = snapshot_lifecycle.get(key)
             _ok_or_fail(
@@ -1481,19 +1689,11 @@ def validate_archive_surface_consistency(archive_root, all_ok):
     state = load_current_state(archive_root)
     if state is None:
         print("  FAIL CURRENT_STATE.json missing/invalid in archive")
-        return False
+        return False, None
 
     snapshot_path = archive_root / "GIT_SNAPSHOT.txt"
     snapshot_text = snapshot_path.read_text(encoding="utf-8") if snapshot_path.exists() else ""
     snapshot = _parse_git_snapshot(snapshot_text)
-
-    requires_lifecycle = _is_lifecycle_state(state)
-    lifecycle_values, lifecycle_errors = _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=requires_lifecycle)
-    if requires_lifecycle:
-        for err in lifecycle_errors:
-            print(f"  FAIL GIT_SNAPSHOT.txt lifecycle block: {err}")
-            all_ok = False
-    snapshot["lifecycle"] = lifecycle_values
 
     surfaces = {}
     for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
@@ -1501,7 +1701,24 @@ def validate_archive_surface_consistency(archive_root, all_ok):
         if p.exists():
             surfaces[rel] = p.read_text(encoding="utf-8")
 
-    return _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok)
+    # Explicit, fail-closed schema classification. The presence of a
+    # GIT_SNAPSHOT.txt lifecycle block forces current-lifecycle enforcement.
+    schema_class, schema_errors = _classify_schema(state, snapshot_text, surfaces, mode="archive")
+    if schema_errors:
+        for err in schema_errors:
+            print(f"  FAIL archive schema: {err}")
+            all_ok = False
+
+    requires_lifecycle = schema_class == ArchiveSchemaClass.CURRENT_LIFECYCLE
+    lifecycle_values, lifecycle_errors = _parse_lifecycle_snapshot(snapshot_text, requires_lifecycle=requires_lifecycle)
+    if requires_lifecycle:
+        for err in lifecycle_errors:
+            print(f"  FAIL GIT_SNAPSHOT.txt lifecycle block: {err}")
+            all_ok = False
+    snapshot["lifecycle"] = lifecycle_values
+
+    all_ok = _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok, schema_class=schema_class)
+    return all_ok, schema_class
 
 
 def live_validation():
@@ -1583,10 +1800,10 @@ def archive_validation(archive_root):
     all_ok = validate_authority_paths(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_archive_manifests(archive_root, all_ok)
     all_ok = validate_archive_snapshot_agreement(archive_root, all_ok)
-    all_ok = validate_archive_surface_consistency(archive_root, all_ok)
+    all_ok, schema_class = validate_archive_surface_consistency(archive_root, all_ok)
 
     state = load_current_state(archive_root)
-    all_ok, _ = validate_state_json(state, archive_root, all_ok, "ARCHIVE")
+    all_ok, _ = validate_state_json(state, archive_root, all_ok, "ARCHIVE", schema_class=schema_class)
     all_ok = validate_baseline_consistency(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_authority_precedence(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_placeholders(archive_root, all_ok, "ARCHIVE", "archive", live_state=None)

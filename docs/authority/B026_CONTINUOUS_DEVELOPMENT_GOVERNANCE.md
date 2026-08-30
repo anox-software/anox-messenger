@@ -464,11 +464,19 @@ Only a single clean `--no-ff` integration merge is supported per lifecycle task.
 
 ### Internal archive integrity
 
-A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. `tools/continuity/generate_handoff.py` materializes an independent `### Resolved lifecycle metadata` block inside `GIT_SNAPSHOT.txt` at packaging time, containing canonical branch, delivery branch, described head, pre/post merge gates, and the resolved effective gate.
+A generated handoff ZIP contains an internal SHA-256 manifest that protects against accidental or partial tampering after generation. The SHA-256 manifest covers every regular file in the archive **except `SHA256_MANIFEST.txt` itself**, which prevents self-reference paradoxes. In particular, the independently generated `GIT_SNAPSHOT.txt` and the human-readable `MANIFEST.txt` are now included in the SHA-256 manifest; an archive file not listed in the manifest, or a manifest entry for a missing file, or a duplicate manifest path, fails validation.
 
-The archive validator parses this resolved lifecycle block with fail-closed semantics (reject missing, duplicate, malformed, empty, or unresolved values for current lifecycle schema archives). It then cross-checks every field against `CURRENT_STATE.json` and the human-readable `CURRENT_HANDOFF.md` / `CURRENT_GIT_STATE.md` surfaces.
+`tools/continuity/generate_handoff.py` materializes an independent `### Resolved lifecycle metadata` block inside `GIT_SNAPSHOT.txt` at packaging time, containing canonical branch, delivery branch, described head, pre/post merge gates, and the resolved effective gate. This block is generated only for explicitly current-lifecycle archives (schema version `B026-1.2` with the full lifecycle key set); legacy archives do not contain it.
 
-A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces — including the independently generated `GIT_SNAPSHOT.txt` block — FAILS archive validation.
+The archive validator uses explicit, fail-closed schema classification:
+
+- **Recognized current lifecycle schemas** (e.g. `B026-1.2`) require the `### Resolved lifecycle metadata` block in `GIT_SNAPSHOT.txt`, all required lifecycle keys in `CURRENT_STATE.json`, and a consistent current/effective gate.
+- **Recognized legacy schemas** (e.g. `B026-1.0`) may use legacy compatibility rules, but only if the archive positively identifies itself as legacy and does **not** carry current-lifecycle evidence (lifecycle block, current lifecycle keys, or current lifecycle human labels).
+- **Unknown or ambiguous schemas** (missing `schema_version`, unknown version, or a mix of current and legacy signals) **FAIL CLOSED**.
+
+The core security invariant is: **an archive must never be able to downgrade its own validation schema by deleting security-relevant fields.** If the `### Resolved lifecycle metadata` block is present in `GIT_SNAPSHOT.txt`, lifecycle enforcement is active regardless of what an attacker writes in `CURRENT_STATE.json`. Partial lifecycle state (some but not all lifecycle keys) is treated as malformed and fails.
+
+A partial rewrite of one surface without a matching rewrite of all cross-checked surfaces — including the independently generated `GIT_SNAPSHOT.txt` block — FAILS archive validation. A fully coherent attacker rewrite of every archive-controlled surface can still pass internal consistency, but it cannot establish authenticity.
 
 ### Archive authenticity
 

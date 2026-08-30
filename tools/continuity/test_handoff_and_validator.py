@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -2171,7 +2172,7 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
                 self._recompute_sha_manifest(a.root)
                 r2 = a.validate()
                 self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", r2.stdout + r2.stderr, r2.stdout + r2.stderr)
-                return a
+                return r2.stdout + r2.stderr
             finally:
                 a.cleanup()
         finally:
@@ -2355,12 +2356,20 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
         """Unresolved placeholder in the resolved lifecycle metadata block fails."""
         def t(root):
             text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
-            text = text.replace(
-                "effective_gate:",
+            # Replace the entire resolved effective_gate line with an exact
+            # unresolved placeholder. A previous version of this test only
+            # prepended the marker, leaving the real value after it; that
+            # exercised an unrelated mismatch path, not the placeholder parser.
+            text = re.sub(
+                r"^effective_gate:.*$",
                 "effective_gate: __EFFECTIVE_GATE__",
+                text,
+                flags=re.MULTILINE,
             )
             (root / "GIT_SNAPSHOT.txt").write_text(text, encoding="utf-8")
-        self._tamper_and_fail(t)
+
+        combined = self._tamper_and_fail(t)
+        self.assertIn("unresolved placeholder in lifecycle snapshot effective_gate", combined)
 
     def test_untampered_archive_passes(self):
         f = CMLFixture()
@@ -2499,6 +2508,394 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
                 a.cleanup()
         finally:
             f.cleanup()
+
+
+class TestM1R3ArchiveSchema(unittest.TestCase):
+    """ANOX-CMLR2REV-001: archive cannot downgrade its own lifecycle schema."""
+
+    @staticmethod
+    def _recompute_full_sha_manifest(archive_root):
+        """Recompute SHA256_MANIFEST.txt covering every archive regular file except itself."""
+        import hashlib
+        sha_manifest_path = archive_root / "SHA256_MANIFEST.txt"
+        lines = ["# SHA-256 manifest", f"# recomputed for test"]
+        for p in sorted(archive_root.rglob("*")):
+            if not p.is_file():
+                continue
+            rel = str(p.relative_to(archive_root))
+            if rel.startswith(".git/") or rel == "SHA256_MANIFEST.txt":
+                continue
+            digest = hashlib.sha256(p.read_bytes()).hexdigest()
+            lines.append(f"{digest}  {rel}")
+        sha_manifest_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    @staticmethod
+    def _load_archive():
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            if r.returncode != 0:
+                raise RuntimeError(f"generate failed: {r.stdout}\n{r.stderr}")
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            return f, a
+        except Exception:
+            f.cleanup()
+            raise
+
+    @staticmethod
+    def _state_path(root):
+        return root / "docs" / "continuity" / "CURRENT_STATE.json"
+
+    @staticmethod
+    def _load_state(root):
+        return json.loads(TestM1R3ArchiveSchema._state_path(root).read_text(encoding="utf-8"))
+
+    @staticmethod
+    def _write_state(root, data):
+        TestM1R3ArchiveSchema._state_path(root).write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    @staticmethod
+    def _tamper_state_and_fail(a, tamper_fn):
+        try:
+            tamper_fn(a.root)
+            TestM1R3ArchiveSchema._recompute_full_sha_manifest(a.root)
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            if "HANDOFF_ARCHIVE_VALIDATION: PASS" in combined:
+                raise AssertionError(f"archive should fail; got PASS. output:\n{combined}")
+        finally:
+            a.cleanup()
+
+    @staticmethod
+    def _validate_archive(a, expected="PASS"):
+        try:
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            if expected == "PASS":
+                if "HANDOFF_ARCHIVE_VALIDATION: PASS" not in combined:
+                    raise AssertionError(f"expected PASS, got:\n{combined}")
+            else:
+                if "HANDOFF_ARCHIVE_VALIDATION: PASS" in combined:
+                    raise AssertionError(f"expected FAIL, got PASS:\n{combined}")
+        finally:
+            a.cleanup()
+
+    def _remove_state_key(self, key):
+        def tamper(root):
+            data = self._load_state(root)
+            data.pop(key, None)
+            self._write_state(root, data)
+        return tamper
+
+    def _remove_state_key_forge_b027(self, key):
+        def tamper(root):
+            data = self._load_state(root)
+            data.pop(key, None)
+            data["current_gate"] = "B-027 IMPLEMENTATION AUTHORIZED"
+            self._write_state(root, data)
+            # Update human-readable surfaces to the forged gate.
+            for rel in ("docs/continuity/CURRENT_HANDOFF.md", "docs/continuity/CURRENT_GIT_STATE.md"):
+                p = root / rel
+                if p.exists():
+                    text = p.read_text(encoding="utf-8")
+                    text = re.sub(r"(Pre-merge gate|pre_merge_gate):\s*`?[^`\n]+`?", r"\1: `B-027 IMPLEMENTATION AUTHORIZED`", text, flags=re.IGNORECASE)
+                    text = re.sub(r"(Current gate|Effective gate):\s*`?[^`\n]+`?", r"\1: `B-027 IMPLEMENTATION AUTHORIZED`", text, flags=re.IGNORECASE)
+                    p.write_text(text, encoding="utf-8")
+        return tamper
+
+    def test_remove_canonical_branch_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key("canonical_branch"))
+        finally:
+            f.cleanup()
+
+    def test_remove_delivery_branch_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key("delivery_branch"))
+        finally:
+            f.cleanup()
+
+    def test_remove_described_head_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key("described_head"))
+        finally:
+            f.cleanup()
+
+    def test_remove_pre_merge_gate_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key("pre_merge_gate"))
+        finally:
+            f.cleanup()
+
+    def test_remove_post_merge_gate_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key("post_merge_gate"))
+        finally:
+            f.cleanup()
+
+    def test_remove_pre_merge_gate_forge_b027_fails(self):
+        f, a = self._load_archive()
+        try:
+            self._tamper_state_and_fail(a, self._remove_state_key_forge_b027("pre_merge_gate"))
+        finally:
+            f.cleanup()
+
+    def test_remove_all_state_lifecycle_keys_fails(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                data = self._load_state(root)
+                for key in ("canonical_branch", "delivery_branch", "pre_merge_gate", "post_merge_gate"):
+                    data.pop(key, None)
+                data["current_gate"] = "B-027 IMPLEMENTATION AUTHORIZED"
+                self._write_state(root, data)
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_snapshot_block_forces_lifecycle_enforcement(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                data = self._load_state(root)
+                for key in ("canonical_branch", "delivery_branch", "pre_merge_gate", "post_merge_gate"):
+                    data.pop(key, None)
+                data["schema_version"] = "B026-1.0"
+                data["baseline_branch"] = data.get("canonical_branch", "main")
+                data["current_gate"] = "B-027 IMPLEMENTATION AUTHORIZED"
+                self._write_state(root, data)
+                # Also rewrite GIT_SNAPSHOT to remove lifecycle block.
+                text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+                lines = text.splitlines()
+                out = []
+                in_block = False
+                for line in lines:
+                    if line.strip() == "### Resolved lifecycle metadata":
+                        in_block = True
+                        continue
+                    if in_block and line.startswith("### "):
+                        in_block = False
+                    if not in_block:
+                        out.append(line)
+                (root / "GIT_SNAPSHOT.txt").write_text("\n".join(out), encoding="utf-8")
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_missing_snapshot_block_fails(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                text = (root / "GIT_SNAPSHOT.txt").read_text(encoding="utf-8")
+                lines = text.splitlines()
+                out = []
+                in_block = False
+                for line in lines:
+                    if line.strip() == "### Resolved lifecycle metadata":
+                        in_block = True
+                        continue
+                    if in_block and line.startswith("### "):
+                        in_block = False
+                    if not in_block:
+                        out.append(line)
+                (root / "GIT_SNAPSHOT.txt").write_text("\n".join(out), encoding="utf-8")
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_unknown_schema_version_fails(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                data = self._load_state(root)
+                data["schema_version"] = "B026-9.9"
+                self._write_state(root, data)
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_fake_legacy_downgrade_with_current_markers_fails(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                data = self._load_state(root)
+                data["schema_version"] = "B026-1.0"
+                data["baseline_branch"] = data.get("canonical_branch", "main")
+                data.pop("canonical_branch", None)
+                data.pop("delivery_branch", None)
+                data["current_gate"] = "B-027 IMPLEMENTATION AUTHORIZED"
+                self._write_state(root, data)
+                # Leave GIT_SNAPSHOT lifecycle block present (current markers).
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_partial_lifecycle_state_fails(self):
+        f, a = self._load_archive()
+        try:
+            def tamper(root):
+                data = self._load_state(root)
+                data.pop("pre_merge_gate", None)
+                data.pop("post_merge_gate", None)
+                data["current_gate"] = "B-027 IMPLEMENTATION AUTHORIZED"
+                self._write_state(root, data)
+            self._tamper_state_and_fail(a, tamper)
+        finally:
+            f.cleanup()
+
+    def test_untampered_current_archive_passes(self):
+        f, a = self._load_archive()
+        try:
+            self._validate_archive(a, expected="PASS")
+        finally:
+            f.cleanup()
+
+
+class TestM1R3ArchiveManifest(unittest.TestCase):
+    """ANOX-CMLR2REV-003: SHA-256 manifest must cover all archive regular files."""
+
+    @staticmethod
+    def _recompute_full_sha_manifest(archive_root):
+        import hashlib
+        sha_manifest_path = archive_root / "SHA256_MANIFEST.txt"
+        lines = ["# SHA-256 manifest", "# recomputed for test"]
+        for p in sorted(archive_root.rglob("*")):
+            if not p.is_file():
+                continue
+            rel = str(p.relative_to(archive_root))
+            if rel.startswith(".git/") or rel == "SHA256_MANIFEST.txt":
+                continue
+            digest = hashlib.sha256(p.read_bytes()).hexdigest()
+            lines.append(f"{digest}  {rel}")
+        sha_manifest_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    @staticmethod
+    def _load_archive():
+        f = CMLFixture()
+        try:
+            r = f.generate(emergency=False)
+            if r.returncode != 0:
+                raise RuntimeError(f"generate failed: {r.stdout}\n{r.stderr}")
+            z = f.zip_path()
+            a = ArchiveFixture(z)
+            return f, a
+        except Exception:
+            f.cleanup()
+            raise
+
+    def test_git_snapshot_hash_mismatch_fails(self):
+        f, a = self._load_archive()
+        try:
+            p = a.root / "GIT_SNAPSHOT.txt"
+            p.write_text(p.read_text(encoding="utf-8") + "\n# tampered", encoding="utf-8")
+            # Keep manifest unchanged so the hash mismatches.
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+            self.assertIn("GIT_SNAPSHOT.txt", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_manifest_hash_mismatch_fails(self):
+        f, a = self._load_archive()
+        try:
+            p = a.root / "MANIFEST.txt"
+            p.write_text(p.read_text(encoding="utf-8") + "\n# tampered", encoding="utf-8")
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+            self.assertIn("MANIFEST.txt", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_unmanifested_archive_file_fails(self):
+        f, a = self._load_archive()
+        try:
+            (a.root / "UNEXPECTED_ATTACKER_FILE.txt").write_text("evil", encoding="utf-8")
+            # Do NOT add it to the SHA manifest; it must be detected as uncovered.
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+            self.assertIn("UNEXPECTED_ATTACKER_FILE.txt", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_missing_git_snapshot_manifest_entry_fails(self):
+        f, a = self._load_archive()
+        try:
+            lines = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8").splitlines()
+            new_lines = [line for line in lines if "  GIT_SNAPSHOT.txt" not in line]
+            (a.root / "SHA256_MANIFEST.txt").write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_missing_manifest_entry_fails(self):
+        f, a = self._load_archive()
+        try:
+            lines = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8").splitlines()
+            new_lines = [line for line in lines if "  MANIFEST.txt" not in line]
+            (a.root / "SHA256_MANIFEST.txt").write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_manifest_entry_for_nonexistent_file_fails(self):
+        f, a = self._load_archive()
+        try:
+            lines = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8").splitlines()
+            lines.append("0" * 64 + "  docs/continuity/NONEXISTENT_FILE.json")
+            (a.root / "SHA256_MANIFEST.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_duplicate_manifest_path_fails(self):
+        f, a = self._load_archive()
+        try:
+            text = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8")
+            text = text.replace("  GIT_SNAPSHOT.txt", "0" * 64 + "  GIT_SNAPSHOT.txt\n" + text[:64] + "  GIT_SNAPSHOT.txt")
+            # Simpler: append a copy of the first GIT_SNAPSHOT line with a bogus hash.
+            (a.root / "SHA256_MANIFEST.txt").write_text(text + "\n" + "1" * 64 + "  GIT_SNAPSHOT.txt\n", encoding="utf-8")
+            r = a.validate()
+            combined = r.stdout + r.stderr
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: FAIL", combined)
+            self.assertIn("duplicate", combined)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_sha_manifest_does_not_self_hash(self):
+        f, a = self._load_archive()
+        try:
+            text = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8")
+            self.assertNotIn("  SHA256_MANIFEST.txt", text)
+            self._recompute_full_sha_manifest(a.root)
+            text2 = (a.root / "SHA256_MANIFEST.txt").read_text(encoding="utf-8")
+            self.assertNotIn("  SHA256_MANIFEST.txt", text2)
+            r = a.validate()
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r.stdout + r.stderr)
+        finally:
+            a.cleanup(); f.cleanup()
+
+    def test_valid_archive_passes(self):
+        f, a = self._load_archive()
+        try:
+            r = a.validate()
+            self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r.stdout + r.stderr)
+        finally:
+            a.cleanup(); f.cleanup()
 
 
 if __name__ == "__main__":
