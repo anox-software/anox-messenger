@@ -1053,5 +1053,168 @@ class TestHeadPrecedence(unittest.TestCase):
             f.cleanup()
 
 
+class TestMergeCommitSecurity(unittest.TestCase):
+    """ANOX-PREB027RREV-001: merge commit classification must not hide substantive work."""
+
+    def test_merge_resolution_product_change_fails(self):
+        """Substantive Product code introduced only in merge resolution fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            # Create two side branches, each with an allowed metadata-only change
+            f._run(["git", "checkout", "-b", "side-a"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside A metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side a metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            f._run(["git", "checkout", "-b", "side-b"])
+            f._write("PROJECT_STATE.md", "# State\n- Branch: `governance/development-security-handoff-v1`\nside B metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side b metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Prepare a no-ff merge and inject product code during the merge resolution
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side-a"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side-b"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// product merge payload\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with product payload"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_merge_then_revert_substantive_still_fails(self):
+        """Substantive work introduced in merge and reverted later is still detected."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "side"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside metadata\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "side"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// transient product payload\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge with transient product payload"])
+            merge = f._run(["git", "rev-parse", "HEAD"]).stdout.strip()
+            # Revert the merge-introduced product file in an ordinary follow-up commit
+            f._run(["git", "rm", "-f", str(evil.relative_to(f.root))])
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "revert product change"])
+            # Endpoint diff from described to HEAD no longer contains the product file,
+            # but the full-range scan must still detect it.
+            ep = subprocess.run(
+                ["git", "diff", "--name-only", f.baseline_head, "HEAD"],
+                cwd=f.root, capture_output=True, text=True
+            ).stdout.split()
+            self.assertNotIn(str(evil.relative_to(f.root)), ep)
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_clean_metadata_only_merge_passes(self):
+        """Two metadata-only branches merged with no substantive resolution pass."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "side-a"])
+            f._write("FORTSCHRITT.md", "# Fortschritt\nside A\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side a metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            f._run(["git", "checkout", "-b", "side-b"])
+            f._write("PROJECT_STATE.md", "# State\n- Branch: `governance/development-security-handoff-v1`\nside B\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "side b metadata"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Merge both branches with a clean, no-conflict resolution (no extra files)
+            for side in ("side-a", "side-b"):
+                subprocess.run(
+                    ["git", "merge", "--no-commit", "--no-ff", side],
+                    cwd=f.root, check=False, capture_output=True, text=True
+                )
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge metadata branches"])
+            r = f.validate()
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("METADATA-ONLY", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_substantive_branch_merged_fails(self):
+        """A branch containing substantive Product code, merged cleanly, fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            f._run(["git", "checkout", "-b", "feature"])
+            evil = f.root / "android" / "src" / "main" / "java" / "com" / "anox" / "messenger" / "Evil.kt"
+            evil.parent.mkdir(parents=True, exist_ok=True)
+            evil.write_text("// feature product code\n", encoding="utf-8")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "feature with product code"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            subprocess.run(
+                ["git", "merge", "--no-ff", "feature"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn(str(evil.relative_to(f.root)), r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+    def test_merge_resolution_into_allowlist_fails(self):
+        """Merge resolution that renames substantive work into allowlisted path still fails."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "state sync"])
+            # Put a substantive file on a feature branch
+            f._run(["git", "checkout", "-b", "feature"])
+            f._write("docs/authority/NEW_POLICY.md", "# New policy\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "add authority proposal"])
+            f._run(["git", "checkout", "governance/development-security-handoff-v1"])
+            # Prepare merge, then rename the authority file into an allowlisted metadata filename
+            subprocess.run(
+                ["git", "merge", "--no-commit", "--no-ff", "feature"],
+                cwd=f.root, check=False, capture_output=True, text=True
+            )
+            f._run(["git", "rm", "-f", "docs/authority/NEW_POLICY.md"])
+            f._write("docs/continuity/CURRENT_OPEN_WORK.md", "# Open\nmerge-resolved evil\n")
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "merge and route into allowlist"])
+            r = f.validate()
+            self.assertNotEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("non-metadata-only", r.stdout + r.stderr)
+            self.assertIn("docs/authority/NEW_POLICY.md", r.stdout + r.stderr)
+        finally:
+            f.cleanup()
+
+
 if __name__ == "__main__":
     unittest.main()

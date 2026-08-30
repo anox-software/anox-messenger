@@ -186,24 +186,25 @@ def git_is_ancestor(ancestor, descendant, cwd=None):
 def git_diff_files(from_sha, to_sha, cwd=None):
     """Return all logical paths changed in the commit range [from_sha, to_sha].
 
-    Uses `git log --name-only --no-renames` so every commit in the range is
-    inspected. A file added in one commit and renamed in a later commit within
-    the same range is still visible to the classifier, and a rename exposes
-    both the deleted source path and the added destination path. The metadata-
-    only classifier must independently approve BOTH sides of a rename.
+    Uses `git log -m --name-only --no-renames` so every commit in the range is
+    inspected, including merge-resolution changes. A file added in one commit and
+    renamed in a later commit within the same range is still visible to the
+    classifier, and a rename exposes both the deleted source path and the added
+    destination path. The metadata-only classifier must independently approve BOTH
+    sides of a rename.
+
+    Returns None if Git history inspection fails, which the caller must treat as
+    a reconciliation failure.
     """
-    out, _, code = run_git(["log", "--name-only", "--no-renames", "--format=oneline", f"{from_sha}..{to_sha}"], cwd=cwd)
+    out, err, code = run_git(["log", "-m", "--name-only", "--no-renames", "--format=", f"{from_sha}..{to_sha}"], cwd=cwd)
     if code != 0 or out is None:
+        print(f"  FAIL git_diff_files({from_sha[:12]}..{to_sha[:12]}) could not be read: {err}")
         return None
     paths = set()
     for line in out.splitlines():
         line = line.strip()
-        if not line:
-            continue
-        # Skip commit subject lines (full SHA 40 hex, space, message).
-        if re.match(r"^[0-9a-f]{40} ", line):
-            continue
-        paths.add(line)
+        if line:
+            paths.add(line)
     return sorted(paths)
 
 
