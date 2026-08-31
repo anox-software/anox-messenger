@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/run.schema.json",
+  "title": "B-027 Agent Run",
+  "description": "Machine-readable agent run record for the ANOX AI workforce.",
+  "type": "object",
+  "required": [
+    "run_id",
+    "task_id",
+    "role_id",
+    "model_provider",
+    "model_name",
+    "start_sha",
+    "result",
+    "remote_mutation",
+    "started_at"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "pattern": "^ANOX-RUN-[A-Z0-9]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+    },
+    "role_id": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "model_provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "start_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "end_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "result": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "PARTIAL", "BLOCKED", "IN_PROGRESS"]
+    },
+    "evidence_produced": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "remote_mutation": {
+      "type": "string",
+      "enum": ["NONE", "READ_ONLY", "HUMAN_REMOTE_ACTION_REQUIRED"]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

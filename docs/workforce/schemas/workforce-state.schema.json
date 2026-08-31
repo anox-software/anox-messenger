@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/workforce-state.schema.json",
+  "title": "B-027 Workforce State",
+  "description": "Canonical machine-readable current state of the ANOX AI workforce.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "authority_version",
+    "current_gate",
+    "active_roles",
+    "blocked_tasks",
+    "authorized_tasks",
+    "current_writer",
+    "pending_human_remote_actions",
+    "latest_decision_id",
+    "latest_finding_id",
+    "latest_run_id",
+    "latest_work_candidate_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "authority_version": {
+      "type": "string"
+    },
+    "current_gate": {
+      "type": "string"
+    },
+    "active_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+      }
+    },
+    "blocked_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+      }
+    },
+    "authorized_tasks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+      }
+    },
+    "current_writer": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+        },
+        "role_id": {
+          "type": "string",
+          "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+        },
+        "branch": {
+          "type": "string"
+        }
+      },
+      "required": ["task_id", "role_id", "branch"]
+    },
+    "pending_human_remote_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task_id", "action", "role_id"],
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+          },
+          "action": {
+            "type": "string"
+          },
+          "role_id": {
+            "type": "string",
+            "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+          }
+        }
+      }
+    },
+    "latest_decision_id": {
+      "type": ["string", "null"],
+      "pattern": "^ANOX-DECISION-[A-Z0-9]+$"
+    },
+    "latest_finding_id": {
+      "type": ["string", "null"],
+      "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+    },
+    "latest_run_id": {
+      "type": ["string", "null"],
+      "pattern": "^ANOX-RUN-[A-Z0-9]+$"
+    },
+    "latest_work_candidate_id": {
+      "type": ["string", "null"],
+      "pattern": "^ANOX-WORK-[A-Z0-9]+$"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

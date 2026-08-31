@@ -1,0 +1,161 @@
+{
+  "schema_version": "B027A-v1",
+  "description": "Canonical Role Registry for B-027 AI Workforce / Work-Control Governance.",
+  "activation_classes": {
+    "active": ["ROLE-001", "ROLE-002", "ROLE-003", "ROLE-004"],
+    "gate_activated": ["ROLE-005", "ROLE-007", "ROLE-008", "ROLE-009", "ROLE-010"],
+    "dormant": [
+      "ROLE-006",
+      "ROLE-011",
+      "ROLE-012",
+      "ROLE-013",
+      "ROLE-014",
+      "ROLE-015",
+      "ROLE-016",
+      "ROLE-017",
+      "ROLE-018",
+      "ROLE-019"
+    ]
+  },
+  "roles": [
+    {
+      "role_id": "ROLE-001",
+      "title": "Human Product & Security Owner",
+      "authority": "Product and security authority; human-controlled remote write, merge, release, signing, break-glass, E4 attestation, and Accepted Risk decisions.",
+      "ai_allowed": false,
+      "activation_class": "active"
+    },
+    {
+      "role_id": "ROLE-002",
+      "title": "Chief Architect / Technical Governance",
+      "authority": "Architecture authority, technical governance, and authority-precedence maintenance.",
+      "ai_allowed": true,
+      "activation_class": "active"
+    },
+    {
+      "role_id": "ROLE-003",
+      "title": "Engineering & Continuity Manager / Workforce Orchestrator",
+      "authority": "Workforce orchestration, continuity, handoff, and deterministic validator maintenance. Not a superuser.",
+      "ai_allowed": true,
+      "activation_class": "active"
+    },
+    {
+      "role_id": "ROLE-004",
+      "title": "Core Implementation Engineer",
+      "authority": "Implementation of authorized product and tooling tasks within a Task Package.",
+      "ai_allowed": true,
+      "activation_class": "active"
+    },
+    {
+      "role_id": "ROLE-005",
+      "title": "Crypto / Protocol",
+      "authority": "Cryptographic and protocol implementation and review.",
+      "ai_allowed": true,
+      "activation_class": "gate_activated"
+    },
+    {
+      "role_id": "ROLE-006",
+      "title": "Product / Security UX",
+      "authority": "Product and security user-experience design and review.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-007",
+      "title": "Independent QA / Adversarial Test",
+      "authority": "Independent quality and adversarial testing. Must be independent of the writer when required.",
+      "ai_allowed": true,
+      "activation_class": "gate_activated"
+    },
+    {
+      "role_id": "ROLE-008",
+      "title": "AppSec / Pentest",
+      "authority": "Application security and penetration testing.",
+      "ai_allowed": true,
+      "activation_class": "gate_activated"
+    },
+    {
+      "role_id": "ROLE-009",
+      "title": "Architecture / Privacy / Security Audit",
+      "authority": "Architecture, privacy, and security audit.",
+      "ai_allowed": true,
+      "activation_class": "gate_activated"
+    },
+    {
+      "role_id": "ROLE-010",
+      "title": "Supply-chain / Build / Release",
+      "authority": "Supply-chain, build, and release engineering.",
+      "ai_allowed": true,
+      "activation_class": "gate_activated"
+    },
+    {
+      "role_id": "ROLE-011",
+      "title": "Maintenance / Update / Compatibility",
+      "authority": "Maintenance, update, and compatibility engineering.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-012",
+      "title": "Platform / SRE / DR",
+      "authority": "Platform engineering, site reliability, and disaster recovery.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-013",
+      "title": "Observability / Detection / SOC",
+      "authority": "Observability, detection, and security operations.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-014",
+      "title": "Incident Response / PSIRT / Vulnerability Management",
+      "authority": "Incident response, PSIRT, and vulnerability management.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-015",
+      "title": "Abuse / Fraud / Trust & Safety",
+      "authority": "Abuse, fraud, and trust & safety.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-016",
+      "title": "Technical Support / Bug Intake",
+      "authority": "Technical support and bug intake.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-017",
+      "title": "Data Protection / Legal / Compliance",
+      "authority": "Data protection, legal, and compliance review.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-018",
+      "title": "Human Release Approver / Signing / Break-glass",
+      "authority": "Human release approval, signing, and break-glass custody. No AI execution.",
+      "ai_allowed": false,
+      "activation_class": "dormant"
+    },
+    {
+      "role_id": "ROLE-019",
+      "title": "Independent External Security / Crypto Auditor",
+      "authority": "Independent external security and crypto audit.",
+      "ai_allowed": true,
+      "activation_class": "dormant"
+    }
+  ],
+  "notes": [
+    "ROLE-001 and ROLE-018 are human-only roles and may not be assigned to AI.",
+    "ROLE-003 is an orchestrator, not a superuser.",
+    "A model/provider assignment is execution metadata and does not change role authority.",
+    "Full per-role contracts are B027-B."
+  ]
+}
