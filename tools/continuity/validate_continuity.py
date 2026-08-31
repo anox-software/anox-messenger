@@ -1431,6 +1431,40 @@ def validate_b027b(root, all_ok, label):
     return all_ok
 
 
+def validate_b027c(root, all_ok, label):
+    """Run the B027-C final integrity validator as a subprocess.
+
+    Only runs when the B027 authority document and B027-C validator are present.
+    """
+    print(f"\n[{label}] B027-C final integrity")
+    validator = root / "tools" / "workforce" / "validate_b027_integrity.py"
+    if not validator.exists():
+        print("  SKIP B027-C validator not present")
+        return all_ok
+    if not (root / "docs" / "authority" / "B027_AI_WORKFORCE_GOVERNANCE.md").exists():
+        print("  SKIP B027-C authority not present")
+        return all_ok
+    try:
+        result = subprocess.run(
+            [sys.executable, str(validator)],
+            cwd=str(root),
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print("  OK   B027-C validation PASSED")
+        else:
+            print("  FAIL B027-C validation FAILED")
+            for line in (result.stdout + result.stderr).splitlines():
+                if line.startswith("  FAIL") or line.startswith("FAIL"):
+                    print(f"       {line}")
+            all_ok = False
+    except Exception as e:
+        print(f"  FAIL could not run B027-C validator: {e}")
+        all_ok = False
+    return all_ok
+
+
 def validate_baseline_consistency(root, all_ok, label):
     print(f"\n[{label}] Described HEAD consistency")
 
@@ -2216,6 +2250,7 @@ def live_validation():
     all_ok = validate_authority_precedence(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_b027a(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_b027b(REPO_ROOT, all_ok, mode_label)
+    all_ok = validate_b027c(REPO_ROOT, all_ok, mode_label)
     all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch, state=state)
     live_state["effective_gate"] = effective_gate or ""
     all_ok = validate_placeholders(REPO_ROOT, all_ok, mode_label, "live", live_state=live_state)
@@ -2253,6 +2288,7 @@ def archive_validation(archive_root):
     all_ok, _ = validate_state_json(state, archive_root, all_ok, "ARCHIVE", schema_class=schema_class)
     all_ok = validate_b027a(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_b027b(archive_root, all_ok, "ARCHIVE")
+    all_ok = validate_b027c(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_baseline_consistency(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_authority_precedence(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_placeholders(archive_root, all_ok, "ARCHIVE", "archive", live_state=None)

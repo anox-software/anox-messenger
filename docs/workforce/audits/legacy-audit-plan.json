@@ -1,0 +1,87 @@
+{
+  "version": "B027C-v1",
+  "authority": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+  "one_time_audits": [
+    {
+      "audit_id": "LEGACY-AUDIT-B002",
+      "domain": "B-002 Device Authentication",
+      "trigger_domains": ["device_binding"],
+      "required_architecture": [
+        "docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md",
+        "docs/current/ACCOUNT_DEVICE_LIFECYCLE.md",
+        "docs/current/LOCAL_DEVICE_SECURITY.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    },
+    {
+      "audit_id": "LEGACY-AUDIT-B003",
+      "domain": "B-003 Account / License",
+      "trigger_domains": ["registration", "account"],
+      "required_architecture": [
+        "docs/authority/B025/TRACK_B/B003_ACCOUNT_LICENSE.md",
+        "docs/current/ACCOUNT_LICENSE_REGISTRATION.md",
+        "docs/current/ACCOUNT_DEVICE_LIFECYCLE.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    },
+    {
+      "audit_id": "LEGACY-AUDIT-CRYPTO",
+      "domain": "Crypto",
+      "trigger_domains": ["crypto", "protocol"],
+      "required_architecture": [
+        "docs/authority/B025/TRACK_B/B006_VODOZEMAC_KEY_DISTRIBUTION.md",
+        "docs/current/KEY_AND_SESSION_ARCHITECTURE.md",
+        "docs/current/LOCAL_KEY_STATE_LIFECYCLE_V1_FROZEN.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    },
+    {
+      "audit_id": "LEGACY-AUDIT-ANDROID-SEC",
+      "domain": "Android-Sec",
+      "trigger_domains": ["android_security", "local_storage"],
+      "required_architecture": [
+        "docs/current/LOCAL_DEVICE_SECURITY.md",
+        "docs/authority/B025/TRACK_B/B007_API_WIRE.md",
+        "docs/authority/B025/TRACK_B/B009_LOCAL_DATABASE.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    },
+    {
+      "audit_id": "LEGACY-AUDIT-BUILD",
+      "domain": "Build",
+      "trigger_domains": ["build", "dependency", "supply_chain", "supply-chain"],
+      "required_architecture": [
+        "docs/authority/B025/TRACK_B/B017_CICD_SUPPLY_CHAIN.md",
+        "docs/authority/B025/TRACK_B/B018_RELEASE_SIGNING_UPDATES.md",
+        "docs/authority/B025/TRACK_B/B023_RELEASE_DOD.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    },
+    {
+      "audit_id": "LEGACY-AUDIT-INTEGRATION",
+      "domain": "Integration",
+      "trigger_domains": ["cross_component", "integration"],
+      "required_architecture": [
+        "docs/authority/B025/TRACK_B/B022_INDEPENDENT_AUDIT.md",
+        "docs/authority/B025/TRACK_B/B024_FINAL_MAIN_CONSISTENCY_AUDIT.md",
+        "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true
+    }
+  ],
+  "future_policy": {
+    "only_affected_domains_trigger_revalidation": true,
+    "trigger_mode": "affected_domain_only",
+    "revalidation_scope": "only the legacy audit sessions whose trigger_domains intersect the changed domains",
+    "no_trigger_domains": ["docs", "typos", "spelling", "comments", "markdown", "formatting"],
+    "deduplication": "duplicate audit_ids for the same change are collapsed to a single session",
+    "escalation_to_final_audit": false,
+    "gate_blocking": true
+  }
+}

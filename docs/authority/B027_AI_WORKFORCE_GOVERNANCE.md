@@ -1,6 +1,6 @@
 # B-027 AI Workforce / Work-Control Governance
 
-**Status:** FROZEN ARCHITECTURE / B027-A FOUNDATION IMPLEMENTED / B027-B RUNTIME IMPLEMENTED  
+**Status:** FROZEN ARCHITECTURE / B027-A FOUNDATION IMPLEMENTED / B027-B RUNTIME IMPLEMENTED / B027-C INTEGRITY, AUDIT GATE, AND COLD RECOVERY IMPLEMENTED  
 **Authority:** B-027 is a frozen specification under `docs/authority/B_FREEZE_REGISTRY.md`.  
 **Precedence:** See `docs/authority/AUTHORITY_INDEX.md` for the canonical numbered precedence list.  
 
@@ -54,17 +54,20 @@ B-027 does **not** redefine Messenger product behavior, backend service behavior
 - Final Pre-Product Architecture/Security Audit gate;
 - Product-resume blocking semantics.
 
-### Frozen architecture (B027-C only)
+### Implemented in B027-C
 
-- Cold Recovery integration;
-- workforce handoff manifest extension;
-- stale-handoff retest.
-
-### Deferred to B027-C
-
-- Cold Recovery integration;
-- workforce handoff manifest extension;
-- stale-handoff retest.
+- Final B027 integrity validator (`tools/workforce/validate_b027_integrity.py`);
+- system-level adversarial tests;
+- cross-component integrity graph;
+- orphan-state detection;
+- deadlock/livelock detection;
+- responsibility ownership coverage;
+- final audit plans/manifests;
+- legacy audit plans/manifests;
+- audit-result schema;
+- final pre-product architecture/security audit gate;
+- product-development block;
+- Handoff and Cold Recovery integration.
 
 ---
 
@@ -374,7 +377,7 @@ It remains fail-closed:
 
 ## W. Cold Recovery requirement
 
-B-027-C will implement workforce Cold Recovery.  
+B027-C implements workforce Cold Recovery.  
 A fresh context with only the handoff package must be able to determine at minimum:
 
 - canonical repository;
@@ -419,6 +422,10 @@ No override is valid without traceability.
 - B027-A validator: `tools/workforce/validate_b027a.py`
 - State/Gate Resolver: `tools/workforce/state_gate_resolver.py`
 - B027-B validator: `tools/workforce/validate_b027b.py`
+- B027-C integrity validator: `tools/workforce/validate_b027_integrity.py`
+- Final Audit Plan: `docs/workforce/audits/FINAL_AUDIT_PLAN.md`
+- Legacy Audit Plan: `docs/workforce/audits/LEGACY_AUDIT_PLAN.md`
+- Audit Result Schema: `docs/workforce/schemas/audit-result.schema.json`
 
 ---
 
@@ -426,7 +433,7 @@ No override is valid without traceability.
 
 - B027-A foundation: implemented as deterministic schemas, registries, state, and tests.
 - B027-B runtime: State/Gate Resolver, Role Contracts, Task lifecycle engine, Derived Work processing, Prompt Registry, Communication Bus, security and legacy triggers, and final product gate semantics.
-- B027-C: Cold Recovery and handoff integration.
+- B027-C integrity, audit gate, and cold recovery: implemented; includes the final B027 integrity validator, system-level adversarial tests, cross-component integrity graph, orphan-state and deadlock/livelock detection, responsibility ownership coverage, final/legacy audit plans/manifests, audit-result schema, final pre-product architecture/security audit gate, product-development block, and Handoff/Cold Recovery integration.
 
 ---
 
@@ -449,8 +456,37 @@ The resolver assigns the minimum sufficient level and records the rationale:
 
 ## AC. Final Pre-Product Architecture/Security Audit
 
-A future gate after B027-A/B/C requires three isolated fresh audit sessions with no shared state.  
-The product is blocked until the gate conditions are met and recorded.
+B027-C implemented the final pre-product architecture/security audit gate. The gate is opened by three isolated, read-only, fresh audit sessions with no shared prompt state, no stale findings, and no shared working-tree edits:
+
+1. `ANOX-AUDIT-MAIN-ARCH-001` — product and system architecture.
+2. `ANOX-AUDIT-WORKFORCE-ARCH-001` — B-027 workforce/work-control governance architecture.
+3. `ANOX-AUDIT-SECURITY-ARCH-001` — security, privacy, cryptography, and trust boundaries.
+
+Each session:
+- starts from a recorded canonical SHA;
+- is independent of the implementation role where independence is required;
+- produces an `audit-result` record conforming to `docs/workforce/schemas/audit-result.schema.json`;
+- appends that record to `docs/workforce/registries/audits.jsonl`.
+
+The canonical fail-closed workflow is:
+
+```text
+Read-Only Audit
+→ Findings Freeze
+→ Targeted Fix (authorized, no scope expansion)
+→ Targeted Delta Retest (new evidence against frozen findings)
+→ Systemic Re-audit (only if required)
+→ Human Final Gate
+```
+
+Product-resume requirements for B-004/B-005 include:
+- all three final audit sessions produce `PASS` or `PARTIAL` with no `FAIL` or `BLOCKED`;
+- all required legacy audits are satisfied;
+- no open `CRITICAL` or `HIGH` findings remain;
+- every targeted fix has completed delta retest with new evidence;
+- every `systemic_reaudit_required: true` flag is cleared by a fresh systemic re-audit;
+- a human Product & Security Owner decision records the final gate in `docs/workforce/registries/decisions.jsonl`;
+- the State/Gate Resolver returns a non-`BLOCKED` machine decision for the product gate.
 
 ---
 
@@ -464,5 +500,6 @@ Audit output is recorded and must be satisfied before the final product gate can
 
 ## AE. Product Development Block
 
-`PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT` is the fail-closed product gate.  
-B027-B and B027-C workforce work may continue, but B-004 and B-005 product development remains blocked until the final pre-product architecture/security audit conditions are satisfied.
+`PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT` is the fail-closed product gate. B027-C workforce work may continue, but B-004 and B-005 product development remains blocked until the final pre-product architecture/security audit conditions are satisfied and the Human Final Gate is recorded.
+
+`B027 IMPLEMENTATION COMPLETE` is the runtime/workforce milestone produced by a passing run of `tools/workforce/validate_b027_integrity.py`. It is distinct from `FINAL PRE-PRODUCT AUDIT COMPLETE`, which is the human-gated product-resume condition. `B027 IMPLEMENTATION COMPLETE` does not, by itself, unblock product development.

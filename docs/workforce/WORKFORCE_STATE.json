@@ -1,7 +1,7 @@
 {
-  "schema_version": "B027B-v1",
+  "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME",
+  "current_gate": "B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION",
   "active_roles": [
     "ROLE-001",
     "ROLE-002",
@@ -10,21 +10,40 @@
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-B027B0001"
+    "ANOX-TASK-B027C0001"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-B027B0001",
+    "task_id": "ANOX-TASK-B027C0001",
     "role_id": "ROLE-003",
-    "branch": "governance/b027-work-control-runtime"
+    "branch": "governance/b027-final-integration"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": null,
   "latest_run_id": null,
   "latest_work_candidate_id": null,
+  "final_pre_product_audit": {
+    "required": true,
+    "status": "NOT_EXECUTED",
+    "required_audits": [
+      "AUDIT-MAIN-ARCHITECTURE",
+      "AUDIT-WORKFORCE-ARCHITECTURE",
+      "AUDIT-SECURITY-ARCHITECTURE"
+    ],
+    "required_legacy_audits": [
+      "LEGACY-AUDIT-B002",
+      "LEGACY-AUDIT-B003",
+      "LEGACY-AUDIT-CRYPTO",
+      "LEGACY-AUDIT-ANDROID-SEC",
+      "LEGACY-AUDIT-BUILD",
+      "LEGACY-AUDIT-INTEGRATION"
+    ],
+    "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT"
+  },
   "notes": [
-    "B027-B runtime and validator implemented on governance/b027-work-control-runtime.",
-    "B027-C remains deferred.",
-    "B027-A foundation merged."
+    "B027-C final integration implemented on governance/b027-final-integration.",
+    "Final Pre-Product Architecture/Security Audit is REQUIRED and NOT EXECUTED.",
+    "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
+    "B027-A and B027-B are merged and canonical."
   ]
 }

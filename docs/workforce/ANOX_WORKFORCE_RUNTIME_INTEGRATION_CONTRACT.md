@@ -1,6 +1,6 @@
 # ANOX Workforce Runtime / Integration Contract
 
-**Status:** B027-B RUNTIME  
+**Status:** B027-C RUNTIME / FINAL INTEGRATION  
 **Authority:** `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`  
 
 This contract defines how the B-027 workforce runtime entities interact.  
@@ -109,6 +109,22 @@ The bus is append-only and preserves finding immutability and routing.
 The deterministic fail-closed resolver implemented in `tools/workforce/state_gate_resolver.py`.  
 It evaluates Candidate Task Packages, state transitions, Derived Work Candidates, path enforcement, one-active-writer, human-action boundaries, security triggers, legacy revalidation, and the final product gate.
 
+### B027 Integrity Validator
+
+The deterministic, stdlib-only, fail-closed validator implemented in `tools/workforce/validate_b027_integrity.py`. It runs `validate_b027a.py` and `validate_b027b.py` as subprocesses and then checks the integrated B027-C governance graph: Authority → Runtime Contract → Role Contracts → Workforce State → Tasks → Findings/Decisions/Runs → Prompt/Communication → Resolver → Security Reassessment → Legacy Revalidation → Project Memory. It validates cross-component integrity, orphan-state detection, deadlock/livelock detection, responsibility ownership coverage, and adversarial boundary cases. A passing run reports `B027_IMPLEMENTATION: COMPLETE` while leaving the product gate `PRODUCT_DEVELOPMENT: BLOCKED_PENDING_FINAL_AUDIT`.
+
+### Final Audit Plan
+
+The human-readable and machine-readable plan for the final pre-product architecture/security audit. The human-readable contract is `docs/workforce/audits/FINAL_AUDIT_PLAN.md` and the machine-readable manifest is `docs/workforce/audits/final-audit-plan.json`.
+
+### Legacy Audit Plan
+
+The human-readable and machine-readable plan for legacy revalidation audits. The human-readable contract is `docs/workforce/audits/LEGACY_AUDIT_PLAN.md` and the machine-readable manifest is `docs/workforce/audits/legacy-audit-plan.json`.
+
+### Audit Result Schema
+
+The JSON Schema for audit result records produced by final and legacy audit sessions: `docs/workforce/schemas/audit-result.schema.json`. Results are appended to `docs/workforce/registries/audits.jsonl`.
+
 ---
 
 ## C. Runtime flow
@@ -137,6 +153,17 @@ It evaluates Candidate Task Packages, state transitions, Derived Work Candidates
 12. Only after human-controlled remote action may the result be merged.
 13. The final pre-product architecture/security audit gate remains closed until all blocking findings, legacy audits, and final audit conditions are satisfied.
 
+### B027-C final integrity and audit-gate flow
+
+1. The B027 Integrity Validator runs `validate_b027a.py` and `validate_b027b.py` and then executes the integrated B027-C checks across the full governance graph.
+2. It validates cross-component integrity, orphan-state detection, deadlock/livelock detection, responsibility ownership coverage, and adversarial boundary cases.
+3. It checks that the Final Audit Plan, Legacy Audit Plan, and audit-result schema are present and valid.
+4. It verifies that the final product gate is fail-closed: `PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT` until all final and legacy audit conditions are satisfied.
+5. When validation passes, it records `B027 IMPLEMENTATION COMPLETE`; this is a workforce milestone and does not by itself open the product gate.
+6. The three final pre-product audit sessions (`AUDIT-MAIN-ARCHITECTURE`, `AUDIT-WORKFORCE-ARCHITECTURE`, `AUDIT-SECURITY-ARCHITECTURE`) are read-only, fresh, and independent.
+7. Each audit session follows: Read-Only → Findings Freeze → Targeted Fix → Targeted Delta Retest → Systemic Re-audit if required → Human Final Gate.
+8. Product development resumes only when the product-gate conditions are satisfied and the State/Gate Resolver returns a non-`BLOCKED` machine decision with a recorded human final gate.
+
 ---
 
 ## D. Integration with Project Memory / Continuity
@@ -151,7 +178,25 @@ It ensures the workforce foundation is structurally and semantically consistent.
 
 ---
 
-## E. Fail-closed defaults
+## E. Handoff and Cold Recovery integration
+
+A fresh context with only the handoff package must be able to reconstruct the canonical B027 state, including:
+
+- canonical repository and canonical branch;
+- handoff snapshot SHA and current baseline;
+- highest authority and the B027 authority chain;
+- Role Registry and Role Contracts;
+- active roles, tasks, findings, decisions, and runs;
+- current gate and next authorized action;
+- Human-Controlled Remote Write Mode;
+- final/legacy audit plans and audit-result schema;
+- the location of the B027 Integrity Validator.
+
+The handoff package is anchored in `docs/continuity/CURRENT_HANDOFF.md`, `docs/continuity/CURRENT_STATE.json`, `docs/continuity/CURRENT_GIT_STATE.md`, `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl`, and `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md`. The integrity validator verifies that these surfaces are present, consistent, and parseable, and that a cold-recovery session can reconstruct the required B027 state without relying on stale or private context.
+
+---
+
+## F. Fail-closed defaults
 
 - Unknown role → FAIL.
 - Unknown task state → FAIL.
@@ -172,7 +217,7 @@ The authoritative list and logic are in `tools/workforce/state_gate_resolver.py`
 
 ---
 
-## F. References
+## G. References
 
 - B027 Authority: `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`
 - Model provider policy: `docs/workforce/MODEL_PROVIDER_POLICY.md`
@@ -185,3 +230,9 @@ The authoritative list and logic are in `tools/workforce/state_gate_resolver.py`
 - B027-A validator: `tools/workforce/validate_b027a.py`
 - State/Gate Resolver: `tools/workforce/state_gate_resolver.py`
 - B027-B validator: `tools/workforce/validate_b027b.py`
+- B027-C integrity validator: `tools/workforce/validate_b027_integrity.py`
+- Final Audit Plan: `docs/workforce/audits/FINAL_AUDIT_PLAN.md`
+- Final audit manifest: `docs/workforce/audits/final-audit-plan.json`
+- Legacy Audit Plan: `docs/workforce/audits/LEGACY_AUDIT_PLAN.md`
+- Legacy audit manifest: `docs/workforce/audits/legacy-audit-plan.json`
+- Audit Result Schema: `docs/workforce/schemas/audit-result.schema.json`
