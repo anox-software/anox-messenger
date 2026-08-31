@@ -89,6 +89,27 @@ class LiveFixture:
             "Approximately **27%**.\nDevice Authentication work has not started.\n",
         )
 
+        # Project Memory / Progress Integrity V1 surfaces.  The default fixture does
+        # not enable memory state keys, so the validator treats these as present but
+        # not-yet-configured and does not fail on missing event markers.
+        self._write("docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md", "# Project Memory Surface Index\n")
+        self._write(
+            "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
+            json.dumps(
+                {
+                    "event_id": "ANOX-EVENT-0001",
+                    "date": "2026-08-30",
+                    "type": "project_governance",
+                    "task": "FIXTURE",
+                    "summary": "fixture baseline",
+                    "status": "in_progress",
+                    "start_head": "__FIXTURE_HEAD__",
+                    "end_head": "__FIXTURE_HEAD__",
+                }
+            )
+            + "\n",
+        )
+
     def _impl_md(self, stale_claims=None):
         base = "# Impl\nB-002 MERGED.\nB-003 MERGED FOUNDATION.\n"
         if stale_claims:
@@ -1293,6 +1314,26 @@ class CMLFixture:
         self._write("docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md", "# Checklist\n")
         self._write("FORTSCHRITT.md", "# Fortschritt\nCML TEST\n")
         self._write("DEVIN_PROMPT_OUTPUT_ARCHIV.md", "# Archive\n")
+
+        # Project Memory / Progress Integrity V1 surfaces (present but not configured
+        # in the CML fixture state, so the memory freshness check is skipped).
+        self._write("docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md", "# Project Memory Surface Index\n")
+        self._write(
+            "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
+            json.dumps(
+                {
+                    "event_id": "ANOX-EVENT-CML-0001",
+                    "date": "2026-08-30",
+                    "type": "project_governance",
+                    "task": "CML",
+                    "summary": "cml fixture baseline",
+                    "status": "in_progress",
+                    "start_head": "__CML_HEAD__",
+                    "end_head": "__CML_HEAD__",
+                }
+            )
+            + "\n",
+        )
 
     def _write(self, rel, content):
         path = self.root / rel
@@ -2896,6 +2937,512 @@ class TestM1R3ArchiveManifest(unittest.TestCase):
             self.assertIn("HANDOFF_ARCHIVE_VALIDATION: PASS", r.stdout + r.stderr)
         finally:
             a.cleanup(); f.cleanup()
+
+
+class TestProjectMemoryFreshness(unittest.TestCase):
+    """Project Memory / Progress Integrity V1 validator tests."""
+
+    SHA_A = "a" * 40
+    SHA_B = "b" * 40
+    SHA_C = "c" * 40
+    DUMMY_SHA = "0" * 40
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp(prefix="anox_pm_")
+        self.root = Path(self.tmp)
+        self._write("docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md", "# Project Memory Surface Index\n")
+        self._write("PROJECT_STATE.md", "# State\n")
+        self._write("FORTSCHRITT.md", "# Fortschritt\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write(self, rel, content):
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    def _write_ledger(self, events):
+        path = self.root / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            for ev in events:
+                f.write(json.dumps(ev) + "\n")
+
+    def _base_state(self, **overrides):
+        state = {
+            "schema_version": "B026-1.2",
+            "canonical_branch": "main",
+            "delivery_branch": "delivery",
+            "pre_merge_gate": "PRE-MERGE",
+            "post_merge_gate": "POST-MERGE",
+        }
+        state.update(overrides)
+        return state
+
+    def _write_state(self, **overrides):
+        self._write("docs/continuity/CURRENT_STATE.json", json.dumps(self._base_state(**overrides)))
+
+    def _write_markers(self, event_id):
+        ps_path = self.root / "PROJECT_STATE.md"
+        ps_text = ps_path.read_text(encoding="utf-8") if ps_path.exists() else "# State\n"
+        ps_text += f"\n<!-- ANOX_EVENT: {event_id} -->\n"
+        ps_path.write_text(ps_text, encoding="utf-8")
+
+        ft_path = self.root / "FORTSCHRITT.md"
+        ft_text = ft_path.read_text(encoding="utf-8") if ft_path.exists() else "# Fortschritt\n"
+        ft_text += f"\n## Latest section\n<!-- ANOX_EVENT: {event_id} -->\n"
+        ft_path.write_text(ft_text, encoding="utf-8")
+
+    def _call(self, live_branch="main", live_head=None, mode="archive", all_ok=True, state=None):
+        if state is None:
+            state_path = self.root / "docs" / "continuity" / "CURRENT_STATE.json"
+            if state_path.exists():
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+            else:
+                state = self._base_state()
+        return vc.validate_project_memory_freshness(
+            self.root, all_ok, "TEST", live_branch, live_head, state, mode
+        )
+
+    def test_ledger_valid_append_sequence_PASS(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "first",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "second",
+                "status": "closed",
+                "start_head": self.SHA_B,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0002", latest_human_history_event_id="ANOX-EVENT-0002")
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertTrue(all_ok, status)
+        self.assertIn("PASS", status)
+
+    def test_duplicate_event_id_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "first",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "dup",
+                "status": "closed",
+                "start_head": self.SHA_B,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_malformed_jsonl_line_FAIL(self):
+        path = self.root / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            '{"event_id":"ANOX-EVENT-0001","date":"2026-08-30","type":"x","task":"x","summary":"x","status":"x"}\n'
+            "this is not json\n",
+            encoding="utf-8",
+        )
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_current_state_event_pointer_mismatch_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "first",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "second",
+                "status": "closed",
+                "start_head": self.SHA_B,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0099", latest_human_history_event_id="ANOX-EVENT-0002")
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_fortschriff_latest_event_marker_missing_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "second",
+                "status": "closed",
+                "start_head": self.SHA_B,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0002", latest_human_history_event_id="ANOX-EVENT-0002")
+        # PROJECT_STATE.md has the marker, but FORTSCHRITT.md latest section does not.
+        self._write("PROJECT_STATE.md", "# State\n\n<!-- ANOX_EVENT: ANOX-EVENT-0002 -->\n")
+        self._write("FORTSCHRITT.md", "# Fortschritt\n\n## Old section\nsome text\n")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertFalse(all_ok)
+        self.assertIn("FORTSCHRITT", status)
+
+    def test_project_state_latest_event_mismatch_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "first",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "second",
+                "status": "closed",
+                "start_head": self.SHA_B,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0002", latest_human_history_event_id="ANOX-EVENT-0002")
+        # FORTSCHRITT references the correct last sealed event, PROJECT_STATE references the older one.
+        self._write("PROJECT_STATE.md", "# State\n\n<!-- ANOX_EVENT: ANOX-EVENT-0001 -->\n")
+        self._write("FORTSCHRITT.md", "# Fortschritt\n\n## Latest\n<!-- ANOX_EVENT: ANOX-EVENT-0002 -->\n")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertFalse(all_ok)
+        self.assertIn("PROJECT_STATE", status)
+
+    def test_material_checkpoint_no_ledger_event_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0001", latest_human_history_event_id="ANOX-EVENT-0001")
+        self._write_markers("ANOX-EVENT-0001")
+        all_ok, status = self._call(live_head=self.SHA_B)  # live has moved past the merge
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_t0_transient_no_event_required(self):
+        # T0/discovery transient work on a non-lifecycle branch: no ledger event required.
+        state = {"schema_version": "B026-1.0", "baseline_branch": "main"}
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "discovery",
+                "task": "T0",
+                "summary": "exploration",
+                "status": "complete",
+            },
+        ]
+        self._write_ledger(events)
+        all_ok, status = self._call(live_head=self.SHA_A, state=state)
+        self.assertTrue(all_ok, status)
+
+    def test_t1_task_internal_aggregation(self):
+        # Multiple T1 events can aggregate against the same material checkpoint.
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1-A",
+                "summary": "part a",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1-B",
+                "summary": "part b",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0002", latest_human_history_event_id="ANOX-EVENT-0002")
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_head=self.SHA_A)
+        self.assertTrue(all_ok, status)
+        self.assertIn("PASS", status)
+
+    def test_t2_material_event_requires_history_sync(self):
+        # A T2 review/remediation must have a sealed end_head or it cannot be the last sealed event.
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "remediation",
+                "task": "T2",
+                "summary": "review fix",
+                "status": "remediated",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0001", latest_human_history_event_id="ANOX-EVENT-0001")
+        self._write_markers("ANOX-EVENT-0001")
+        all_ok, status = self._call(live_head=self.SHA_A)
+        self.assertTrue(all_ok, status)
+        self.assertIn("PASS", status)
+
+    def test_t3_gate_event_requires_current_state_sync(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "gate_transition",
+                "task": "GATE",
+                "summary": "gate transition",
+                "status": "authorized",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+            },
+        ]
+        self._write_ledger(events)
+        # State is deliberately stale: it points to the canonical merge, not the later gate.
+        self._write_state(latest_material_event_id="ANOX-EVENT-0001", latest_human_history_event_id="ANOX-EVENT-0001")
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_head=self.SHA_A)
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_one_derived_canonical_merge_allowed(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "project_governance",
+                "task": "M2B",
+                "summary": "derived runtime event",
+                "status": "in_progress",
+                "start_head": self.SHA_A,
+                "end_head": "__M2B_SUBSTANTIVE_HEAD__",
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0001", latest_human_history_event_id="ANOX-EVENT-0001")
+        self._write_markers("ANOX-EVENT-0001")
+        all_ok, status = self._call(live_head=self.SHA_A)
+        self.assertTrue(all_ok, status)
+        self.assertIn("ONE PENDING DERIVED RUNTIME EVENT", status)
+
+    def test_second_checkpoint_without_sealing_prior_merge_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "project_governance",
+                "task": "M2B",
+                "summary": "unsealed derived event",
+                "status": "in_progress",
+                "start_head": self.SHA_A,
+                "end_head": "__M2B_SUBSTANTIVE_HEAD__",
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0001", latest_human_history_event_id="ANOX-EVENT-0001")
+        self._write_markers("ANOX-EVENT-0001")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertFalse(all_ok)
+        # A new material checkpoint past the canonical merge without a new ledger event is a failure.
+        self.assertIn("FAIL", status)
+
+    def test_next_memory_sync_seals_pending_runtime_merge_PASS(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "M2B",
+                "summary": "sealed derived runtime event",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(latest_material_event_id="ANOX-EVENT-0002", latest_human_history_event_id="ANOX-EVENT-0002")
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_head=self.SHA_B)
+        self.assertTrue(all_ok, status)
+        self.assertIn("PASS", status)
+
+    def test_event_unknown_commit_FAIL(self):
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "T1",
+                "summary": "bad ref",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": "notavalidsha",
+            },
+        ]
+        self._write_ledger(events)
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("valid SHA", status)
+
+    def test_handoff_includes_ledger_and_index(self):
+        """Official handoff ZIP contains the ledger and surface index."""
+        f = LiveFixture()
+        try:
+            f._run(["git", "add", "."])
+            f._run(["git", "commit", "-m", "sync"])
+            r = f.generate(emergency=False)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            names = f.list_zip()
+            self.assertIn("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", names)
+            self.assertIn("docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md", names)
+        finally:
+            f.cleanup()
+
+    def test_cold_recovery_reconstructs_latest_event(self):
+        """Archive mode can reconstruct the latest event from the ledger without .git."""
+        events = [
+            {
+                "event_id": "ANOX-EVENT-0001",
+                "date": "2026-08-30",
+                "type": "canonical_merge",
+                "task": "PR-1",
+                "summary": "merge",
+                "status": "merged",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_A,
+                "merge_head": self.SHA_A,
+            },
+            {
+                "event_id": "ANOX-EVENT-0002",
+                "date": "2026-08-30",
+                "type": "implementation",
+                "task": "M2B",
+                "summary": "sealed derived runtime event",
+                "status": "closed",
+                "start_head": self.SHA_A,
+                "end_head": self.SHA_B,
+            },
+        ]
+        self._write_ledger(events)
+        self._write_state(
+            latest_material_event_id="ANOX-EVENT-0002",
+            latest_human_history_event_id="ANOX-EVENT-0002",
+            handoff_head=self.SHA_B,
+            handoff_branch="main",
+        )
+        self._write_markers("ANOX-EVENT-0002")
+        all_ok, status = self._call(live_branch="main", live_head=self.SHA_B, mode="archive")
+        self.assertTrue(all_ok, status)
+        self.assertIn("PASS", status)
 
 
 if __name__ == "__main__":

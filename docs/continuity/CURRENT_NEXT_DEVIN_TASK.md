@@ -1,55 +1,52 @@
 # CURRENT NEXT DEVIN TASK
 
-**Status:** AWAITING INDEPENDENT REVIEW
-**Task ID:** `PRE-B027-M1R3 — CANONICAL MERGE LIFECYCLE SCHEMA-DOWNGRADE REMEDIATION`
+**Status:** AUTHORIZED — START WHEN HUMAN ASSIGNS
+**Task ID:** `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 **Date:** 2026-08-30
 
 ---
 
 ## Purpose
 
-Perform the third targeted remediation for ANOX-CMLR2REV-001 (archive lifecycle schema-class downgrade), ANOX-CMLR2REV-002 (placeholder regression test defect), and ANOX-CMLR2REV-003 (SHA-256 manifest coverage gap).
+Implement the B-027 AI Workforce / Work-Control Governance runtime described in
+`docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
 
-The M1R3 fix prevents an attacker-controlled archive from disabling current Canonical Merge Lifecycle validation by removing lifecycle/schema fields and triggering a silent fallback to legacy validation. It also forces lifecycle enforcement from the independently generated `GIT_SNAPSHOT.txt` resolved lifecycle metadata block, requires all lifecycle keys in `CURRENT_STATE.json`, hardens lifecycle snapshot placeholder parsing, and covers `GIT_SNAPSHOT.txt` and `MANIFEST.txt` in the archive SHA-256 manifest.
+B-027 is authorized by the canonical live validator at `9bbd4ea...` (PR #4 merge). M2B is the
+intermediate project-memory repair task and is the current authorized work; once M2B is
+complete and its metadata is synchronized, the next engineering task is B-027 implementation.
 
 ## Preconditions satisfied
 
-- `PRE-B027-0R2` is merged to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3).
-- `PRE-B027-M1R1` (canonical merge lifecycle implementation) is merged to `governance/canonical-merge-lifecycle-v1` at `c36e45f8cf94baa40913215a2c34389138472fd1`.
-- `PRE-B027-M1R2` (delta remediation for CMLR1REV-001 and CMLR1REV-002) is implemented at `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`.
-- `PRE-B027-M1R3` (schema-downgrade remediation) is implemented at `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`.
-- `governance/canonical-merge-lifecycle-v1` is created directly from canonical `main`.
-- `tools/continuity/validate_continuity.py` uses explicit, fail-closed archive schema classification.
-- `tools/continuity/generate_handoff.py` covers `GIT_SNAPSHOT.txt` and `MANIFEST.txt` in the SHA-256 manifest.
-- `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` records the schema-downgrade invariants.
-- No product code, CI, or B-027 runtime files are modified.
-- Remote-write authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE`.
+- B-027 architecture is frozen and implementation-authorized.
+- 19 roles, evidence/egress/priority models, and role-versus-model distinction are defined.
+- Canonical Merge Lifecycle V1 is merged to `main`.
+- Human-Controlled Remote Write Mode is in effect.
+- Project Memory / Progress Integrity V1 ledger, surface index, and validator checks are active.
 
 ## Scope of the next task
 
-- Independently Delta Retest ANOX-CMLR2REV-001, ANOX-CMLR2REV-002, and ANOX-CMLR2REV-003.
-- Confirm ANOX-CMLREV-002 and ANOX-CMLR1REV-002 remain REMEDIATED / READY FOR RETEST and can be closed.
-- Run `python3 tools/continuity/test_handoff_and_validator.py` and confirm PASS.
-- Run `python3 tools/continuity/validate_continuity.py --mode live` on `governance/canonical-merge-lifecycle-v1` and confirm PASS.
-- Run a scratch `--no-ff` merge simulation into `main` and confirm `CANONICAL MERGE TRANSITION: PASS`.
-- Run a scratch archive schema-downgrade simulation and confirm `HANDOFF_ARCHIVE_VALIDATION: FAIL`.
-- Run `python3 tools/continuity/generate_handoff.py` and confirm archive validation PASS.
-- Verify no remote mutation occurred.
-- If all checks pass, declare ready for controlled human PR/merge.
+- Implement the B-027 execution layer (role contracts, task packages, concrete prompts, legacy
+  bridge) as defined by the architecture freeze.
+- Maintain `WRITER != INDEPENDENT REVIEWER` and fail-closed gates.
+- Record all material events in `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` and
+  `FORTSCHRITT.md` with `<!-- ANOX_EVENT: ... -->` markers.
+- Update only the minimum surfaces required for each event type per
+  `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md`.
+- Run the full continuity suite and confirm `PROJECT_MEMORY_FRESHNESS: PASS`.
 
 ## Out of scope
 
-- B-027 Workforce runtime implementation.
 - B-004 backend implementation.
 - B-005 database/RLS implementation.
-- Any Messenger product code change.
+- Messenger product code change unrelated to B-027 governance.
 - Pushing, PR creation, or remote automation.
 
-## Next authorized sequence after this review
+## Next authorized sequence
 
-1. If focused review PASS, preserve the clean local `governance/canonical-merge-lifecycle-v1` branch.
-2. Human-controlled remote actions: create PR, merge to `main`.
-3. After verified merge: `B-027 IMPLEMENTATION AUTHORIZED`.
+1. Complete `PRE-B027-M2B` and its metadata sync.
+2. Create a B-027 work branch from canonical `main`.
+3. Implement B-027 runtime.
+4. Review, human PR/merge.
 
 ## Remote safety
 

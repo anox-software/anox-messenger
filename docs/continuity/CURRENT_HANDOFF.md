@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation
+**Handoff version:** PRE-B027-M2B — Project Memory / Progress Integrity V1
 **Date:** 2026-08-30
 
 ---
@@ -20,16 +20,16 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `governance/canonical-merge-lifecycle-v1`
-- Current work branch: `governance/canonical-merge-lifecycle-v1`
+- Delivery branch: `governance/project-memory-progress-integrity-v1`
+- Current work branch: `governance/project-memory-progress-integrity-v1`
 - Current baseline branch: `main`
-- Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
-- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
-- Working tree: expected clean at handoff generation
-- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
-- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
-- Open PR: none (PRE-B027-M1R is local and not yet pushed)
-- Latest merge into `main`: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation
+- Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
+- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- Working tree: clean
+- Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
+- Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Open PR: none
+- Latest merge into `main`: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` — Canonical Merge Lifecycle V1 (new `anox-software/anox-messenger` PR #4)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -47,7 +47,7 @@ New sessions must read that file first.
 - PROMPT-007C — merge gate verification, dependency-tree empirical confirmation, merge, and
   continuity synchronization.
 - PROMPT-008 / PROMPT-008C / PROMPT-008D — B-003 Account/License client domain/state foundation,
-  security review remediation, and final commit-uncertainty closure: MERGED into `main` at
+  security review remediation, and durable pre-commit guard: MERGED into `main` at
   `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). B-003 is MERGED FOUNDATION, not
   production complete.
 - PROMPT-009 — Development Security Governance / Handoff Hardening: MERGED via new PR #1.
@@ -57,57 +57,42 @@ New sessions must read that file first.
 - B-017-Lite — CI / Supply-Chain Security Foundation (PR #2): MERGED into `main` at
   `283c1a1fdda012aab51b0164b4b16636e870f3b5`; all five CI gates PASS; ANOX-B017REV-001 through -007 CLOSED.
 - PRE-B027-0 — B-027 AI Workforce / Work-Control Governance architecture freeze and continuity
-  head-semantic fix implemented on `governance/pre-b027-continuity-reconciliation`; no B-027
-  runtime files created yet; awaiting independent review.
+  head-semantic fix; B-027 runtime not yet implemented.
 - PRE-B027-0R — Targeted remediation of the PRE-B027-0 focused independent review findings
-  (ANOX-PREB027REV-001 through -010) on `governance/pre-b027-continuity-reconciliation`;
-  Findings 002 through 010 closed locally; Finding 001 partially closed; awaiting
-  independent Delta Retest.
-- PRE-B027-0R2 — Merge-commit payload visibility fix (ANOX-PREB027RREV-001) implemented on
-  `governance/pre-b027-continuity-reconciliation`; the validator now uses a merge-aware
-  `git log -m --name-only --no-renames` history scan and includes regression tests for
-  evil-merge, merge-then-revert, clean metadata merge, substantive branch merge, and
-  merge-resolution-into-allowlist scenarios. All findings are now remediated locally; awaiting
-  the final `PRE-B027-0R2 INDEPENDENT DELTA RETEST` for closure.
+  (ANOX-PREB027REV-001 through -010); all findings remediated.
+- PRE-B027-0R2 — Merge-commit payload visibility fix (ANOX-PREB027RREV-001); the validator now
+  uses merge-aware `git log -m --name-only --no-renames`, Range-2 merge-resolution union, and
+  adversarial regression tests.
+- PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation; M1R3
+  implementation/local verification, Handoff, archive, attack-reproduction, and live validation all
+  PASS. Final independent M1R3 Delta Review was NOT performed by human decision; the Human Product &
+  Security Owner authorized controlled Human Push / PR / CI / Merge. Merged to `main` at
+  `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4).
 
 ## Latest completed work
 
-PRE-B027-0 — Continuity semantics / baseline reconciliation:
+PRE-B027-M2B — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`:
 
-- Introduced three distinct HEAD concepts:
-  - `described_head` — the substantive Git commit the tracked metadata describes.
-  - `live_head` — the runtime `git rev-parse HEAD`, never stored as authoritative.
-  - `handoff_snapshot_head` — the external Handoff ZIP manifest value.
-- Replaced the self-referential `baseline_head == live HEAD` invariant with a metadata-only
-  advancement check between `described_head` and `live_head`.
-- Updated `validate_continuity.py` and `test_handoff_and_validator.py` to enforce the new semantics.
-- Added focused negative tests for product code, CI, authority, tool, unknown, non-ancestor,
-  malformed, and unresolved `described_head` cases.
-- Created `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md` capturing the frozen B-027
-  purpose, authority hierarchy, 19 roles, security principles, cost/review rule, state design,
-  evidence model, data-egress model, priority model, handoff requirement, implementation order,
-  and HEAD semantics.
-- Added B-027 to `docs/authority/B_FREEZE_REGISTRY.md`.
-
-PRE-B027-0R — Review finding remediation:
-
-- Fixed rename-into-allowlist bypass by inspecting every commit in the metadata-only range with
-  `git log --name-only --no-renames`.
-- Restored archive-mode required-key enforcement with legacy `baseline_head` compatibility.
-- Removed broad `docs/history/**` and `docs/continuity/HISTORICAL_HANDOFFS/**` prefix trust.
-- Added non-self-referential baseline ancestry validation.
-- Completed the PRE-B027 freeze report with Finding Security, Role≠Model, Gate Resolver, and
-  Cold Recovery requirements.
-- Replaced the duplicated authority precedence list with a canonical reference.
-- Updated `docs/authority/AUTHORITY_INDEX.md` freeze registry scope.
-- Aligned generator and validator `described_head` / `baseline_head` precedence.
-- Enforced described_head declaration in current continuity surfaces.
-- Added adversarial regression tests for all ten findings.
+- Reconstructs missing project history from PROMPT-008D through M1R3 human merge and B-027
+  authorization.
+- Adds append-only `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` with 22 material events
+  (`ANOX-EVENT-0001` through `ANOX-EVENT-0022`).
+- Adds `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md` defining T0/T1/T2/T3 materiality and the
+  minimal surfaces updated per material event.
+- Adds `docs/reports/PROJECT_MEMORY_PROGRESS_RECONSTRUCTION_V1.md` discovery report.
+- Repairs `FORTSCHRITT.md`, `PROJECT_STATE.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, and all relevant
+  `docs/continuity/CURRENT_*.md` surfaces.
+- Extends `tools/continuity/validate_continuity.py` with deterministic ledger parsing, event ID
+  ordering, freshness, and pending runtime transition checks.
+- Adds `tools/continuity/test_handoff_and_validator.py` regression tests for the new memory rules,
+  including pending canonical merge, second checkpoint without seal, and next-sync seal.
+- Updates `docs/continuity/DEVIN_OUTPUT_CONTRACT.md` to require material-event reporting for future
+  T2/T3 tasks.
 
 ## Current open work
 
-`PRE-B027-M1R3` — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`;
-implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M2B` — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`;
+implemented locally; awaiting final metadata synchronization and live validation.
 
 ## Current test baseline
 
@@ -120,7 +105,7 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DEL
 - GrapheneOS physical device: UNVERIFIED
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
-- Continuity unit tests: 132/132 PASS
+- Continuity unit tests: 171/171 PASS
 
 ## Historical provenance
 
@@ -141,25 +126,21 @@ implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DEL
 ## Current blockers
 
 - `ANOX-CMLR1REV-001` is independently CLOSED.
-- `ANOX-CMLR2REV-001`, `ANOX-CMLR2REV-002`, and `ANOX-CMLR2REV-003` are remediated locally and are `READY FOR RETEST`.
-  Closure is reserved for the independent M1R3 Delta Reviewer.
-- `PRE-B027-M2 PROJECT MEMORY / PROGRESS INTEGRITY` is BLOCKED until M1R3
-  independent Delta Retest PASS, controlled Human Push, PR, CI PASS, Human Merge,
-  and final canonical main live validation.
-- GitHub free plan: branch protection and secret scanning unavailable.
+- `ANOX-CMLR2REV-001`, `ANOX-CMLR2REV-002`, and `ANOX-CMLR2REV-003` are remediated and verified.
+- Final independent M1R3 Delta Review was NOT performed by human decision; controlled human merge
+  completed.
 - No product/security blockers.
 - No governance blockers.
-- No PRE-B027 architecture blockers; the architecture is frozen and the M1R3
-  remediation is awaiting independent Delta Retest.
+- GitHub Free plan: branch protection and secret scanning unavailable.
 
 ## Next architecture gate
 
-`CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
+`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 
 ## Next engineering task
 
-After the independent review and controlled human merge, the authorized next gate is `B-027 IMPLEMENTATION AUTHORIZED`.
-No B-027 Workforce runtime files are implemented until that gate is explicitly authorized.
+After M2B metadata sync: implement the B-027 workforce runtime from the architecture freeze.
+No B-027 runtime files are implemented until that task is explicitly authorized and recorded.
 
 ## Do-not-touch foundation
 
@@ -177,4 +158,4 @@ No B-027 Workforce runtime files are implemented until that gate is explicitly a
 
 - `docs/history/` and `docs/history/B025/` are provenance only.
 - Never reactivate superseded RAW rules.
-- B-025, B-026, and the B-027 PRE-FROZEN report are current governance.
+- B-025, B-026, B-017-Lite, and the B-027 PRE-FROZEN architecture are current governance.

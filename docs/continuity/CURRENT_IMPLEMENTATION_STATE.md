@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-30 (PRE-B027-M1R3 canonical merge lifecycle schema-downgrade remediation complete)
+**Date:** 2026-08-30 (PRE-B027-M2B Project Memory / Progress Integrity V1)
 
 ---
 
@@ -17,8 +17,9 @@
 - B-002 Device Authentication client foundation: MERGED into `main` at `d281df66a3471dfd6a9bab0bd899be701317afb4` (PR #4). Android Keystore P-256/ES256 key, hardware policy, RFC9449 DPoP proof creation and verification boundary, fail-closed terminal key loss. 69 JVM unit tests PASS. Independent security/architecture review: APPROVE, no merge-blocking findings. Its `AndroidKeystoreDeviceAuthKeyManagerTest` instrumentation suite ran on a local emulator.
 - B-003 Account/License client domain/state foundation: MERGED into `main` at `e7ee54a713e08950c63cf2d61ec97931864b66bc` (PR #5). Includes identifiers, username/license validation, account/device/entitlement states, registration state machine, narrow `RegistrationApi` contract, persistent Device Auth binding store and registration session storage, `BinaryRegistrationStateCodec`, `DeviceAuthBindingStore.isArmed`, `RegistrationState.CommitArmed`, and legacy plaintext artifact cleanup. 161 JVM unit tests PASS; 62 Android instrumentation tests PASS on a local API-34 emulator. B-003 is MERGED FOUNDATION, not production complete.
 - B-017-Lite CI / supply-chain security foundation: MERGED into `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2). Five GitHub CI gates PASS. Review findings ANOX-B017REV-001 through -007 CLOSED.
-- PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed; the merge-aware history classifier and targeted regression tests are on `main`.
-- PRE-B027-M1R3 canonical merge lifecycle schema-downgrade remediation: COMPLETE on `governance/canonical-merge-lifecycle-v1` at `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`. Prevents archive schema-class downgrade, forces lifecycle enforcement from the `GIT_SNAPSHOT.txt` resolved lifecycle metadata block, requires all lifecycle keys, hardens snapshot placeholder parsing, and covers `GIT_SNAPSHOT.txt`/`MANIFEST.txt` in the archive SHA-256 manifest. Awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
+- PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed.
+- Canonical Merge Lifecycle V1: MERGED into `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). `ANOX-CMLREV-001/003/004` and `ANOX-CMLR1REV-001` independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-CMLREV-002`, and `ANOX-CMLR2REV-001..003` implemented/remediated with automated verification. No final independent M1R3 Delta Review occurred. Final canonical `main` live validation PASS.
+- Project Memory / Progress Integrity V1: implemented and verified on `governance/project-memory-progress-integrity-v1` at `c2d3a04...`. Adds append-only `PROJECT_HISTORY_LEDGER.jsonl`, `PROJECT_MEMORY_SURFACE_INDEX.md`, FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation. Continuity tests 171/171 PASS.
 
 ## IMPLEMENTED
 
@@ -32,6 +33,7 @@
 - Git governance and B-025 authority area.
 - Continuity tools: `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py`.
 - B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper checksum, Rust locked builds).
+- Project Memory Integrity V1 tooling and surfaces.
 
 ## PARTIAL
 
@@ -41,9 +43,9 @@
 
 ## MISSING
 
-- B-027 AI Workforce / Work-Control Governance runtime (architecture frozen, implementation not authorized until focused review passes).
+- B-027 AI Workforce / Work-Control Governance runtime (architecture frozen; implementation authorized at `9bbd4ea...` but runtime not yet built).
 - Device Authentication (B-002) server side: token issuance/storage/revocation, device registry, shared production replay cache, entitlement enforcement. The client foundation is merged (see VERIFIED above).
-- Account/license (B-003) server side: backend implementation of `RegistrationApi`, license generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client domain/state foundation is merged (see VERIFIED above); this is MERGED FOUNDATION, not production complete.
+- Account/license (B-003) server side: backend implementation of `RegistrationApi`, license generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client domain/state foundation is merged (see VERIFIED above).
 - Backend service (B-004)
 - Database/RLS (B-005)
 - Server key distribution (B-006)

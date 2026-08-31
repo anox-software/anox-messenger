@@ -43,6 +43,8 @@ REQUIRED_FILES = [
     "docs/continuity/HANDOFF_WORKFLOW.md",
     "docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md",
     "docs/continuity/CURRENT_STATE.json",
+    "docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md",
+    "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
     "tools/continuity/generate_handoff.py",
     "tools/continuity/validate_continuity.py",
     "tools/security/validate_apk_contents.py",
@@ -154,6 +156,8 @@ METADATA_ONLY_ALLOWLIST = frozenset(
         "docs/continuity/CURRENT_UPLOAD_REQUIREMENTS.md",
         "docs/continuity/HANDOFF_WORKFLOW.md",
         "docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md",
+        "docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md",
+        "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
     }
 )
 
@@ -793,6 +797,374 @@ def validate_current_state_surfaces(root, all_ok, label, live_branch=None, state
         all_ok = False
 
     return all_ok
+
+
+# Project Memory / Progress Integrity V1
+LEDGER_REQUIRED_FIELDS = ("event_id", "date", "type", "task", "summary", "status")
+LEDGER_SHA_FIELDS = ("start_head", "end_head", "merge_head")
+LEDGER_MAX_LINE_BYTES = 4096
+T3_EVENT_TYPES = frozenset({"canonical_merge", "gate_transition", "migration"})
+
+_ANOX_EVENT_PLACEHOLDER_RE = re.compile(r"^__[A-Z0-9_]+__$")
+_ANOX_EVENT_ABBREV_SHA_RE = re.compile(r"^[0-9a-f]{4,39}\.\.\.$")
+
+
+def _classify_event_sha_value(value):
+    """Classify a value that may be a SHA, abbreviation, placeholder, or invalid."""
+    if not value or not isinstance(value, str):
+        return "missing"
+    if _ANOX_EVENT_PLACEHOLDER_RE.match(value):
+        return "placeholder"
+    if _ANOX_EVENT_ABBREV_SHA_RE.match(value):
+        return "abbreviated"
+    if is_valid_sha(value):
+        return "full"
+    return "invalid"
+
+
+def _resolve_event_sealed_sha(ev):
+    """Return (sha, kind) for the commit that seals the event, or (None, None).
+
+    A sealed event must declare a concrete end_head or merge_head. start_head is
+    not a seal; it records where work began and may be a placeholder for a pending
+    derived runtime event.
+    """
+    for field in ("merge_head", "end_head"):
+        val = ev.get(field)
+        kind = _classify_event_sha_value(val)
+        if kind in ("full", "abbreviated"):
+            return val, kind
+    return None, None
+
+
+def _sha_matches_live(sha, kind, live_head):
+    if not live_head or not sha:
+        return False
+    if kind == "full":
+        return sha == live_head
+    if kind == "abbreviated":
+        prefix = sha[:-3]
+        return live_head.startswith(prefix)
+    return False
+
+
+def _resolve_git_object(prefix, cwd=None):
+    """Resolve a short SHA/abbreviation to a full 40-char SHA using git, if possible."""
+    if not prefix or not isinstance(prefix, str):
+        return None
+    if is_valid_sha(prefix):
+        return prefix
+    if _ANOX_EVENT_ABBREV_SHA_RE.match(prefix):
+        short = prefix[:-3]
+        out, _, code = run_git(["rev-parse", "--verify", short], cwd=cwd)
+        if code == 0 and out:
+            return out
+    return None
+
+
+def _extract_latest_fortschritt_section(text):
+    """Return the text of the latest top-level FORTSCHRITT section.
+
+    Markers may sit immediately before the section heading ("<!-- ANOX_EVENT: ... -->\n## ...")
+    or inside the section.  Include a marker that directly precedes the last heading.
+    """
+    if not text:
+        return ""
+    heading_matches = list(re.finditer(r"^## ", text, re.MULTILINE))
+    if not heading_matches:
+        return text
+    last_heading = heading_matches[-1]
+    start = last_heading.start()
+    pre = text[:start]
+    # If the text right before the heading ends with an ANOX_EVENT marker, include it.
+    m = re.search(r"<!--\s*ANOX_EVENT:\s*[^>]+-->\s*$", pre)
+    if m:
+        start = m.start()
+    return text[start:]
+
+
+def _event_marker_re(event_id):
+    return re.compile(r"<!--\s*ANOX_EVENT:\s*" + re.escape(event_id) + r"\s*-->")
+
+
+def _compute_memory_freshness_status(events, state, live_branch, live_head, mode, last_sealed_event, last_event, root):
+    """Determine the PROJECT_MEMORY_FRESHNESS status after basic ledger checks."""
+    if not _is_lifecycle_state(state):
+        return "PASS"
+
+    canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+    if not canonical_branch:
+        return "PASS"
+
+    canonical_merges = [
+        ev for ev in events
+        if ev.get("type") == "canonical_merge" and _resolve_event_sealed_sha(ev)[0] is not None
+    ]
+    if not canonical_merges:
+        return "PASS"
+
+    # Archive mode without a live HEAD cannot verify derived runtime freshness.
+    if mode == "archive" and not live_head:
+        return "PASS"
+
+    last_cm = canonical_merges[-1]
+    cm_sha, cm_kind = _resolve_event_sealed_sha(last_cm)
+
+    last_sealed_sha = None
+    last_sealed_kind = None
+    if last_sealed_event:
+        last_sealed_sha, last_sealed_kind = _resolve_event_sealed_sha(last_sealed_event)
+
+    live_at_cm = _sha_matches_live(cm_sha, cm_kind, live_head)
+
+    # Is the last recorded event still an unsealed in-progress / derived runtime event?
+    is_pending = last_event is not last_sealed_event
+
+    if live_at_cm:
+        if is_pending:
+            start_val = last_event.get("start_head") if last_event else None
+            start_kind = _classify_event_sha_value(start_val)
+            if start_kind in ("full", "abbreviated") and _sha_matches_live(start_val, start_kind, live_head):
+                return "PASS — ONE PENDING DERIVED RUNTIME EVENT"
+            # If the last recorded event has no clear derivation, still allow one pending
+            # derived event when the canonical merge is the most recent sealed T3.
+            if last_sealed_event is last_cm:
+                return "PASS — ONE PENDING DERIVED RUNTIME EVENT"
+            return "FAIL — PENDING EVENT NOT DERIVED FROM LAST T3 GATE"
+        else:
+            if last_event is last_cm:
+                # Canonical merge is the last recorded event and no newer material has been authored.
+                return "PASS — ONE PENDING DERIVED RUNTIME EVENT"
+            # A later checkpoint has already been sealed.
+            return "PASS"
+
+    # live_head is not at the canonical merge.
+    # If a later sealed event matches live_head, the memory has been synced.
+    if last_sealed_sha and _sha_matches_live(last_sealed_sha, last_sealed_kind, live_head):
+        return "PASS"
+
+    # If the last recorded event is an unsealed pending event derived from the canonical
+    # merge and live_head has moved past the merge, a second material checkpoint has been
+    # authored before the pending event was sealed.
+    if is_pending:
+        start_val = last_event.get("start_head") if last_event else None
+        start_kind = _classify_event_sha_value(start_val)
+        if start_kind in ("full", "abbreviated") and _sha_matches_live(start_val, start_kind, cm_sha):
+            # In live mode with git, confirm live_head is actually ahead of the canonical merge.
+            if mode == "live" and (root / ".git").is_dir() and live_head:
+                cm_obj = _resolve_git_object(cm_sha, cwd=root)
+                if cm_obj and git_is_ancestor(cm_obj, live_head, cwd=root):
+                    return "FAIL — SECOND CHECKPOINT BEFORE SEALING PRIOR MERGE"
+                elif cm_obj:
+                    # live_head is not a descendant of the canonical merge; treat as simple mismatch.
+                    return "FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT"
+            # Archive mode or no git: fall through to generic failure.
+            pass
+        return "FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT"
+
+    # The last event is sealed. If the live archive head has advanced past it, the advance
+    # must be a metadata-only synchronization; the caller's described_head / lifecycle
+    # validation already enforces that product/authority/CI/tool changes are recorded.
+    if not is_pending and last_sealed_sha:
+        if mode == "live" and (root / ".git").is_dir() and live_head:
+            last_obj = _resolve_git_object(last_sealed_sha, cwd=root)
+            if last_obj and git_is_ancestor(last_obj, live_head, cwd=root):
+                return "PASS — SEALED EVENT SYNCHRONIZED; METADATA-ONLY ADVANCE"
+            elif last_obj:
+                # live_head is not a descendant of the last sealed event.
+                pass
+        elif mode == "archive" and live_head:
+            # Archive mode cannot diff ancestry. A handoff whose HEAD is a metadata-only
+            # synchronization beyond the described/substantive commit is valid only when the
+            # packaged state explicitly records:
+            #   - handoff_head == the archive live head
+            #   - described_head == the last sealed material event
+            #   - the last material event is not itself a canonical merge (T3), because a T3
+            #     requires a recorded derived event before the next checkpoint.
+            handoff_head = state.get("handoff_head") if state else None
+            described_head = state.get("described_head") if state else None
+            last_type = last_event.get("type") if last_event else None
+            if (
+                handoff_head == live_head
+                and is_valid_sha(described_head)
+                and described_head == last_sealed_sha
+                and live_head != last_sealed_sha
+                and last_type != "canonical_merge"
+            ):
+                return "PASS — SEALED EVENT SYNCHRONIZED; METADATA-ONLY ADVANCE (archive)"
+
+    return "FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT"
+
+
+def validate_project_memory_freshness(root, all_ok, label, live_branch, live_head, state, mode):
+    """Validate the project history ledger and current memory freshness.
+
+    Returns (all_ok, memory_freshness_status).
+    """
+    print(f"\n[{label}] Project memory freshness")
+
+    ledger_path = root / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
+    if not ledger_path.exists():
+        print("  FAIL docs/continuity/PROJECT_HISTORY_LEDGER.jsonl missing")
+        return False, "FAIL — LEDGER MISSING"
+
+    # Memory is only fully applicable when CURRENT_STATE.json exposes event pointers.
+    memory_enabled = bool(
+        state
+        and (state.get("latest_material_event_id") is not None
+             or state.get("latest_human_history_event_id") is not None
+             or state.get("project_memory_freshness") is not None)
+    )
+
+    events = []
+    seen_ids = set()
+    diagnostics = []
+
+    with open(ledger_path, "rb") as f:
+        for idx, raw in enumerate(f, start=1):
+            stripped = raw.rstrip(b"\n\r")
+            if len(stripped) > LEDGER_MAX_LINE_BYTES:
+                diagnostics.append(f"line {idx} exceeds {LEDGER_MAX_LINE_BYTES} bytes")
+                all_ok = False
+                continue
+            line = stripped.decode("utf-8")
+            if not line.strip():
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError as e:
+                diagnostics.append(f"line {idx} is not valid JSON: {e}")
+                all_ok = False
+                continue
+            missing = [k for k in LEDGER_REQUIRED_FIELDS if k not in ev]
+            if missing:
+                diagnostics.append(f"line {idx} missing required fields: {', '.join(missing)}")
+                all_ok = False
+                continue
+            eid = ev["event_id"]
+            if eid in seen_ids:
+                diagnostics.append(f"duplicate event_id: {eid}")
+                all_ok = False
+            seen_ids.add(eid)
+            events.append(ev)
+
+    if diagnostics:
+        for d in diagnostics[:10]:
+            print(f"  FAIL {d}")
+        return all_ok and False, "FAIL — LEDGER MALFORMED"
+
+    if not events:
+        print("  FAIL ledger is empty")
+        return False, "FAIL — LEDGER EMPTY"
+
+    # Validate SHA references in commit/merge fields and git: refs.
+    freshness_status = "PASS"
+    sha_errors = []
+    for ev in events:
+        eid = ev["event_id"]
+        for field in LEDGER_SHA_FIELDS:
+            val = ev.get(field)
+            if not val:
+                continue
+            kind = _classify_event_sha_value(val)
+            if kind == "invalid":
+                sha_errors.append(f"event {eid} {field} is not a valid SHA reference: {val}")
+        for ref in ev.get("refs") or []:
+            if isinstance(ref, str) and ref.startswith("git:"):
+                sha = ref[4:].strip()
+                kind = _classify_event_sha_value(sha)
+                if kind == "invalid":
+                    sha_errors.append(f"event {eid} refs git: value is not a valid SHA reference: {sha}")
+    if sha_errors:
+        for e in sha_errors[:10]:
+            print(f"  FAIL {e}")
+        all_ok = False
+        freshness_status = f"FAIL — {sha_errors[0]}"
+
+    # Determine the last sealed event (the latest event with a concrete end/merge head).
+    last_sealed_event = None
+    for ev in reversed(events):
+        sha, _ = _resolve_event_sealed_sha(ev)
+        if sha is not None:
+            last_sealed_event = ev
+            break
+    last_event = events[-1]
+    last_sealed_id = last_sealed_event["event_id"] if last_sealed_event else last_event["event_id"]
+
+    if memory_enabled:
+        # State pointers must reference the last sealed material/human event.
+        mat_id = state.get("latest_material_event_id")
+        hum_id = state.get("latest_human_history_event_id")
+        if mat_id is not None:
+            if mat_id != last_sealed_id:
+                print(f"  FAIL latest_material_event_id {mat_id} != last sealed ledger event {last_sealed_id}")
+                all_ok = False
+                if not freshness_status.startswith("FAIL"):
+                    freshness_status = f"FAIL — latest_material_event_id {mat_id} != last sealed ledger event {last_sealed_id}"
+            else:
+                print(f"  OK   latest_material_event_id matches last sealed ledger event {mat_id}")
+        if hum_id is not None:
+            if hum_id != last_sealed_id:
+                print(f"  FAIL latest_human_history_event_id {hum_id} != last sealed ledger event {last_sealed_id}")
+                all_ok = False
+                if not freshness_status.startswith("FAIL"):
+                    freshness_status = f"FAIL — latest_human_history_event_id {hum_id} != last sealed ledger event {last_sealed_id}"
+            else:
+                print(f"  OK   latest_human_history_event_id matches last sealed ledger event {hum_id}")
+
+        # HTML comment markers in PROJECT_STATE.md and the latest FORTSCHRITT section.
+        marker_event_id = last_sealed_id
+        marker_re = _event_marker_re(marker_event_id)
+
+        project_state_path = root / "PROJECT_STATE.md"
+        if project_state_path.exists():
+            ps_text = project_state_path.read_text(encoding="utf-8")
+            if marker_re.search(ps_text):
+                print(f"  OK   PROJECT_STATE.md references event {marker_event_id}")
+            else:
+                print(f"  FAIL PROJECT_STATE.md does not reference event {marker_event_id}")
+                all_ok = False
+                if not freshness_status.startswith("FAIL"):
+                    freshness_status = f"FAIL — PROJECT_STATE.md does not reference event {marker_event_id}"
+        else:
+            print("  FAIL PROJECT_STATE.md missing")
+            all_ok = False
+            if not freshness_status.startswith("FAIL"):
+                freshness_status = "FAIL — PROJECT_STATE.md missing"
+
+        fortschritt_path = root / "FORTSCHRITT.md"
+        if fortschritt_path.exists():
+            ft_text = fortschritt_path.read_text(encoding="utf-8")
+            latest_section = _extract_latest_fortschritt_section(ft_text)
+            if marker_re.search(latest_section):
+                print(f"  OK   FORTSCHRITT.md latest section references event {marker_event_id}")
+            else:
+                print(f"  FAIL FORTSCHRITT.md latest section does not reference event {marker_event_id}")
+                all_ok = False
+                if not freshness_status.startswith("FAIL"):
+                    freshness_status = f"FAIL — FORTSCHRITT.md latest section does not reference event {marker_event_id}"
+        else:
+            print("  FAIL FORTSCHRITT.md missing")
+            all_ok = False
+            if not freshness_status.startswith("FAIL"):
+                freshness_status = "FAIL — FORTSCHRITT.md missing"
+
+    # Compute the canonical-merge derived runtime event freshness.
+    computed = _compute_memory_freshness_status(events, state, live_branch, live_head, mode, last_sealed_event, last_event, root)
+
+    if computed.startswith("FAIL"):
+        all_ok = False
+        if not freshness_status.startswith("FAIL"):
+            freshness_status = computed
+    elif not freshness_status.startswith("FAIL"):
+        freshness_status = computed
+
+    if freshness_status.startswith("FAIL"):
+        all_ok = False
+    elif not memory_enabled and all_ok and not freshness_status.startswith("FAIL"):
+        freshness_status = "NOT CONFIGURED"
+
+    return all_ok, freshness_status
 
 
 def _resolve_and_check(text, marker, expected):
@@ -1776,8 +2148,12 @@ def live_validation():
     all_ok = validate_current_state_surfaces(REPO_ROOT, all_ok, mode_label, live_branch=branch, state=state)
     live_state["effective_gate"] = effective_gate or ""
     all_ok = validate_placeholders(REPO_ROOT, all_ok, mode_label, "live", live_state=live_state)
+    all_ok, memory_freshness_status = validate_project_memory_freshness(
+        REPO_ROOT, all_ok, mode_label, branch, head, state, "live"
+    )
 
     print("\n" + "=" * 60)
+    print(f"PROJECT_MEMORY_FRESHNESS: {memory_freshness_status}")
     if all_ok:
         print("LIVE_GIT_VERIFICATION: PASS")
         print("RESULT: PASS — handoff readiness satisfied")
@@ -1808,8 +2184,14 @@ def archive_validation(archive_root):
     all_ok = validate_authority_precedence(archive_root, all_ok, "ARCHIVE")
     all_ok = validate_placeholders(archive_root, all_ok, "ARCHIVE", "archive", live_state=None)
     all_ok = validate_current_state_surfaces(archive_root, all_ok, "ARCHIVE", live_branch=None, state=state)
+    archive_head = state.get("handoff_head") if state else None
+    archive_branch = state.get("handoff_branch") if state else None
+    all_ok, memory_freshness_status = validate_project_memory_freshness(
+        archive_root, all_ok, "ARCHIVE", archive_branch, archive_head, state, "archive"
+    )
 
     print("\n" + "=" * 60)
+    print(f"PROJECT_MEMORY_FRESHNESS: {memory_freshness_status}")
     if all_ok:
         print("HANDOFF_ARCHIVE_VALIDATION: PASS")
         print("LIVE_GIT_VERIFICATION: UNAVAILABLE")

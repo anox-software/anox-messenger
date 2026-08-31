@@ -1,12 +1,14 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-30 (PRE-B027-0R2 remediation metadata sync complete)
+**Date:** 2026-08-30 (PRE-B027-M2B Project Memory / Progress Integrity V1)
 
 ---
 
 ## ARCHITECTURE OPEN
 
-None. B-024 closed the last known architecture-open items. B-025 is frozen. B-026 is frozen. B-027 is PRE-FROZEN / approved for implementation, awaiting focused review.
+None. B-024 closed the last known architecture-open items. B-025, B-026, and the CML V1 are
+merged to `main`. B-027 is PRE-FROZEN and implementation-authorized by the canonical live
+validator at `9bbd4ea...`.
 
 ## RECENTLY MERGED
 
@@ -23,19 +25,21 @@ None. B-024 closed the last known architecture-open items. B-025 is frozen. B-02
   synchronized to `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
 - `B-017-Lite` — CI / Supply-Chain Security Foundation (PR #2). Merged into `main` of
   `anox-software/anox-messenger` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`.
+- `PRE-B027-0R2` — Merge-commit payload visibility fix and final continuity remediation (PR #3).
+  Merged into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc`.
+- `PRE-B027-M1R..M1R3` — Canonical Merge Lifecycle V1 (PR #4). Merged into `main` of
+  `anox-software/anox-messenger` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`.
 
-## IN REVIEW / RETEST
+## CURRENT AUTHORIZED WORK
 
-`PRE-B027-M1R` — Permanent canonical merge lifecycle hardening on `governance/canonical-merge-lifecycle-v1`.
-The implementation is complete locally and the next gate is `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
+`PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY` on `governance/project-memory-progress-integrity-v1`:
+COMPLETED at `b2a312a...`; all continuity and memory-freshness checks PASS.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`
+`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 
-After that review and controlled human merge:
-
-`B-027 IMPLEMENTATION AUTHORIZED`
+`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 
 ## RELEASE BLOCKERS
 

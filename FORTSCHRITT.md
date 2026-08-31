@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** PRE-B027-M1R — CANONICAL MERGE LIFECYCLE HARDENING COMPLETE; AWAITING FOCUSED INDEPENDENT REVIEW
+**Status:** B-027 IMPLEMENTATION AUTHORIZED; PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY COMPLETED
 **Updated:** 2026-08-30
 
 ## Architecture / governance
@@ -10,7 +10,7 @@
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN on `main`.
-- B-027 AI Workforce / Work-Control Governance: PRE-FROZEN / approved for implementation.
+- B-027 AI Workforce / Work-Control Governance: PRE-FROZEN / implementation authorized by canonical live validator.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -31,24 +31,23 @@
 
 `main` is the canonical branch in `anox-software/anox-messenger`
 (`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
-`3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3, PRE-B027-0R2 merged). The legacy remote
+`9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (new `anox-software/anox-messenger` PR #4,
+Canonical Merge Lifecycle V1 human-merged). The legacy remote
 `anox-admin/ax-messenger` remains historical provenance only.
 
 B-017-Lite merged to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`. All five GitHub CI
 gates pass. Independent review findings `ANOX-B017REV-001` through `ANOX-B017REV-007` are CLOSED.
 
-PRE-B027-0R2 merged to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All
-PRE-B027 findings are closed.
+PRE-B027-0R2 merged to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (new remote PR #3).
+All `ANOX-PREB027REV` findings and `ANOX-PREB027RREV-001` are CLOSED.
 
-PRE-B027-M1R — permanent canonical merge lifecycle hardening — is implemented on
-`governance/canonical-merge-lifecycle-v1`. It:
-- separates `canonical_branch` (`main`) and `delivery_branch` (`governance/canonical-merge-lifecycle-v1`);
-- distinguishes reviewed delivery tail, merge-resolution, and post-merge canonical tail;
-- enforces fail-closed merge-resolution payload detection in `validate_continuity.py`;
-- adds handoff-branch and effective-gate placeholders to `generate_handoff.py`;
-- records the canonical merge lifecycle rule in `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md`.
+Canonical Merge Lifecycle V1 is implemented and merged. `ANOX-CMLREV-001/003/004` are independently
+CLOSED; `ANOX-CMLR1REV-001` is independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-CMLREV-002`,
+`ANOX-CMLR2REV-001/002/003` are implemented/remediated with automated verification. No final
+independent M1R3 Delta Review occurred; the Human Product & Security Owner authorized proceeding
+after M1R3 automated verification, Handoff, archive, and live validation PASS.
 
-Next gate: `CANONICAL MERGE LIFECYCLE FOCUSED INDEPENDENT REVIEW`.
+Next gate: `B-027 IMPLEMENTATION AUTHORIZED`.
 
 No `workforce/**`, `docs/workforce/**`, or product/CI/dependency changes are present.
 
@@ -78,8 +77,8 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 
 ## Next approved sequence
 
-1. `DEVELOPMENT SECURITY GOVERNANCE / HANDOFF HARDENING` (cloud-AI secret protection, S0–S4, PR-only-main, cold-chat bootstrap persistence, secure handoff ZIP).
-2. After that: `B-017-Lite`.
+1. `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY` (repair FORTSCHRITT, ledger, validator, current state).
+2. After that: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`.
 3. After that: `B-004 Backend DEV`.
 
 ## CONTINUITY-001 — Development Governance and Chat Handoff
@@ -124,7 +123,7 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   - `git diff --check` PASS
   - `validate_continuity.py` PASS (after commit)
   - `generate_handoff.py` PASS (after commit)
-- **Tests not run:** `cargo test` (optional for this governance correction), Android builds
+- **Tests not run:** `cargo test` (optional for this governance correction); Android builds
 - **Security invariants:** No invariants changed.
 - **Blockers:** none.
 - **Commits:** to be recorded after final commit.
@@ -329,7 +328,7 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   `./gradlew :android:dependencies` on `debugRuntimeClasspath`, `releaseRuntimeClasspath`, and
   `debugUnitTestRuntimeClasspath`, plus `dependencyInsight --dependency nimbus-jose-jwt`.
   Result: `com.nimbusds:nimbus-jose-jwt:10.9.1` resolves as a leaf dependency in all three;
-  BouncyCastle (`bcprov`/`bcpkix`/`bcutil-jdk18on`) and `com.google.crypto.tink:tink` are NOT
+  BouncyCastle (`bcprov`/`bcpkix`/ `bcutil-jdk18on`) and `com.google.crypto.tink:tink` are NOT
   resolved anywhere. Additionally built the debug and release APKs locally and used `dexdump`
   to confirm zero actual BouncyCastle/Tink class definitions in either `classes.dex`; the raw
   strings `org/bouncycastle` and `com/google/crypto/tink` present in the dex string pool are
@@ -453,3 +452,249 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Authority:** unchanged. No `docs/authority/` file modified.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
 - **Next gate:** `PROMPT-008 MERGE GATE`.
+
+## PROMPT-008D — B-003 CommitArmed / Durable Pre-Commit Guard
+
+<!-- ANOX_EVENT: ANOX-EVENT-0001 -->
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation`
+- **Head:** `3013a8f5203ffc3df7d6fe494c5192499f4f050e`
+- **Result:** Crash-consistency and durable pre-commit guard closure. 160/160 JVM unit tests PASS,
+  Rust 15/15 PASS, debug + release builds and APK gates PASS. `CommitArmed`/`isArmed` guard ensures
+  a registration commit is durable and cannot silently revert to unbound state on crash.
+- **Next gate:** `PROMPT-008 MERGE GATE`.
+
+## PROMPT-008 MERGE — B-003 Account/License foundation merged to main
+
+<!-- ANOX_EVENT: ANOX-EVENT-0002 -->
+
+- **Date:** 2026-08-23
+- **Branch:** `feature/b003-account-license-foundation` → `main`
+- **Merge:** `e7ee54a713e08950c63cf2d61ec97931864b66bc` (old `anox-admin/ax-messenger` PR #5).
+- **Starting main HEAD:** `0785b6001f816f5a6520951dd9a8c5a4af9af4c2`
+- **Feature HEAD merged:** `3013a8f5203ffc3df7d6fe494c5192499f4f050e`
+- **Result:** B-003 client domain/state foundation merged. 161/161 JVM unit tests, 62/62 Android
+  instrumentation, Rust 15/15, debug + release builds and APK gates PASS. `git diff --check` clean.
+- **Status:** `MERGED FOUNDATION`, not production complete.
+
+## PROMPT-009 — Development Security Governance / Handoff Hardening
+
+<!-- ANOX_EVENT: ANOX-EVENT-0003 -->
+
+- **Date:** 2026-08-23
+- **Branch:** `governance/development-security-handoff-v1` from `main @ 881c85ec726d8a32eb84b00955b6b9db7912fe1e`
+- **Head:** `86ab8e603b91a827dea2f2e195a97d95d21967ba`
+- **Scope:** S0–S4 security classes, AI audit timing, PR-only `main`, Cloud-AI secret rules, secure
+  handoff contract, `docs/authority/` additions (`CLOUD_AI_SECRET_PROTECTION.md`,
+  `DEVELOPMENT_SECURITY_WORKFLOW_V1.md`), validator hardening.
+- **Tests:** 12/12 continuity tests PASS.
+- **Merge:** new `anox-software/anox-messenger` PR #1.
+
+## PROMPT-009R — Governance Consistency / Handoff Recovery
+
+<!-- ANOX_EVENT: ANOX-EVENT-0004 -->
+
+- **Date:** 2026-08-28
+- **Head:** `475d70654d7186c9b98ee348f6e186ff85380066`
+- **Result:** validator consistency, canonical precedence, live/archive parity, archive required
+  keys, head precedence, historical-prefix bypass coverage.
+- **Findings remediated:** `ANOX-GOVREV-009R-001` through `009R-004`.
+- **Tests:** 20/20 continuity tests PASS.
+
+## PROMPT-009R2 — Governance Validator Final Hardening
+
+<!-- ANOX_EVENT: ANOX-EVENT-0005 -->
+
+- **Date:** 2026-08-28
+- **Head:** `57d6e7a13dfd3110020a185d0ddfd68986979111`
+- **Result:** fail-closed handoff/archive validation, lifecycle metadata block, schema downgrade
+  resistance, archive semantic scope.
+- **Tests:** 24/24 continuity tests PASS.
+
+## PROMPT-009R3 — Continuity Bookkeeping Closure
+
+<!-- ANOX_EVENT: ANOX-EVENT-0006 -->
+
+- **Date:** 2026-08-28
+- **Head:** `737baa4b1c0604b11d46c52c9162cb514095f648`
+- **Result:** `PROMPT-009R2` archived in `DEVIN_PROMPT_OUTPUT_ARCHIV.md`;
+  `ANOX-GOVREV-009R-005 = FIX_READY` for independent retest.
+- **Tests:** 24/24 continuity tests PASS.
+
+## PROMPT-010 — GitHub Remote Activity Safety Governance
+
+<!-- ANOX_EVENT: ANOX-EVENT-0007 -->
+
+- **Date:** 2026-08-28
+- **Head:** `257b1e14aac92472f3366b85b68a441bab83488e`
+- **Scope:** `GITHUB_REMOTE_ACTIVITY_SAFETY.md` — `NO RAPID REPETITIVE REMOTE AUTOMATION`,
+  Human-Controlled Remote Write Mode, no AI autonomous push/PR/credential cycling.
+- **Tests:** 24/24 continuity tests PASS.
+- **Merge:** new `anox-software/anox-messenger` PR #1 (same merge train as PROMPT-009).
+
+## PROMPT-010R1 — Remote-Activity Review Finding Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0008 -->
+
+- **Date:** 2026-08-28
+- **Head:** `583c68f5a4c5291b1a1efc0ce3ab429792546ef8`
+- **Result:** `ANOX-GOVREV-010-001` and `010-002` remediated (`FIX_READY` for independent retest).
+- **Tests:** 24/24 continuity tests PASS.
+
+## REMOTE-MIGRATION-SYNC-001 — New GitHub Main Reconciliation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0009 -->
+
+- **Date:** 2026-08-29
+- **Branch:** `main`
+- **Head:** `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
+- **Result:** old `anox-admin/ax-messenger` history merged into new
+  `anox-software/anox-messenger`; canonical main reconciled; legacy remote retained as
+  `legacy-origin` only. New PR #1 merged.
+
+## B-017-Lite — CI / Supply-Chain Security Foundation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0010 -->
+
+- **Date:** 2026-08-29
+- **Branch:** `security/b017-lite-supply-chain-foundation` → `main`
+- **Merge:** `283c1a1fdda012aab51b0164b4b16636e870f3b5` (new `anox-software/anox-messenger` PR #2).
+- **Last branch head:** `21d8611186287dcbd548e4056d123164ebc19865`
+- **Result:** five CI gates, pinned GitHub Actions, Gradle wrapper validation, locked Rust builds,
+  B-017-Lite policy validator. `ANOX-B017REV-001..007` CLOSED.
+- **Tests:** B-017 policy validator 35/35, Rust 15/15, Android debug/release build PASS.
+- **Deferred:** full `gradle/verification-metadata.xml`, `cargo-vet`/`cargo-deny`, SBOM/provenance,
+  server-side branch protection.
+
+## PRE-B027-0 — B-027 Workforce / Work-Control Architecture Freeze
+
+<!-- ANOX_EVENT: ANOX-EVENT-0011 -->
+
+- **Date:** 2026-08-29
+- **Branch:** `governance/pre-b027-continuity-reconciliation` from `main @ 043e874...`
+- **Head:** `a68eca5248f1ab315c34ba00387030bfd58c138e`
+- **Result:** 19 roles, evidence/egress/priority models (E0–E4, D0–D4, P0–P3),
+  `described_head/live_head/handoff_snapshot_head` semantics, cold-recovery rules,
+  `WRITER != INDEPENDENT REVIEWER`, fail-closed gates frozen.
+- **Tests:** 34/34 continuity tests PASS.
+- **Findings discovered:** `ANOX-PREB027REV-001..010`.
+
+## PRE-B027-0R — PRE-B027 Review Finding Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0012 -->
+
+- **Date:** 2026-08-29
+- **Head:** `1afb7a825aaecdf137238ff96f4a1c5cd0bf6242`
+- **Result:** `ANOX-PREB027REV-001..010` remediated.
+- **Tests:** 61/61 continuity tests PASS.
+
+## PRE-B027-0R2 — Merge-Commit Payload Visibility Fix
+
+<!-- ANOX_EVENT: ANOX-EVENT-0013 -->
+
+- **Date:** 2026-08-30
+- **Head:** `53e8d630bc078aa040a0f8f788046c3984472c51`
+- **Result:** `validate_continuity.py` merge-aware `git log -m --name-only --no-renames` scan;
+  Range-2 merge-resolution union; `ANOX-PREB027RREV-001` remediated.
+- **Tests:** 66/66 continuity tests PASS.
+
+## PRE-B027-0R2 — Canonical Merge to main
+
+<!-- ANOX_EVENT: ANOX-EVENT-0014 -->
+
+- **Date:** 2026-08-30
+- **Branch:** `governance/pre-b027-continuity-reconciliation` → `main`
+- **Merge:** `3e127c7a80e9835ea5631e21c10f066401a884dc` (new `anox-software/anox-messenger` PR #3).
+- **Result:** PRE-B027-0R2 merged to `main`; subsequent `governance/pre-b027-post-merge-reconciliation`
+  commit `2ee3f9d8...` revealed the validator could not classify a two-parent `--no-ff` merge,
+  exposing a lifecycle-model deficiency.
+
+## POST-PR3 FAILURE — Lifecycle-Model Deficiency
+
+<!-- ANOX_EVENT: ANOX-EVENT-0015 -->
+
+- **Date:** 2026-08-30
+- **Head:** `2ee3f9d8...` (abandoned, NOT in main ancestry)
+- **Result:** The pre-M1R validator understood only `described_head` → `live_head` metadata-only
+  advance on a single branch. It could not distinguish reviewed delivery tail, merge resolution,
+  and post-merge canonical tail. This motivated the Canonical Merge Lifecycle V1.
+
+## PRE-B027-M1R — Canonical Merge Lifecycle V1 Initial
+
+<!-- ANOX_EVENT: ANOX-EVENT-0016 -->
+
+- **Date:** 2026-08-30
+- **Branch:** `governance/canonical-merge-lifecycle-v1` from `main @ 3e127c7...`
+- **Head:** `352c82c180ef8491ea4e0ecad330a2cd3466fe77`
+- **Result:** `canonical_branch`/`delivery_branch` separation, Range 1/2/3 classification,
+  fail-closed merge-resolution payload detection, B026 canonical merge lifecycle rule.
+- **Findings discovered:** `ANOX-CMLREV-001..004`.
+
+## M1R1 — CML Independent Review Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0017 -->
+
+- **Date:** 2026-08-30
+- **Head:** `c36e45f8cf94baa40913215a2c34389138472fd1`
+- **Result:** Original `ANOX-CMLREV-001..004` addressed; independent review CLOSED
+  `CMLREV-001`, `CMLREV-003`, `CMLREV-004`; discovered `ANOX-CMLR1REV-001` and `CMLR1REV-002`.
+- **Tests:** 112/112 continuity tests PASS.
+
+## M1R2 — CML Archive Semantic Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0018 -->
+
+- **Date:** 2026-08-30
+- **Head:** `24c3bc421ea7f6fffa04bc485884c9e26afcd46b`
+- **Result:** `ANOX-CMLR1REV-001` independently CLOSED; `ANOX-CMLR1REV-002` and
+  `ANOX-CMLREV-002` remediated; archive scope root cause addressed; discovered
+  `ANOX-CMLR2REV-001..003`.
+- **Tests:** 132/132 continuity tests PASS.
+
+## M1R3 — CML Schema-Downgrade Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0019 -->
+
+- **Date:** 2026-08-30
+- **Head:** `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
+- **Result:** `ANOX-CMLR2REV-001..003` and remaining archive semantic root cause remediated.
+- **Tests:** 154/154 continuity tests PASS.
+- **Independent review:** NOT performed by human decision; automated verification, Handoff,
+  archive, attack-reproduction, and live validation all PASS.
+
+## PR #4 — Canonical Merge Lifecycle V1 human-merged to main
+
+<!-- ANOX_EVENT: ANOX-EVENT-0020 -->
+
+- **Date:** 2026-08-30
+- **Branch:** `governance/canonical-merge-lifecycle-v1` → `main`
+- **Merge:** `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (new `anox-software/anox-messenger` PR #4).
+- **Canonical parent:** `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- **Delivery parent:** `d745f4795aecda54120ebb73c3f7e121d18bea10`
+- **Final live validation on `main`:** `LIVE_GIT_VERIFICATION: PASS`.
+
+## B-027 IMPLEMENTATION AUTHORIZED
+
+<!-- ANOX_EVENT: ANOX-EVENT-0021 -->
+
+- **Date:** 2026-08-30
+- **Effective gate:** `B-027 IMPLEMENTATION AUTHORIZED`
+- **Basis:** canonical `main` live validation PASS at `9bbd4ea...`; human merge of CML V1.
+- **Status:** B-027 implementation may begin; workforce runtime not yet implemented.
+
+## PRE-B027-M2B — Project Memory / Progress Integrity V1
+
+<!-- ANOX_EVENT: ANOX-EVENT-0022 -->
+
+- **Date:** 2026-08-30
+- **Branch:** `governance/project-memory-progress-integrity-v1` from `main @ 9bbd4ea...`
+- **Head:** `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- **Result:** Restores 21 material historical events, adds `PROJECT_HISTORY_LEDGER.jsonl`,
+  `PROJECT_MEMORY_SURFACE_INDEX.md`, `PROJECT_MEMORY_PROGRESS_RECONSTRUCTION_V1.md`, repairs
+  `FORTSCHRITT.md` and `PROJECT_STATE.md`, extends `validate_continuity.py` with ledger/freshness
+  checks, adds 17 project-memory regression tests, and updates `DEVIN_OUTPUT_CONTRACT.md`.
+- **Tests:** 171/171 continuity tests PASS; `cargo test` 15/15 PASS; B-017-Lite policy validator PASS;
+  `git diff --check` PASS.
+- **Status:** `COMPLETED`. Next authorized engineering task is `B-027 AI WORKFORCE / WORK-CONTROL
+  GOVERNANCE IMPLEMENTATION`.

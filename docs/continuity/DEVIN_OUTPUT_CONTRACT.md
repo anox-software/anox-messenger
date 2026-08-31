@@ -5,6 +5,8 @@
 
 Every Devin task must end with the following sections, in order, and exactly one of the two final result lines.
 
+In addition, every future completed **material** Devin task must report: event materiality classification (T0/T1/T2/T3), proposed/recorded Event ID, substantive checkpoint SHA, test summary, finding delta, gate delta, memory surfaces updated, and `PROJECT_MEMORY_FRESHNESS` result.
+
 ---
 
 ## Required sections

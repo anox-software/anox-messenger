@@ -15,24 +15,24 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
-- Latest merge into baseline: PR #3 `3e127c7a80e9835ea5631e21c10f066401a884dc` — PRE-B027-0R2 continuity reconciliation merged
-- Previous baseline HEAD: `283c1a1fdda012aab51b0164b4b16636e870f3b5`
+- Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
+- Latest merge into baseline: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` — Canonical Merge Lifecycle V1 merged (new `anox-software/anox-messenger` PR #4)
+- Previous baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `governance/canonical-merge-lifecycle-v1`
+- Delivery branch: `governance/project-memory-progress-integrity-v1`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `cb1bc3ddfe3a469684ea0c98e7d39412f92f7ec0`
+- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `CANONICAL MERGE LIFECYCLE M1R3 SCHEMA-DOWNGRADE REMEDIATION`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`, canonical → `B-027 IMPLEMENTATION AUTHORIZED`)
-- Pre-merge gate: `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`
-- Post-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
+- Current task: `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY — COMPLETED; NEXT: B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B-027 IMPLEMENTATION AUTHORIZED`, canonical → `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`)
+- Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
+- Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 
 ## Merged history on main
 
@@ -54,11 +54,12 @@
 - PROMPT-010 — GitHub Remote Activity Safety Governance — MERGED via new PR #1
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation — MERGED to `main` at `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - B-017-Lite — CI / Supply-Chain Security Foundation (PR #2) — MERGED to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`
-- PRE-B027-0R2 — Merge-commit payload visibility fix and final continuity remediation — MERGED to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3); all PRE-B027 findings closed
+- PRE-B027-0R2 — Merge-commit payload visibility fix and final continuity remediation — MERGED to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3)
+- PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation — locally implemented and MERGED to `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). No final independent M1R3 Delta Review occurred by human decision.
 
 ## Unmerged work
 
-PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation on `governance/canonical-merge-lifecycle-v1`; implemented locally and awaiting `CANONICAL MERGE LIFECYCLE M1R3 INDEPENDENT DELTA RETEST`.
+`PRE-B027-M2B` — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`; reconstructing missing history, ledger, surface index, validator checks, and current-state repairs.
 
 ## B-003 status after this task
 
