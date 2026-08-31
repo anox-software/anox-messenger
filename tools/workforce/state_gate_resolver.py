@@ -528,7 +528,7 @@ def evaluate_security_trigger(changed_domains):
         elif d in ("build", "build_release", "supply_chain", "dependency", "supply-chain"):
             role = "ROLE-010"
         candidates.append({
-            "work_candidate_id": f"ANOX-WORK-SEC-{d.replace('/', '-').replace('_', '-')}",
+            "work_candidate_id": f"ANOX-WORK-SEC{d.replace('/', '').replace('_', '').replace('-', '').upper()}",
             "suggested_by": "resolver",
             "source_run": "ANOX-RUN-TRIGGER",
             "affected_domain": d,

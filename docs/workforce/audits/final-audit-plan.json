@@ -1,0 +1,182 @@
+{
+  "version": "B027C-v1",
+  "authority": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+  "canonical_repository": "/Users/3xpress/Desktop/anoX Messanger",
+  "canonical_branch": "governance/b027-final-integration",
+  "audit_sessions": [
+    {
+      "audit_id": "ANOX-AUDIT-MAIN-ARCH-001",
+      "title": "AUDIT-MAIN-ARCHITECTURE",
+      "scope": [
+        "docs/current/SYSTEM_ARCHITECTURE.md",
+        "docs/current/BACKEND_ARCHITECTURE.md",
+        "docs/current/DATABASE_ARCHITECTURE.md",
+        "docs/current/KEY_AND_SESSION_ARCHITECTURE.md",
+        "docs/current/MESSAGE_LIFECYCLE.md",
+        "docs/current/API_WIRE_PROTOCOL.md",
+        "docs/current/CONTACTS_AND_VERIFICATION.md",
+        "docs/current/METADATA_PRIVACY.md",
+        "docs/current/PUSH_OFFLINE.md",
+        "docs/current/ATTACHMENTS.md",
+        "docs/current/ACCOUNT_DEVICE_LIFECYCLE.md",
+        "docs/current/ACCOUNT_LICENSE_REGISTRATION.md",
+        "docs/current/ACCOUNT_RECOVERY_POLICY.md",
+        "docs/current/SECURITY_INVARIANTS.md",
+        "docs/current/THREAT_MODEL.md",
+        "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md",
+        "docs/authority/B025/TRACK_B/B024_FINAL_MAIN_CONSISTENCY_AUDIT.md"
+      ],
+      "required_authorities": [
+        "docs/authority/AUTHORITY_INDEX.md",
+        "docs/authority/B_FREEZE_REGISTRY.md",
+        "docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md",
+        "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+        "docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md"
+      ],
+      "required_architecture_domains": [
+        "system",
+        "backend",
+        "crypto",
+        "database",
+        "messaging",
+        "push",
+        "contacts",
+        "privacy",
+        "api_wire",
+        "attachments",
+        "account_lifecycle"
+      ],
+      "prohibited_changes": [
+        "product source code in android/, crypto/rust/, or backend/",
+        "CI workflow files in .github/workflows/",
+        "higher authority documents except B027 updates explicitly authorized",
+        "role contracts or workforce state without a separate B027 task",
+        "signing, release, or break-glass actions"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true,
+      "read_only": true,
+      "next_gate_after": "Findings Freeze"
+    },
+    {
+      "audit_id": "ANOX-AUDIT-WORKFORCE-ARCH-001",
+      "title": "AUDIT-WORKFORCE-ARCHITECTURE",
+      "scope": [
+        "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+        "docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md",
+        "docs/workforce/MODEL_PROVIDER_POLICY.md",
+        "docs/workforce/WORKFORCE_STATE.json",
+        "docs/workforce/registries/roles.json",
+        "docs/workforce/roles/ROLE-001.md through ROLE-019.md",
+        "docs/workforce/schemas/",
+        "docs/workforce/registries/",
+        "tools/workforce/state_gate_resolver.py",
+        "tools/workforce/validate_b027a.py",
+        "tools/workforce/validate_b027b.py",
+        "tools/workforce/validate_b027_integrity.py",
+        "tools/continuity/validate_continuity.py",
+        "docs/continuity/CURRENT_HANDOFF.md",
+        "docs/continuity/CURRENT_STATE.json",
+        "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+      ],
+      "required_authorities": [
+        "docs/authority/AUTHORITY_INDEX.md",
+        "docs/authority/B_FREEZE_REGISTRY.md",
+        "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+        "docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md"
+      ],
+      "required_architecture_domains": [
+        "workforce",
+        "governance",
+        "resolver",
+        "continuity",
+        "role_permissions",
+        "state_gate_resolver"
+      ],
+      "prohibited_changes": [
+        "direct changes to role authority or role contracts without an authorized task",
+        "D4-class material or AI access to secrets",
+        "autonomous remote write, merge, or release",
+        "product code changes outside workforce tooling",
+        "higher authority documents"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true,
+      "read_only": true,
+      "next_gate_after": "Findings Freeze"
+    },
+    {
+      "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
+      "title": "AUDIT-SECURITY-ARCHITECTURE",
+      "scope": [
+        "docs/current/SECURITY_REQUIREMENTS.md",
+        "docs/current/SECURITY_INVARIANTS.md",
+        "docs/current/THREAT_MODEL.md",
+        "docs/current/LOCAL_DEVICE_SECURITY.md",
+        "docs/current/LOCAL_KEY_STATE_LIFECYCLE_V1_FROZEN.md",
+        "docs/current/KEY_AND_SESSION_ARCHITECTURE.md",
+        "docs/current/API_WIRE_PROTOCOL.md",
+        "docs/current/DATABASE_ARCHITECTURE.md",
+        "docs/current/METADATA_PRIVACY.md",
+        "docs/current/MESSAGE_LIFECYCLE.md",
+        "docs/current/ACCOUNT_DEVICE_LIFECYCLE.md",
+        "docs/current/ACCOUNT_LICENSE_REGISTRATION.md",
+        "docs/current/ACCOUNT_RECOVERY_POLICY.md",
+        "docs/current/AUTH_PROTOCOL_STATUS.md",
+        "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md",
+        "docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md",
+        "docs/authority/B025/TRACK_B/B003_ACCOUNT_LICENSE.md",
+        "docs/authority/B025/TRACK_B/B006_VODOZEMAC_KEY_DISTRIBUTION.md",
+        "docs/authority/B025/TRACK_B/B017_CICD_SUPPLY_CHAIN.md",
+        "docs/authority/B025/TRACK_B/B021_SECURITY_TEST_MATRIX.md"
+      ],
+      "required_authorities": [
+        "docs/authority/AUTHORITY_INDEX.md",
+        "docs/authority/B_FREEZE_REGISTRY.md",
+        "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+        "docs/authority/B025/SECURITY_INVARIANTS_V1_1.md"
+      ],
+      "required_architecture_domains": [
+        "security_invariants",
+        "trust_boundaries",
+        "cryptography",
+        "e2ee",
+        "key_lifecycle",
+        "auth",
+        "rls",
+        "android_security",
+        "build_release",
+        "supply_chain",
+        "privacy"
+      ],
+      "prohibited_changes": [
+        "product code in android/, crypto/rust/, or backend/",
+        "CI workflow files",
+        "higher authority documents",
+        "signing or release actions",
+        "D4-class access"
+      ],
+      "output_schema": "docs/workforce/schemas/audit-result.schema.json",
+      "fresh_session": true,
+      "read_only": true,
+      "next_gate_after": "Findings Freeze"
+    }
+  ],
+  "final_report_path": "docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md",
+  "product_resume_requirements": {
+    "all_final_audit_sessions_acceptable": true,
+    "all_required_legacy_audits_satisfied": true,
+    "no_open_blocking_findings": true,
+    "all_critical_high_findings_closed": true,
+    "targeted_delta_retests_pass": true,
+    "systemic_reaudit_required_cleared": true,
+    "human_final_gate_decision_recorded": true,
+    "machine_decision_not_blocked": true,
+    "product_development_unblocked": false
+  },
+  "finding_namespaces": [
+    "ANOX-FINDING-XXXXXXXXX",
+    "ANOX-AUDIT-XXXXXXXXX",
+    "LEGACY-AUDIT-*"
+  ]
+}

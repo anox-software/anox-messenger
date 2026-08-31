@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/audit-result.schema.json",
+  "title": "B-027 Audit Result",
+  "description": "Machine-readable audit result record for B027-C final pre-product and legacy revalidation audit sessions.",
+  "type": "object",
+  "required": [
+    "audit_id",
+    "audit_type",
+    "canonical_sha",
+    "role_id",
+    "run_id",
+    "provider",
+    "model",
+    "started_at",
+    "completed_at",
+    "result",
+    "finding_ids",
+    "evidence_refs",
+    "limitations",
+    "systemic_reaudit_required"
+  ],
+  "properties": {
+    "audit_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable audit session identifier, e.g. ANOX-AUDIT-MAIN-ARCH-001 or LEGACY-AUDIT-B002."
+    },
+    "audit_type": {
+      "type": "string",
+      "enum": ["FINAL", "LEGACY", "DELTA", "SYSTEMIC", "SECURITY"],
+      "description": "Class of audit session."
+    },
+    "canonical_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$",
+      "description": "Git SHA at the start of the audit session."
+    },
+    "role_id": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$",
+      "description": "Role that performed the audit."
+    },
+    "run_id": {
+      "type": "string",
+      "pattern": "^ANOX-RUN-[A-Z0-9]+$",
+      "description": "Agent Run that produced this audit result."
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Model provider used for the audit run."
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Model name used for the audit run."
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp when the audit session started."
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp when the audit session completed."
+    },
+    "result": {
+      "type": "string",
+      "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED"],
+      "description": "Overall audit result."
+    },
+    "finding_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+      },
+      "description": "Findings produced or referenced by this audit session."
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Paths, hashes, or identifiers of evidence supporting the audit result."
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Limitations, caveats, or scope exclusions for this audit result."
+    },
+    "systemic_reaudit_required": {
+      "type": "boolean",
+      "description": "Whether a systemic re-audit is required before the product gate may open."
+    }
+  },
+  "additionalProperties": false
+}
