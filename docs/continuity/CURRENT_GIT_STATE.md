@@ -1,6 +1,6 @@
 # CURRENT GIT STATE
 
-**Recorded:** 2026-08-30
+**Recorded:** 2026-08-31
 
 ---
 
@@ -23,16 +23,16 @@
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `governance/project-memory-progress-integrity-v1`
+- Delivery branch: `governance/b027-workforce-foundation`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- Described HEAD: `83259e77082150adef6585b3409e062f850a5abc`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY — COMPLETED; NEXT: B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B-027 IMPLEMENTATION AUTHORIZED`, canonical → `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`)
-- Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
-- Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Current task: `B027-A AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION — COMPLETED; NEXT: B027-B STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`, canonical → `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`)
+- Pre-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Post-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
 
 ## Merged history on main
 
@@ -59,7 +59,7 @@
 
 ## Unmerged work
 
-`PRE-B027-M2B` — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`; reconstructing missing history, ledger, surface index, validator checks, and current-state repairs.
+`B027-A` — AI Workforce / Work-Control Governance Foundation on `governance/b027-workforce-foundation`; establishes authority, runtime contract, schemas, registries, state model, model-provider policy, validator, and adversarial tests. Awaiting metadata synchronization and final validation.
 
 ## B-003 status after this task
 

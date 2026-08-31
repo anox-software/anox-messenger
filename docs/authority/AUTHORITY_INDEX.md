@@ -15,7 +15,8 @@
 6. `GITHUB_REMOTE_ACTIVITY_SAFETY.md` — GitHub remote activity safety, no rapid repetitive remote automation.
 7. `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` — consolidated V1 target architecture.
 8. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025.
-9. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
+9. `B027_AI_WORKFORCE_GOVERNANCE.md` — AI workforce / work-control governance (B027-A foundation implemented; B027-B/C deferred).
+10. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
 
 ---
 
@@ -32,6 +33,7 @@
 | `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` | Frozen | Consolidated V1 product architecture |
 | `B025/IMPLEMENTATION_GAP_MATRIX.md` | Current | B-025 implementation gap matrix |
 | `B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` | Frozen | Individual B specifications B-001…B-025 |
+|| `B027_AI_WORKFORCE_GOVERNANCE.md` | B027-A implemented / B027-B,C deferred | AI workforce / work-control governance |
 
 ---
 

@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** PRE-B027-M2B — Project Memory / Progress Integrity V1
-**Date:** 2026-08-30
+**Handoff version:** B027-A — AI Workforce / Work-Control Governance Foundation
+**Date:** 2026-08-31
 
 ---
 
@@ -20,14 +20,14 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `governance/project-memory-progress-integrity-v1`
-- Current work branch: `governance/project-memory-progress-integrity-v1`
+- Delivery branch: `governance/b027-workforce-foundation`
+- Current work branch: `governance/b027-workforce-foundation`
 - Current baseline branch: `main`
 - Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
-- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- Described HEAD: `83259e77082150adef6585b3409e062f850a5abc`
 - Working tree: clean
-- Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
-- Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Pre-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+- Post-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
 - Open PR: none
 - Latest merge into `main`: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` — Canonical Merge Lifecycle V1 (new `anox-software/anox-messenger` PR #4)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
@@ -71,28 +71,22 @@ New sessions must read that file first.
 
 ## Latest completed work
 
-PRE-B027-M2B — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`:
+B027-A — AI Workforce / Work-Control Governance Foundation on `governance/b027-workforce-foundation`:
 
-- Reconstructs missing project history from PROMPT-008D through M1R3 human merge and B-027
-  authorization.
-- Adds append-only `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` with 22 material events
-  (`ANOX-EVENT-0001` through `ANOX-EVENT-0022`).
-- Adds `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md` defining T0/T1/T2/T3 materiality and the
-  minimal surfaces updated per material event.
-- Adds `docs/reports/PROJECT_MEMORY_PROGRESS_RECONSTRUCTION_V1.md` discovery report.
-- Repairs `FORTSCHRITT.md`, `PROJECT_STATE.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, and all relevant
-  `docs/continuity/CURRENT_*.md` surfaces.
-- Extends `tools/continuity/validate_continuity.py` with deterministic ledger parsing, event ID
-  ordering, freshness, and pending runtime transition checks.
-- Adds `tools/continuity/test_handoff_and_validator.py` regression tests for the new memory rules,
-  including pending canonical merge, second checkpoint without seal, and next-sync seal.
-- Updates `docs/continuity/DEVIN_OUTPUT_CONTRACT.md` to require material-event reporting for future
-  T2/T3 tasks.
+- Adds `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md` — B-027 Authority.
+- Adds `docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md` — Runtime / Integration Contract.
+- Adds `docs/workforce/MODEL_PROVIDER_POLICY.md` — Model / Provider Policy.
+- Adds `docs/workforce/schemas/` for Task Package, Finding, Decision, Run, Derived Work, and Workforce State.
+- Adds `docs/workforce/registries/` for roles, tasks, findings, decisions, runs, and derived work.
+- Adds `docs/workforce/WORKFORCE_STATE.json` — canonical current workforce state.
+- Adds `tools/workforce/validate_b027a.py` and `tools/workforce/test_b027a.py` — deterministic validator and adversarial tests.
+- Extends `tools/continuity/validate_continuity.py` to invoke B027-A validation.
+- Adds `docs/reports/B027A_WORKFORCE_FOUNDATION.md`.
+- B027-B and B027-C runtime remain deferred.
 
 ## Current open work
 
-`PRE-B027-M2B` — Project Memory / Progress Integrity V1 on `governance/project-memory-progress-integrity-v1`;
-implemented locally; awaiting final metadata synchronization and live validation.
+None. B027-A is complete; awaiting final metadata synchronization and live validation.
 
 ## Current test baseline
 

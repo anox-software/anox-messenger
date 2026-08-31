@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/derived-work.schema.json",
+  "title": "B-027 Derived Work Candidate",
+  "description": "Machine-readable derived work suggestion. Explicitly non-authorized until accepted by the future State/Gate Resolver or authorized human path.",
+  "type": "object",
+  "required": [
+    "work_candidate_id",
+    "title",
+    "suggested_by",
+    "source_run",
+    "authorization_status",
+    "rationale",
+    "created_at"
+  ],
+  "properties": {
+    "work_candidate_id": {
+      "type": "string",
+      "pattern": "^ANOX-WORK-[A-Z0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "suggested_by": {
+      "type": "string"
+    },
+    "source_run": {
+      "type": "string",
+      "pattern": "^ANOX-RUN-[A-Z0-9]+$"
+    },
+    "authorization_status": {
+      "type": "string",
+      "enum": ["NON-AUTHORIZED"]
+    },
+    "proposed_role_id": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "proposed_task_id": {
+      "type": "string",
+      "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

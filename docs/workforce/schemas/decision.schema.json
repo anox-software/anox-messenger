@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/decision.schema.json",
+  "title": "B-027 Decision",
+  "description": "Machine-readable decision record for the ANOX AI workforce.",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "title",
+    "authority_actor",
+    "decision",
+    "rationale",
+    "authority_refs",
+    "evidence_refs",
+    "timestamp"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "pattern": "^ANOX-DECISION-[A-Z0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_actor": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rationale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "supersedes": {
+      "type": "string",
+      "pattern": "^ANOX-DECISION-[A-Z0-9]+$"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

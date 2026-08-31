@@ -1,0 +1,30 @@
+{
+  "schema_version": "B027A-v1",
+  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+  "current_gate": "B027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION",
+  "active_roles": [
+    "ROLE-001",
+    "ROLE-002",
+    "ROLE-003",
+    "ROLE-004"
+  ],
+  "blocked_tasks": [],
+  "authorized_tasks": [
+    "ANOX-TASK-B027A0001"
+  ],
+  "current_writer": {
+    "task_id": "ANOX-TASK-B027A0001",
+    "role_id": "ROLE-003",
+    "branch": "governance/b027-workforce-foundation"
+  },
+  "pending_human_remote_actions": [],
+  "latest_decision_id": null,
+  "latest_finding_id": null,
+  "latest_run_id": null,
+  "latest_work_candidate_id": null,
+  "notes": [
+    "B027-A foundation state. Only ROLE-001 through ROLE-004 are active.",
+    "No D4 access, no AI remote-write, no derived-work authorization.",
+    "Full per-role contracts and resolver are B027-B."
+  ]
+}

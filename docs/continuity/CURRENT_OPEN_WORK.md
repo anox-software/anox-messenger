@@ -1,14 +1,14 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-30 (PRE-B027-M2B Project Memory / Progress Integrity V1)
+**Date:** 2026-08-31 (B027-A AI Workforce / Work-Control Governance Foundation)
 
 ---
 
 ## ARCHITECTURE OPEN
 
-None. B-024 closed the last known architecture-open items. B-025, B-026, and the CML V1 are
-merged to `main`. B-027 is PRE-FROZEN and implementation-authorized by the canonical live
-validator at `9bbd4ea...`.
+None. B-024 closed the last known architecture-open items. B-025, B-026, the CML V1, and
+B027-A are complete. B027-A is locally implemented on `governance/b027-workforce-foundation`;
+B027-B and B027-C are deferred until authorized.
 
 ## RECENTLY MERGED
 
@@ -32,14 +32,14 @@ validator at `9bbd4ea...`.
 
 ## CURRENT AUTHORIZED WORK
 
-`PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY` on `governance/project-memory-progress-integrity-v1`:
-COMPLETED at `b2a312a...`; all continuity and memory-freshness checks PASS.
+`B027-A AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION` on `governance/b027-workforce-foundation`:
+COMPLETED at `83259e7...`; all B027-A and continuity checks PASS.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+`B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
 
-`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+`B027-C — COLD RECOVERY` remains deferred after B027-B.
 
 ## RELEASE BLOCKERS
 

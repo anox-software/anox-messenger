@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-30 (PRE-B027-M2B Project Memory / Progress Integrity V1)
+**Date:** 2026-08-31 (B027-A AI Workforce / Work-Control Governance Foundation)
 
 ---
 
@@ -20,6 +20,7 @@
 - PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed.
 - Canonical Merge Lifecycle V1: MERGED into `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). `ANOX-CMLREV-001/003/004` and `ANOX-CMLR1REV-001` independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-CMLREV-002`, and `ANOX-CMLR2REV-001..003` implemented/remediated with automated verification. No final independent M1R3 Delta Review occurred. Final canonical `main` live validation PASS.
 - Project Memory / Progress Integrity V1: implemented and verified on `governance/project-memory-progress-integrity-v1` at `c2d3a04...`. Adds append-only `PROJECT_HISTORY_LEDGER.jsonl`, `PROJECT_MEMORY_SURFACE_INDEX.md`, FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation. Continuity tests 171/171 PASS.
+- B027-A AI Workforce / Work-Control Governance Foundation: implemented on `governance/b027-workforce-foundation` at `83259e7...`. Adds B-027 Authority, Runtime/Integration Contract, Model Provider Policy, role registry, schemas, workforce state, validator, adversarial tests, and continuity integration. B027-B and B027-C are deferred.
 
 ## IMPLEMENTED
 
@@ -34,6 +35,7 @@
 - Continuity tools: `tools/continuity/generate_handoff.py` and `tools/continuity/validate_continuity.py`.
 - B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper checksum, Rust locked builds).
 - Project Memory Integrity V1 tooling and surfaces.
+- B027-A workforce governance foundation (authority, contracts, schemas, registries, state, validator, tests).
 
 ## PARTIAL
 
@@ -43,7 +45,8 @@
 
 ## MISSING
 
-- B-027 AI Workforce / Work-Control Governance runtime (architecture frozen; implementation authorized at `9bbd4ea...` but runtime not yet built).
+- B027-B State/Gate Resolver + role contracts + Task/Prompt/Communication runtime.
+- B027-C Cold Recovery integration.
 - Device Authentication (B-002) server side: token issuance/storage/revocation, device registry, shared production replay cache, entitlement enforcement. The client foundation is merged (see VERIFIED above).
 - Account/license (B-003) server side: backend implementation of `RegistrationApi`, license generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client domain/state foundation is merged (see VERIFIED above).
 - Backend service (B-004)

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/task-package.schema.json",
+  "title": "B-027 Task Package",
+  "description": "Machine-readable work package for the ANOX AI workforce.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "title",
+    "role_id",
+    "start_sha",
+    "branch",
+    "allowed_paths",
+    "scope",
+    "non_goals",
+    "security_class",
+    "data_egress",
+    "priority",
+    "required_evidence",
+    "remote_permission",
+    "stop_conditions",
+    "authority_refs",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^ANOX-TASK-[A-Z0-9]+$",
+      "description": "Stable task identifier."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role_id": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "start_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "non_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "security_class": {
+      "type": "string",
+      "enum": ["S0", "S1", "S2", "S3", "S4"]
+    },
+    "data_egress": {
+      "type": "string",
+      "enum": ["D0", "D1", "D2", "D3"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3"]
+    },
+    "required_evidence": {
+      "type": "string",
+      "enum": ["E0", "E1", "E2", "E3", "E4"]
+    },
+    "reviewer_role": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "remote_permission": {
+      "type": "string",
+      "enum": ["NONE", "READ_ONLY", "HUMAN_REMOTE_ACTION_REQUIRED"]
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "authority_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Candidate",
+        "Authorized",
+        "In Progress",
+        "Awaiting Evidence",
+        "Awaiting Review",
+        "Ready For Remote",
+        "Awaiting Human Remote Action",
+        "CI Pending",
+        "Ready To Merge",
+        "Merged",
+        "Closed",
+        "Blocked"
+      ]
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

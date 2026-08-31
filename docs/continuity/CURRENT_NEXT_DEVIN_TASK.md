@@ -1,19 +1,18 @@
 # CURRENT NEXT DEVIN TASK
 
 **Status:** AUTHORIZED — START WHEN HUMAN ASSIGNS
-**Task ID:** `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-**Date:** 2026-08-30
+**Task ID:** `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+**Date:** 2026-08-31
 
 ---
 
 ## Purpose
 
-Implement the B-027 AI Workforce / Work-Control Governance runtime described in
-`docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
+Implement the B027-B AI Workforce execution layer from `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`
+and `docs/reports/PRE_B027_WORKFORCE_ARCHITECTURE_FREEZE.md`.
 
-B-027 is authorized by the canonical live validator at `9bbd4ea...` (PR #4 merge). M2B is the
-intermediate project-memory repair task and is the current authorized work; once M2B is
-complete and its metadata is synchronized, the next engineering task is B-027 implementation.
+B027-A is complete on `governance/b027-workforce-foundation` at `83259e7...`. B027-B is the
+next authorized engineering task.
 
 ## Preconditions satisfied
 
@@ -25,9 +24,12 @@ complete and its metadata is synchronized, the next engineering task is B-027 im
 
 ## Scope of the next task
 
-- Implement the B-027 execution layer (role contracts, task packages, concrete prompts, legacy
-  bridge) as defined by the architecture freeze.
-- Maintain `WRITER != INDEPENDENT REVIEWER` and fail-closed gates.
+- Implement the B027-B State/Gate Resolver execution engine.
+- Add per-role contracts and concrete Devin/agent prompts for ROLE-001 through ROLE-019.
+- Add the Task Package / Finding / Decision / Run / Derived Work runtime.
+- Add the communication bus for role/runtime coordination.
+- Maintain `WRITER != INDEPENDENT REVIEWER`, `D4` prohibition, no AI remote-write, and
+  fail-closed authorization.
 - Record all material events in `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` and
   `FORTSCHRITT.md` with `<!-- ANOX_EVENT: ... -->` markers.
 - Update only the minimum surfaces required for each event type per
@@ -36,6 +38,7 @@ complete and its metadata is synchronized, the next engineering task is B-027 im
 
 ## Out of scope
 
+- B027-C Cold Recovery integration (deferred).
 - B-004 backend implementation.
 - B-005 database/RLS implementation.
 - Messenger product code change unrelated to B-027 governance.
@@ -43,10 +46,9 @@ complete and its metadata is synchronized, the next engineering task is B-027 im
 
 ## Next authorized sequence
 
-1. Complete `PRE-B027-M2B` and its metadata sync.
-2. Create a B-027 work branch from canonical `main`.
-3. Implement B-027 runtime.
-4. Review, human PR/merge.
+1. Create a B027-B work branch from canonical `main`.
+2. Implement B027-B runtime.
+3. Review, human PR/merge.
 
 ## Remote safety
 

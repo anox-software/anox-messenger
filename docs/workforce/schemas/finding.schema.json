@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/finding.schema.json",
+  "title": "B-027 Finding",
+  "description": "Machine-readable finding record for the ANOX AI workforce.",
+  "type": "object",
+  "required": [
+    "finding_id",
+    "title",
+    "severity",
+    "status",
+    "discovered_by",
+    "discovered_in_run",
+    "affected_scope",
+    "evidence_refs"
+  ],
+  "properties": {
+    "finding_id": {
+      "type": "string",
+      "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Open",
+        "Triaged",
+        "Remediation In Progress",
+        "Ready For Retest",
+        "Closed",
+        "Accepted Risk",
+        "Deferred",
+        "Duplicate",
+        "Superseded"
+      ]
+    },
+    "discovered_by": {
+      "type": "string"
+    },
+    "discovered_in_run": {
+      "type": "string",
+      "pattern": "^ANOX-RUN-[A-Z0-9]+$"
+    },
+    "affected_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "remediation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "closure_actor": {
+      "type": "string"
+    },
+    "closure_evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rationale_severity_downgrade": {
+      "type": "string"
+    },
+    "superseded_by": {
+      "type": "string",
+      "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
