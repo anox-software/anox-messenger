@@ -24,8 +24,8 @@ New sessions must read that file first.
 - Current work branch: `governance/project-memory-progress-integrity-v1`
 - Current baseline branch: `main`
 - Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
-- Described HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
-- Working tree: dirty (uncommitted M2B project-memory changes)
+- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- Working tree: clean
 - Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 - Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 - Open PR: none

@@ -33,12 +33,11 @@ validator at `9bbd4ea...`.
 ## CURRENT AUTHORIZED WORK
 
 `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY` on `governance/project-memory-progress-integrity-v1`:
-reconstruct the missing project history, implement the append-only ledger, surface index,
-FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation.
+COMPLETED at `b2a312a...`; all continuity and memory-freshness checks PASS.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-After M2B is complete and its metadata sync committed:
+`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 
 `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 

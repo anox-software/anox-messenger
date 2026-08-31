@@ -26,10 +26,10 @@
 - Delivery branch: `governance/project-memory-progress-integrity-v1`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
+- Described HEAD: `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY`
+- Current task: `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY — COMPLETED; NEXT: B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
 - Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B-027 IMPLEMENTATION AUTHORIZED`, canonical → `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`)
 - Pre-merge gate: `B-027 IMPLEMENTATION AUTHORIZED`
 - Post-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`

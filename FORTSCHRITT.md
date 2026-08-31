@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B-027 IMPLEMENTATION AUTHORIZED; PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY IN PROGRESS
+**Status:** B-027 IMPLEMENTATION AUTHORIZED; PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY COMPLETED
 **Updated:** 2026-08-30
 
 ## Architecture / governance
@@ -682,3 +682,19 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Effective gate:** `B-027 IMPLEMENTATION AUTHORIZED`
 - **Basis:** canonical `main` live validation PASS at `9bbd4ea...`; human merge of CML V1.
 - **Status:** B-027 implementation may begin; workforce runtime not yet implemented.
+
+## PRE-B027-M2B — Project Memory / Progress Integrity V1
+
+<!-- ANOX_EVENT: ANOX-EVENT-0022 -->
+
+- **Date:** 2026-08-30
+- **Branch:** `governance/project-memory-progress-integrity-v1` from `main @ 9bbd4ea...`
+- **Head:** `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+- **Result:** Restores 21 material historical events, adds `PROJECT_HISTORY_LEDGER.jsonl`,
+  `PROJECT_MEMORY_SURFACE_INDEX.md`, `PROJECT_MEMORY_PROGRESS_RECONSTRUCTION_V1.md`, repairs
+  `FORTSCHRITT.md` and `PROJECT_STATE.md`, extends `validate_continuity.py` with ledger/freshness
+  checks, adds 17 project-memory regression tests, and updates `DEVIN_OUTPUT_CONTRACT.md`.
+- **Tests:** 171/171 continuity tests PASS; `cargo test` 15/15 PASS; B-017-Lite policy validator PASS;
+  `git diff --check` PASS.
+- **Status:** `COMPLETED`. Next authorized engineering task is `B-027 AI WORKFORCE / WORK-CONTROL
+  GOVERNANCE IMPLEMENTATION`.

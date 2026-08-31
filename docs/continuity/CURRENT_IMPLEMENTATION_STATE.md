@@ -19,7 +19,7 @@
 - B-017-Lite CI / supply-chain security foundation: MERGED into `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5` (PR #2). Five GitHub CI gates PASS. Review findings ANOX-B017REV-001 through -007 CLOSED.
 - PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed.
 - Canonical Merge Lifecycle V1: MERGED into `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). `ANOX-CMLREV-001/003/004` and `ANOX-CMLR1REV-001` independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-CMLREV-002`, and `ANOX-CMLR2REV-001..003` implemented/remediated with automated verification. No final independent M1R3 Delta Review occurred. Final canonical `main` live validation PASS.
-- Project Memory / Progress Integrity V1: implemented on `governance/project-memory-progress-integrity-v1`. Adds append-only `PROJECT_HISTORY_LEDGER.jsonl`, `PROJECT_MEMORY_SURFACE_INDEX.md`, FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation.
+- Project Memory / Progress Integrity V1: implemented and verified on `governance/project-memory-progress-integrity-v1` at `c2d3a04...`. Adds append-only `PROJECT_HISTORY_LEDGER.jsonl`, `PROJECT_MEMORY_SURFACE_INDEX.md`, FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation. Continuity tests 171/171 PASS.
 
 ## IMPLEMENTED
 

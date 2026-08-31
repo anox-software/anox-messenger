@@ -1,10 +1,11 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-08-30
-**Latest material event:** `ANOX-EVENT-0021` — B-027 IMPLEMENTATION AUTHORIZED
+**Latest material event:** `ANOX-EVENT-0022` — PRE-B027-M2B Project Memory / Progress Integrity V1
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0022 -->
 ## Repository truth
 
 - Branch: `main`
@@ -17,10 +18,10 @@
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
 - **Current effective gate:** `B-027 IMPLEMENTATION AUTHORIZED`
-- **Current authorized task:** `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY`
+- **Current authorized task:** `PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY — COMPLETED`
 - **Open blockers:** NONE
 - **Next authorized task:** `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-- **Latest main CI:** B-017-Lite 5/5 PASS; continuity 154/154 PASS
+- **Latest main CI:** B-017-Lite 5/5 PASS; continuity 171/171 PASS
 
 ## Architecture / governance
 

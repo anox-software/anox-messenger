@@ -736,3 +736,24 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Effective gate: `B-027 IMPLEMENTATION AUTHORIZED`.
 - Basis: canonical `main` live validation PASS at `9bbd4ea...`; CML V1 human-merged.
 - B-027 workforce runtime not yet implemented.
+
+## PRE-B027-M2B — PROJECT MEMORY / PROGRESS INTEGRITY V1
+
+**Date:** 2026-08-30
+**Branch:** `governance/project-memory-progress-integrity-v1`
+**Task result:** PASS — project memory reconstructed and progress-integrity enforcement implemented
+**Substantive commit:** `c2d3a04e4b91071bd0d8c9f080b32bcd1770a18a`
+**Event ID:** `ANOX-EVENT-0022`
+
+- Reconstructed missing history from PROMPT-008D through B-027 implementation authorization.
+- Added `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (22 material events).
+- Added `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md` (CORE/EVIDENCE surface classes and T0-T3 event-to-surface matrix).
+- Added `docs/reports/PROJECT_MEMORY_PROGRESS_RECONSTRUCTION_V1.md`.
+- Repaired `FORTSCHRITT.md` and `PROJECT_STATE.md` with missing milestones and `<!-- ANOX_EVENT: ... -->` markers.
+- Extended `tools/continuity/validate_continuity.py` with ledger parsing, freshness, and pending runtime transition checks.
+- Added 17 project-memory regression tests to `tools/continuity/test_handoff_and_validator.py`.
+- Updated `tools/continuity/generate_handoff.py` to package the ledger and surface index.
+- Updated `docs/continuity/DEVIN_OUTPUT_CONTRACT.md` for future material-event reporting.
+- Continuity tests: 171/171 PASS; `cargo test`: 15/15 PASS; B-017-Lite policy validator: PASS.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
