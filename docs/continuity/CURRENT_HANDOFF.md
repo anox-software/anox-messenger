@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime
+**Handoff version:** B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION
 **Date:** 2026-08-31
 
 ---
@@ -20,16 +20,16 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-work-control-runtime`
-- Current work branch: `governance/b027-work-control-runtime`
+- Delivery branch: `governance/b027-final-integration`
+- Current work branch: `governance/b027-final-integration`
 - Current baseline branch: `main`
-- Current baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
-- Described HEAD: `76849b1a9f1f9aefc913f53645628ddb33f10c51`
+- Current baseline HEAD: `aca7a8364a89423173440997ac01865c63552ca0`
+- Described HEAD: `176cebca7a693282de09f0ea08169c6d1f485dff`
 - Working tree: clean
-- Pre-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
-- Post-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+- Pre-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+- Post-merge gate: `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
 - Open PR: none
-- Latest merge into `main`: `38b619e55082086989bb0713cad42c4c53be14ab` — B027-A AI Workforce / Work-Control Governance Foundation (new `anox-software/anox-messenger` PR #6)
+- Latest merge into `main`: `aca7a8364a89423173440997ac01865c63552ca0` — B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime (new `anox-software/anox-messenger` PR #7)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -52,7 +52,7 @@ New sessions must read that file first.
   production complete.
 - PROMPT-009 — Development Security Governance / Handoff Hardening: MERGED via new PR #1.
 - PROMPT-010 — GitHub Remote Activity Safety Governance: MERGED via new PR #1.
-- REMOTE-MIGRATION-SYNC-001 — New GitHub main reconciliation: `main` at
+- REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation: MERGED to `main` at
   `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`.
 - B-017-Lite — CI / Supply-Chain Security Foundation (PR #2): MERGED into `main` at
   `283c1a1fdda012aab51b0164b4b16636e870f3b5`; all five CI gates PASS; ANOX-B017REV-001 through -007 CLOSED.
@@ -72,34 +72,50 @@ New sessions must read that file first.
   `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). Adds B-027 Authority, Runtime/Integration
   Contract, Model Provider Policy, role registry, schemas, registries, workforce state, validator,
   and adversarial tests.
+- B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED into
+  `main` at `aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger` PR #7).
+  Adds `tools/workforce/state_gate_resolver.py`, `tools/workforce/validate_b027b.py`, per-role
+  contracts `ROLE-001` through `ROLE-019`, prompt/communication schemas and registries, and
+  continuity integration.
+- B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
+  INTEGRATION: in progress at `176cebca7a693282de09f0ea08169c6d1f485dff` on
+  `governance/b027-final-integration`. Product is blocked pending
+  `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## Latest completed work
 
-B027-A — AI Workforce / Work-Control Governance Foundation:
-
-- Adds `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md` — B-027 Authority.
-- Adds `docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md` — Runtime / Integration Contract.
-- Adds `docs/workforce/MODEL_PROVIDER_POLICY.md` — Model / Provider Policy.
-- Adds `docs/workforce/schemas/` for Task Package, Finding, Decision, Run, Derived Work, and Workforce State.
-- Adds `docs/workforce/registries/` for roles, tasks, findings, decisions, runs, and derived work.
-- Adds `docs/workforce/WORKFORCE_STATE.json` — canonical current workforce state.
-- Adds `tools/workforce/validate_b027a.py` and `tools/workforce/test_b027a.py` — deterministic validator and adversarial tests.
-- Extends `tools/continuity/validate_continuity.py` to invoke B027-A validation.
-- Adds `docs/reports/B027A_WORKFORCE_FOUNDATION.md`.
-- Merged to `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6).
-
-## Current open work
-
-B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime on `governance/b027-work-control-runtime`:
+B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime:
 
 - Adds `tools/workforce/state_gate_resolver.py` — deterministic, fail-closed State/Gate Resolver.
 - Adds `tools/workforce/validate_b027b.py` — B027-B validator and 48 adversarial tests.
 - Adds `docs/workforce/roles/ROLE-001.md` through `ROLE-019.md` — canonical per-role contracts.
 - Adds `docs/workforce/schemas/prompt.schema.json` and `docs/workforce/schemas/communication.schema.json`.
 - Adds `docs/workforce/registries/prompts.jsonl` and `docs/workforce/registries/communications.jsonl`.
-- Extends `tools/continuity/validate_continuity.py` to invoke B027-B validation.
+- Adds final pre-product architecture/security audit gate contract, product-resume blocking
+  semantics, and continuity integration.
 - Adds `docs/reports/B027B_WORK_CONTROL_RUNTIME.md`.
-- B027-C remains deferred.
+- Merged to `main` at `aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger`
+  PR #7).
+
+## Current open work
+
+B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
+INTEGRATION on `governance/b027-final-integration`:
+
+- Adds `tools/workforce/validate_b027_integrity.py` — B027-C integrity validator.
+- Adds adversarial system tests that exercise the full resolver-to-handoff path.
+- Extends `tools/continuity/generate_handoff.py` and validates cold recovery from `GIT_SNAPSHOT.txt`.
+- Ensures `described_head`, `handoff_head`, `working_tree`, and effective gate semantics survive a
+  new-chat bootstrap.
+- Adds `docs/workforce/audits/FINAL_AUDIT_PLAN.md`, `docs/workforce/audits/LEGACY_AUDIT_PLAN.md`,
+  and `docs/workforce/schemas/audit-result.schema.json`.
+- Adds `docs/reports/B027C_FINAL_INTEGRATION.md` and
+  `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`.
+- Maintains `WRITER != INDEPENDENT REVIEWER`, `D4` prohibition, no AI remote-write, and
+  fail-closed authorization.
+- Records all material events in `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` and
+  `FORTSCHRITT.md` with `<!-- ANOX_EVENT: ... -->` markers.
+- Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## Current test baseline
 
@@ -110,11 +126,11 @@ B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runt
 - Android release compile + APK content validation: PASS
 - Android connected instrumentation: 62/62 PASS on a local API-34 emulator
 - GrapheneOS physical device: UNVERIFIED
-- B-017-Lite policy validator: PASS
-- B-017-Lite policy validator unit tests: 35/35 PASS
+- B-017-Lite policy validator: 35/35 PASS
 - Continuity unit tests: 171/171 PASS
 - B027-A adversarial tests: 20/20 PASS
 - B027-B adversarial tests: 48/48 PASS
+- B027-C integrity validator: PASS
 
 ## Historical provenance
 
@@ -138,19 +154,20 @@ B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runt
 - `ANOX-CMLR2REV-001`, `ANOX-CMLR2REV-002`, and `ANOX-CMLR2REV-003` are remediated and verified.
 - Final independent M1R3 Delta Review was NOT performed by human decision; controlled human merge
   completed.
-- No product/security blockers.
+- B027-A and B027-B are merged to `main`; B027-C is implemented and validated on
+  `governance/b027-final-integration`.
+- Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 - No governance blockers.
 - GitHub Free plan: branch protection and secret scanning unavailable.
 
 ## Next architecture gate
 
-`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
 
 ## Next engineering task
 
-Implement B027-C: integrity validator, adversarial system tests, handoff generation, cold recovery,
-and final B027 integration. No B027-C files are implemented until that task is explicitly authorized
-and recorded.
+Prepare for and conduct the `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` (session
+`AUDIT-MAIN-ARCHITECTURE`). No product/CI changes until the audit is authorized and recorded.
 
 ## Do-not-touch foundation
 

@@ -1,7 +1,7 @@
 # DEVIN PROMPT OUTPUT ARCHIV
 
 **Status:** CURRENT
-**Last updated:** 2026-08-30
+**Last updated:** 2026-08-31
 
 ---
 
@@ -805,3 +805,44 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Pre-merge baseline main before B027-A merge: `69c1d9b9f7605d5d96e0bc1add3d05ecbc82ee1b`.
 - `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION
+
+<!-- ANOX_EVENT: ANOX-EVENT-0027 -->
+
+||**Date:** 2026-08-31
+||**Branch:** `governance/b027-final-integration`
+||**Task result:** PASS — B027-C final integration implemented and validated
+||**Substantive commit:** `176cebca7a693282de09f0ea08169c6d1f485dff`
+||**Metadata commit:** to be recorded after metadata sync
+||**Event ID:** `ANOX-EVENT-0027`
+
+- Added `tools/workforce/validate_b027_integrity.py` — B027-C integrity validator.
+- Added adversarial system tests that exercise the full resolver-to-handoff path.
+- Extended `tools/continuity/generate_handoff.py` and validated cold recovery from `GIT_SNAPSHOT.txt`.
+- Added `docs/workforce/audits/FINAL_AUDIT_PLAN.md`,
+  `docs/workforce/audits/LEGACY_AUDIT_PLAN.md`, and
+  `docs/workforce/schemas/audit-result.schema.json`.
+- Added `docs/reports/B027C_FINAL_INTEGRATION.md` and
+  `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`.
+- Ensured `described_head`, `handoff_head`, `working_tree`, and effective gate semantics survive a
+  new-chat bootstrap.
+- Maintained `WRITER != INDEPENDENT REVIEWER`, `D4` prohibition, no AI remote-write, and
+  fail-closed authorization.
+- Recorded material events `ANOX-EVENT-0026` and `ANOX-EVENT-0027` in
+  `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` and `FORTSCHRITT.md`.
+- Synchronized all current-state continuity surfaces to B027-C context on
+  `governance/b027-final-integration`.
+- B027-A adversarial tests 20/20 PASS.
+- B027-B adversarial tests 48/48 PASS.
+- B027-C integrity validator PASS.
+- Continuity regression tests: 171/171 PASS.
+- B017-Lite policy validator: 35/35 PASS.
+- `cargo test`: 15/15 PASS.
+- `git diff --check`: clean.
+- B027-B canonical merge to `main`: `aca7a8364a89423173440997ac01865c63552ca0`.
+- Pre-merge baseline main before B027-B merge: `38b619e55082086989bb0713cad42c4c53be14ab`.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+**Next gate:** `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.

@@ -1,15 +1,15 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-31 (B027-B STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME)
+**Date:** 2026-08-31 (B027-C FINAL INTEGRATION + HANDOFF + COLD RECOVERY + FINAL AUDIT PREPARATION)
 
 ---
 
 ## ARCHITECTURE OPEN
 
 None. B-024 closed the last known architecture-open items. B-025, B-026, the CML V1,
-B027-A, and B027-B are complete. B027-A is merged to `main` at `38b619e...`.
-B027-B is locally implemented on `governance/b027-work-control-runtime`;
-B027-C is deferred until authorized.
+B027-A, and B027-B are merged to `main`. B027-C is implemented and validated on
+`governance/b027-final-integration`. Product is blocked pending
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## RECENTLY MERGED
 
@@ -32,24 +32,30 @@ B027-C is deferred until authorized.
   `anox-software/anox-messenger` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`.
 - `B027-A` — AI Workforce / Work-Control Governance Foundation (PR #6). Merged into `main` of
   `anox-software/anox-messenger` at `38b619e55082086989bb0713cad42c4c53be14ab`.
+- `B027-B` — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime
+  (new `anox-software/anox-messenger` PR #7). Merged into `main` at
+  `aca7a8364a89423173440997ac01865c63552ca0`.
 
 ## CURRENT AUTHORIZED WORK
 
-`B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME` on
-`governance/b027-work-control-runtime`: IN PROGRESS at `76849b1...`; all B027-B and continuity
-and B027-B adversarial tests 48/48 PASS.
+`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
+INTEGRATION` on `governance/b027-final-integration`: COMPLETED at `176ceb...`; B027-A adversarial
+20/20 PASS; B027-B adversarial 48/48 PASS; B027-C integrity validator PASS; continuity 171/171 PASS;
+B017 policy validator 35/35 PASS; Rust 15/15 PASS. Product is blocked pending
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
 
 ## OPEN PR
 
-None. B027-B is local-only until authorized for PR/merge.
+None. B027-C is local-only until the final audit is authorized.
 
 ## RELEASE BLOCKERS
 
-None yet. V1 release is gated by B-021…B-023, all future release gates.
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` is the current product blocker. V1 release remains
+pending B-021…B-023 future release gates.
 
 ## EXTERNAL BLOCKERS
 

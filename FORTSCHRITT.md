@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B027-B IMPLEMENTED; B027-C AUTHORIZED
+**Status:** B027-C IMPLEMENTED; PRODUCT BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
 **Updated:** 2026-08-31
 
 ## Architecture / governance
@@ -11,8 +11,8 @@
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN on `main`.
 - B-027-A AI Workforce / Work-Control Governance: MERGED to `main` at `38b619e...` (PR #6).
-- B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: IMPLEMENTED at `76849b1...`.
-- B-027-C / B-027-D: DEFERRED.
+- B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED to `main` at `aca7a8...` (new `anox-software/anox-messenger` PR #7).
+- B-027-C INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION: IMPLEMENTED at `176ceb...`. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`. B-027-D DEFERRED.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -33,9 +33,9 @@
 
 `main` is the canonical branch in `anox-software/anox-messenger`
 (`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
-`38b619e55082086989bb0713cad42c4c53be14ab` (new `anox-software/anox-messenger` PR #6,
-B027-A AI Workforce / Work-Control Governance Foundation human-merged). The legacy remote
-`anox-admin/ax-messenger` remains historical provenance only.
+`aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger` PR #7,
+B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime human-merged).
+The legacy remote `anox-admin/ax-messenger` remains historical provenance only.
 
 B-017-Lite merged to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`. All five GitHub CI
 gates pass. Independent review findings `ANOX-B017REV-001` through `ANOX-B017REV-007` are CLOSED.
@@ -50,13 +50,18 @@ independent M1R3 Delta Review occurred; the Human Product & Security Owner autho
 after M1R3 automated verification, Handoff, archive, and live validation PASS.
 
 B027-A AI Workforce / Work-Control Governance Foundation is merged to `main` at
-`38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). B027-B is in progress on
-`governance/b027-work-control-runtime` at `76849b1a9f1f9aefc913f53645628ddb33f10c51`.
+`38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). B027-B is merged to `main` at
+`aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger` PR #7). B027-C
+is in progress on `governance/b027-final-integration` at
+`176cebca7a693282de09f0ea08169c6d1f485dff`.
 
-Next gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`.
+Next gate: `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
-B027-B introduces `workforce/**`, `docs/workforce/**`, `tools/workforce/**`, and continuity
-integration; no product/CI/dependency changes unrelated to B-027 governance are present.
+B027-C introduces `tools/workforce/validate_b027_integrity.py`, B027-C integrity validation,
+adversarial system tests, handoff/cold-recovery integration, audit plans, audit-result schema,
+final B027 integration, and continuity integration; no product/CI/dependency changes unrelated to
+B-027 governance are present. Product is blocked pending
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## Functional progress
 
@@ -740,3 +745,22 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   B027-B adversarial tests 48/48 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS;
   full continuity suite 171/171 PASS; `git diff --check` PASS.
 - **Status:** `COMPLETED`. Next authorized engineering task is `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`.
+
+## B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION
+
+<!-- ANOX_EVENT: ANOX-EVENT-0027 -->
+
+- **Date:** 2026-08-31
+- **Branch:** `governance/b027-final-integration` from `main @ aca7a8364a89423173440997ac01865c63552ca0`
+- **Head:** `176cebca7a693282de09f0ea08169c6d1f485dff`
+- **Result:** Adds `tools/workforce/validate_b027_integrity.py` — B027-C integrity validator;
+  adversarial system tests that exercise the full resolver-to-handoff path; handoff generation and
+  cold recovery from `GIT_SNAPSHOT.txt`; `docs/workforce/audits/FINAL_AUDIT_PLAN.md`,
+  `docs/workforce/audits/LEGACY_AUDIT_PLAN.md`, and
+  `docs/workforce/schemas/audit-result.schema.json`; `docs/reports/B027C_FINAL_INTEGRATION.md` and
+  `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`; final B027
+  integration and continuity integration.
+- **Tests:** B027-A adversarial tests 20/20 PASS; B027-B adversarial tests 48/48 PASS;
+  B027-C integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS;
+  `cargo test` 15/15 PASS; `git diff --check` PASS.
+- **Status:** `COMPLETED`. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.

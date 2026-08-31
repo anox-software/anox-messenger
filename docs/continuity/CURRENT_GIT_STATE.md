@@ -15,24 +15,24 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
-- Latest merge into baseline: `38b619e55082086989bb0713cad42c4c53be14ab` — B027-A AI Workforce / Work-Control Governance Foundation merged to main (new `anox-software/anox-messenger` PR #6)
-- Previous baseline HEAD: `69c1d9b9f7605d5d96e0bc1add3d05ecbc82ee1b`
+- Current baseline HEAD: `aca7a8364a89423173440997ac01865c63552ca0`
+- Latest merge into baseline: `aca7a8364a89423173440997ac01865c63552ca0` — B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime merged to main (new `anox-software/anox-messenger` PR #7)
+- Previous baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-work-control-runtime`
+- Delivery branch: `governance/b027-final-integration`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `76849b1a9f1f9aefc913f53645628ddb33f10c51`
+- Described HEAD: `176cebca7a693282de09f0ea08169c6d1f485dff`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME — IN PROGRESS; NEXT: B027-C`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`, canonical → `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`)
-- Pre-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
-- Post-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+- Current task: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION — IN PROGRESS; NEXT: FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`, canonical → `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`)
+- Pre-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+- Post-merge gate: `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
 
 ## Merged history on main
 
@@ -56,10 +56,11 @@
 - PRE-B027-0R2 — Merge-commit payload visibility fix and final continuity remediation — MERGED to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3)
 - PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation — locally implemented and MERGED to `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). No final independent M1R3 Delta Review occurred by human decision.
 - B027-A — AI Workforce / Work-Control Governance Foundation — MERGED to `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6)
+- B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime — MERGED to `main` at `aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger` PR #7)
 
 ## Unmerged work
 
-`B027-B` — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime on `governance/b027-work-control-runtime`; implements runtime execution layer, role contracts, prompt/communication schemas and registries, and resolver tests. B027-C remains deferred.
+`B027-C` — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION on `governance/b027-final-integration`; implements the B027-C integrity validator, adversarial system tests, handoff generation, cold recovery from `GIT_SNAPSHOT.txt`, and final B027 integration. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
 
 ## B-003 status after this task
 
