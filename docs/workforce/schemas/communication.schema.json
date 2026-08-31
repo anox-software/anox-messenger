@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/communication.schema.json",
+  "title": "B-027 Communication Bus Message",
+  "description": "Inter-role message on the workforce communication bus.",
+  "type": "object",
+  "required": [
+    "message_id",
+    "from_role",
+    "to_role",
+    "type",
+    "payload",
+    "timestamp"
+  ],
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "pattern": "^ANOX-MSG-[A-Z0-9]+$"
+    },
+    "from_role": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "to_role": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["request", "response", "notification", "escalation", "decision"]
+    },
+    "payload": {
+      "type": "object"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,7 +1,7 @@
 {
-  "schema_version": "B027A-v1",
+  "schema_version": "B027B-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "B027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION",
+  "current_gate": "B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME",
   "active_roles": [
     "ROLE-001",
     "ROLE-002",
@@ -10,12 +10,12 @@
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-B027A0001"
+    "ANOX-TASK-B027B0001"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-B027A0001",
+    "task_id": "ANOX-TASK-B027B0001",
     "role_id": "ROLE-003",
-    "branch": "governance/b027-workforce-foundation"
+    "branch": "governance/b027-work-control-runtime"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
@@ -23,8 +23,8 @@
   "latest_run_id": null,
   "latest_work_candidate_id": null,
   "notes": [
-    "B027-A foundation state. Only ROLE-001 through ROLE-004 are active.",
-    "No D4 access, no AI remote-write, no derived-work authorization.",
-    "Full per-role contracts and resolver are B027-B."
+    "B027-B runtime and validator implemented on governance/b027-work-control-runtime.",
+    "B027-C remains deferred.",
+    "B027-A foundation merged."
   ]
 }
