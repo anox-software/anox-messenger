@@ -1,6 +1,6 @@
 # CURRENT IMPLEMENTATION STATE
 
-**Date:** 2026-08-31 (B027-A AI Workforce / Work-Control Governance Foundation)
+**Date:** 2026-08-31 (B027-B STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME)
 
 ---
 
@@ -20,7 +20,8 @@
 - PRE-B027-0R2 continuity reconciliation: MERGED into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3). All PRE-B027 findings are closed.
 - Canonical Merge Lifecycle V1: MERGED into `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). `ANOX-CMLREV-001/003/004` and `ANOX-CMLR1REV-001` independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-CMLREV-002`, and `ANOX-CMLR2REV-001..003` implemented/remediated with automated verification. No final independent M1R3 Delta Review occurred. Final canonical `main` live validation PASS.
 - Project Memory / Progress Integrity V1: implemented and verified on `governance/project-memory-progress-integrity-v1` at `c2d3a04...`. Adds append-only `PROJECT_HISTORY_LEDGER.jsonl`, `PROJECT_MEMORY_SURFACE_INDEX.md`, FORTSCHRITT event markers, and `PROJECT_MEMORY_FRESHNESS` validation. Continuity tests 171/171 PASS.
-- B027-A AI Workforce / Work-Control Governance Foundation: implemented on `governance/b027-workforce-foundation` at `83259e7...`. Adds B-027 Authority, Runtime/Integration Contract, Model Provider Policy, role registry, schemas, workforce state, validator, adversarial tests, and continuity integration. B027-B and B027-C are deferred.
+- B027-A AI Workforce / Work-Control Governance Foundation: MERGED into `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). Adds B-027 Authority, Runtime/Integration Contract, Model Provider Policy, role registry, schemas, registries, workforce state, validator, adversarial tests, and continuity integration.
+- B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: implemented on `governance/b027-work-control-runtime` at `76849b1...`. Adds `tools/workforce/state_gate_resolver.py`, `tools/workforce/validate_b027b.py`, per-role contracts `ROLE-001` through `ROLE-019`, prompt/communication schemas and registries. B027-B adversarial tests 48/48 PASS; continuity 171/171 PASS; Rust 15/15; B017 35/35. B027-C is deferred.
 
 ## IMPLEMENTED
 
@@ -36,6 +37,7 @@
 - B-017-Lite CI / supply-chain security foundation (validator, pinned Actions, Gradle wrapper checksum, Rust locked builds).
 - Project Memory Integrity V1 tooling and surfaces.
 - B027-A workforce governance foundation (authority, contracts, schemas, registries, state, validator, tests).
+- B027-B workforce runtime (state/gate resolver, role contracts, prompt/communication runtime, validator, 48 adversarial tests).
 
 ## PARTIAL
 
@@ -45,8 +47,7 @@
 
 ## MISSING
 
-- B027-B State/Gate Resolver + role contracts + Task/Prompt/Communication runtime.
-- B027-C Cold Recovery integration.
+- B027-C Integrity Validator + Adversarial System Tests + Handoff + Cold Recovery + Final B027 Integration.
 - Device Authentication (B-002) server side: token issuance/storage/revocation, device registry, shared production replay cache, entitlement enforcement. The client foundation is merged (see VERIFIED above).
 - Account/license (B-003) server side: backend implementation of `RegistrationApi`, license generation, server HMAC lookup, DB-enforced one-active-device-per-account. The client domain/state foundation is merged (see VERIFIED above).
 - Backend service (B-004)

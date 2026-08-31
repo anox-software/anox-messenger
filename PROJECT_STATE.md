@@ -1,28 +1,30 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-08-31
-**Latest material event:** `ANOX-EVENT-0023` — B027-A AI Workforce / Work-Control Governance Foundation
+**Latest material event:** `ANOX-EVENT-0025` — B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0022 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0023 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0024 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0025 -->
 ## Repository truth
 
-- Branch: `governance/b027-workforce-foundation`
-- **Current HEAD:** `83259e77082150adef6585b3409e062f850a5abc` (B027-A AI Workforce / Work-Control Governance Foundation)
+- Branch: `governance/b027-work-control-runtime`
+- **Current HEAD:** `76849b1a9f1f9aefc913f53645628ddb33f10c51` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (new `anox-software/anox-messenger` PR #4)
-- **Previous baseline HEAD:** `3e127c7a80e9835ea5631e21c10f066401a884dc` (PRE-B027-0R2, PR #3)
+- **Latest merge to baseline:** `38b619e55082086989bb0713cad42c4c53be14ab` (B027-A AI Workforce / Work-Control Governance Foundation, new `anox-software/anox-messenger` PR #6)
+- **Previous baseline HEAD:** `69c1d9b9f7605d5d96e0bc1add3d05ecbc82ee1b` (Project Memory / Progress Integrity V1, PR #5)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-- **Current authorized task:** `B027-A AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION — COMPLETED`
+- **Current effective gate:** `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- **Current authorized task:** `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME — IN PROGRESS`
 - **Open blockers:** NONE
-- **Next authorized task:** `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
-- **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS
+- **Next authorized task:** `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
+- **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS; B027-B adversarial tests 48/48 PASS
 
 ## Architecture / governance
 
@@ -30,8 +32,9 @@
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN.
-- B-027-A AI Workforce / Work-Control Governance Foundation: IMPLEMENTED at `83259e7...`.
-- B-027-B / B-027-C: DEFERRED.
+- B-027-A AI Workforce / Work-Control Governance Foundation: MERGED at `38b619e...`.
+- B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: IMPLEMENTED at `76849b1...`.
+- B-027-C / B-027-D: DEFERRED.
 
 ## Functional progress
 
@@ -40,16 +43,18 @@ messenger functionality; the percentage reflects merged B-002 and B-003 client f
 
 ## Merged milestones (summary)
 
-| Event | Date | Task | Merge / Head | Status |
-|---|---|---|---|---|
-| ANOX-EVENT-0002 | 2026-08-23 | PROMPT-008 MERGE | `e7ee54a...` | B-003 merged foundation |
-| ANOX-EVENT-0009 | 2026-08-29 | REMOTE-MIGRATION-SYNC-001 | `043e874...` | new canonical main reconciled |
-| ANOX-EVENT-0010 | 2026-08-29 | B-017-Lite | `283c1a1...` | 5/5 CI PASS, 7/7 findings closed |
-| ANOX-EVENT-0014 | 2026-08-30 | PRE-B027-0R2 merge | `3e127c7...` | PR #3 merged |
-| ANOX-EVENT-0020 | 2026-08-30 | CML V1 merge | `9bbd4ea...` | PR #4 human-merged |
-| ANOX-EVENT-0021 | 2026-08-30 | B-027 authorized | `9bbd4ea...` | effective gate transition |
-| ANOX-EVENT-0022 | 2026-08-30 | PRE-B027-M2B | `c2d3a04...` | project memory integrity |
-| ANOX-EVENT-0023 | 2026-08-31 | B027-A | `83259e7...` | workforce foundation |
+|| Event | Date | Task | Merge / Head | Status |
+|---|---|---|---|---|---|
+|| ANOX-EVENT-0002 | 2026-08-23 | PROMPT-008 MERGE | `e7ee54a...` | B-003 merged foundation |
+|| ANOX-EVENT-0009 | 2026-08-29 | REMOTE-MIGRATION-SYNC-001 | `043e874...` | new canonical main reconciled |
+|| ANOX-EVENT-0010 | 2026-08-29 | B-017-Lite | `283c1a1...` | 5/5 CI PASS, 7/7 findings closed |
+|| ANOX-EVENT-0014 | 2026-08-30 | PRE-B027-0R2 merge | `3e127c7...` | PR #3 merged |
+|| ANOX-EVENT-0020 | 2026-08-30 | CML V1 merge | `9bbd4ea...` | PR #4 human-merged |
+|| ANOX-EVENT-0021 | 2026-08-30 | B-027 authorized | `9bbd4ea...` | effective gate transition |
+|| ANOX-EVENT-0022 | 2026-08-30 | PRE-B027-M2B | `c2d3a04...` | project memory integrity |
+|| ANOX-EVENT-0023 | 2026-08-31 | B027-A | `83259e7...` | workforce foundation |
+|| ANOX-EVENT-0024 | 2026-08-31 | B027-A merge | `38b619e...` | B027-A merged to main |
+|| ANOX-EVENT-0025 | 2026-08-31 | B027-B | `76849b1...` | work-control runtime |
 
 ## Implemented / accepted at implemented-test level
 
@@ -61,6 +66,7 @@ messenger functionality; the percentage reflects merged B-002 and B-003 client f
 - CI / supply-chain security foundation (B-017-Lite).
 - Canonical Merge Lifecycle V1 and continuity governance (B-026/M1R3).
 - B027-A AI Workforce / Work-Control Governance Foundation.
+- B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime.
 
 ## Not implemented
 

@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B027-A IMPLEMENTED; B027-B AUTHORIZED; B027-C DEFERRED
+**Status:** B027-B IMPLEMENTED; B027-C AUTHORIZED
 **Updated:** 2026-08-31
 
 ## Architecture / governance
@@ -10,8 +10,9 @@
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN on `main`.
-- B-027-A AI Workforce / Work-Control Governance: IMPLEMENTED at `83259e7...`.
-- B-027-B / B-027-C: DEFERRED.
+- B-027-A AI Workforce / Work-Control Governance: MERGED to `main` at `38b619e...` (PR #6).
+- B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: IMPLEMENTED at `76849b1...`.
+- B-027-C / B-027-D: DEFERRED.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -32,8 +33,8 @@
 
 `main` is the canonical branch in `anox-software/anox-messenger`
 (`git@github.com:anox-software/anox-messenger.git`). `main` HEAD is
-`9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (new `anox-software/anox-messenger` PR #4,
-Canonical Merge Lifecycle V1 human-merged). The legacy remote
+`38b619e55082086989bb0713cad42c4c53be14ab` (new `anox-software/anox-messenger` PR #6,
+B027-A AI Workforce / Work-Control Governance Foundation human-merged). The legacy remote
 `anox-admin/ax-messenger` remains historical provenance only.
 
 B-017-Lite merged to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`. All five GitHub CI
@@ -48,9 +49,14 @@ CLOSED; `ANOX-CMLR1REV-001` is independently CLOSED; `ANOX-CMLR1REV-002`, `ANOX-
 independent M1R3 Delta Review occurred; the Human Product & Security Owner authorized proceeding
 after M1R3 automated verification, Handoff, archive, and live validation PASS.
 
-Next gate: `B-027 IMPLEMENTATION AUTHORIZED`.
+B027-A AI Workforce / Work-Control Governance Foundation is merged to `main` at
+`38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). B027-B is in progress on
+`governance/b027-work-control-runtime` at `76849b1a9f1f9aefc913f53645628ddb33f10c51`.
 
-No `workforce/**`, `docs/workforce/**`, or product/CI/dependency changes are present.
+Next gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`.
+
+B027-B introduces `workforce/**`, `docs/workforce/**`, `tools/workforce/**`, and continuity
+integration; no product/CI/dependency changes unrelated to B-027 governance are present.
 
 ## Functional progress
 
@@ -715,3 +721,22 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   B017-Lite policy validator PASS; `git diff --check` PASS; full continuity suite PASS.
 - **Status:** `COMPLETED`. Next authorized engineering task is `B027-B — STATE/GATE RESOLVER + ROLE
   CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`.
+
+## B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME
+
+<!-- ANOX_EVENT: ANOX-EVENT-0025 -->
+
+- **Date:** 2026-08-31
+- **Branch:** `governance/b027-work-control-runtime` from `main @ 38b619e...`
+- **Head:** `76849b1a9f1f9aefc913f53645628ddb33f10c51`
+- **Result:** Adds deterministic, fail-closed `tools/workforce/state_gate_resolver.py`;
+  `tools/workforce/validate_b027b.py`; canonical per-role contracts `ROLE-001` through `ROLE-019`;
+  `prompt.schema.json` and `communication.schema.json`; `prompts.jsonl` and `communications.jsonl`;
+  task lifecycle enforcement; derived work candidate processing; finding routing and immutability;
+  human-action boundary; security architecture change trigger; legacy code revalidation trigger;
+  final pre-product architecture/security audit gate contract; product-resume blocking semantics;
+  and continuity integration.
+- **Tests:** B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS;
+  B027-B adversarial tests 48/48 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS;
+  full continuity suite 171/171 PASS; `git diff --check` PASS.
+- **Status:** `COMPLETED`. Next authorized engineering task is `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`.

@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B027-A — AI Workforce / Work-Control Governance Foundation
+**Handoff version:** B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime
 **Date:** 2026-08-31
 
 ---
@@ -20,16 +20,16 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-workforce-foundation`
-- Current work branch: `governance/b027-workforce-foundation`
+- Delivery branch: `governance/b027-work-control-runtime`
+- Current work branch: `governance/b027-work-control-runtime`
 - Current baseline branch: `main`
-- Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
-- Described HEAD: `83259e77082150adef6585b3409e062f850a5abc`
+- Current baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
+- Described HEAD: `76849b1a9f1f9aefc913f53645628ddb33f10c51`
 - Working tree: clean
-- Pre-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-- Post-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- Pre-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- Post-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
 - Open PR: none
-- Latest merge into `main`: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` — Canonical Merge Lifecycle V1 (new `anox-software/anox-messenger` PR #4)
+- Latest merge into `main`: `38b619e55082086989bb0713cad42c4c53be14ab` — B027-A AI Workforce / Work-Control Governance Foundation (new `anox-software/anox-messenger` PR #6)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -68,10 +68,14 @@ New sessions must read that file first.
   PASS. Final independent M1R3 Delta Review was NOT performed by human decision; the Human Product &
   Security Owner authorized controlled Human Push / PR / CI / Merge. Merged to `main` at
   `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4).
+- B027-A — AI Workforce / Work-Control Governance Foundation: MERGED into `main` at
+  `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6). Adds B-027 Authority, Runtime/Integration
+  Contract, Model Provider Policy, role registry, schemas, registries, workforce state, validator,
+  and adversarial tests.
 
 ## Latest completed work
 
-B027-A — AI Workforce / Work-Control Governance Foundation on `governance/b027-workforce-foundation`:
+B027-A — AI Workforce / Work-Control Governance Foundation:
 
 - Adds `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md` — B-027 Authority.
 - Adds `docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md` — Runtime / Integration Contract.
@@ -82,11 +86,20 @@ B027-A — AI Workforce / Work-Control Governance Foundation on `governance/b027
 - Adds `tools/workforce/validate_b027a.py` and `tools/workforce/test_b027a.py` — deterministic validator and adversarial tests.
 - Extends `tools/continuity/validate_continuity.py` to invoke B027-A validation.
 - Adds `docs/reports/B027A_WORKFORCE_FOUNDATION.md`.
-- B027-B and B027-C runtime remain deferred.
+- Merged to `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6).
 
 ## Current open work
 
-None. B027-A is complete; awaiting final metadata synchronization and live validation.
+B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime on `governance/b027-work-control-runtime`:
+
+- Adds `tools/workforce/state_gate_resolver.py` — deterministic, fail-closed State/Gate Resolver.
+- Adds `tools/workforce/validate_b027b.py` — B027-B validator and 48 adversarial tests.
+- Adds `docs/workforce/roles/ROLE-001.md` through `ROLE-019.md` — canonical per-role contracts.
+- Adds `docs/workforce/schemas/prompt.schema.json` and `docs/workforce/schemas/communication.schema.json`.
+- Adds `docs/workforce/registries/prompts.jsonl` and `docs/workforce/registries/communications.jsonl`.
+- Extends `tools/continuity/validate_continuity.py` to invoke B027-B validation.
+- Adds `docs/reports/B027B_WORK_CONTROL_RUNTIME.md`.
+- B027-C remains deferred.
 
 ## Current test baseline
 
@@ -100,6 +113,8 @@ None. B027-A is complete; awaiting final metadata synchronization and live valid
 - B-017-Lite policy validator: PASS
 - B-017-Lite policy validator unit tests: 35/35 PASS
 - Continuity unit tests: 171/171 PASS
+- B027-A adversarial tests: 20/20 PASS
+- B027-B adversarial tests: 48/48 PASS
 
 ## Historical provenance
 
@@ -129,12 +144,13 @@ None. B027-A is complete; awaiting final metadata synchronization and live valid
 
 ## Next architecture gate
 
-`B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
+`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
 
 ## Next engineering task
 
-After M2B metadata sync: implement the B-027 workforce runtime from the architecture freeze.
-No B-027 runtime files are implemented until that task is explicitly authorized and recorded.
+Implement B027-C: integrity validator, adversarial system tests, handoff generation, cold recovery,
+and final B027 integration. No B027-C files are implemented until that task is explicitly authorized
+and recorded.
 
 ## Do-not-touch foundation
 

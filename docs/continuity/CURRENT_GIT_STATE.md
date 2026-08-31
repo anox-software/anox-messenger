@@ -15,24 +15,24 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`
-- Latest merge into baseline: `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` — Canonical Merge Lifecycle V1 merged (new `anox-software/anox-messenger` PR #4)
-- Previous baseline HEAD: `3e127c7a80e9835ea5631e21c10f066401a884dc`
+- Current baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
+- Latest merge into baseline: `38b619e55082086989bb0713cad42c4c53be14ab` — B027-A AI Workforce / Work-Control Governance Foundation merged to main (new `anox-software/anox-messenger` PR #6)
+- Previous baseline HEAD: `69c1d9b9f7605d5d96e0bc1add3d05ecbc82ee1b`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-workforce-foundation`
+- Delivery branch: `governance/b027-work-control-runtime`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `83259e77082150adef6585b3409e062f850a5abc`
+- Described HEAD: `76849b1a9f1f9aefc913f53645628ddb33f10c51`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `B027-A AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION — COMPLETED; NEXT: B027-B STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`, canonical → `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`)
-- Pre-merge gate: `B-027 AI WORKFORCE / WORK-CONTROL GOVERNANCE IMPLEMENTATION`
-- Post-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- Current task: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME — IN PROGRESS; NEXT: B027-C`
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`, canonical → `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`)
+- Pre-merge gate: `B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+- Post-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
 
 ## Merged history on main
 
@@ -48,18 +48,18 @@
 - PROMPT-007C — merge gate verification, dependency-tree empirical confirmation, merge, and
   continuity synchronization
 - PROMPT-008 — B-003 Account/License client domain/state foundation (PR #5 under old remote) — MERGED
-- PROMPT-008C — commit-uncertainty closure — MERGED
-- PROMPT-008D — durable pre-commit guard and legacy cleanup — MERGED
+- PROMPT-008D — commit-uncertainty closure — MERGED
 - PROMPT-009 — Development Security Governance / Handoff Hardening (old PR #6) — MERGED via new PR #1
 - PROMPT-010 — GitHub Remote Activity Safety Governance — MERGED via new PR #1
 - REMOTE-MIGRATION-SYNC-001 — New GitHub main / post-merge continuity reconciliation — MERGED to `main` at `043e87480b3c00bed2cbce6b24bf24a7dfc5d7ff`
 - B-017-Lite — CI / Supply-Chain Security Foundation (PR #2) — MERGED to `main` at `283c1a1fdda012aab51b0164b4b16636e870f3b5`
 - PRE-B027-0R2 — Merge-commit payload visibility fix and final continuity remediation — MERGED to `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc` (PR #3)
 - PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation — locally implemented and MERGED to `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). No final independent M1R3 Delta Review occurred by human decision.
+- B027-A — AI Workforce / Work-Control Governance Foundation — MERGED to `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6)
 
 ## Unmerged work
 
-`B027-A` — AI Workforce / Work-Control Governance Foundation on `governance/b027-workforce-foundation`; establishes authority, runtime contract, schemas, registries, state model, model-provider policy, validator, and adversarial tests. Awaiting metadata synchronization and final validation.
+`B027-B` — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime on `governance/b027-work-control-runtime`; implements runtime execution layer, role contracts, prompt/communication schemas and registries, and resolver tests. B027-C remains deferred.
 
 ## B-003 status after this task
 
