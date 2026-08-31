@@ -1,7 +1,7 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B-027 IMPLEMENTATION AUTHORIZED; PRE-B027-M2B PROJECT MEMORY / PROGRESS INTEGRITY COMPLETED
-**Updated:** 2026-08-30
+**Status:** B027-A IMPLEMENTED; B027-B AUTHORIZED; B027-C DEFERRED
+**Updated:** 2026-08-31
 
 ## Architecture / governance
 
@@ -10,7 +10,8 @@
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN on `main`.
-- B-027 AI Workforce / Work-Control Governance: PRE-FROZEN / implementation authorized by canonical live validator.
+- B-027-A AI Workforce / Work-Control Governance: IMPLEMENTED at `83259e7...`.
+- B-027-B / B-027-C: DEFERRED.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -698,3 +699,19 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   `git diff --check` PASS.
 - **Status:** `COMPLETED`. Next authorized engineering task is `B-027 AI WORKFORCE / WORK-CONTROL
   GOVERNANCE IMPLEMENTATION`.
+
+## B027-A — AI Workforce / Work-Control Governance Foundation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0023 -->
+
+- **Date:** 2026-08-31
+- **Branch:** `governance/b027-workforce-foundation` from `main @ 69c1d9b...`
+- **Head:** `83259e77082150adef6585b3409e062f850a5abc`
+- **Result:** Adds B-027 Authority, Runtime/Integration Contract, Model Provider Policy, role
+  registry (19 roles), Task Package / Finding / Decision / Run / Derived Work / Workforce State
+  schemas, deterministic registries, `WORKFORCE_STATE.json`, `tools/workforce/validate_b027a.py`,
+  `tools/workforce/test_b027a.py`, and continuity integration.
+- **Tests:** B027-A validator PASS; B027-A adversarial tests 20/20 PASS; `cargo test` 15/15 PASS;
+  B017-Lite policy validator PASS; `git diff --check` PASS; full continuity suite PASS.
+- **Status:** `COMPLETED`. Next authorized engineering task is `B027-B — STATE/GATE RESOLVER + ROLE
+  CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`.

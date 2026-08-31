@@ -757,3 +757,22 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Continuity tests: 171/171 PASS; `cargo test`: 15/15 PASS; B-017-Lite policy validator: PASS.
 - `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+## B027-A — AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION
+
+**Date:** 2026-08-31
+**Branch:** `governance/b027-workforce-foundation`
+**Task result:** PASS — workforce governance foundation established
+**Substantive commit:** `83259e770d09b3a2210c17dec88d753e52f14bb7`
+**Metadata commit:** to be recorded after metadata sync
+**Event ID:** `ANOX-EVENT-0023`
+
+- Added `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`, `docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md`, and `docs/workforce/MODEL_PROVIDER_POLICY.md`.
+- Added `docs/workforce/schemas/` for Task Package, Finding, Decision, Run, Derived Work, and Workforce State.
+- Added `docs/workforce/registries/` (roles, tasks, findings, decisions, runs, derived work) and `docs/workforce/WORKFORCE_STATE.json`.
+- Added `tools/workforce/validate_b027a.py` and `tools/workforce/test_b027a.py`.
+- Extended `tools/continuity/validate_continuity.py` to invoke B027-A validation.
+- B027-A validator PASS; B027-A adversarial tests 20/20 PASS.
+- `cargo test`: 15/15 PASS; B-017-Lite policy validator: PASS; `git diff --check`: clean.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
