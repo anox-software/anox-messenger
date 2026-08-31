@@ -1,6 +1,6 @@
 # ANOX Model / Provider Policy
 
-**Status:** B027-A FOUNDATION  
+**Status:** B027-A/B RUNTIME  
 **Authority:** `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`  
 
 This policy defines the relationship between `ROLE` and `MODEL` / `PROVIDER` in the B-027 workforce.
@@ -25,7 +25,7 @@ For example:
 
 - No role is permanently bound to a single provider or model.
 - The project must not hardcode a dependency on any single provider.
-- Preferred model for this task is Devin SWE-1.7, but B-027 does not require it.
+- A Task Package may record a current model recommendation (e.g., Devin SWE-1.7 for B027-A/B execution) as execution metadata only; the recommendation is re-evaluated when the task is created and does not receive permanent authority or mandatory-provider status.
 
 ---
 

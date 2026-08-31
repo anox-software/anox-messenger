@@ -1,6 +1,6 @@
 # ANOX Workforce Runtime / Integration Contract
 
-**Status:** B027-A FOUNDATION  
+**Status:** B027-B RUNTIME  
 **Authority:** `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`  
 
 This contract defines how the B-027 workforce runtime entities interact.  
@@ -37,22 +37,23 @@ Authority defines what is permitted, prohibited, and deferred.
 
 ### Role Contract
 
-A per-role contract (to be implemented in B027-B) that defines:
+Per-role contracts are now implemented in `docs/workforce/roles/` (`ROLE-001.md` through `ROLE-019.md`).  
+Each contract defines:
 
 - role identity and authority;
+- allowed and prohibited responsibilities;
 - allowed task types;
 - allowed data-egress classes;
 - allowed tools and paths;
-- review and evidence requirements.
-
-In B027-A, only the Role Registry and activation classes are implemented.  
-Full per-role contracts are B027-B.
+- writable/read-only expectations;
+- review, independence, and evidence requirements;
+- remote permission ceiling and security-trigger participation.
 
 ### Task Package
 
 The machine-readable work package defined by `docs/workforce/schemas/task-package.schema.json`.  
 A Task Package must be `Authorized` before execution.  
-The B027-A validator checks structural validity; the B027-B resolver will authorize state transitions.
+The B027-A validator checks structural validity; the B027-B resolver authorizes state transitions.
 
 ### State
 
@@ -91,6 +92,23 @@ An Agent Run is an execution record.
 It follows `docs/workforce/schemas/run.schema.json`.  
 It records what task was executed, by which role, using which model/provider, the result, and the evidence produced.
 
+### Prompt Registry
+
+The machine-readable prompt authority and registry in `docs/workforce/registries/prompts.jsonl` (schema `docs/workforce/schemas/prompt.schema.json`).  
+It records canonical prompts, their authority references, and assigned roles.  
+A concrete prompt must derive from an Authorized Task Package and must not exceed its authority.
+
+### Communication Bus
+
+The machine-readable communication registry in `docs/workforce/registries/communications.jsonl` (schema `docs/workforce/schemas/communication.schema.json`).  
+It records directed messages between roles, findings, decisions, and task events.  
+The bus is append-only and preserves finding immutability and routing.
+
+### State/Gate Resolver
+
+The deterministic fail-closed resolver implemented in `tools/workforce/state_gate_resolver.py`.  
+It evaluates Candidate Task Packages, state transitions, Derived Work Candidates, path enforcement, one-active-writer, human-action boundaries, security triggers, legacy revalidation, and the final product gate.
+
 ---
 
 ## C. Runtime flow
@@ -103,15 +121,21 @@ It records what task was executed, by which role, using which model/provider, th
    In B027-A, no automated authorization or state resolution occurs.
 4. Findings, Decisions, and Run records may be recorded for B027-A itself.
 
-### B027-B (future)
+### B027-B runtime
 
-1. The State/Gate Resolver evaluates the Candidate against the current Workforce State, Role Contract, and active gates.
+1. The State/Gate Resolver evaluates the Candidate Task Package against the current Workforce State, Role Contract, and active gates.
 2. If the resolver authorizes it, the Task Package status becomes `Authorized`.
-3. The authorized role receives a concrete prompt derived from the Task Package.
-4. The agent executes the task within allowed paths, data-egress class, and remote permission.
-5. The agent produces evidence and returns to `Awaiting Evidence` / `Awaiting Review`.
-6. An independent reviewer (where required) reviews and may require retest.
-7. Only after human-controlled remote action may the result be merged.
+3. The authorized role receives a concrete prompt from the Prompt Registry or derived directly from the Task Package; the prompt must not exceed Task Package authority.
+4. Task state transitions are resolved by the State/Gate Resolver; only permitted actors may advance the task through the lifecycle.
+5. The agent executes the task within allowed paths, data-egress class, and remote permission.
+6. Findings are routed and recorded on the Communication Bus; they are immutable and cannot silently disappear.
+7. The agent produces evidence and returns to `Awaiting Evidence` / `Awaiting Review`.
+8. The resolver enforces the human-action boundary for remote push, merge, release, signing, break-glass, E4, and D4-class actions.
+9. Security Architecture Change Triggers create reassessment candidates with SEC-A, SEC-B, or SEC-C levels; the rationale and affected domain are recorded.
+10. Legacy Code Revalidation Triggers create isolated, fresh legacy audit sessions for affected surfaces.
+11. An independent reviewer (where required) reviews and may require retest.
+12. Only after human-controlled remote action may the result be merged.
+13. The final pre-product architecture/security audit gate remains closed until all blocking findings, legacy audits, and final audit conditions are satisfied.
 
 ---
 
@@ -140,6 +164,12 @@ It ensures the workforce foundation is structurally and semantically consistent.
 - Derived Work marked `Authorized` directly → FAIL.
 - Unknown or ambiguous gate → BLOCKED.
 
+### Resolver reason codes
+
+The State/Gate Resolver returns a deterministic reason string for every BLOCKED or FAIL result.  
+Examples include `unknown_role`, `unknown_current_state`, `invalid_state_transition`, `unauthorized_actor`, `unauthorized_path`, `active_writer_conflict`, `d4_for_ai`, `data_egress_exceeds_role_ceiling`, `remote_permission_exceeds_role_ceiling`, `ai_cannot_perform_human_action`, `ai_self_authorization`, `human_action_required`, and `ci_not_passing`.  
+The authoritative list and logic are in `tools/workforce/state_gate_resolver.py`.
+
 ---
 
 ## F. References
@@ -147,6 +177,11 @@ It ensures the workforce foundation is structurally and semantically consistent.
 - B027 Authority: `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`
 - Model provider policy: `docs/workforce/MODEL_PROVIDER_POLICY.md`
 - Role registry: `docs/workforce/registries/roles.json`
+- Role contracts: `docs/workforce/roles/`
 - Workforce state: `docs/workforce/WORKFORCE_STATE.json`
 - Schemas: `docs/workforce/schemas/`
+- Prompt registry: `docs/workforce/registries/prompts.jsonl`
+- Communication registry: `docs/workforce/registries/communications.jsonl`
 - B027-A validator: `tools/workforce/validate_b027a.py`
+- State/Gate Resolver: `tools/workforce/state_gate_resolver.py`
+- B027-B validator: `tools/workforce/validate_b027b.py`

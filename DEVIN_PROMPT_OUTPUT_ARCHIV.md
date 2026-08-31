@@ -776,3 +776,32 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - `cargo test`: 15/15 PASS; B-017-Lite policy validator: PASS; `git diff --check`: clean.
 - `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
+
+**Clarification:** B027-A DID introduce B027 Authority (`docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`) and registered it in `AUTHORITY_INDEX.md`; it did not override higher Authority or Security Invariants. The earlier "no authority changes" phrasing was a reporting inconsistency, not a substantive defect.
+
+## B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME
+
+|**Date:** 2026-08-31
+|**Branch:** `governance/b027-work-control-runtime`
+|**Task result:** PASS — work-control runtime implemented and validated
+|**Substantive commit:** `76849b1a9f1f9aefc913f53645628ddb33f10c51`
+|**Metadata commit:** to be recorded after metadata sync
+|**Event ID:** `ANOX-EVENT-0025`
+
+- Added `tools/workforce/state_gate_resolver.py` — deterministic, fail-closed State/Gate Resolver.
+- Added `tools/workforce/validate_b027b.py` — B027-B validator and 48 adversarial tests.
+- Added `docs/workforce/roles/ROLE-001.md` through `ROLE-019.md` — canonical per-role contracts.
+- Added `docs/workforce/schemas/prompt.schema.json` and `docs/workforce/schemas/communication.schema.json`.
+- Added `docs/workforce/registries/prompts.jsonl` and `docs/workforce/registries/communications.jsonl`.
+- Extended `tools/continuity/validate_continuity.py` to invoke B027-B validation.
+- Added `docs/reports/B027B_WORK_CONTROL_RUNTIME.md`.
+- B027-A validator PASS; B027-A adversarial tests 20/20 PASS.
+- B027-B validator PASS; B027-B adversarial tests 48/48 PASS.
+- Continuity regression tests: 171/171 PASS.
+- B017-Lite policy validator: 35/35 PASS.
+- `cargo test`: 15/15 PASS.
+- `git diff --check`: clean.
+- B027-A canonical merge to `main`: `38b619e55082086989bb0713cad42c4c53be14ab`.
+- Pre-merge baseline main before B027-A merge: `69c1d9b9f7605d5d96e0bc1add3d05ecbc82ee1b`.
+- `REMOTE MUTATION = NONE`; no push, PR, merge, or remote API mutation.
+- **Cloud-AI secret status:** no production/root/user secret introduced or exposed.

@@ -1,6 +1,6 @@
 # B-027 AI Workforce / Work-Control Governance
 
-**Status:** FROZEN ARCHITECTURE / B027-A FOUNDATION IMPLEMENTED  
+**Status:** FROZEN ARCHITECTURE / B027-A FOUNDATION IMPLEMENTED / B027-B RUNTIME IMPLEMENTED  
 **Authority:** B-027 is a frozen specification under `docs/authority/B_FREEZE_REGISTRY.md`.  
 **Precedence:** See `docs/authority/AUTHORITY_INDEX.md` for the canonical numbered precedence list.  
 
@@ -37,19 +37,28 @@ B-027 does **not** redefine Messenger product behavior, backend service behavior
 - initial Workforce State;
 - deterministic B027-A validator and adversarial tests.
 
-### Frozen architecture (not yet implemented runtime)
+### Implemented in B027-B
 
-- State/Gate Resolver execution engine;
-- automated Derived Work authorization;
-- full per-role contract activation;
-- communication bus execution;
-- per-role prompt contracts.
+- State/Gate Resolver (`tools/workforce/state_gate_resolver.py`);
+- Role Contracts (`docs/workforce/roles/ROLE-001.md` through `ROLE-019.md`);
+- Task lifecycle engine;
+- Derived Work Candidate processing;
+- Prompt Registry and prompt authority;
+- Communication Bus (`docs/workforce/registries/communications.jsonl`);
+- finding routing and immutability rules;
+- human-action boundary;
+- Security Architecture Change Trigger;
+- SEC-A / SEC-B / SEC-C levels;
+- Legacy Code Revalidation Trigger;
+- isolated legacy audit sessions;
+- Final Pre-Product Architecture/Security Audit gate;
+- Product-resume blocking semantics.
 
-### Deferred to B027-B
+### Frozen architecture (B027-C only)
 
-- State/Gate Resolver;
-- per-role contracts (ROLE-001 through ROLE-019);
-- task/prompt/communication runtime.
+- Cold Recovery integration;
+- workforce handoff manifest extension;
+- stale-handoff retest.
 
 ### Deferred to B027-C
 
@@ -82,7 +91,7 @@ A prompt cannot override its Task Package.
 
 - AI agents execute work packages. They do not set architecture, security, or release policy.
 - An AI suggestion, finding, log, or derived-work candidate has **no** authority to create an executable, writable task.
-- Only the human Product & Security Owner, the State/Gate Resolver (when implemented), or an authorized human path may authorize work.
+- Only the human Product & Security Owner, the State/Gate Resolver (implemented in B027-B), or an authorized human path may authorize work.
 
 ---
 
@@ -236,7 +245,7 @@ Candidate
 `Blocked` is an explicit exceptional state.  
 Allowed transitions are machine-readable in the Task Package schema.
 
-The State/Gate Resolver (B027-B) will enforce these transitions.  
+The State/Gate Resolver is implemented in B027-B and enforces these transitions.  
 B027-A defines them and validates that schemas recognize only known values.
 
 ### Finding lifecycle
@@ -346,18 +355,19 @@ They record evidence produced, remote mutation, and the model/provider used.
 ## U. Derived Work non-authorization
 
 A `Derived Work Candidate` is a suggestion.  
-It is explicitly `NON-AUTHORIZED` until accepted by the future State/Gate Resolver or an authorized human path.  
+It is explicitly `NON-AUTHORIZED` until the State/Gate Resolver (implemented in B027-B) or an authorized human path evaluates and accepts it.  
+The resolver evaluates Derived Work Candidates against role authority and workforce state.  
 An AI may suggest work; an AI suggestion must not create an executable authorized task.
 
 ---
 
 ## V. Deterministic resolver and fail-closed behavior
 
-A deterministic State/Gate Resolver is required for B027-B.  
-Until it is implemented:
+The deterministic State/Gate Resolver is implemented in B027-B (`tools/workforce/state_gate_resolver.py`).  
+It remains fail-closed:
 
 - `UNKNOWN OR AMBIGUOUS GATE STATE = BLOCKED`;
-- no runtime automated authorization occurs;
+- unauthorized task, state transition, path, data-egress, or remote-permission request is rejected with a deterministic reason code;
 - all remote write remains human-controlled.
 
 ---
@@ -403,14 +413,56 @@ No override is valid without traceability.
 - Runtime contract: `docs/workforce/ANOX_WORKFORCE_RUNTIME_INTEGRATION_CONTRACT.md`
 - Model provider policy: `docs/workforce/MODEL_PROVIDER_POLICY.md`
 - Role registry: `docs/workforce/registries/roles.json`
+- Role contracts: `docs/workforce/roles/`
 - Workforce state: `docs/workforce/WORKFORCE_STATE.json`
 - Schemas: `docs/workforce/schemas/`
 - B027-A validator: `tools/workforce/validate_b027a.py`
+- State/Gate Resolver: `tools/workforce/state_gate_resolver.py`
+- B027-B validator: `tools/workforce/validate_b027b.py`
 
 ---
 
 ## Z. Version
 
 - B027-A foundation: implemented as deterministic schemas, registries, state, and tests.
-- B027-B: State/Gate Resolver + Role Contracts + Task/Prompt/Communication runtime.
+- B027-B runtime: State/Gate Resolver, Role Contracts, Task lifecycle engine, Derived Work processing, Prompt Registry, Communication Bus, security and legacy triggers, and final product gate semantics.
 - B027-C: Cold Recovery and handoff integration.
+
+---
+
+## AA. Security Architecture Reassessment Trigger
+
+Material architecture changes affecting security trigger a mandatory, deterministic reassessment candidate.  
+The resolver (`evaluate_security_trigger` in `tools/workforce/state_gate_resolver.py`) creates a candidate and assigns the minimum sufficient audit level when affected domains are not limited to docs, typos, spelling, comments, markdown, or formatting.
+
+---
+
+## AB. Security audit levels (SEC-A / SEC-B / SEC-C)
+
+The resolver assigns the minimum sufficient level and records the rationale:
+
+- `SEC-A` — localized delta review;
+- `SEC-B` — domain-wide review (e.g., auth, crypto, backend, RLS, Android security, build/release);
+- `SEC-C` — full review for critical or multiple security domains, including security invariants, trust boundaries, cryptography, E2EE, key lifecycle, the State/Gate Resolver, and role permissions.
+
+---
+
+## AC. Final Pre-Product Architecture/Security Audit
+
+A future gate after B027-A/B/C requires three isolated fresh audit sessions with no shared state.  
+The product is blocked until the gate conditions are met and recorded.
+
+---
+
+## AD. Legacy Code Revalidation
+
+A Legacy Code Revalidation Trigger creates one or more isolated legacy audit sessions for affected surfaces.  
+The resolver (`resolve_legacy_revalidation`) maps changed domains to legacy audit scopes and produces separate, fresh audit sessions.  
+Audit output is recorded and must be satisfied before the final product gate can pass.
+
+---
+
+## AE. Product Development Block
+
+`PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT` is the fail-closed product gate.  
+B027-B and B027-C workforce work may continue, but B-004 and B-005 product development remains blocked until the final pre-product architecture/security audit conditions are satisfied.

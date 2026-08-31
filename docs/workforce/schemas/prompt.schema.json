@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anox.software/schemas/workforce/prompt.schema.json",
+  "title": "B-027 Agent Prompt",
+  "description": "Concrete prompt derived from an authorized Task Package for an AI agent.",
+  "type": "object",
+  "required": [
+    "prompt_id",
+    "task_id",
+    "role_id",
+    "content",
+    "authority_refs"
+  ],
+  "properties": {
+    "prompt_id": {
+      "type": "string",
+      "pattern": "^ANOX-PROMPT-[A-Z0-9]+$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+    },
+    "role_id": {
+      "type": "string",
+      "pattern": "^ROLE-(0[0-9][0-9]|1[0-9])$"
+    },
+    "model_provider": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_egress": {
+      "type": "string",
+      "enum": ["D0", "D1", "D2", "D3"]
+    },
+    "remote_permission": {
+      "type": "string",
+      "enum": ["NONE", "READ_ONLY", "HUMAN_REMOTE_ACTION_REQUIRED"]
+    },
+    "authority_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

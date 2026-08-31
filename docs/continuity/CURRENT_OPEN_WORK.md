@@ -1,14 +1,15 @@
 # CURRENT OPEN WORK
 
-**Date:** 2026-08-31 (B027-A AI Workforce / Work-Control Governance Foundation)
+**Date:** 2026-08-31 (B027-B STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME)
 
 ---
 
 ## ARCHITECTURE OPEN
 
-None. B-024 closed the last known architecture-open items. B-025, B-026, the CML V1, and
-B027-A are complete. B027-A is locally implemented on `governance/b027-workforce-foundation`;
-B027-B and B027-C are deferred until authorized.
+None. B-024 closed the last known architecture-open items. B-025, B-026, the CML V1,
+B027-A, and B027-B are complete. B027-A is merged to `main` at `38b619e...`.
+B027-B is locally implemented on `governance/b027-work-control-runtime`;
+B027-C is deferred until authorized.
 
 ## RECENTLY MERGED
 
@@ -29,17 +30,22 @@ B027-B and B027-C are deferred until authorized.
   Merged into `main` at `3e127c7a80e9835ea5631e21c10f066401a884dc`.
 - `PRE-B027-M1R..M1R3` — Canonical Merge Lifecycle V1 (PR #4). Merged into `main` of
   `anox-software/anox-messenger` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f`.
+- `B027-A` — AI Workforce / Work-Control Governance Foundation (PR #6). Merged into `main` of
+  `anox-software/anox-messenger` at `38b619e55082086989bb0713cad42c4c53be14ab`.
 
 ## CURRENT AUTHORIZED WORK
 
-`B027-A AI WORKFORCE / WORK-CONTROL GOVERNANCE FOUNDATION` on `governance/b027-workforce-foundation`:
-COMPLETED at `83259e7...`; all B027-A and continuity checks PASS.
+`B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME` on
+`governance/b027-work-control-runtime`: IN PROGRESS at `76849b1...`; all B027-B and continuity
+and B027-B adversarial tests 48/48 PASS.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`B027-B — STATE/GATE RESOLVER + ROLE CONTRACTS + TASK/PROMPT/COMMUNICATION RUNTIME`
+`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
 
-`B027-C — COLD RECOVERY` remains deferred after B027-B.
+## OPEN PR
+
+None. B027-B is local-only until authorized for PR/merge.
 
 ## RELEASE BLOCKERS
 
