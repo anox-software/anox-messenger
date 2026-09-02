@@ -6,10 +6,7 @@
 
 ## ARCHITECTURE OPEN
 
-None. B-024 closed the last known architecture-open items. B-025, B-026, the CML V1,
-B027-A, and B027-B are merged to `main`. B027-C is implemented and validated on
-`governance/b027-final-integration`. Product is blocked pending
-`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+`AUDIT-MAIN-ARCHITECTURE` is COMPLETE. 36 findings frozen (`ANOX-MAINARCH-001..036`), 13 blocking HIGH. Product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`. Next remediation gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (pending human assignment).
 
 ## RECENTLY MERGED
 
@@ -38,15 +35,16 @@ B027-A, and B027-B are merged to `main`. B027-C is implemented and validated on
 
 ## CURRENT AUTHORIZED WORK
 
-`B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
-INTEGRATION` on `governance/b027-final-integration`: COMPLETED at `176ceb...`; B027-A adversarial
-20/20 PASS; B027-B adversarial 48/48 PASS; B027-C integrity validator PASS; continuity 171/171 PASS;
-B017 policy validator 35/35 PASS; Rust 15/15 PASS. Product is blocked pending
-`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+`ANOX-TASK-MAINARCH0001` — AUDIT-MAIN-ARCHITECTURE findings freeze: COMPLETED at
+`93c4d3c12da23868a620612a7cd3c2913095ede8` on `audit/main-architecture-findings-freeze`.
+36 findings frozen, 13 blocking HIGH, 0 CRITICAL. No product/CI/code changes. No remote mutation.
+B027-A/B/C, continuity, B017-Lite, and Rust validation suites PASS.
+Product remains `BLOCKED_PENDING_FINAL_AUDIT`.
 
 ## NEXT AUTHORIZED ENGINEERING GATE
 
-`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
+`MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+(pending human assignment)
 
 ## OPEN PR
 
@@ -54,8 +52,9 @@ None. B027-C is local-only until the final audit is authorized.
 
 ## RELEASE BLOCKERS
 
-`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` is the current product blocker. V1 release remains
-pending B-021…B-023 future release gates.
+`FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` is the current product blocker.
+`AUDIT-MAIN-ARCHITECTURE` is complete; `AUDIT-WORKFORCE-ARCHITECTURE`, `AUDIT-SECURITY-ARCHITECTURE`,
+all six Legacy Audits, and human final gate remain. V1 release remains pending B-021…B-023.
 
 ## EXTERNAL BLOCKERS
 

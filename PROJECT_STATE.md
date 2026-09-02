@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-08-31
-**Latest material event:** `ANOX-EVENT-0027` — B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation
+**Latest material event:** `ANOX-EVENT-0028` — AUDIT-MAIN-ARCHITECTURE completed and findings frozen
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -11,23 +11,25 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0025 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0026 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0027 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0028 -->
 
 ## Repository truth
 
-- Branch: `governance/b027-final-integration`
-- **Current HEAD:** `176cebca7a693282de09f0ea08169c6d1f485dff` (B027-C INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION)
+- Branch: `audit/main-architecture-findings-freeze`
+- **Current HEAD:** `93c4d3c12da23868a620612a7cd3c2913095ede8` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, new `anox-software/anox-messenger` PR #7)
-- **Previous baseline HEAD:** `38b619e55082086989bb0713cad42c4c53be14ab` (B027-A AI Workforce / Work-Control Governance Foundation, PR #6)
+- **Latest merge to baseline:** `0a4910eab1a92622383721100879cda46f924ca0` (B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation, PR #8)
+- **Previous baseline HEAD:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, PR #7)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
 - **Current effective gate:** `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
 - **Current authorized task:** `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION — IN PROGRESS; NEXT: FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
 - **Open blockers:** NONE
-- **Next authorized task:** `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` (`AUDIT-MAIN-ARCHITECTURE`)
-- **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until audit is authorized.
+- **Current authorized task:** `ANOX-TASK-MAINARCH0001` — AUDIT-MAIN-ARCHITECTURE findings freeze (CLOSED)
+- **Next authorized task:** `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS)
+- **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 - **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; B017 policy validator 35/35 PASS; Rust 15/15 PASS
 
 ## Architecture / governance
@@ -38,7 +40,7 @@
 - B-026 Continuous Development Governance: FROZEN.
 - B-027-A AI Workforce / Work-Control Governance Foundation: MERGED at `38b619e...`.
 - B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED at `aca7a8...`.
-- B-027-C / B-027-D: B027-C IMPLEMENTED at `176ceb...`; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
+- B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); `AUDIT-MAIN-ARCHITECTURE` findings frozen at `93c4d3c12da2...` on `audit/main-architecture-findings-freeze`; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
 
 ## Functional progress
 
@@ -61,6 +63,7 @@ messenger functionality; the percentage reflects merged B-002 and B-003 client f
 ||| ANOX-EVENT-0025 | 2026-08-31 | B027-B | `76849b1...` | work-control runtime |
 ||| ANOX-EVENT-0026 | 2026-08-31 | B027-B merge | `aca7a8...` | B027-B merged to main |
 ||| ANOX-EVENT-0027 | 2026-08-31 | B027-C | `176ceb...` | final B027 integration |
+|||| ANOX-EVENT-0028 | 2026-08-31 | AUDIT-MAIN-ARCHITECTURE | `93c4d3c12da2...` | findings freeze, 36 findings, 13 HIGH |
 
 ## Implemented / accepted at implemented-test level
 

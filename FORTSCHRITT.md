@@ -1,6 +1,6 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** B027-C IMPLEMENTED; PRODUCT BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
+**Status:** AUDIT-MAIN-ARCHITECTURE FINDINGS FROZEN; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
 **Updated:** 2026-08-31
 
 ## Architecture / governance
@@ -12,7 +12,8 @@
 - B-026 Continuous Development Governance: FROZEN on `main`.
 - B-027-A AI Workforce / Work-Control Governance: MERGED to `main` at `38b619e...` (PR #6).
 - B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED to `main` at `aca7a8...` (new `anox-software/anox-messenger` PR #7).
-- B-027-C INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION: IMPLEMENTED at `176ceb...`. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`. B-027-D DEFERRED.
+- B-027-C INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION: MERGED to `main` at `0a4910e...` (PR #8).
+- AUDIT-MAIN-ARCHITECTURE: COMPLETED — PASS WITH FINDINGS at `93c4d3c12da23868a620612a7cd3c2913095ede8` on `audit/main-architecture-findings-freeze`. 36 findings frozen (ANOX-MAINARCH-001..036); 13 blocking HIGH. Product remains blocked pending remaining final/legacy audits and human final gate. Next: MAINARCH-FIX-01.
 - CONTINUITY-001: ACCEPTED.
 
 ## Engineering milestones
@@ -764,3 +765,15 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   B027-C integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS;
   `cargo test` 15/15 PASS; `git diff --check` PASS.
 - **Status:** `COMPLETED`. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+
+## AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
+
+<!-- ANOX_EVENT: ANOX-EVENT-0028 -->
+
+- **Date:** 2026-08-31
+- **Branch:** `audit/main-architecture-findings-freeze` from `main @ 0a4910eab1a92622383721100879cda46f924ca0`
+- **Head:** `93c4d3c12da23868a620612a7cd3c2913095ede8`
+- **Audited canonical SHA:** `0a4910eab1a92622383721100879cda46f924ca0`
+- **Result:** `PASS WITH FINDINGS`. 36 findings frozen (`ANOX-MAINARCH-001` through `ANOX-MAINARCH-036`), 13 blocking HIGH. No CRITICAL findings. No product/CI/code changes. No remote mutation.
+- **Tests:** B027-A validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS; `git diff --check` PASS.
+- **Next authorized task:** `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS).
