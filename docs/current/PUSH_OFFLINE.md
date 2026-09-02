@@ -1,15 +1,12 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-011 — Push + Offline Queue (FROZEN v1.2).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/TRACK_B/B011_PUSH_OFFLINE.md`.
+
 # anoX V1 — Push & Offline Handling
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-011
+**Last synchronized:** 2026-09-02
 
 ---
 
@@ -24,11 +21,9 @@
 
 ## 2. Push Provider
 
-- Push provider is not a trust source.
-- Push may be delayed, lost, or duplicated.
-- Message sync must work independently of push.
-- Provider/transport selection is **not fully frozen**.
-- Do **not** state UnifiedPush+FCM fallback as the current binding architecture.
+- Primary V1 push provider: FCM HTTP v1 (optional for core messaging).
+- UnifiedPush-only or FCM-fallback architectures are **not** current V1 binding promises.
+- Push may be delayed, lost, or duplicated; `/v1/sync` is authoritative.
 
 ## 3. Push Tokens
 
@@ -38,8 +33,8 @@
 
 ## 4. Offline Recipient
 
-- The backend may temporarily queue ciphertext.
-- Exact TTL remains **OPEN**.
+- Backend ciphertext queue TTL: 14 days.
+- Provider queue/acceptance never changes message state.
 
 ## 5. Privacy
 

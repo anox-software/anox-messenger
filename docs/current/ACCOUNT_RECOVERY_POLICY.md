@@ -1,15 +1,12 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-003 — Account + License (FROZEN v1.4).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md` (Security Invariants 1–3) and `docs/authority/B025/TRACK_B/B013_LIFECYCLE.md` / `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-013`.
+
 # anoX V1 — Account & Crypto Recovery Policy
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-013
+**Last synchronized:** 2026-09-02
 
 ---
 
@@ -45,4 +42,4 @@ A new device registration creates:
 
 ## 5. Historical Analysis
 
-Earlier analysis comparing recovery models is preserved as historical/superseded in `docs/history/raw1.1/account-recovery-analysis.md`.
+Earlier analysis comparing recovery models is preserved as historical/superseded in `docs/security/account-recovery.md`.

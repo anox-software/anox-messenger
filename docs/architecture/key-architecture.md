@@ -1,9 +1,9 @@
-> **Status:** HISTORICAL / SUPERSEDED  
-> **Architecture Baseline:** Raw1.1  
-> **Last synchronized:** 2026-08-19  
-> **Do not use as current implementation specification.**  
-> **Current direction:** vodozemac/Olm-based key and session architecture in `docs/current/KEY_AND_SESSION_ARCHITECTURE.md`.  
-> **Superseded by:** `docs/current/KEY_AND_SESSION_ARCHITECTURE.md`  
+> **Status:** HISTORICAL / SUPERSEDED
+> **Architecture Baseline:** Raw1.1
+> **Last synchronized:** 2026-08-19
+> **Do not use as current implementation specification.**
+> **Current direction:** vodozemac/Olm-based key and session architecture in `docs/authority/B025/TRACK_B/B006_VODOZEMAC_KEY_DISTRIBUTION.md`.
+> **Superseded by:** `docs/authority/B025/TRACK_B/B006_VODOZEMAC_KEY_DISTRIBUTION.md` and `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`.
 
 # Key Architecture - anoX Messenger
 

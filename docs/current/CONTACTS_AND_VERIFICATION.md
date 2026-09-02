@@ -1,15 +1,12 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-010 — Contacts + Verification (FROZEN v1.2).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-010` (B-010 v1.3) and `docs/authority/B025/TRACK_B/B010_CONTACTS_VERIFICATION.md` (v1.2 historical snapshot).
+
 # anoX V1 — Contacts & Public-Key Verification
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-010 v1.3
+**Last synchronized:** 2026-09-02
 
 ---
 
@@ -22,13 +19,17 @@
 - Local nicknames stay local where possible.
 - Accepted contact ≠ verified contact.
 
-## 2. Trust States
+## 2. Durable Trust States
 
 | State | Meaning |
 |-------|---------|
-| `UNKNOWN` / `UNVERIFIED` | No verification performed. |
-| `VERIFIED` | Identity has been verified by the user. |
-| `KEY_CHANGED` / `SECURITY_CHANGE` | The verified identity has changed; user warning; explicit re-verification required. |
+| `UNKNOWN` | No trust decision recorded. |
+| `UNVERIFIED` | Contact exists but not verified. |
+| `VERIFIED` | Safety number/QR verified by both sides. |
+| `KEY_CHANGED` | Contact's long-term identity key changed; send blocked until re-verification. |
+| `BLOCKED` | Contact or conversation blocked. |
+
+`VERIFYING` and `SECURITY_CHANGE` are transient UI/process descriptors, not canonical durable states.
 
 ## 3. Verification
 
@@ -40,7 +41,7 @@
 ## 4. Identity Change
 
 A verified E2EE identity changing must:
-1. Transition to `KEY_CHANGED` / `UNVERIFIED`.
+1. Transition to `KEY_CHANGED`.
 2. Show a user warning.
 3. Require explicit re-verification.
 4. Only then return to `VERIFIED`.

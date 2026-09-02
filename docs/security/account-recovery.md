@@ -1,8 +1,8 @@
-> **Status:** HISTORICAL / SUPERSEDED  
-> **Architecture Baseline:** Raw1.1  
-> **Last synchronized:** 2026-08-19  
-> **Do not use as current implementation specification.**  
-> **Superseded by:** `docs/current/ACCOUNT_RECOVERY_POLICY.md` and `docs/current/SECURITY_INVARIANTS.md`  
+> **Status:** HISTORICAL / SUPERSEDED
+> **Architecture Baseline:** Raw1.1
+> **Last synchronized:** 2026-08-19
+> **Do not use as current implementation specification.**
+> **Superseded by:** `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md` (Security Invariant 1: no account or crypto recovery) and `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`.
 
 # Account Recovery Analysis - anoX Messenger
 
@@ -318,14 +318,14 @@ fun createEncryptedBackup(privateKey: PrivateKey, passphrase: String): Encrypted
 suspend fun recoverFromDevice(sourceDeviceId: String, targetDevice: Device) {
     // Authenticate on source device
     authenticateOnDevice(sourceDeviceId)
-    
+
     // Verify target device
     verifyTargetDevice(targetDevice)
-    
+
     // Transfer keys
     val keys = getDeviceKeys(sourceDeviceId)
     transferKeys(keys, targetDevice)
-    
+
     // Sync data
     syncUserData(targetDevice)
 }

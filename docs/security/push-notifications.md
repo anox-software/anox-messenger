@@ -1,9 +1,9 @@
-> **Status:** HISTORICAL / SUPERSEDED  
-> **Architecture Baseline:** Raw1.1  
-> **Last synchronized:** 2026-08-19  
-> **Do not use as current implementation specification.**  
-> **Current direction:** Push is wake-up only; provider/transport choice is not frozen.  
-> **Superseded by:** `docs/current/PUSH_OFFLINE.md`  
+> **Status:** HISTORICAL / SUPERSEDED
+> **Architecture Baseline:** Raw1.1
+> **Last synchronized:** 2026-08-19
+> **Do not use as current implementation specification.**
+> **Current direction:** Push is wake-up only; FCM HTTP v1 is the primary V1 transport; UnifiedPush-default is not a current binding promise.
+> **Superseded by:** `docs/authority/B025/TRACK_B/B011_PUSH_OFFLINE.md` and `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`.
 
 # Push Notifications Analysis - anoX Messenger
 
@@ -383,7 +383,7 @@ class UnifiedPushManager {
     fun registerPushEndpoint(endpoint: String) {
         // Register with chosen UnifiedPush distributor
     }
-    
+
     fun sendPushNotification(userId: String, payload: PushPayload) {
         // Send via UnifiedPush distributor
     }
@@ -395,7 +395,7 @@ class UnifiedPushManager {
 class PushNotificationManager {
     private val unifiedPush = UnifiedPushManager()
     private val fcm = FCMManager()
-    
+
     suspend fun sendNotification(userId: String, payload: PushPayload) {
         try {
             unifiedPush.sendPushNotification(userId, payload)

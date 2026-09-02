@@ -1,9 +1,9 @@
-> **Status:** HISTORICAL / SUPERSEDED  
-> **Architecture Baseline:** Raw1.1  
-> **Last synchronized:** 2026-08-19  
-> **Do not use as current implementation specification.**  
-> **Current direction:** V1 one active device, no recovery. A new device creates a new V1 cryptographic identity.  
-> **Superseded by:** `docs/current/ACCOUNT_DEVICE_LIFECYCLE.md` and `docs/current/ACCOUNT_RECOVERY_POLICY.md`  
+> **Status:** HISTORICAL / SUPERSEDED
+> **Architecture Baseline:** Raw1.1
+> **Last synchronized:** 2026-08-19
+> **Do not use as current implementation specification.**
+> **Current direction:** V1 one active device, no recovery. A new device creates a new V1 cryptographic identity.
+> **Superseded by:** `docs/authority/B025/TRACK_B/B013_LIFECYCLE.md` and `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-013` (B-013 v1.3).
 
 # Device Loss Scenarios Analysis - anoX Messenger
 
@@ -263,19 +263,19 @@ The system must provide clear guidance for device loss scenarios.
 suspend fun revokeDevice(deviceId: String, context: RevocationContext) {
     // Authenticate user
     authenticateUser(context)
-    
+
     // Revoke device
     invalidateDeviceKeys(deviceId)
-    
+
     // Terminate sessions
     terminateDeviceSessions(deviceId)
-    
+
     // Notify user
     notifyUserOfRevocation(deviceId)
-    
+
     // Notify other devices
     notifyOtherDevices(deviceId)
-    
+
     // Log event
     logDeviceRevocation(deviceId, context)
 }
@@ -286,19 +286,19 @@ suspend fun revokeDevice(deviceId: String, context: RevocationContext) {
 suspend fun recoverAccount(recoveryContext: RecoveryContext) {
     // Multi-factor authentication
     authenticateMFA(recoveryContext)
-    
+
     // Verify identity
     verifyUserIdentity(recoveryContext)
-    
+
     // Generate new keys or recover existing
     val keys = generateOrRecoverKeys(recoveryContext)
-    
+
     // Set up new device
     setupNewDevice(keys)
-    
+
     // Sync data
     syncUserData()
-    
+
     // Notify contacts (optional)
     notifyContactsOfRecovery()
 }

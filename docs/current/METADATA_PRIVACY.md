@@ -1,15 +1,12 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-014 — Privacy / Retention / Logging (FROZEN v1.3).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/TRACK_B/B014_PRIVACY_RETENTION_LOGGING.md`.
+
 # anoX V1 — Metadata & Privacy
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-014
+**Last synchronized:** 2026-09-02
 
 ---
 
@@ -37,8 +34,9 @@ Backend/infrastructure may observe:
 
 ## 3. IP / Security Logs
 
+- Raw IP/request logging under anoX control: retention target ≤24h.
+- Cloudflare/FCM/other provider retention is not necessarily the same; never claim otherwise.
 - Purpose-limited and minimized.
-- Exact retention remains **OPEN**.
 
 ## 4. Future Options
 
