@@ -176,6 +176,9 @@
   },
   "finding_namespaces": [
     "ANOX-FINDING-XXXXXXXXX",
+    "ANOX-MAINARCH-XXX",
+    "ANOX-WORKFORCE-XXX",
+    "ANOX-SECURITY-XXX",
     "ANOX-AUDIT-XXXXXXXXX",
     "LEGACY-AUDIT-*"
   ]

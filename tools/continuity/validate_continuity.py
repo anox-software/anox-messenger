@@ -158,6 +158,8 @@ METADATA_ONLY_ALLOWLIST = frozenset(
         "docs/continuity/HANDOFF_VALIDATION_CHECKLIST.md",
         "docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md",
         "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
+        "docs/workforce/registries/runs.jsonl",
+        "docs/workforce/registries/tasks.jsonl",
     }
 )
 

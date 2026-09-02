@@ -1,30 +1,35 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION",
+  "current_gate": "AUDIT-MAIN-ARCHITECTURE — PASS WITH FINDINGS (FROZEN); NEXT: MAINARCH-FIX-01",
   "active_roles": [
     "ROLE-001",
     "ROLE-002",
     "ROLE-003",
-    "ROLE-004"
+    "ROLE-004",
+    "ROLE-009"
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-B027C0001"
+    "ANOX-TASK-B027C0001",
+    "ANOX-TASK-MAINARCH0001"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-B027C0001",
-    "role_id": "ROLE-003",
-    "branch": "governance/b027-final-integration"
+    "task_id": "ANOX-TASK-MAINARCH0001",
+    "role_id": "ROLE-009",
+    "branch": "audit/main-architecture-findings-freeze"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
-  "latest_finding_id": null,
-  "latest_run_id": null,
+  "latest_finding_id": "ANOX-MAINARCH-036",
+  "latest_run_id": "ANOX-RUN-MAINARCH0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
-    "status": "NOT_EXECUTED",
+    "status": "IN_PROGRESS",
+    "completed_audit_ids": [
+      "AUDIT-MAIN-ARCHITECTURE"
+    ],
     "required_audits": [
       "AUDIT-MAIN-ARCHITECTURE",
       "AUDIT-WORKFORCE-ARCHITECTURE",
@@ -41,9 +46,9 @@
     "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT"
   },
   "notes": [
-    "B027-C final integration implemented on governance/b027-final-integration.",
-    "Final Pre-Product Architecture/Security Audit is REQUIRED and NOT EXECUTED.",
+    "B027-C final integration merged to main; B027-A/B/C canonical.",
+    "AUDIT-MAIN-ARCHITECTURE executed: PASS WITH FINDINGS; 36 findings frozen.",
     "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
-    "B027-A and B027-B are merged and canonical."
+    "Next authorized remediation: MAINARCH-FIX-01."
   ]
 }

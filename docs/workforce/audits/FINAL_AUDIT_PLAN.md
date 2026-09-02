@@ -258,6 +258,9 @@ No audit session may advance directly to product-resume without the Human Final 
 ## Finding Namespaces
 
 - `ANOX-FINDING-XXXXXXXXX` — canonical findings, governed by `docs/workforce/schemas/finding.schema.json`.
+- `ANOX-MAINARCH-XXX` — session-specific findings from `AUDIT-MAIN-ARCHITECTURE`.
+- `ANOX-WORKFORCE-XXX` — session-specific findings from `AUDIT-WORKFORCE-ARCHITECTURE` (reserved).
+- `ANOX-SECURITY-XXX` — session-specific findings from `AUDIT-SECURITY-ARCHITECTURE` (reserved).
 - `ANOX-AUDIT-XXXXXXXXX` — audit session identity and audit result records.
 - `LEGACY-AUDIT-*` — legacy revalidation session identifiers.
 

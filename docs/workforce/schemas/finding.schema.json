@@ -17,7 +17,7 @@
   "properties": {
     "finding_id": {
       "type": "string",
-      "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+      "pattern": "^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$"
     },
     "title": {
       "type": "string",
@@ -79,7 +79,7 @@
     },
     "superseded_by": {
       "type": "string",
-      "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+      "pattern": "^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$"
     },
     "notes": {
       "type": "string"
