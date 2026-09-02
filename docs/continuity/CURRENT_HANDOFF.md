@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION
+**Handoff version:** AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
 **Date:** 2026-08-31
 
 ---
@@ -20,16 +20,16 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-final-integration`
-- Current work branch: `governance/b027-final-integration`
+- Delivery branch: `audit/main-architecture-findings-freeze`
+- Current work branch: `audit/main-architecture-findings-freeze`
 - Current baseline branch: `main`
-- Current baseline HEAD: `aca7a8364a89423173440997ac01865c63552ca0`
-- Described HEAD: `176cebca7a693282de09f0ea08169c6d1f485dff`
+- Current baseline HEAD: `0a4910eab1a92622383721100879cda46f924ca0`
+- Described HEAD: `93c4d3c12da23868a620612a7cd3c2913095ede8`
 - Working tree: clean
-- Pre-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
-- Post-merge gate: `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
+- Pre-merge gate: `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`
+- Post-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
 - Open PR: none
-- Latest merge into `main`: `aca7a8364a89423173440997ac01865c63552ca0` — B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime (new `anox-software/anox-messenger` PR #7)
+- Latest merge into `main`: `0a4910eab1a92622383721100879cda46f924ca0` — B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation (new `anox-software/anox-messenger` PR #8)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Implementation milestone
@@ -78,11 +78,26 @@ New sessions must read that file first.
   contracts `ROLE-001` through `ROLE-019`, prompt/communication schemas and registries, and
   continuity integration.
 - B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
-  INTEGRATION: in progress at `176cebca7a693282de09f0ea08169c6d1f485dff` on
-  `governance/b027-final-integration`. Product is blocked pending
-  `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+  INTEGRATION: merged to `main` at `0a4910eab1a92622383721100879cda46f924ca0` (PR #8).
+- AUDIT-MAIN-ARCHITECTURE: COMPLETED — PASS WITH FINDINGS at `93c4d3c12da2...` on
+  `audit/main-architecture-findings-freeze`. 36 findings frozen (`ANOX-MAINARCH-001..036`);
+  13 blocking HIGH. Product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+  Next: `MAINARCH-FIX-01`.
 
 ## Latest completed work
+
+AUDIT-MAIN-ARCHITECTURE — read-only architecture audit and findings freeze:
+
+- Canonical audited SHA: `0a4910eab1a92622383721100879cda46f924ca0`.
+- Result: `PASS WITH FINDINGS` (encoded as `PARTIAL` in the audit-result record).
+- 36 findings frozen in `docs/workforce/registries/findings.jsonl` (`ANOX-MAINARCH-001..036`).
+- 13 blocking HIGH findings; 0 CRITICAL.
+- Audit result recorded in `docs/workforce/registries/audits.jsonl`.
+- Master report populated at `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`.
+- B027 integrity validator, continuity, B017-Lite policy validator, and Rust tests all PASS.
+- No architecture fixes, code fixes, product changes, CI changes, or remote mutation.
+
+## Previous completed work
 
 B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime:
 
@@ -98,6 +113,16 @@ B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runt
   PR #7).
 
 ## Current open work
+
+`MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+(not yet authorized; START WHEN HUMAN ASSIGNS):
+
+- Targeted architecture remediation of AUDIT-MAIN-ARCHITECTURE blocking HIGH findings.
+- Priority order: 002+004+035 → 005+006+022+032+034 → 001 → 012 → 003 → 009 → 010 etc.
+- No product code, CI, backend, database, crypto, or remote mutation without explicit authorization.
+- Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
+
+## Previous open work
 
 B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027
 INTEGRATION on `governance/b027-final-integration`:
@@ -115,7 +140,7 @@ INTEGRATION on `governance/b027-final-integration`:
   fail-closed authorization.
 - Records all material events in `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` and
   `FORTSCHRITT.md` with `<!-- ANOX_EVENT: ... -->` markers.
-- Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+- Merged to `main` at `0a4910eab1a92622383721100879cda46f924ca0` (PR #8).
 
 ## Current test baseline
 

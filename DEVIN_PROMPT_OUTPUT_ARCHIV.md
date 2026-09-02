@@ -846,3 +846,24 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - **Cloud-AI secret status:** no production/root/user secret introduced or exposed.
 
 **Next gate:** `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+
+---
+
+## AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
+
+**Objective:** Canonically ingest and freeze the completed `AUDIT-MAIN-ARCHITECTURE` result before any architecture or code remediation begins.
+
+**Result:** PASS — FINDINGS FROZEN
+
+- Canonical audited SHA: `0a4910eab1a92622383721100879cda46f924ca0` (canonical `main`, B027-C merge, PR #8).
+- Work branch: `audit/main-architecture-findings-freeze`.
+- Substantive freeze commit: `93c4d3c12da23868a620612a7cd3c2913095ede8`.
+- Result: `PASS WITH FINDINGS` (audit-result record: `PARTIAL`, `systemic_reaudit_required: true`).
+- 36 findings frozen (`ANOX-MAINARCH-001..036`): 0 CRITICAL, 13 HIGH, 17 MEDIUM, 5 LOW, 1 INFO.
+- 13 blocking HIGH findings: 001, 002, 003, 004, 005, 006, 007, 008, 009, 010, 011, 012, 013.
+- Master report: `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`.
+- Evidence: `docs/workforce/registries/findings.jsonl`, `docs/workforce/registries/audits.jsonl`.
+- No architecture fixes, code fixes, product changes, CI changes, or remote mutation.
+- B027 integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS.
+- Project Memory event `ANOX-EVENT-0028` recorded.
+- Next: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (pending human assignment).

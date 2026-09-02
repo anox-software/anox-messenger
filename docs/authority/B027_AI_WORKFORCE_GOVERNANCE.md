@@ -213,7 +213,10 @@ See `docs/workforce/MODEL_PROVIDER_POLICY.md` for the model-provider policy on D
 Stable identifier namespaces are:
 
 - `ANOX-TASK-XXXXXXXXX`
-- `ANOX-FINDING-XXXXXXXXX`
+- `ANOX-FINDING-XXXXXXXXX` — canonical cross-audit findings.
+- `ANOX-MAINARCH-XXX` — session-specific findings from `AUDIT-MAIN-ARCHITECTURE`.
+- `ANOX-WORKFORCE-XXX` — session-specific findings from `AUDIT-WORKFORCE-ARCHITECTURE` (reserved).
+- `ANOX-SECURITY-XXX` — session-specific findings from `AUDIT-SECURITY-ARCHITECTURE` (reserved).
 - `ANOX-DECISION-XXXXXXXXX`
 - `ANOX-RUN-XXXXXXXXX`
 - `ANOX-WORK-XXXXXXXXX`

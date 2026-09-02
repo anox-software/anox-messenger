@@ -1,6 +1,6 @@
 # CURRENT GIT STATE
 
-**Recorded:** 2026-08-31
+**Recorded:** 2026-08-31 (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
 
 ---
 
@@ -15,24 +15,24 @@
 ## Merged baseline
 
 - Branch: `main`
-- Current baseline HEAD: `aca7a8364a89423173440997ac01865c63552ca0`
-- Latest merge into baseline: `aca7a8364a89423173440997ac01865c63552ca0` — B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime merged to main (new `anox-software/anox-messenger` PR #7)
-- Previous baseline HEAD: `38b619e55082086989bb0713cad42c4c53be14ab`
+- Current baseline HEAD: `0a4910eab1a92622383721100879cda46f924ca0`
+- Latest merge into baseline: `0a4910eab1a92622383721100879cda46f924ca0` — B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation (new `anox-software/anox-messenger` PR #8)
+- Previous baseline HEAD: `aca7a8364a89423173440997ac01865c63552ca0`
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `governance/b027-final-integration`
+- Delivery branch: `audit/main-architecture-findings-freeze`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `176cebca7a693282de09f0ea08169c6d1f485dff`
+- Described HEAD: `93c4d3c12da23868a620612a7cd3c2913095ede8`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION — IN PROGRESS; NEXT: FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`, canonical → `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`)
-- Pre-merge gate: `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
-- Post-merge gate: `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
+- Current task: `ANOX-TASK-MAINARCH0001` — AUDIT-MAIN-ARCHITECTURE findings freeze (CLOSED); NEXT: MAINARCH-FIX-01
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`, canonical → `MAINARCH-FIX-01`)
+- Pre-merge gate: `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`
+- Post-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
 
 ## Merged history on main
 
@@ -57,10 +57,11 @@
 - PRE-B027-M1R3 — Canonical merge lifecycle M1R3 schema-downgrade remediation — locally implemented and MERGED to `main` at `9bbd4ea185e4149a9ac144d4f7b35d43f35f040f` (PR #4). No final independent M1R3 Delta Review occurred by human decision.
 - B027-A — AI Workforce / Work-Control Governance Foundation — MERGED to `main` at `38b619e55082086989bb0713cad42c4c53be14ab` (PR #6)
 - B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime — MERGED to `main` at `aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger` PR #7)
+- B027-C — Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation — MERGED to `main` at `0a4910eab1a92622383721100879cda46f924ca0` (new `anox-software/anox-messenger` PR #8)
 
 ## Unmerged work
 
-`B027-C` — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION on `governance/b027-final-integration`; implements the B027-C integrity validator, adversarial system tests, handoff generation, cold recovery from `GIT_SNAPSHOT.txt`, and final B027 integration. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+`audit/main-architecture-findings-freeze` — AUDIT-MAIN-ARCHITECTURE findings freeze at `93c4d3c12da23868a620612a7cd3c2913095ede8`; 36 findings frozen (`ANOX-MAINARCH-001..036`), 13 blocking HIGH, product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; next `MAINARCH-FIX-01`.
 
 ## B-003 status after this task
 

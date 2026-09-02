@@ -4,6 +4,13 @@
 
 ---
 
+## AUDIT STATUS
+
+- `AUDIT-MAIN-ARCHITECTURE`: COMPLETE — PASS WITH FINDINGS at `93c4d3c12da2...` on `audit/main-architecture-findings-freeze`.
+- Canonical audited SHA: `0a4910eab1a92622383721100879cda46f924ca0`.
+- 36 findings frozen (`ANOX-MAINARCH-001..036`); 13 blocking HIGH; 0 CRITICAL.
+- `AUDIT-WORKFORCE-ARCHITECTURE`, `AUDIT-SECURITY-ARCHITECTURE`, and all Legacy Audits: NOT EXECUTED.
+
 ## VERIFIED
 
 - Rust crypto crate (`anox_crypto`): `cargo test` 15/15 PASS.

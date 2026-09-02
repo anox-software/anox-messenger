@@ -42,7 +42,7 @@ import validate_b027b as b027b  # noqa: E402
 
 _ROLE_ID_RE = re.compile(r"^ROLE-(0[0-9][0-9]|1[0-9])$")
 _TASK_ID_RE = re.compile(r"^ANOX-TASK-[A-Z0-9]+$")
-_FINDING_ID_RE = re.compile(r"^ANOX-FINDING-[A-Z0-9]+$")
+_FINDING_ID_RE = re.compile(r"^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$")
 _RUN_ID_RE = re.compile(r"^ANOX-RUN-[A-Z0-9]+$")
 _WORK_ID_RE = re.compile(r"^ANOX-WORK-[A-Z0-9]+$")
 _DECISION_ID_RE = re.compile(r"^ANOX-DECISION-[A-Z0-9]+$")
@@ -189,6 +189,9 @@ class B027CIntegrityValidator:
 
         self.decisions = self.load_jsonl(REGISTRY_DIR / "decisions.jsonl")
         self.decision_by_id = {d["decision_id"]: d for d in self.decisions if d.get("decision_id")}
+
+        self.audits = self.load_jsonl(REGISTRY_DIR / "audits.jsonl")
+        self.audit_by_id = {a["audit_id"]: a for a in self.audits if a.get("audit_id")}
 
         self.runs = self.load_jsonl(REGISTRY_DIR / "runs.jsonl")
         self.run_by_id = {r["run_id"]: r for r in self.runs if r.get("run_id")}
@@ -901,7 +904,10 @@ class B027CIntegrityValidator:
             and t.get("status") in ("Merged", "Closed")
             for t in self.tasks
         )
-        any_audit = any("audit" in (d.get("title", "") + d.get("rationale", "")).lower() for d in self.decisions)
+        any_audit = (
+            any("audit" in (d.get("title", "") + d.get("rationale", "")).lower() for d in self.decisions)
+            or any(a.get("audit_id", "").startswith("AUDIT-") for a in self.audits)
+        )
         self.record(
             "BB-01",
             not (b027c_complete and not any_audit),

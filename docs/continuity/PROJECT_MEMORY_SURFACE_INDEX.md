@@ -1,8 +1,8 @@
 # Project Memory Surface Index
 
-**Status:** CURRENT  
-**Date:** 2026-08-30  
-**Applies to:** PRE-B027-M2B — Project Memory / Progress Integrity V1
+**Status:** CURRENT
+**Date:** 2026-08-31
+**Applies to:** AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
 
 ---
 

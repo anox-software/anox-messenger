@@ -75,7 +75,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^ANOX-FINDING-[A-Z0-9]+$"
+        "pattern": "^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$"
       },
       "description": "Findings produced or referenced by this audit session."
     },

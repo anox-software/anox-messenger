@@ -75,7 +75,7 @@ SECURITY_CLASSES = ["S0", "S1", "S2", "S3", "S4"]
 REMOTE_PERMISSIONS = ["NONE", "READ_ONLY", "HUMAN_REMOTE_ACTION_REQUIRED"]
 RUN_RESULTS = ["PASS", "FAIL", "PARTIAL", "BLOCKED", "IN_PROGRESS"]
 
-_STABLE_ID_RE = re.compile(r"^ANOX-(TASK|FINDING|DECISION|RUN|WORK)-[A-Z0-9]+$")
+_STABLE_ID_RE = re.compile(r"^ANOX-(TASK|FINDING|DECISION|RUN|WORK|MAINARCH)-[A-Z0-9]+$")
 _ROLE_ID_RE = re.compile(r"^ROLE-(0[0-9][0-9]|1[0-9])$")
 _SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -215,7 +215,8 @@ def _check_stable_id(field, obj, label, prefix, errors):
     if not value:
         fail(f"{label} missing {field}", errors)
         return None
-    if not _STABLE_ID_RE.match(value) or not value.startswith(prefix):
+    prefixes = prefix if isinstance(prefix, (list, tuple)) else (prefix,)
+    if not _STABLE_ID_RE.match(value) or not any(value.startswith(p) for p in prefixes):
         fail(f"{label} {field} malformed: {value}", errors)
         return None
     return value
@@ -309,7 +310,7 @@ def validate_registries(roles_data, errors):
             known_task_ids.add(tp["task_id"])
 
     for name, path, prefix, seen in (
-        ("findings", REGISTRY_DIR / "findings.jsonl", "ANOX-FINDING-", known_finding_ids),
+        ("findings", REGISTRY_DIR / "findings.jsonl", ("ANOX-FINDING-", "ANOX-MAINARCH-"), known_finding_ids),
         ("decisions", REGISTRY_DIR / "decisions.jsonl", "ANOX-DECISION-", known_decision_ids),
         ("runs", REGISTRY_DIR / "runs.jsonl", "ANOX-RUN-", known_run_ids),
         ("derived_work", REGISTRY_DIR / "derived_work.jsonl", "ANOX-WORK-", known_work_ids),
@@ -436,7 +437,7 @@ def validate_workforce_state(known_task_ids, known_role_ids, errors):
     # Latest ID refs
     for field, prefix, known in (
         ("latest_decision_id", "ANOX-DECISION-", None),
-        ("latest_finding_id", "ANOX-FINDING-", None),
+        ("latest_finding_id", ("ANOX-FINDING-", "ANOX-MAINARCH-"), None),
         ("latest_run_id", "ANOX-RUN-", None),
         ("latest_work_candidate_id", "ANOX-WORK-", None),
     ):
