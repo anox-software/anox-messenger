@@ -1,7 +1,9 @@
 # FORTSCHRITT — anoX Messenger V1
 
-**Status:** AUDIT-MAIN-ARCHITECTURE FINDINGS FROZEN; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
-**Updated:** 2026-08-31
+<!-- ANOX_EVENT: ANOX-EVENT-0029 -->
+
+**Status:** MAINARCH-FIX-01 COMPLETE; 17 FINDINGS READY FOR RETEST; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
+**Updated:** 2026-09-02
 
 ## Architecture / governance
 
@@ -765,6 +767,8 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
   B027-C integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS;
   `cargo test` 15/15 PASS; `git diff --check` PASS.
 - **Status:** `COMPLETED`. Product is blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0029 -->
 
 ## AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
 

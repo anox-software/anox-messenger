@@ -68,3 +68,9 @@ authority remains `HUMAN-CONTROLLED REMOTE WRITE MODE` per `GITHUB_REMOTE_ACTIVI
 - Group messaging
 - Calls
 - Web/desktop clients
+
+## MAINARCH-RETEST-01
+
+Targeted delta retest of MAINARCH-FIX-01 findings. Scope: ANOX-MAINARCH-001, 002, 004, 005, 006, 012, 014, 020, 021, 022, 025, 028, 029, 032, 033, 034, 035.
+
+Status: PENDING HUMAN ASSIGNMENT.
