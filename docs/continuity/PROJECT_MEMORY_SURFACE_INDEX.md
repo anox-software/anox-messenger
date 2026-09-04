@@ -165,3 +165,5 @@ A fresh agent with only the handoff ZIP must read surfaces in this order:
 4. `CORE_MACHINE_HISTORY` (`docs/continuity/PROJECT_HISTORY_LEDGER.jsonl`)
 5. `CURRENT_OPERATIONAL` (`HANDOFF_WORKFLOW.md`, `validate_continuity.py`)
 6. `EVIDENCE` and `RECOVERY` as needed for verification.
+
+| ANOX-EVENT-0029 | 2026-09-02 | remediation | MAINARCH-FIX-01 | docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md, docs/authority/B_FREEZE_REGISTRY.md, docs/authority/AUTHORITY_INDEX.md, docs/current/*, docs/security/*, docs/architecture/key-architecture.md, docs/specifications/public-key-verification.md, tools/audit/validate_mainarch_fix01.py, docs/workforce/registries/findings.jsonl, docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md | PROJECT_STATE.md, FORTSCHRITT.md, CURRENT_STATE.json, CURRENT_GIT_STATE.md, CURRENT_HANDOFF.md, CURRENT_IMPLEMENTATION_STATE.md, CURRENT_OPEN_WORK.md, CURRENT_NEXT_DEVIN_TASK.md, DEVIN_PROMPT_OUTPUT_ARCHIV.md, PROJECT_MEMORY_SURFACE_INDEX.md |

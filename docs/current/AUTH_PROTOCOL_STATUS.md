@@ -1,46 +1,21 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-002 — Device Authentication (FROZEN v1.1).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md` and `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`.
+
 # anoX V1 — Authentication Protocol Status
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-002
+**Last synchronized:** 2026-09-02
 
 ---
 
-## 1. Direction
+V1 production authentication is governed by B-002:
 
-Device authentication is separate from E2EE identity.
+- P-256 / ES256 Device Auth keypair.
+- DPoP-bound access token with short lifetime.
+- No refresh token.
+- No Ed25519 Device Auth.
+- No session-token/refresh-token mechanism.
 
-Current direction:
-- Ed25519 device-auth keypair.
-- Private device-auth key stays local.
-- Public device-auth key is stored server-side.
-- Short-lived access/session token concept.
-- Revocable refresh/session mechanism.
-- Request freshness and replay protection.
-
-## 2. Signed Request Concept
-
-Historical design requires binding signed requests conceptually to:
-- HTTP method
-- path
-- timestamp / freshness
-- nonce / request ID
-- body hash
-- canonical deterministic bytes
-
-## 3. Important: OPEN
-
-The exact production auth/token/challenge/signature contract is still **OPEN**.
-
-Do not invent the final protocol in code or documentation. A future ADR is required to freeze:
-- exact token format and lifetime;
-- exact challenge/response contract;
-- exact canonical signing bytes;
-- exact refresh and revocation flow.
+The exact server-side contracts remain pending B-004/B-007 implementation. Until those are frozen, no code should implement a different authentication model.

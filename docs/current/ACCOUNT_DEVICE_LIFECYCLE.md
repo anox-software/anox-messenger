@@ -1,52 +1,22 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-013 — Account / Device Lifecycle (FROZEN v1.2).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/TRACK_B/B013_LIFECYCLE.md` and `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md` (B-013 v1.3).
+
 # anoX V1 — Account & Device Lifecycle
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-013
+**Last synchronized:** 2026-09-02
 
 ---
 
-## 1. Account Creation
-
-- New random `account_id`.
-- New random `device_id`.
-- New local E2EE identity (vodozemac account).
-- New device-auth Ed25519 keypair.
-- License status is separate from cryptographic identity.
-
-## 2. V1 Device Model
+V1 device and account lifecycle is governed by B-013:
 
 - One active device per account.
-- Device auth and E2EE are separate.
-- Multi-device is out of scope.
+- Device auth and E2EE identity are separate.
+- No multi-device, no recovery.
+- A lost device does not migrate its private E2EE identity to a new device.
+- License expiry does not delete E2EE private keys or become an encryption key.
+- License expiry enters a restricted mode with defined permitted/denied operations (see B-013 v1.3).
 
-## 3. Device Revocation
-
-- Revocation must prevent API authentication and new push/message delivery.
-- A lost device does **not** migrate its old private E2EE identity to a new device.
-
-## 4. Loss / Replacement
-
-- V1 has no recovery.
-- If the only device and local crypto state are lost, the old identity is unrecoverable.
-- A new device creates a new V1 cryptographic identity.
-- Do not route old pending messages to a new identity.
-
-## 5. Account Deletion
-
-- Revoke server sessions.
-- Destroy local protection material.
-- Remove local DB, cache, and temp files as practical.
-
-## 6. License Lifecycle
-
-- License expiry does **not** delete E2EE private keys.
-- License expiry does **not** become the encryption key.
-- License expiry controls product/service access.
+Current code is the implementation source of truth for the implemented subset; all future implementation must follow B-013.

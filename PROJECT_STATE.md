@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-08-31
-**Latest material event:** `ANOX-EVENT-0028` — AUDIT-MAIN-ARCHITECTURE completed and findings frozen
+**Date:** 2026-09-02
+**Latest material event:** `ANOX-EVENT-0029` — MAINARCH-FIX-01 completed; 17 findings Ready For Retest
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -12,23 +12,24 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0026 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0027 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0028 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0029 -->
 
 ## Repository truth
 
-- Branch: `audit/main-architecture-findings-freeze`
-- **Current HEAD:** `93c4d3c12da23868a620612a7cd3c2913095ede8` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
+- Branch: `remediation/mainarch-fix-01-authority-source-truth`
+- **Current HEAD:** `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `0a4910eab1a92622383721100879cda46f924ca0` (B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation, PR #8)
+- **Latest merge to baseline:** `0a4910eab1a92622383721100879cda46f924ca0` still canonical; MAINARCH-FIX-01 is a delivery-branch remediation, not yet merged. (B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation, PR #8)
 - **Previous baseline HEAD:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, PR #7)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION`
-- **Current authorized task:** `B027-C — INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION — IN PROGRESS; NEXT: FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`
-- **Open blockers:** NONE
-- **Current authorized task:** `ANOX-TASK-MAINARCH0001` — AUDIT-MAIN-ARCHITECTURE findings freeze (CLOSED)
-- **Next authorized task:** `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS)
+- **Current effective gate:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
+- **Current authorized task:** `MAINARCH-FIX-01 COMPLETE; NEXT: MAINARCH-RETEST-01`
+- **Open blockers:** MAINARCH-RETEST-01 required before product gate may advance
+- **Current authorized task:** `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE)
+- **Next authorized task:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS` (START WHEN HUMAN ASSIGNS)
 - **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 - **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; B017 policy validator 35/35 PASS; Rust 15/15 PASS
 
@@ -40,7 +41,7 @@
 - B-026 Continuous Development Governance: FROZEN.
 - B-027-A AI Workforce / Work-Control Governance Foundation: MERGED at `38b619e...`.
 - B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED at `aca7a8...`.
-- B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); `AUDIT-MAIN-ARCHITECTURE` findings frozen at `93c4d3c12da2...` on `audit/main-architecture-findings-freeze`; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
+- B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); AUDIT-MAIN-ARCHITECTURE findings frozen, merged to main, and sealed; MAINARCH-FIX-01 completed at `7ba9b67...` on `remediation/mainarch-fix-01-authority-source-truth`; 17 findings Ready For Retest; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
 
 ## Functional progress
 

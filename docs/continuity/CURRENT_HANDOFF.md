@@ -1,7 +1,7 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** AUDIT-MAIN-ARCHITECTURE — FINDINGS FREEZE
-**Date:** 2026-08-31
+**Handoff version:** MAINARCH-FIX-01 — TARGETED ARCHITECTURE REMEDIATION COMPLETE
+**Date:** 2026-09-02
 
 ---
 
@@ -20,14 +20,14 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `audit/main-architecture-findings-freeze`
-- Current work branch: `audit/main-architecture-findings-freeze`
+- Delivery branch: `remediation/mainarch-fix-01-authority-source-truth`
+- Current work branch: `remediation/mainarch-fix-01-authority-source-truth`
 - Current baseline branch: `main`
 - Current baseline HEAD: `0a4910eab1a92622383721100879cda46f924ca0`
-- Described HEAD: `93c4d3c12da23868a620612a7cd3c2913095ede8`
+- Described HEAD: `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`
 - Working tree: clean
-- Pre-merge gate: `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`
-- Post-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+- Pre-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+- Post-merge gate: `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
 - Open PR: none
 - Latest merge into `main`: `0a4910eab1a92622383721100879cda46f924ca0` — B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation (new `anox-software/anox-messenger` PR #8)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
@@ -112,14 +112,23 @@ B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runt
 - Merged to `main` at `aca7a8364a89423173440997ac01865c63552ca0` (new `anox-software/anox-messenger`
   PR #7).
 
+## Latest completed work
+
+MAINARCH-FIX-01 — targeted authority/source-of-truth/B003/state-machine/audit-gate architecture remediation:
+
+- 17 targeted findings remediated to `Ready For Retest` at `docs/workforce/registries/findings.jsonl`.
+- Canonical amendment: `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`.
+- Targeted validator: `tools/audit/validate_mainarch_fix01.py` PASS.
+- B027 integrity, continuity, Project Memory all PASS.
+- No product code, Rust, JNI, backend, DB, CI, or remote mutation.
+
 ## Current open work
 
-`MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
-(not yet authorized; START WHEN HUMAN ASSIGNS):
+`MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS` (START WHEN HUMAN ASSIGNS):
 
-- Targeted architecture remediation of AUDIT-MAIN-ARCHITECTURE blocking HIGH findings.
-- Priority order: 002+004+035 → 005+006+022+032+034 → 001 → 012 → 003 → 009 → 010 etc.
-- No product code, CI, backend, database, crypto, or remote mutation without explicit authorization.
+- Independent/deterministic delta retest of the 17 MAINARCH-FIX-01 remediated findings.
+- Findings targeted: ANOX-MAINARCH-001, 002, 004, 005, 006, 012, 014, 020, 021, 022, 025, 028, 029, 032, 033, 034, 035.
+- Only closes findings to `Closed` after retest evidence; does not start MAINARCH-FIX-02.
 - Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
 
 ## Previous open work
@@ -191,8 +200,7 @@ INTEGRATION on `governance/b027-final-integration`:
 
 ## Next engineering task
 
-Prepare for and conduct the `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT` (session
-`AUDIT-MAIN-ARCHITECTURE`). No product/CI changes until the audit is authorized and recorded.
+Conduct `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`. No product/CI changes until retest is authorized, executed, and findings are closed or risk-accepted by the human Product & Security Owner.
 
 ## Do-not-touch foundation
 

@@ -287,3 +287,36 @@ Format: **ID | Severity | Class** — Title. Evidence → Consequence → Requir
 ## NEXT STEP
 
 `FREEZE MAIN ARCHITECTURE FINDINGS → HUMAN REVIEW → MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+
+
+---
+
+## MAINARCH-FIX-01 — Targeted architecture / source-of-truth remediation
+
+**Status:** COMPLETE — awaiting MAINARCH-RETEST-01
+**Branch:** `remediation/mainarch-fix-01-authority-source-truth`
+**Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`
+**Targeted findings (17):**
+
+- HIGH: ANOX-MAINARCH-001, 002, 004, 005, 006, 012
+- MEDIUM: ANOX-MAINARCH-014, 020, 021, 022, 025, 028, 029
+- LOW: ANOX-MAINARCH-032, 033, 034, 035
+
+**Summary of changes:**
+
+- Created `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md` as the current B-025 amendment surface (B-003 v1.5, B-008 v1.6, B-010 v1.3, B-013 v1.3, B-020 v1.2, B-022 v1.1, B-025 ULTIMATE development/AI trust boundary).
+- Updated `docs/authority/B_FREEZE_REGISTRY.md` to record the amended versions and the completed B-027 status.
+- Updated `docs/authority/AUTHORITY_INDEX.md` to include the amendment file in precedence and to reflect B-027 A/B/C implemented.
+- Updated `docs/README.md` to route all sessions first to `docs/authority/AUTHORITY_INDEX.md` and removed `docs/current/**` as unconditional architecture source of truth.
+- Updated `docs/current/AUTH_PROTOCOL_STATUS.md`, `ACCOUNT_DEVICE_LIFECYCLE.md`, `MESSAGE_LIFECYCLE.md`, `ACCOUNT_LICENSE_REGISTRATION.md`, `CONTACTS_AND_VERIFICATION.md`, `METADATA_PRIVACY.md`, `PUSH_OFFLINE.md`, `ATTACHMENTS.md` to point to current Authority and remove stale OPEN markers.
+- Converted `docs/current/SECURITY_INVARIANTS.md`, `SYSTEM_ARCHITECTURE.md`, `OPEN_ARCHITECTURE_ITEMS.md` from duplicate normative bodies to pointers.
+- Updated superseded historical documents (`docs/security/account-recovery.md`, `push-notifications.md`, `device-loss-scenarios.md`, `docs/architecture/key-architecture.md`, `docs/specifications/public-key-verification.md`, `docs/security/crypto-foundation-security-review.md`) with current Authority pointers.
+- Updated `docs/current/ACCOUNT_RECOVERY_POLICY.md` to reference canonical sources and fixed the broken `docs/history/raw1.1/` reference.
+- Created `tools/audit/validate_mainarch_fix01.py` to deterministically validate the remediation.
+- Updated `docs/workforce/registries/findings.jsonl` so the 17 targeted findings are `Ready For Retest` with remediation notes.
+
+**Product impact:** NONE. No Product code, Rust, JNI, backend, DB, CI, or workflow was changed.
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
+
+**Next task:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`.

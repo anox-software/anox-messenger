@@ -1,6 +1,6 @@
 # CURRENT GIT STATE
 
-**Recorded:** 2026-08-31 (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
+**Recorded:** 2026-09-02 (MAINARCH-FIX-01 COMPLETE)
 
 ---
 
@@ -23,16 +23,16 @@
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `audit/main-architecture-findings-freeze`
+- Delivery branch: `remediation/mainarch-fix-01-authority-source-truth`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `93c4d3c12da23868a620612a7cd3c2913095ede8`
+- Described HEAD: `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `ANOX-TASK-MAINARCH0001` — AUDIT-MAIN-ARCHITECTURE findings freeze (CLOSED); NEXT: MAINARCH-FIX-01
+- Current task: `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE); NEXT: MAINARCH-RETEST-01
 - Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`, canonical → `MAINARCH-FIX-01`)
-- Pre-merge gate: `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`
-- Post-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+- Pre-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
+- Post-merge gate: `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
 
 ## Merged history on main
 
@@ -61,7 +61,7 @@
 
 ## Unmerged work
 
-`audit/main-architecture-findings-freeze` — AUDIT-MAIN-ARCHITECTURE findings freeze at `93c4d3c12da23868a620612a7cd3c2913095ede8`; 36 findings frozen (`ANOX-MAINARCH-001..036`), 13 blocking HIGH, product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; next `MAINARCH-FIX-01`.
+`remediation/mainarch-fix-01-authority-source-truth` — MAINARCH-FIX-01 remediation at `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`; 17 MAIN architecture findings Ready For Retest; 36 findings frozen (`ANOX-MAINARCH-001..036`), 13 blocking HIGH, product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; next `MAINARCH-FIX-01`.
 
 ## B-003 status after this task
 

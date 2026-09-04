@@ -1,9 +1,9 @@
-> **Status:** HISTORICAL / SUPERSEDED  
-> **Architecture Baseline:** Raw1.1  
-> **Last synchronized:** 2026-08-19  
-> **Do not use as current implementation specification.**  
-> **Current direction:** SAS/QR with local trust states; no custom safety-number protocol.  
-> **Superseded by:** `docs/current/CONTACTS_AND_VERIFICATION.md`  
+> **Status:** HISTORICAL / SUPERSEDED
+> **Architecture Baseline:** Raw1.1
+> **Last synchronized:** 2026-08-19
+> **Do not use as current implementation specification.**
+> **Current direction:** SAS/QR with local trust states; no custom safety-number protocol; canonical trust states in B-010 v1.3.
+> **Superseded by:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-010` (B-010 v1.3) and `docs/authority/B025/TRACK_B/B010_CONTACTS_VERIFICATION.md`.
 
 # Public-Key Verification Specification - anoX Messenger
 

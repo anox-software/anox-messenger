@@ -1,7 +1,7 @@
 # anoX V1 Architecture Authority Index
 
 **Status:** CURRENT  
-**Date:** 2026-08-28
+**Date:** 2026-09-02
 
 ---
 
@@ -14,9 +14,10 @@
 5. `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` — S0–S4 workflow, AI audit timing, PR-only-main governance.
 6. `GITHUB_REMOTE_ACTIVITY_SAFETY.md` — GitHub remote activity safety, no rapid repetitive remote automation.
 7. `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` — consolidated V1 target architecture.
-8. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025.
-9. `B027_AI_WORKFORCE_GOVERNANCE.md` — AI workforce / work-control governance (B027-A foundation implemented; B027-B/C deferred).
-10. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
+8. `B025_MANDATORY_AMENDMENTS_V1_1.md` — mandatory amendments to specific B-025 Track B items (B-003, B-008, B-010, B-013, B-020, B-022, ULTIMATE trust boundary). Supersedes the enumerated v1.x provisions; unamended B-025 Track B items remain in force.
+9. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025 (historical snapshot; amended items are superseded by `B025_MANDATORY_AMENDMENTS_V1_1.md`).
+10. `B027_AI_WORKFORCE_GOVERNANCE.md` — AI workforce / work-control governance (B027-A/B/C implemented; FINAL_PRE_PRODUCT_AUDIT required; Product development blocked).
+11. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
 
 ---
 

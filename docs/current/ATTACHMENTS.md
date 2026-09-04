@@ -1,15 +1,12 @@
 > **B-025 Authority Notice**
 >
-> B-025 is the current architecture authority for this repository.
-> This file may still contain pre-B-025 text that has not yet been fully reconciled.
-> The canonical B-025 package is at `docs/authority/B025/`.
-> Relevant frozen Track-B item: B-012 — Attachments (FROZEN).
->
+> This file is an advisory summary. Canonical authority is `docs/authority/B025/TRACK_B/B012_ATTACHMENTS.md`.
+
 # anoX V1 — Attachments
 
-**Status:** CURRENT  
-**Architecture Baseline:** RAW1.60–RAW1.75 consolidated  
-**Last synchronized:** 2026-08-19
+**Status:** ADVISORY — see Authority
+**Architecture Baseline:** B-012
+**Last synchronized:** 2026-09-02
 
 ---
 
@@ -23,7 +20,7 @@ Do not send large files as ordinary Olm message bodies.
 file
   → local metadata minimization
   → random attachment key
-  → local authenticated encryption
+  → libsodium crypto_secretstream_xchacha20poly1305 authenticated encryption
   → encrypted blob storage
 ```
 
@@ -32,8 +29,8 @@ file
 
 ## 3. AEAD
 
-- XChaCha20-Poly1305 is the **planned** attachment AEAD direction **if** supported by the final established maintained Rust library.
-- Do **not** document it as currently implemented.
+- Attachment AEAD: `crypto_secretstream_xchacha20poly1305` via libsodium/Rust.
+- This is the frozen V1 attachment crypto direction.
 
 ## 4. Thumbnails
 
