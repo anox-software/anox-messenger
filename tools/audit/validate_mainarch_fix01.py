@@ -263,16 +263,16 @@ def main():
     if sev_ok:
         ok("targeted finding severities unchanged")
 
-    # 24. targeted findings are Open or Ready For Retest — never silently Closed
+    # 24. targeted findings are Open, Ready For Retest, or Closed after verification
     status_ok = True
-    allowed_statuses = {"Open", "Ready For Retest"}
+    allowed_statuses = {"Open", "Ready For Retest", "Closed"}
     for fid in target_ids:
         f = by_id.get(fid, {})
         if f.get("status") not in allowed_statuses:
-            fail(f"{fid} status is {f.get('status')} (must be Open or Ready For Retest)", errors)
+            fail(f"{fid} status is {f.get('status')} (must be Open, Ready For Retest, or Closed)", errors)
             status_ok = False
     if status_ok:
-        ok("targeted finding statuses are Open or Ready For Retest")
+        ok("targeted finding statuses are Open, Ready For Retest, or Closed")
 
     # 25. unrelated findings unchanged
     unrelated_ok = True

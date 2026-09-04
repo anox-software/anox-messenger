@@ -1,28 +1,22 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "AUDIT-MAIN-ARCHITECTURE — PASS WITH FINDINGS (FROZEN); NEXT: MAINARCH-FIX-01",
+  "current_gate": "MAINARCH-FIX-02 \u2014 SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION",
   "active_roles": [
-    "ROLE-001",
-    "ROLE-002",
     "ROLE-003",
-    "ROLE-004",
     "ROLE-009"
   ],
   "blocked_tasks": [],
-  "authorized_tasks": [
-    "ANOX-TASK-B027C0001",
-    "ANOX-TASK-MAINARCH0001"
-  ],
+  "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-MAINARCH0001",
+    "task_id": "ANOX-TASK-RET01INGEST",
     "role_id": "ROLE-009",
-    "branch": "audit/main-architecture-findings-freeze"
+    "branch": "audit/mainarch-retest-01-ingest"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
-  "latest_finding_id": "ANOX-MAINARCH-036",
-  "latest_run_id": "ANOX-RUN-MAINARCH0001",
+  "latest_finding_id": "ANOX-MAINARCH-035",
+  "latest_run_id": "ANOX-RUN-MAINARCHRETESTINGEST0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -48,7 +42,9 @@
   "notes": [
     "B027-C final integration merged to main; B027-A/B/C canonical.",
     "AUDIT-MAIN-ARCHITECTURE executed: PASS WITH FINDINGS; 36 findings frozen.",
+    "MAINARCH-FIX-01 completed and merged to main via PR #10.",
+    "MAINARCH-RETEST-01 PASS: 17 findings verified and Closed.",
     "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
-    "Next authorized remediation: MAINARCH-FIX-01."
+    "Next planned remediation: MAINARCH-FIX-02 (pending human authorization)."
   ]
 }

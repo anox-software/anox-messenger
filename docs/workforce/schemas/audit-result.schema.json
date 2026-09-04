@@ -28,7 +28,13 @@
     },
     "audit_type": {
       "type": "string",
-      "enum": ["FINAL", "LEGACY", "DELTA", "SYSTEMIC", "SECURITY"],
+      "enum": [
+        "FINAL",
+        "LEGACY",
+        "DELTA",
+        "SYSTEMIC",
+        "SECURITY"
+      ],
       "description": "Class of audit session."
     },
     "canonical_sha": {
@@ -68,7 +74,12 @@
     },
     "result": {
       "type": "string",
-      "enum": ["PASS", "PARTIAL", "FAIL", "BLOCKED"],
+      "enum": [
+        "PASS",
+        "PARTIAL",
+        "FAIL",
+        "BLOCKED"
+      ],
       "description": "Overall audit result."
     },
     "finding_ids": {
@@ -99,6 +110,44 @@
     "systemic_reaudit_required": {
       "type": "boolean",
       "description": "Whether a systemic re-audit is required before the product gate may open."
+    },
+    "source_audit_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "remediation_task": {
+      "type": "string",
+      "minLength": 1
+    },
+    "retest_canonical_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "closure_eligible_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failed_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "regression_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "security_reassessment": {
+      "type": "string",
+      "minLength": 1
     }
   },
   "additionalProperties": false
