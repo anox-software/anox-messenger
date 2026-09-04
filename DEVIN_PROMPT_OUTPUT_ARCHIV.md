@@ -867,3 +867,12 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - B027 integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS.
 - Project Memory event `ANOX-EVENT-0028` recorded.
 - Next: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (pending human assignment).
+
+## ANOX-EVENT-0030 — MAINARCH-RETEST-01-INGEST
+
+- Date: 2026-09-02
+- Task: MAINARCH-RETEST-01-INGEST
+- Result: PASS
+- 17 MAIN findings Closed
+- Product: BLOCKED_PENDING_FINAL_AUDIT
+- Next: MAINARCH-FIX-02

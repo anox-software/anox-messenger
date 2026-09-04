@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-09-02
-**Latest material event:** `ANOX-EVENT-0029` — MAINARCH-FIX-01 completed; 17 findings Ready For Retest
+**Latest material event:** `ANOX-EVENT-0030` — MAINARCH-RETEST-01-INGEST completed; 17 findings Closed
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -13,11 +13,12 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0027 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0028 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0029 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0030 -->
 
 ## Repository truth
 
-- Branch: `remediation/mainarch-fix-01-authority-source-truth`
-- **Current HEAD:** `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
+- Branch: `audit/mainarch-retest-01-ingest`
+- **Current HEAD:** `ec71127b51c0a4d33d18f14f2bf9c5e8209026da` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
@@ -25,11 +26,11 @@
 - **Previous baseline HEAD:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, PR #7)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
-- **Current authorized task:** `MAINARCH-FIX-01 COMPLETE; NEXT: MAINARCH-RETEST-01`
-- **Open blockers:** MAINARCH-RETEST-01 required before product gate may advance
+- **Current effective gate:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`
+- **Current authorized task:** `MAINARCH-RETEST-01-INGEST COMPLETE; 17 findings Closed; NEXT: MAINARCH-FIX-02`
+- **Open blockers:** MAINARCH-FIX-02 required before product gate may advance
 - **Current authorized task:** `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE)
-- **Next authorized task:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS` (START WHEN HUMAN ASSIGNS)
+- **Next authorized task:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS)
 - **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 - **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; B017 policy validator 35/35 PASS; Rust 15/15 PASS
 
@@ -41,7 +42,7 @@
 - B-026 Continuous Development Governance: FROZEN.
 - B-027-A AI Workforce / Work-Control Governance Foundation: MERGED at `38b619e...`.
 - B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED at `aca7a8...`.
-- B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); AUDIT-MAIN-ARCHITECTURE findings frozen, merged to main, and sealed; MAINARCH-FIX-01 completed at `7ba9b67...` on `remediation/mainarch-fix-01-authority-source-truth`; 17 findings Ready For Retest; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
+- B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); AUDIT-MAIN-ARCHITECTURE findings frozen, merged to main, and sealed; MAINARCH-RETEST-01-INGEST completed at `ec71127b51c0a4d33d18f14f2bf9c5e8209026da` on `audit/mainarch-retest-01-ingest`; 17 findings Closed; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
 
 ## Functional progress
 

@@ -1,6 +1,6 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-**Handoff version:** MAINARCH-FIX-01 — TARGETED ARCHITECTURE REMEDIATION COMPLETE
+**Handoff version:** MAINARCH-RETEST-01-INGEST — VERIFIED FINDING CLOSURE COMPLETE
 **Date:** 2026-09-02
 
 ---
@@ -20,14 +20,14 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `remediation/mainarch-fix-01-authority-source-truth`
-- Current work branch: `remediation/mainarch-fix-01-authority-source-truth`
+- Delivery branch: `audit/mainarch-retest-01-ingest`
+- Current work branch: `audit/mainarch-retest-01-ingest`
 - Current baseline branch: `main`
 - Current baseline HEAD: `0a4910eab1a92622383721100879cda46f924ca0`
-- Described HEAD: `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`
+- Described HEAD: `ec71127b51c0a4d33d18f14f2bf9c5e8209026da`
 - Working tree: clean
-- Pre-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
-- Post-merge gate: `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
+- Pre-merge gate: `MAINARCH-RETEST-01-INGEST — CANONICAL RETEST RESULT INGESTION AND VERIFIED FINDING CLOSURE`
+- Post-merge gate: `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`
 - Open PR: none
 - Latest merge into `main`: `0a4910eab1a92622383721100879cda46f924ca0` — B027-C Final B027 Integration / Integrity / System Adversarial Validation + Handoff + Cold Recovery + Final Pre-Product Audit Preparation (new `anox-software/anox-messenger` PR #8)
 - Foundation baseline tag: `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
@@ -82,7 +82,7 @@ New sessions must read that file first.
 - AUDIT-MAIN-ARCHITECTURE: COMPLETED — PASS WITH FINDINGS at `93c4d3c12da2...` on
   `audit/main-architecture-findings-freeze`. 36 findings frozen (`ANOX-MAINARCH-001..036`);
   13 blocking HIGH. Product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`.
-  Next: `MAINARCH-FIX-01`.
+  Next: `MAINARCH-FIX-02`.
 
 ## Latest completed work
 
@@ -114,6 +114,17 @@ B027-B — State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runt
 
 ## Latest completed work
 
+MAINARCH-RETEST-01-INGEST — canonical retest result ingestion and verified finding closure:
+
+- MAINARCH-RETEST-01 PASS recorded in `docs/workforce/registries/audits.jsonl`.
+- 17 verified findings Closed in `docs/workforce/registries/findings.jsonl`.
+- `docs/workforce/WORKFORCE_STATE.json` stale pointers corrected.
+- `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md` updated.
+- Targeted validator `tools/audit/validate_mainarch_retest01_ingest.py` PASS.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; no remote mutation.
+
+## Previous completed work
+
 MAINARCH-FIX-01 — targeted authority/source-of-truth/B003/state-machine/audit-gate architecture remediation:
 
 - 17 targeted findings remediated to `Ready For Retest` at `docs/workforce/registries/findings.jsonl`.
@@ -124,11 +135,10 @@ MAINARCH-FIX-01 — targeted authority/source-of-truth/B003/state-machine/audit-
 
 ## Current open work
 
-`MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS` (START WHEN HUMAN ASSIGNS):
+`MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS):
 
-- Independent/deterministic delta retest of the 17 MAINARCH-FIX-01 remediated findings.
-- Findings targeted: ANOX-MAINARCH-001, 002, 004, 005, 006, 012, 014, 020, 021, 022, 025, 028, 029, 032, 033, 034, 035.
-- Only closes findings to `Closed` after retest evidence; does not start MAINARCH-FIX-02.
+- Targeted remediation of remaining MAIN architecture findings in the backend/DB/RLS/API/OTK/retention domains.
+- No product code without explicit authorization.
 - Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
 
 ## Previous open work
@@ -200,7 +210,7 @@ INTEGRATION on `governance/b027-final-integration`:
 
 ## Next engineering task
 
-Conduct `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`. No product/CI changes until retest is authorized, executed, and findings are closed or risk-accepted by the human Product & Security Owner.
+Conduct `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`. No product/CI changes until the task is authorized, executed, and a retest verifies any remediated findings.
 
 ## Do-not-touch foundation
 
