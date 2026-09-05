@@ -884,3 +884,14 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Updated `B_FREEZE_REGISTRY.md`, `AUTHORITY_INDEX.md`, findings registry, Master Audit Report, WORKFORCE_STATE, tasks, runs, Project Memory.
 - 8 findings `Ready For Retest`; product remains `BLOCKED_PENDING_FINAL_AUDIT`.
 - Milestone security review flagged for ANOX-MAINARCH-003 and ANOX-MAINARCH-007.
+## ANOX-EVENT-0032 — MAINARCH-RETEST-02-INGEST
+
+- Date: 2026-09-05
+- Task: MAINARCH-RETEST-02-INGEST
+- Result: PASS
+- Retest: MAINARCH-RETEST-02 PASS (8/8) at 739ea1c36c3d6f8eedb9a315fc6fba5173a82289
+- 8 MAIN findings Closed (003, 007, 008, 009, 010, 015, 016, 017); total Closed 25, remaining 11
+- 003/007 milestone Security Architecture review pending; no Claude
+- FIX-02 validator hardened + adversarial tests + retest-02 ingest validator
+- Product: BLOCKED_PENDING_FINAL_AUDIT
+- Next: MAINARCH-FIX-03
