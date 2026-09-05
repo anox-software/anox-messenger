@@ -1,6 +1,6 @@
 # CURRENT GIT STATE
 
-**Recorded:** 2026-09-02 (MAINARCH-FIX-01 COMPLETE)
+**Recorded:** 2026-09-02 (MAINARCH-RETEST-01-INGEST COMPLETE)
 
 ---
 
@@ -23,16 +23,16 @@
 ## Current handoff / work state
 
 - Canonical branch: `main`
-- Delivery branch: `remediation/mainarch-fix-01-authority-source-truth`
+- Delivery branch: `audit/mainarch-retest-01-ingest`
 - Current handoff branch: `__HANDOFF_BRANCH__` (resolve with `git branch --show-current` or `GIT_SNAPSHOT.txt`)
 - Current handoff HEAD: `__HANDOFF_HEAD__` (resolve with `git rev-parse HEAD` or `GIT_SNAPSHOT.txt`)
-- Described HEAD: `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`
+- Described HEAD: `ec71127b51c0a4d33d18f14f2bf9c5e8209026da`
 - Working tree: `__WORKING_TREE__` (resolve with `git status --short`)
 - Open relevant PR: none
-- Current task: `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE); NEXT: MAINARCH-RETEST-01
-- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE`, canonical → `MAINARCH-FIX-01`)
-- Pre-merge gate: `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION`
-- Post-merge gate: `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
+- Current task: `MAINARCH-RETEST-01-INGEST` — CANONICAL RETEST RESULT INGESTION AND VERIFIED FINDING CLOSURE (COMPLETE); NEXT: MAINARCH-FIX-02
+- Current gate: `__EFFECTIVE_GATE__` (resolve from lifecycle state; delivery → `MAINARCH-RETEST-01-INGEST — CANONICAL RETEST RESULT INGESTION AND VERIFIED FINDING CLOSURE`, canonical → `MAINARCH-FIX-02`)
+- Pre-merge gate: `MAINARCH-RETEST-01-INGEST — CANONICAL RETEST RESULT INGESTION AND VERIFIED FINDING CLOSURE`
+- Post-merge gate: `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`
 
 ## Merged history on main
 
@@ -61,7 +61,7 @@
 
 ## Unmerged work
 
-`remediation/mainarch-fix-01-authority-source-truth` — MAINARCH-FIX-01 remediation at `7ba9b67128c2f2fc695a0dbc7f4e9bb7b0c27120`; 17 MAIN architecture findings Ready For Retest; 36 findings frozen (`ANOX-MAINARCH-001..036`), 13 blocking HIGH, product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; next `MAINARCH-FIX-01`.
+`audit/mainarch-retest-01-ingest` — MAINARCH-RETEST-01-INGEST at `ec71127b51c0a4d33d18f14f2bf9c5e8209026da`; 17 MAIN architecture findings Closed; 19 findings remain Open; product remains blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; next `MAINARCH-FIX-02`.
 
 ## B-003 status after this task
 

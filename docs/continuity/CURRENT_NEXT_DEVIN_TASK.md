@@ -1,56 +1,44 @@
 # CURRENT NEXT DEVIN TASK
 
 **Status:** PENDING HUMAN ASSIGNMENT
-**Task ID:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`
-**Date:** 2026-08-31
+**Task ID:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`
+**Date:** 2026-09-02
 
 ---
 
 ## Purpose
 
-Conduct the first targeted architecture remediation session for the `AUDIT-MAIN-ARCHITECTURE` findings freeze.
+Conduct the next targeted architecture remediation session for the `AUDIT-MAIN-ARCHITECTURE` findings freeze, focused on server, database, RLS, API, OTK, and retention architecture.
 
-`AUDIT-MAIN-ARCHITECTURE` is COMPLETE — PASS WITH FINDINGS at `93c4d3c12da23868a620612a7cd3c2913095ede8` on `audit/main-architecture-findings-freeze`. 36 findings are frozen, 13 are blocking HIGH. Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
+`AUDIT-MAIN-ARCHITECTURE` is COMPLETE — PASS WITH FINDINGS at `0a4910eab1a92622383721100879cda46f924ca0`. MAINARCH-FIX-01 is COMPLETE and verified by MAINARCH-RETEST-01. 17 findings are Closed; 19 findings remain Open. Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
 
 ## Preconditions satisfied
 
 - `AUDIT-MAIN-ARCHITECTURE` completed against canonical SHA `0a4910eab1a92622383721100879cda46f924ca0`.
-- 36 findings frozen in `docs/workforce/registries/findings.jsonl`.
-- Master report populated at `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`.
-- B027-A/B/C, continuity, B017-Lite, and Rust validation suites PASS.
+- MAINARCH-FIX-01 completed and merged at `fd1fbddbddcba7d8705f7a76318856ad56dafb19`.
+- MAINARCH-RETEST-01 PASS: 17 findings Closed; 19 findings remain Open.
+- B027-A/B/C, continuity, B017-Lite, and Project Memory validation PASS.
 - Human-controlled remote write mode remains in effect.
 
 ## Scope of the next task (when authorized)
 
-- Remediate the `AUDIT-MAIN-ARCHITECTURE` blocking HIGH findings in the dependency-aware order defined in the master report:
-  1. 002 + 004 + 035 (authority/routing/source-of-truth correctness)
-  2. 005 + 006 + 022 + 032 + 034 (stale/duplicate doc reconciliation)
-  3. 001 (B-003 ADR/version bump)
-  4. 012 (audit-gate ADR)
-  5. 003 → 009 → 010 and related 017/014/015/016/020/021
-  6. 011 + 026 (traceability matrix)
-  7. 013/024/025/027/028 (release/build/boundary)
-  8. 007 coordinated with DB/infra design
-- Do not touch code for 019/023/030/031; those are handled by later Legacy sessions or architecture clarification.
-- Do not resume B-004/B-005 product implementation.
-- Record material events as `ANOX-EVENT-0029+`.
-- Maintain `WRITER != INDEPENDENT REVIEWER`, D4 prohibition, no AI remote-write, and fail-closed authorization.
+- Remediate the remaining MAIN architecture findings in the server/database/RLS/API/OTK/retention domains.
+- Do not begin without explicit human authorization.
+- No product/Kotlin/Rust/CI changes unless explicitly authorized.
+- After remediation, a retest verifies any remediated findings before closure.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`.
 
-## Out of scope
+## Non-goals
 
-- Product features (B-004 backend, B-005 database/RLS, messaging, etc.).
-- Pushing, PR creation, or remote automation.
-- Closing findings without evidence/human review.
-- Risk acceptance or severity changes without a recorded human decision.
+- Product feature implementation.
+- Backend production deployment.
+- Autonomous remote write or PR/merge.
+- New independent architecture/security audit without human authorization.
 
-## Next authorized sequence
+## Authority
 
-1. Human assigns and scopes `MAINARCH-FIX-01`.
-2. Targeted fixes against frozen `ANOX-MAINARCH-xxx` findings.
-3. Targeted delta retest and evidence recording.
-4. Human authorizes next gate (AUDIT-WORKFORCE-ARCHITECTURE, AUDIT-SECURITY-ARCHITECTURE, or continued MAINARCH-FIX).
-
-## Remote safety
-
-No autonomous push, merge, PR creation, credential cycling, or rapid GitHub API polling.
-All remote mutations remain human-controlled unless explicit governance changes this mode.
+- `docs/authority/AUTHORITY_INDEX.md`
+- `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md`
+- `docs/authority/B_FREEZE_REGISTRY.md`
+- `docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md`
+- `docs/workforce/WORKFORCE_STATE.json`

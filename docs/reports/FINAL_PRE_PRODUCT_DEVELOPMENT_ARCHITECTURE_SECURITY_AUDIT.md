@@ -293,7 +293,7 @@ Format: **ID | Severity | Class** — Title. Evidence → Consequence → Requir
 
 ## MAINARCH-FIX-01 — Targeted architecture / source-of-truth remediation
 
-**Status:** COMPLETE — awaiting MAINARCH-RETEST-01
+**Status:** COMPLETE — verified by MAINARCH-RETEST-01
 **Branch:** `remediation/mainarch-fix-01-authority-source-truth`
 **Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md`
 **Targeted findings (17):**
@@ -301,6 +301,8 @@ Format: **ID | Severity | Class** — Title. Evidence → Consequence → Requir
 - HIGH: ANOX-MAINARCH-001, 002, 004, 005, 006, 012
 - MEDIUM: ANOX-MAINARCH-014, 020, 021, 022, 025, 028, 029
 - LOW: ANOX-MAINARCH-032, 033, 034, 035
+
+**Verification:** All 17 findings Closed by MAINARCH-RETEST-01 PASS at `fd1fbddbddcba7d8705f7a76318856ad56dafb19`.
 
 **Summary of changes:**
 
@@ -319,4 +321,34 @@ Format: **ID | Severity | Class** — Title. Evidence → Consequence → Requir
 
 **Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
 
-**Next task:** `MAINARCH-RETEST-01 — TARGETED DELTA RETEST OF FIX-01 FINDINGS`.
+**Next task:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`.
+
+---
+
+## MAINARCH-RETEST-01 — Targeted delta retest of FIX-01 findings
+
+**Status:** PASS
+**Mode:** READ-ONLY TARGETED DELTA RETEST
+**Canonical retest SHA:** `fd1fbddbddcba7d8705f7a76318856ad56dafb19`
+**FIX-01 canonical merge SHA:** `fd1fbddbddcba7d8705f7a76318856ad56dafb19`
+**Original audit SHA:** `0a4910eab1a92622383721100879cda46f924ca0`
+**Model:** Devin SWE-1.7
+**Retested findings:** 17
+**Pass — Remediated:** 17/17
+**Failures:** 0
+**Regressions:** 0
+**Not Reviewable:** 0
+
+**Findings verified and Closed:**
+
+- HIGH: ANOX-MAINARCH-001, 002, 004, 005, 006, 012
+- MEDIUM: ANOX-MAINARCH-014, 020, 021, 022, 025, 028, 029
+- LOW: ANOX-MAINARCH-032, 033, 034, 035
+
+**Summary:**
+
+Deterministic targeted retest confirms the MAINARCH-FIX-01 authority/source-of-truth/B003/state-machine/audit-gate remediation removed the original defects for the 17 findings. Severities were preserved. No product, Rust, backend, database, or CI changes were introduced. No material regression was found. No new independent architecture/security audit is required for this retest/closure.
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
+
+**Next task:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`.
