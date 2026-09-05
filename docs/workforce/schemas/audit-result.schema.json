@@ -148,6 +148,20 @@
     "security_reassessment": {
       "type": "string",
       "minLength": 1
+    },
+    "original_audit_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "fix_canonical_merge_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "milestone_security_review_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "additionalProperties": false

@@ -796,3 +796,16 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
 - **Keine Produkt/Rust/CI-Änderungen.**
 - **Nächster Schritt:** `MAINARCH-RETEST-02` — gezielter Delta-Retest der Server/DB/API/Retention-Architektur (menschenautorisiert).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0032 -->
+## ANOX-EVENT-0032 — MAINARCH-RETEST-02-INGEST Verified Finding Closure + Validator Hardening
+
+- **Date:** 2026-09-05
+- **Branch:** `audit/mainarch-retest-02-ingest`
+- **Substantive HEAD:** `8ee4ccaa33e4ba134a8b85ab87fef164ffed447d`
+- **Ergebnis:** `MAINARCH-RETEST-02` PASS kanonisch erfasst; 8 Befunde (`ANOX-MAINARCH-003`, `007`, `008`, `009`, `010`, `015`, `016`, `017`) verifiziert und auf `Closed` gesetzt. MAIN geschlossen gesamt: 25; verbleibend offen: 11.
+- **Vertrauensgrenzen:** `ANOX-MAINARCH-003` und `ANOX-MAINARCH-007` bleiben für die Meilenstein-Sicherheitsüberprüfung markiert (Abschluss = Architektur-Remediation verifiziert).
+- **Artifakte:** `audits.jsonl` Retest-Ergebnis, `validate_mainarch_retest02_ingest.py`, gehärteter `validate_mainarch_fix02.py` + `test_mainarch_fix02.py`.
+- **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
+- **Keine Produkt/Rust/CI/Architektur-Änderungen. Kein Claude.**
+- **Nächster Schritt:** `MAINARCH-FIX-03` — Traceability / Test-Matrix / Release-Governance-Architektur-Remediation (menschenautorisiert).

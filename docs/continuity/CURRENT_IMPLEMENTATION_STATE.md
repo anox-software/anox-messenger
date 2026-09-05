@@ -1,14 +1,14 @@
 # Current Implementation State — anoX V1
 
-**Date:** 2026-09-05  
-**Latest material event:** ANOX-EVENT-0031  
-**Current branch:** remediation/mainarch-fix-02-server-contracts  
-**Current HEAD:** 568c8083a3e56058fcb6e5076a7fe1ebc15c384b
+**Date:** 2026-09-05
+**Latest material event:** ANOX-EVENT-0032
+**Current branch:** audit/mainarch-retest-02-ingest
+**Current HEAD:** 8ee4ccaa33e4ba134a8b85ab87fef164ffed447d
 
 ## Architecture / governance
 
-- B-025 mandatory amendments V1.2 freeze DB/RLS/API/OTK/retention/privacy contracts.
-- B_FREEZE_REGISTRY and AUTHORITY_INDEX updated.
+- B-025 mandatory amendments V1.2 freeze DB/RLS/API/OTK/retention/privacy contracts; MAINARCH-RETEST-02 verified them (8/8 PASS).
+- B_FREEZE_REGISTRY and AUTHORITY_INDEX updated (V1.2 authoritative for amended items).
 - B027-A/B/C implemented and passing.
 - Final pre-product audit still required before Product implementation may resume.
 
@@ -24,4 +24,4 @@
 
 ## Trust-boundary flags
 
-- ANOX-MAINARCH-003 (server ↔ DB/RLS) and ANOX-MAINARCH-007 (server ↔ backup/PITR) flagged for milestone Security Architecture review.
+- ANOX-MAINARCH-003 (server ↔ DB/RLS) and ANOX-MAINARCH-007 (server ↔ backup/PITR) remain flagged for milestone Security Architecture review; both findings are Closed as architecture-remediation-verified.

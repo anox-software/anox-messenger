@@ -357,7 +357,7 @@ Deterministic targeted retest confirms the MAINARCH-FIX-01 authority/source-of-t
 
 ## MAINARCH-FIX-02 — Server / database / RLS / API / OTK / retention / privacy architecture remediation
 
-**Status:** COMPLETE — Ready For Retest (8 findings)
+**Status:** COMPLETE — verified by MAINARCH-RETEST-02 (8 findings Closed)
 **Branch:** `remediation/mainarch-fix-02-server-contracts`
 **Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md`
 **Targeted findings (8):**
@@ -390,3 +390,42 @@ Deterministic targeted retest confirms the MAINARCH-FIX-01 authority/source-of-t
 **Trust-boundary / Security milestone flags:** ANOX-MAINARCH-003 (server ↔ DB/RLS) and ANOX-MAINARCH-007 (server ↔ backup/PITR) are deferred to the next scheduled Security Architecture milestone review as required by B027 policy. No immediate Claude security audit is triggered.
 
 **Next task:** `MAINARCH-RETEST-02 — TARGETED DELTA RETEST OF SERVER / DATABASE / API / RETENTION ARCHITECTURE FINDINGS`.
+
+---
+
+## MAINARCH-RETEST-02 — Targeted delta retest of FIX-02 findings
+
+**Status:** PASS
+**Mode:** READ-ONLY TARGETED DELTA RETEST
+**Canonical retest SHA:** `739ea1c36c3d6f8eedb9a315fc6fba5173a82289`
+**FIX-02 canonical merge SHA:** `739ea1c36c3d6f8eedb9a315fc6fba5173a82289`
+**Original audit SHA:** `0a4910eab1a92622383721100879cda46f924ca0`
+**Model:** Devin SWE-1.7 Max
+**Retested findings:** 8
+**Pass — Remediated:** 8/8
+**Failures:** 0
+**Regressions:** 0
+**Not Reviewable:** 0
+**Claude used:** NO
+
+**Findings verified and Closed:**
+
+- HIGH: ANOX-MAINARCH-003, 007, 008, 009, 010
+- MEDIUM: ANOX-MAINARCH-015, 016, 017
+
+**Summary:**
+
+Independent read-only targeted delta retest confirms the MAINARCH-FIX-02 server/database/RLS/API/OTK/retention/privacy remediation removed the original material defects for the 8 findings: `DB-SCHEMA-V1-FROZEN` provides an implementable entity/RLS/role/transaction contract; the B-002/B-004 Device Auth server contract (DPoP, shared replay cache, token binding, no refresh) is complete and consistent; the B-007 `/v1` inventory, idempotency, concurrency, error model and versioning are deterministic; the B-006 OTK/fallback lifecycle is vodozemac-compatible with atomic claim and explicit replenishment threshold; B-014/B-016 honestly separate live deletion from bounded backup/PITR residual retention with erasure-journal replay; B-012 attachment lifecycle and B-011 FCM-token threat model are truthful; B-015 anti-enumeration and rate-limit/IP handling are operationally specified. Severities preserved. No product, Rust, backend, SQL, or CI changes. No material regression found. No Claude audit executed or required now.
+
+**Retest observations (non-blocking, not new findings):**
+
+- `docs/current/DATABASE_ARCHITECTURE.md` retains historical advisory wording ("Final DB schema is NOT frozen") but explicitly subordinates itself to canonical Authority; not an authoritative contradiction.
+- B-012/V1.2 correctly distinguish server-visible ciphertext metadata (size/hash) from hidden plaintext-side metadata (key/filename/MIME/plaintext size); no impossible privacy claim is made.
+
+**Milestone security review coverage still pending:** ANOX-MAINARCH-003 (server ↔ DB/RLS trust boundary) and ANOX-MAINARCH-007 (server ↔ backup/PITR trust boundary) are Closed as *architecture remediation verified*; their modified trust boundaries remain scheduled for the next Security Architecture milestone review. This is not a Security Architecture Audit PASS.
+
+**MAIN finding totals after closure:** Closed = 25, Remaining = 11 (ANOX-MAINARCH-011, 013, 018, 019, 023, 024, 026, 027, 030, 031, 036).
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
+
+**Next task:** `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION`.
