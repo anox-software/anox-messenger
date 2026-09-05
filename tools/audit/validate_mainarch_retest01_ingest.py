@@ -17,6 +17,12 @@ REPO = Path(__file__).resolve().parents[2]
 RETEST_SHA = "fd1fbddbddcba7d8705f7a76318856ad56dafb19"
 ORIGINAL_AUDIT_SHA = "0a4910eab1a92622383721100879cda46f924ca0"
 
+# After MAINARCH-FIX-02, the 8 FIX-02 findings may be Ready For Retest.
+FIX02_TARGETS = {
+    "ANOX-MAINARCH-003", "ANOX-MAINARCH-007", "ANOX-MAINARCH-008", "ANOX-MAINARCH-009",
+    "ANOX-MAINARCH-010", "ANOX-MAINARCH-015", "ANOX-MAINARCH-016", "ANOX-MAINARCH-017",
+}
+
 TARGETS = {
     "ANOX-MAINARCH-001",
     "ANOX-MAINARCH-002",
@@ -145,6 +151,9 @@ def main():
                 fail(f"{fid} closure evidence missing MAINARCH-RETEST-01", errors)
             else:
                 closed_count += 1
+        elif fid in FIX02_TARGETS:
+            if f.get("status") not in ("Open", "Ready For Retest"):
+                fail(f"FIX-02 target {fid} changed unexpectedly to {f.get('status')}", errors)
         else:
             if f.get("status") != "Open":
                 fail(f"Unrelated {fid} changed to {f.get('status')}", errors)
@@ -178,10 +187,11 @@ def main():
         ok("WORKFORCE_STATE current_writer is not the stale audit-freeze task")
     else:
         fail("WORKFORCE_STATE current_writer still references stale ANOX-TASK-MAINARCH0001", errors)
-    if "MAINARCH-FIX-02" in (ws.get("current_gate") or ""):
-        ok("WORKFORCE_STATE current_gate points to MAINARCH-FIX-02")
+    current_gate = ws.get("current_gate") or ""
+    if "MAINARCH-FIX-02" in current_gate or "MAINARCH-RETEST-02" in current_gate:
+        ok("WORKFORCE_STATE current_gate points to MAINARCH-FIX-02 or MAINARCH-RETEST-02")
     else:
-        fail("WORKFORCE_STATE current_gate does not point to MAINARCH-FIX-02", errors)
+        fail("WORKFORCE_STATE current_gate does not point to MAINARCH-FIX-02/MAINARCH-RETEST-02", errors)
 
     # 5. Master audit report has retest section
     master = read_text("docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md")
@@ -194,20 +204,20 @@ def main():
     else:
         fail("Master Audit Report FIX-01 status not updated to verified", errors)
 
-    # 6. Project Memory ledger has ANOX-EVENT-0030
+    # 6. Project Memory ledger has ANOX-EVENT-0030 (may be followed by later events)
     ledger = read_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
-    last = ledger[-1] if ledger else {}
-    if last.get("event_id") == "ANOX-EVENT-0030" and "MAINARCH-RETEST-01" in last.get("summary", ""):
-        ok("Project History Ledger sealed with ANOX-EVENT-0030")
+    has_0030 = any(e.get("event_id") == "ANOX-EVENT-0030" and "MAINARCH-RETEST-01" in e.get("summary", "") for e in ledger)
+    if has_0030:
+        ok("Project History Ledger contains ANOX-EVENT-0030")
     else:
-        fail(f"Project History Ledger last event is {last.get('event_id')}, expected ANOX-EVENT-0030", errors)
+        fail("Project History Ledger missing ANOX-EVENT-0030", errors)
 
-    # 7. Current state latest event
+    # 7. Current state latest event may have advanced to ANOX-EVENT-0031 after FIX-02
     cur = json.loads(read_text("docs/continuity/CURRENT_STATE.json"))
-    if cur.get("latest_material_event_id") == "ANOX-EVENT-0030":
-        ok("CURRENT_STATE.json latest_material_event_id is ANOX-EVENT-0030")
+    if cur.get("latest_material_event_id") in ("ANOX-EVENT-0030", "ANOX-EVENT-0031"):
+        ok(f"CURRENT_STATE.json latest_material_event_id is {cur.get('latest_material_event_id')}")
     else:
-        fail(f"CURRENT_STATE.json latest_material_event_id is {cur.get('latest_material_event_id')}", errors)
+        fail(f"CURRENT_STATE.json latest_material_event_id is {cur.get('latest_material_event_id')}, expected 0030 or 0031", errors)
 
     # 8. No product/CI code changed vs canonical main
     changed = git_diff_name_only("main", "HEAD")

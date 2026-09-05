@@ -352,3 +352,41 @@ Deterministic targeted retest confirms the MAINARCH-FIX-01 authority/source-of-t
 **Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
 
 **Next task:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`.
+
+---
+
+## MAINARCH-FIX-02 — Server / database / RLS / API / OTK / retention / privacy architecture remediation
+
+**Status:** COMPLETE — Ready For Retest (8 findings)
+**Branch:** `remediation/mainarch-fix-02-server-contracts`
+**Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md`
+**Targeted findings (8):**
+
+- HIGH: ANOX-MAINARCH-003, 007, 008, 009, 010
+- MEDIUM: ANOX-MAINARCH-015, 016, 017
+
+**Summary of changes:**
+
+- Created `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md` as the authoritative V1.2 architecture amendment, freezing `DB-SCHEMA-V1-FROZEN` and the server-facing security contracts.
+- Updated `docs/authority/B_FREEZE_REGISTRY.md` to record amended versions for B-004, B-005, B-006, B-007, B-011, B-012, B-014, B-015, B-016.
+- Updated `docs/authority/AUTHORITY_INDEX.md` precedence to include the V1.2 amendment.
+- Defined B-005 DB/RLS contract: entity table, ownership, security-sensitive fields, retention, one-active-device DB enforcement, authenticated DB context, RLS policies, server role matrix, explicit `service_role` policy, security-critical transaction boundaries.
+- Defined B-004 backend contract: request pipeline, `AuthenticatedDeviceContext`, service/repository layering, logging, admin/worker planes, secret handling.
+- Defined B-002/B-004 Device Auth server contract: DPoP verification obligations, shared replay cache with fail-closed semantics, access-token binding/lifetime/no-refresh, revocation semantics.
+- Defined B-007 V1 endpoint inventory with auth/authz, idempotency, concurrency/race, versioning, and stable error model.
+- Defined B-006 OTK/fallback lifecycle: `AVAILABLE → CLAIMED` atomic claim, batch publication ACK, replenishment threshold, fallback 15-day retention, OTK exhaustion behavior.
+- Defined B-014/B-016 backup/PITR/erasure-journal contract with honest residual retention bounds (PITR 7d, base backup 30d, object backup 30d) and restore ordering.
+- Defined B-012 attachment lifecycle, orphaned-upload cleanup, and device/account deletion purge semantics.
+- Defined B-011 FCM-token privacy contract with realistic threat model (backend recoverable) and logging/admin restrictions.
+- Defined B-015 anti-enumeration, rate-limit identifiers, and IP-handling contract (raw IP ≤24h, no permanent fingerprint).
+- Added cross-domain consistency matrix and milestone security-review flags for ANOX-MAINARCH-003 and ANOX-MAINARCH-007.
+- Created `tools/audit/validate_mainarch_fix02.py` targeted validator.
+- Updated `docs/workforce/registries/findings.jsonl` so the 8 targeted findings are `Ready For Retest` with remediation refs; no findings Closed.
+
+**Product impact:** NONE. No Product code, Rust, JNI, backend, DB, CI, or workflow was changed.
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
+
+**Trust-boundary / Security milestone flags:** ANOX-MAINARCH-003 (server ↔ DB/RLS) and ANOX-MAINARCH-007 (server ↔ backup/PITR) are deferred to the next scheduled Security Architecture milestone review as required by B027 policy. No immediate Claude security audit is triggered.
+
+**Next task:** `MAINARCH-RETEST-02 — TARGETED DELTA RETEST OF SERVER / DATABASE / API / RETENTION ARCHITECTURE FINDINGS`.

@@ -274,13 +274,18 @@ def main():
     if status_ok:
         ok("targeted finding statuses are Open, Ready For Retest, or Closed")
 
-    # 25. unrelated findings unchanged
+    # 25. unrelated findings unchanged (excluding MAINARCH-FIX-02 targets which may be Ready For Retest)
+    fix02_targets = {
+        "ANOX-MAINARCH-003", "ANOX-MAINARCH-007", "ANOX-MAINARCH-008", "ANOX-MAINARCH-009",
+        "ANOX-MAINARCH-010", "ANOX-MAINARCH-015", "ANOX-MAINARCH-016", "ANOX-MAINARCH-017",
+    }
     unrelated_ok = True
     for f in findings:
-        if f["finding_id"] not in target_ids:
-            if f.get("status") != "Open":
-                fail(f"unrelated {f['finding_id']} status changed to {f.get('status')}", errors)
-                unrelated_ok = False
+        if f["finding_id"] in target_ids or f["finding_id"] in fix02_targets:
+            continue
+        if f.get("status") != "Open":
+            fail(f"unrelated {f['finding_id']} status changed to {f.get('status')}", errors)
+            unrelated_ok = False
     if unrelated_ok:
         ok("unrelated findings unchanged (Open)")
 
