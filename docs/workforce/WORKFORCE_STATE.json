@@ -1,7 +1,7 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION (PLANNED; pending human authorization)",
+  "current_gate": "MAINARCH-RETEST-03 \u2014 TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (PLANNED; pending human authorization)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
@@ -9,14 +9,14 @@
   "blocked_tasks": [],
   "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-RET02INGEST",
+    "task_id": "ANOX-TASK-FIX03TRACE0001",
     "role_id": "ROLE-009",
-    "branch": "audit/mainarch-retest-02-ingest"
+    "branch": "remediation/mainarch-fix-03-traceability-release-governance"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": "ANOX-MAINARCH-035",
-  "latest_run_id": "ANOX-RUN-RET02INGEST0001",
+  "latest_run_id": "ANOX-RUN-FIX03TRACE0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -45,9 +45,10 @@
     "MAINARCH-FIX-01 completed and merged to main via PR #10.",
     "MAINARCH-RETEST-01 PASS: 17 findings verified and Closed.",
     "MAINARCH-FIX-02 complete: 8 findings moved to Ready For Retest; B025_MANDATORY_AMENDMENTS_V1_2.md freezes DB/RLS/API/OTK/retention/privacy contracts.",
-    "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007.",
     "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
     "MAINARCH-RETEST-02 PASS: 8 findings verified and Closed (MAIN Closed total 25; remaining 11).",
-    "Next planned remediation: MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION (pending human authorization)."
+    "MAINARCH-FIX-03 complete: invariant traceability (35/35), B-021 verification matrix (150 stable test IDs), release/signing/incident governance, branch-protection release gate, and implementation-readiness state model established; 5 findings (011, 024, 026, 027, 036) moved to Ready For Retest; none Closed.",
+    "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007; ANOX-MAINARCH-024 added (newly defined signing/release custody + incident trust boundary).",
+    "Next planned task: MAINARCH-RETEST-03 \u2014 TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (pending human authorization)."
   ]
 }

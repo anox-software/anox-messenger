@@ -429,3 +429,45 @@ Independent read-only targeted delta retest confirms the MAINARCH-FIX-02 server/
 **Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged).
 
 **Next task:** `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION`.
+
+---
+
+## MAINARCH-FIX-03 — Traceability / test matrix / release-governance / implementation-readiness remediation
+
+**Status:** COMPLETE — `Ready For Retest` pending `MAINARCH-RETEST-03` (targeted delta retest; no immediate security audit was triggered)
+**Branch:** `remediation/mainarch-fix-03-traceability-release-governance`
+**Substantive commit:** recorded in `docs/continuity/CURRENT_STATE.json` (`described_head`)
+**Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md`
+**Validators:** `tools/audit/validate_mainarch_fix03.py` + `tools/audit/test_mainarch_fix03.py`
+
+**Targeted findings (exactly 5):**
+
+- HIGH: `ANOX-MAINARCH-011`
+- MEDIUM: `ANOX-MAINARCH-024`, `ANOX-MAINARCH-026`, `ANOX-MAINARCH-027`
+- INFO: `ANOX-MAINARCH-036`
+
+**Explicitly untouched (later sessions):** `ANOX-MAINARCH-013`, `ANOX-MAINARCH-018`, `ANOX-MAINARCH-019`, `ANOX-MAINARCH-023`, `ANOX-MAINARCH-030`, `ANOX-MAINARCH-031` — remain `Open`, unchanged.
+
+### Deliverables
+
+1. **Security Invariant Traceability (011):** canonical machine registry `docs/workforce/registries/security_invariant_traceability.jsonl` (35 rows, `INV-01`…`INV-35`) + human-readable `docs/security/SECURITY_INVARIANT_TRACEABILITY.md`. The canonical invariant text remains `docs/authority/B025/SECURITY_INVARIANTS_V1_1.md`; traceability rows reference, never restate it. Dimensional state fields (`implementation_state`, `automated_state`, `physical_state`, `external_state`) keep `SPECIFIED` / `IMPLEMENTED` / `TESTED` / `PHYSICALLY_VERIFIED` / `EXTERNALLY_VERIFIED` permanently distinct; evidence states map to B-027 E0–E4 without redefining them. Specification is never recorded as implementation or verification.
+2. **B-021 verification architecture (026):** machine matrix `docs/workforce/registries/b021_verification_matrix.jsonl` — 150 stable test IDs (`ANOX-TEST-B0NN-MMM`, `ANOX-TEST-INV-NN`), nine execution classes (`REPO_STATIC`, `JVM_UNIT`, `RUST`, `ANDROID_EMULATOR`, `PHYSICAL_GRAPHENEOS`, `BACKEND_INTEGRATION`, `INFRA_DR`, `HUMAN_RELEASE_PROCEDURE`, `INDEPENDENT_AUDIT`), result model `PASS/FAIL/NOT_RUN/BLOCKED/NOT_APPLICABLE/UNVERIFIED` where `NOT_RUN`/`BLOCKED`/`UNVERIFIED` never count as PASS. All B-002…B-020 domains plus all 35 invariants covered; B-017 and B-020 have explicit rows; physical GrapheneOS/StrongBox rows are explicitly `UNVERIFIED`/`PHYSICAL_VERIFICATION_REQUIRED` (emulator evidence may not substitute). Pre-product gate and B-022/B-023 release gate are distinct consumers with different blocking rules.
+3. **Release/signing/update/incident governance (024):** V1.3 §B-018 defines `K_APK_RELEASE` custody (human-only `ROLE-018`, AI/D4 prohibition, human-controlled signing, hash-bound artifact, recorded approval evidence, signing distinct from build), signing-environment requirements (isolation, least privilege, backup/recovery rehearsal, revocation/compromise, emergency rotation — no secrets or locations chosen), a deterministic update/downgrade trust state machine (`UPDATE_ACCEPT` … `ROLLBACK_AUTHORIZED`), and a human-gated emergency release path that can never let an incident self-authorize an AI release. V1.3 §B-019 defines the canonical incident/PSIRT artifact contract (vulnerability intake, `security.txt`, role-bound security contact, severity/triage, containment, credential/key compromise, malicious release, backend compromise, disclosure coordination, emergency update, post-incident review) bound to `ROLE-013/014/009/018/001/015/012` without duplicating role definitions.
+4. **Branch-protection release gate (027):** V1.3 §B-023 records the honest current state — GitHub Free private repository has **no** server-side branch protection; the human-controlled remote workflow is a development-phase compensating control only. Deterministic release requirement: before RC/B-023 authorization, verified server-side protection OR an explicit recorded `ROLE-001` human decision approving an equivalent control (none exists; none fabricated). No GitHub configuration was changed. `HUMAN DECISION REQUIRED: NO` at this stage — technical protection is the default requirement; a decision is only needed if the project ever intends to release without it.
+5. **Implementation-readiness state model (036):** three independent machine-checkable axes (`architecture_state`, `implementation_state`, `release_readiness`) in `docs/workforce/registries/implementation_readiness.json`. `B-004`/`B-005` = `FROZEN` + `NOT_STARTED` + `NOT_RELEASE_READY`. Architecture PASS is not implementation readiness.
+
+### Finding lifecycle
+
+All five targeted findings moved `Open` → `Ready For Retest` with remediation notes and evidence refs in `docs/workforce/registries/findings.jsonl`. **No finding was Closed by this task** (`CLOSED BY THIS TASK: NONE`); closure requires independent retest evidence under `MAINARCH-RETEST-03`.
+
+### Milestone security review flags
+
+`ANOX-MAINARCH-003` (server↔DB/RLS) and `ANOX-MAINARCH-007` (server↔backup/PITR) remain flagged; `ANOX-MAINARCH-024` is newly flagged (signing/release custody + incident-response trust boundary defined for the first time in V1.3).
+
+### Constraints observed
+
+No product code, Rust, Android, backend, SQL, Supabase, messaging, Device Auth, crypto, or `.so` changes. No CI workflow changes. No signing keys created or imported. No secrets touched. No GitHub repository/configuration changes. No remote mutation (no push, PR, merge, or polling). Architecture documentation is not product implementation. Product development remains `BLOCKED_PENDING_FINAL_AUDIT`. **CLAUDE AUDIT TRIGGERED: NO.**
+
+### Validation
+
+`tools/audit/validate_mainarch_fix03.py` enforces all remediation checks deterministically; `tools/audit/test_mainarch_fix03.py` provides targeted adversarial regression tests. See `docs/continuity/CURRENT_STATE.json` for the recorded validation set and commit pointers.

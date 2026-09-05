@@ -419,7 +419,24 @@ def main():
     master = read_text(MASTER_REPORT)
     check_target_severities(findings, master, errors)
 
-    # 16. Unrelated findings unchanged
+    # 16. Unrelated findings unchanged (FIX-03 targets may be Ready For Retest after
+    #     MAINARCH-FIX-03, or Closed only after a verified MAINARCH-RETEST-03)
+    fix03_targets = {
+        "ANOX-MAINARCH-011", "ANOX-MAINARCH-024", "ANOX-MAINARCH-026",
+        "ANOX-MAINARCH-027", "ANOX-MAINARCH-036",
+    }
+    retest03_ids = set()
+    audits_path = REPO / "docs/workforce/registries/audits.jsonl"
+    if audits_path.exists():
+        for line in audits_path.read_text().splitlines():
+            if not line.strip():
+                continue
+            a = json.loads(line)
+            if a.get("audit_id") == "MAINARCH-RETEST-03" and a.get("result") == "PASS":
+                if a.get("finding_id"):
+                    retest03_ids.add(a["finding_id"])
+                for fid in (a.get("findings") or a.get("closed_findings") or []):
+                    retest03_ids.add(fid)
     unrelated_ok = True
     for f in findings:
         fid = f["finding_id"]
@@ -428,6 +445,14 @@ def main():
         if fid in FIX01_CLOSED:
             if f["status"] != "Closed":
                 fail(f"Previously Closed {fid} is no longer Closed", errors)
+                unrelated_ok = False
+        elif fid in fix03_targets:
+            st = f["status"]
+            if st == "Closed" and fid not in retest03_ids:
+                fail(f"{fid} Closed without MAINARCH-RETEST-03 PASS evidence", errors)
+                unrelated_ok = False
+            elif st not in ("Open", "Ready For Retest", "Closed"):
+                fail(f"{fid} has unexpected status {st}", errors)
                 unrelated_ok = False
         elif f["status"] != "Open":
             fail(f"Unrelated {fid} status changed to {f['status']}", errors)

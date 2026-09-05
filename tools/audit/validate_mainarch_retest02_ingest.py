@@ -39,6 +39,15 @@ EXPECTED_REMAINING_OPEN = {
     "ANOX-MAINARCH-030", "ANOX-MAINARCH-031", "ANOX-MAINARCH-036",
 }
 
+# Findings that MAINARCH-FIX-03 may legitimately move out of "Open" into
+# "Ready For Retest" (they may only become "Closed" with MAINARCH-RETEST-03
+# evidence). The non-target remainder must stay "Open".
+FIX03_TARGETS = {
+    "ANOX-MAINARCH-011", "ANOX-MAINARCH-024", "ANOX-MAINARCH-026",
+    "ANOX-MAINARCH-027", "ANOX-MAINARCH-036",
+}
+EXPECTED_NONFIX03_OPEN = EXPECTED_REMAINING_OPEN - FIX03_TARGETS
+
 EXPECTED_SEVERITIES = {
     "ANOX-MAINARCH-003": "HIGH",
     "ANOX-MAINARCH-007": "HIGH",
@@ -140,27 +149,57 @@ def main():
             continue
         ok(f"{fid} Closed with preserved severity, original evidence, and FIX-02/RETEST-02 closure refs")
 
+    # A FIX-03 target may only be Closed with recorded MAINARCH-RETEST-03 PASS evidence.
+    retest03_ids = set()
+    for a in read_jsonl("docs/workforce/registries/audits.jsonl"):
+        if a.get("audit_id") == "MAINARCH-RETEST-03" and a.get("result") == "PASS":
+            if a.get("finding_id"):
+                retest03_ids.add(a["finding_id"])
+            for fid in (a.get("findings") or a.get("closed_findings") or []):
+                retest03_ids.add(fid)
+
     still_rfr = [f["finding_id"] for f in findings if f.get("status") == "Ready For Retest"]
-    if not still_rfr:
-        ok("No finding remains Ready For Retest")
+    bad_rfr = [fid for fid in still_rfr if fid not in FIX03_TARGETS]
+    if not bad_rfr:
+        if still_rfr:
+            ok(f"Ready For Retest set is limited to FIX-03 targets: {sorted(still_rfr)}")
+        else:
+            ok("No finding remains Ready For Retest")
     else:
-        fail(f"Findings still Ready For Retest: {still_rfr}", errors)
+        fail(f"Non-FIX-03 findings Ready For Retest: {bad_rfr}", errors)
+
+    bad_fix03 = [
+        fid for fid in FIX03_TARGETS
+        if by_id.get(fid, {}).get("status") == "Closed" and fid not in retest03_ids
+    ]
+    if bad_fix03:
+        fail(f"FIX-03 findings Closed without MAINARCH-RETEST-03 PASS evidence: {bad_fix03}", errors)
 
     closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if closed == FIX01_CLOSED | TARGETS:
-        ok(f"Closed set is exactly the 25 verified findings (17 FIX-01 + 8 FIX-02)")
+    if closed == FIX01_CLOSED | TARGETS | retest03_ids:
+        if retest03_ids:
+            ok(f"Closed set matches verified findings (25 pre-FIX-03 + RETEST-03 verified: {sorted(retest03_ids)})")
+        else:
+            ok("Closed set is exactly the 25 verified findings (17 FIX-01 + 8 FIX-02)")
     else:
         fail(f"Closed set mismatch: {sorted(closed)}", errors)
-    if len(closed) == 25:
-        ok("Total Closed MAIN findings = 25")
+    if len(closed) >= 25 and (FIX01_CLOSED | TARGETS) <= closed:
+        ok(f"Total Closed MAIN findings = {len(closed)} (>= 25 verified pre-FIX-03 baseline)")
     else:
-        fail(f"Total Closed = {len(closed)}, expected 25", errors)
+        fail(f"Total Closed = {len(closed)}, expected >= 25 including all pre-FIX-03 closures", errors)
 
     open_ids = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    if open_ids == EXPECTED_REMAINING_OPEN:
-        ok("Remaining 11 Open findings exactly match expected set")
+    non_target_open = open_ids - FIX03_TARGETS
+    if non_target_open == EXPECTED_NONFIX03_OPEN:
+        ok("Non-FIX-03 Open findings exactly match expected deferred set")
     else:
-        fail(f"Remaining Open set mismatch: {sorted(open_ids)}", errors)
+        fail(f"Non-FIX-03 Open set mismatch: {sorted(non_target_open)}", errors)
+    unexpected_status = [
+        fid for fid in FIX03_TARGETS
+        if by_id.get(fid, {}).get("status") not in ("Open", "Ready For Retest", "Closed")
+    ]
+    if unexpected_status:
+        fail(f"FIX-03 targets with unexpected status: {unexpected_status}", errors)
 
     # --- 14-15. Milestone flags preserved ---
     v12 = read_text(V1_2)
@@ -192,17 +231,25 @@ def main():
     else:
         fail("Product development not blocked", errors)
 
-    # --- 18. Next planned task = MAINARCH-FIX-03 ---
+    # --- 18. Next planned task advanced past RETEST-02-INGEST ---
+    # Valid successor states: MAINARCH-FIX-03 planned/running (pre-FIX-03), or
+    # MAINARCH-RETEST-03 planned (post-FIX-03).
     gate = ws.get("current_gate", "")
     notes_blob = " ".join(ws.get("notes", []))
-    if "MAINARCH-FIX-03" in gate and "MAINARCH-FIX-03" in notes_blob:
-        ok("Next planned task is MAINARCH-FIX-03")
+    successor_ok = (
+        ("MAINARCH-FIX-03" in gate and "MAINARCH-FIX-03" in notes_blob)
+        or ("MAINARCH-RETEST-03" in gate and "MAINARCH-RETEST-03" in notes_blob)
+        or ("MAINARCH-FIX-03" in notes_blob and "MAINARCH-RETEST-03" in notes_blob)
+    )
+    if successor_ok:
+        ok("Next planned task is a valid post-RETEST-02 successor (FIX-03 or RETEST-03)")
     else:
-        fail("WORKFORCE_STATE does not point to MAINARCH-FIX-03 as next planned task", errors)
-    if ws.get("current_writer", {}).get("task_id") == "ANOX-TASK-FIX02SERVER0001":
-        fail("WORKFORCE_STATE current_writer still references stale FIX-02 writer", errors)
+        fail("WORKFORCE_STATE does not reference a valid post-RETEST-02 successor task", errors)
+    stale_writers = {"ANOX-TASK-FIX02SERVER0001", "ANOX-TASK-RET02INGEST"}
+    if ws.get("current_writer", {}).get("task_id") in stale_writers:
+        fail("WORKFORCE_STATE current_writer still references a stale pre-FIX-03 writer", errors)
     else:
-        ok("WORKFORCE_STATE current_writer no longer references stale FIX-02 writer")
+        ok("WORKFORCE_STATE current_writer no longer references a stale pre-FIX-03 writer")
 
     # --- 19. Project Memory synchronized ---
     cur = json.loads(read_text("docs/continuity/CURRENT_STATE.json"))
@@ -213,10 +260,14 @@ def main():
         ok(f"Project History Ledger contains {INGEST_EVENT_ID}")
     else:
         fail(f"Project History Ledger missing {INGEST_EVENT_ID}", errors)
-    if cur.get("latest_material_event_id") == INGEST_EVENT_ID and ledger_ids and ledger_ids[-1] == INGEST_EVENT_ID:
-        ok("CURRENT_STATE latest_material_event_id matches last sealed ledger event")
+    # Post-ingest invariant: CURRENT_STATE must always track the last sealed ledger
+    # event (INGEST_EVENT_ID at ingest time; a later event such as MAINARCH-FIX-03's
+    # after that task completes).
+    last_event_id = ledger_ids[-1] if ledger_ids else None
+    if cur.get("latest_material_event_id") == last_event_id and last_event_id:
+        ok(f"CURRENT_STATE latest_material_event_id matches last sealed ledger event {last_event_id}")
     else:
-        fail(f"latest_material_event_id={cur.get('latest_material_event_id')} vs last ledger {ledger_ids[-1] if ledger_ids else None}", errors)
+        fail(f"latest_material_event_id={cur.get('latest_material_event_id')} vs last ledger {last_event_id}", errors)
 
     # --- 20. Master Audit Report synchronized ---
     master = read_text(MASTER)

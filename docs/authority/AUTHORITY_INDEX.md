@@ -16,9 +16,10 @@
 7. `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` — consolidated V1 target architecture.
 8. `B025_MANDATORY_AMENDMENTS_V1_1.md` — mandatory amendments to specific B-025 Track B items (B-003, B-008, B-010, B-013, B-020, B-022, ULTIMATE B027 trust boundary). Supersedes the enumerated v1.x provisions; unamended B-025 Track B items remain in force.
 9. `B025_MANDATORY_AMENDMENTS_V1_2.md` — mandatory amendments to specific B-025 Track B items (B-004, B-005, B-006, B-007, B-011, B-012, B-014, B-015, B-016, ULTIMATE server trust boundaries). Supersedes the enumerated v1.x provisions; V1.1 and unamended B-025 Track B items remain in force.
-10. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025 (historical snapshot; amended items are superseded by `B025_MANDATORY_AMENDMENTS_V1_1.md` or `B025_MANDATORY_AMENDMENTS_V1_2.md`).
-11. `B027_AI_WORKFORCE_GOVERNANCE.md` — AI workforce / work-control governance (B027-A/B/C implemented; FINAL_PRE_PRODUCT_AUDIT required; Product development blocked).
-12. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
+10. `B025_MANDATORY_AMENDMENTS_V1_3.md` — mandatory amendments to specific B-025 Track B items (B-018, B-019, B-021, B-023) plus the canonical Security Invariant Traceability, Verification/Evidence State Model, and Implementation-Readiness State Model. Supersedes the enumerated v1.x provisions; V1.1/V1.2 and unamended B-025 Track B items remain in force.
+11. `B025/TRACK_B/B0xx_*.md` — individual frozen B specifications B-001…B-025 (historical snapshot; amended items are superseded by `B025_MANDATORY_AMENDMENTS_V1_1.md`, `B025_MANDATORY_AMENDMENTS_V1_2.md`, or `B025_MANDATORY_AMENDMENTS_V1_3.md`).
+12. `B027_AI_WORKFORCE_GOVERNANCE.md` — AI workforce / work-control governance (B027-A/B/C implemented; FINAL_PRE_PRODUCT_AUDIT required; Product development blocked).
+13. Historical RAW / Raw1.1 documents in `docs/history/` — provenance only, superseded.
 
 ---
 
@@ -34,6 +35,7 @@
 | `GITHUB_REMOTE_ACTIVITY_SAFETY.md` | Current | GitHub remote activity safety, no rapid repetitive remote automation |
 | `B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md` | Frozen | Consolidated V1 product architecture |
 | `B025/IMPLEMENTATION_GAP_MATRIX.md` | Current | B-025 implementation gap matrix |
+| `B025_MANDATORY_AMENDMENTS_V1_3.md` | Current | Traceability / test-matrix / release-governance / implementation-readiness amendments (B-018, B-019, B-021, B-023) |
 | `B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` | Frozen | Individual B specifications B-001…B-025 |
 || `B027_AI_WORKFORCE_GOVERNANCE.md` | B027-A implemented / B027-B,C deferred | AI workforce / work-control governance |
 

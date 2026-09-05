@@ -274,17 +274,46 @@ def main():
     if status_ok:
         ok("targeted finding statuses are Open, Ready For Retest, or Closed")
 
-    # 25. unrelated findings unchanged (excluding MAINARCH-FIX-02 targets which may be Ready For Retest)
+    # 25. unrelated findings unchanged (excluding MAINARCH-FIX-02/FIX-03 targets which may be
+    #     Ready For Retest, or Closed only after their verified retest)
     fix02_targets = {
         "ANOX-MAINARCH-003", "ANOX-MAINARCH-007", "ANOX-MAINARCH-008", "ANOX-MAINARCH-009",
         "ANOX-MAINARCH-010", "ANOX-MAINARCH-015", "ANOX-MAINARCH-016", "ANOX-MAINARCH-017",
     }
+    fix03_targets = {
+        "ANOX-MAINARCH-011", "ANOX-MAINARCH-024", "ANOX-MAINARCH-026",
+        "ANOX-MAINARCH-027", "ANOX-MAINARCH-036",
+    }
+    # A FIX-03 target may only be Closed after a recorded MAINARCH-RETEST-03 PASS
+    # that explicitly covers the finding.
+    retest03_ids = set()
+    audits_path = REPO / "docs/workforce/registries/audits.jsonl"
+    if audits_path.exists():
+        for line in audits_path.read_text().splitlines():
+            if not line.strip():
+                continue
+            a = json.loads(line)
+            if a.get("audit_id") == "MAINARCH-RETEST-03" and a.get("result") == "PASS":
+                if a.get("finding_id"):
+                    retest03_ids.add(a["finding_id"])
+                for fid in (a.get("findings") or a.get("closed_findings") or []):
+                    retest03_ids.add(fid)
     unrelated_ok = True
     for f in findings:
-        if f["finding_id"] in target_ids or f["finding_id"] in fix02_targets:
+        fid = f["finding_id"]
+        if fid in target_ids or fid in fix02_targets:
             continue
-        if f.get("status") != "Open":
-            fail(f"unrelated {f['finding_id']} status changed to {f.get('status')}", errors)
+        st = f.get("status")
+        if fid in fix03_targets:
+            if st == "Closed" and fid not in retest03_ids:
+                fail(f"{fid} Closed without MAINARCH-RETEST-03 PASS evidence", errors)
+                unrelated_ok = False
+            elif st not in ("Open", "Ready For Retest", "Closed"):
+                fail(f"{fid} has unexpected status {st}", errors)
+                unrelated_ok = False
+            continue
+        if st != "Open":
+            fail(f"unrelated {fid} status changed to {st}", errors)
             unrelated_ok = False
     if unrelated_ok:
         ok("unrelated findings unchanged (Open)")
