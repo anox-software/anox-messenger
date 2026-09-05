@@ -17,8 +17,8 @@
 
 ## Repository truth
 
-- Branch: `audit/mainarch-retest-01-ingest`
-- **Current HEAD:** `ec71127b51c0a4d33d18f14f2bf9c5e8209026da` (AUDIT-MAIN-ARCHITECTURE FINDINGS FREEZE)
+- Branch: `remediation/mainarch-fix-02-server-contracts`
+- **Current HEAD:** `568c8083a3e56058fcb6e5076a7fe1ebc15c384b` (MAINARCH-FIX-02 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
@@ -27,12 +27,12 @@
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
 - **Current effective gate:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION`
-- **Current authorized task:** `MAINARCH-RETEST-01-INGEST COMPLETE; 17 findings Closed; NEXT: MAINARCH-FIX-02`
+- **Current authorized task:** `MAINARCH-FIX-02 COMPLETE; 8 findings Ready For Retest; NEXT: MAINARCH-RETEST-02`
 - **Open blockers:** MAINARCH-FIX-02 required before product gate may advance
-- **Current authorized task:** `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE)
-- **Next authorized task:** `MAINARCH-FIX-02 — SERVER / DATABASE / RLS / API / OTK / RETENTION ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS)
+- **Previously completed:** `MAINARCH-FIX-01` — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION (COMPLETE)
+- **Next authorized task:** `MAINARCH-RETEST-02 — TARGETED DELTA RETEST OF SERVER / DATABASE / API / RETENTION ARCHITECTURE FINDINGS` (START WHEN HUMAN ASSIGNS)
 - **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
-- **Latest main CI:** B-017-Lite 5/5 PASS; continuity PASS; B027-A validator PASS; B027-A adversarial tests 20/20 PASS; B027-B validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; B017 policy validator 35/35 PASS; Rust 15/15 PASS
+
 
 ## Architecture / governance
 
@@ -95,3 +95,19 @@ product/infrastructure/release/audit gates.
 - `FORTSCHRITT.md`: chronological human history with `<!-- ANOX_EVENT: ... -->` markers.
 - Full historical detail, test counts, and finding status are recorded in the ledger and
   `FORTSCHRITT.md`; this file is the current human summary only.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0031 -->
+
+## ANOX-EVENT-0031 — MAINARCH-FIX-02 Server/DB/API/OTK/Retention/Privacy Architecture Remediation
+
+**Branch:** `remediation/mainarch-fix-02-server-contracts`  
+**Substantive HEAD:** `568c8083a3e56058fcb6e5076a7fe1ebc15c384b`  
+**Date:** 2026-09-04
+
+- MAINARCH-FIX-02 complete.
+- `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md` freezes V1.2 server/DB/RLS/API/OTK/retention/privacy contracts.
+- 8 findings (`ANOX-MAINARCH-003`, `007`, `008`, `009`, `010`, `015`, `016`, `017`) moved to `Ready For Retest`.
+- `ANOX-MAINARCH-003` and `ANOX-MAINARCH-007` remain flagged for milestone Security Architecture review.
+- Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- No product/Rust/CI/DB/backend implementation changed.
+- Next task: `MAINARCH-RETEST-02` (pending human authorization).

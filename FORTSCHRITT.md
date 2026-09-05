@@ -783,3 +783,16 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Result:** `PASS WITH FINDINGS`. 36 findings frozen (`ANOX-MAINARCH-001` through `ANOX-MAINARCH-036`), 13 blocking HIGH. No CRITICAL findings. No product/CI/code changes. No remote mutation.
 - **Tests:** B027-A validator PASS; B027-B adversarial tests 48/48 PASS; B027-C integrity validator PASS; continuity 171/171 PASS; B017-Lite policy validator 35/35 PASS; `cargo test` 15/15 PASS; `git diff --check` PASS.
 - **Next authorized task:** `MAINARCH-FIX-01 — AUTHORITY / SOURCE-OF-TRUTH / B003 / AUDIT-GATE ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0031 -->
+## ANOX-EVENT-0031 — MAINARCH-FIX-02 Material Architecture Remediation
+
+- **Date:** 2026-09-04
+- **Branch:** `remediation/mainarch-fix-02-server-contracts`
+- **Substantive HEAD:** `568c8083a3e56058fcb6e5076a7fe1ebc15c384b`
+- **Ergebnis:** 8 Befunde auf `Ready For Retest` verschoben; keine auf `Closed`.
+- **Artifakte:** `B025_MANDATORY_AMENDMENTS_V1_2.md`, `B_FREEZE_REGISTRY.md`, `AUTHORITY_INDEX.md`, `validate_mainarch_fix02.py`.
+- **Vertrauensgrenzen:** `ANOX-MAINARCH-003` und `ANOX-MAINARCH-007` für Meilenstein-Sicherheitsüberprüfung markiert.
+- **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
+- **Keine Produkt/Rust/CI-Änderungen.**
+- **Nächster Schritt:** `MAINARCH-RETEST-02` — gezielter Delta-Retest der Server/DB/API/Retention-Architektur (menschenautorisiert).

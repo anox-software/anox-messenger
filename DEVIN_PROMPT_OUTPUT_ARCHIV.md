@@ -876,3 +876,11 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - 17 MAIN findings Closed
 - Product: BLOCKED_PENDING_FINAL_AUDIT
 - Next: MAINARCH-FIX-02
+
+## ANOX-EVENT-0031 — MAINARCH-FIX-02
+
+- Human-authorized `MAINARCH-FIX-02` server/database/RLS/API/OTK/retention/privacy architecture remediation.
+- Created `B025_MANDATORY_AMENDMENTS_V1_2.md` and targeted validator `tools/audit/validate_mainarch_fix02.py`.
+- Updated `B_FREEZE_REGISTRY.md`, `AUTHORITY_INDEX.md`, findings registry, Master Audit Report, WORKFORCE_STATE, tasks, runs, Project Memory.
+- 8 findings `Ready For Retest`; product remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- Milestone security review flagged for ANOX-MAINARCH-003 and ANOX-MAINARCH-007.
