@@ -1,7 +1,7 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "MAINARCH-RETEST-02 — TARGETED DELTA RETEST OF SERVER / DATABASE / API / RETENTION ARCHITECTURE FINDINGS",
+  "current_gate": "MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION (PLANNED; pending human authorization)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
@@ -9,14 +9,14 @@
   "blocked_tasks": [],
   "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-FIX02SERVER0001",
+    "task_id": "ANOX-TASK-RET02INGEST",
     "role_id": "ROLE-009",
-    "branch": "remediation/mainarch-fix-02-server-contracts"
+    "branch": "audit/mainarch-retest-02-ingest"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": "ANOX-MAINARCH-035",
-  "latest_run_id": "ANOX-RUN-FIX02SERVER0001",
+  "latest_run_id": "ANOX-RUN-RET02INGEST0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -47,6 +47,7 @@
     "MAINARCH-FIX-02 complete: 8 findings moved to Ready For Retest; B025_MANDATORY_AMENDMENTS_V1_2.md freezes DB/RLS/API/OTK/retention/privacy contracts.",
     "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007.",
     "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
-    "Next planned remediation: MAINARCH-RETEST-02 (pending human authorization)."
+    "MAINARCH-RETEST-02 PASS: 8 findings verified and Closed (MAIN Closed total 25; remaining 11).",
+    "Next planned remediation: MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION (pending human authorization)."
   ]
 }

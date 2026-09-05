@@ -152,20 +152,26 @@ def main():
             else:
                 closed_count += 1
         elif fid in FIX02_TARGETS:
-            if f.get("status") not in ("Open", "Ready For Retest"):
+            if f.get("status") not in ("Open", "Ready For Retest", "Closed"):
                 fail(f"FIX-02 target {fid} changed unexpectedly to {f.get('status')}", errors)
+            elif f.get("status") == "Closed" and not any(
+                "MAINARCH-RETEST-02" in e for e in f.get("closure_evidence", [])
+            ):
+                fail(f"FIX-02 target {fid} Closed without MAINARCH-RETEST-02 evidence", errors)
         else:
             if f.get("status") != "Open":
                 fail(f"Unrelated {fid} changed to {f.get('status')}", errors)
     if closed_count == len(TARGETS):
         ok(f"All {len(TARGETS)} targeted findings Closed with preserved severities and closure evidence")
 
-    # 3. No unexpected Closed
+    # 3. No unexpected Closed (after MAINARCH-RETEST-02 ingest the FIX-02
+    # targets may also be Closed; the closed set must remain a subset of the
+    # two verified closure groups).
     all_closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if all_closed == TARGETS:
-        ok("Closed findings set exactly equals the 17 targets")
+    if TARGETS <= all_closed and all_closed <= (TARGETS | FIX02_TARGETS):
+        ok(f"Closed findings set contains the 17 targets and only verified groups ({len(all_closed)} closed)")
     else:
-        fail(f"Closed set mismatch: expected {TARGETS}, got {all_closed}", errors)
+        fail(f"Closed set mismatch: expected subset of {TARGETS | FIX02_TARGETS} containing {TARGETS}, got {all_closed}", errors)
 
     # 4. Workforce state synchronized
     state = (REPO / "docs/workforce/WORKFORCE_STATE.json").read_text(encoding="utf-8")
@@ -188,10 +194,10 @@ def main():
     else:
         fail("WORKFORCE_STATE current_writer still references stale ANOX-TASK-MAINARCH0001", errors)
     current_gate = ws.get("current_gate") or ""
-    if "MAINARCH-FIX-02" in current_gate or "MAINARCH-RETEST-02" in current_gate:
-        ok("WORKFORCE_STATE current_gate points to MAINARCH-FIX-02 or MAINARCH-RETEST-02")
+    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03")):
+        ok("WORKFORCE_STATE current_gate points to a recognized post-FIX-01 task")
     else:
-        fail("WORKFORCE_STATE current_gate does not point to MAINARCH-FIX-02/MAINARCH-RETEST-02", errors)
+        fail("WORKFORCE_STATE current_gate does not point to a recognized post-FIX-01 task", errors)
 
     # 5. Master audit report has retest section
     master = read_text("docs/reports/FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md")
@@ -212,12 +218,15 @@ def main():
     else:
         fail("Project History Ledger missing ANOX-EVENT-0030", errors)
 
-    # 7. Current state latest event may have advanced to ANOX-EVENT-0031 after FIX-02
+    # 7. CURRENT_STATE latest event must match the last sealed ledger event
+    #    (dynamic: ANOX-EVENT-0030 after RETEST-01 ingest, may advance after
+    #    later verified material events such as FIX-02 / RETEST-02 ingest).
     cur = json.loads(read_text("docs/continuity/CURRENT_STATE.json"))
-    if cur.get("latest_material_event_id") in ("ANOX-EVENT-0030", "ANOX-EVENT-0031"):
-        ok(f"CURRENT_STATE.json latest_material_event_id is {cur.get('latest_material_event_id')}")
+    last_event_id = ledger[-1].get("event_id") if ledger else None
+    if cur.get("latest_material_event_id") == last_event_id:
+        ok(f"CURRENT_STATE.json latest_material_event_id matches last ledger event {last_event_id}")
     else:
-        fail(f"CURRENT_STATE.json latest_material_event_id is {cur.get('latest_material_event_id')}, expected 0030 or 0031", errors)
+        fail(f"CURRENT_STATE.json latest_material_event_id {cur.get('latest_material_event_id')} != last ledger event {last_event_id}", errors)
 
     # 8. No product/CI code changed vs canonical main
     changed = git_diff_name_only("main", "HEAD")
