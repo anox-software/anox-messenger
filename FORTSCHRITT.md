@@ -1,13 +1,15 @@
 # FORTSCHRITT — anoX Messenger V1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0029 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0033 -->
 
-**Status:** MAINARCH-RETEST-01-INGEST COMPLETE; 17 FINDINGS CLOSED; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
-**Updated:** 2026-09-02
+**Status:** MAINARCH-FIX-03 COMPLETE; 5 FINDINGS READY FOR RETEST; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
+**Updated:** 2026-09-05
 
 ## Architecture / governance
 
 - B-001 Master Completeness: DEFINED.
+- B-025 V1.3: FROZEN (traceability / test-matrix / release-governance / implementation-readiness).
 - B-002…B-023: frozen according to `B_FREEZE_REGISTRY.md`.
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
@@ -809,3 +811,19 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
 - **Keine Produkt/Rust/CI/Architektur-Änderungen. Kein Claude.**
 - **Nächster Schritt:** `MAINARCH-FIX-03` — Traceability / Test-Matrix / Release-Governance-Architektur-Remediation (menschenautorisiert).
+
+## ANOX-EVENT-0033 — MAINARCH-FIX-03 Traceability / Test Matrix / Release-Governance / Implementation-Readiness Architecture Remediation
+
+<!-- ANOX_EVENT: ANOX-EVENT-0033 -->
+
+- **Date:** 2026-09-05
+- **Branch:** `remediation/mainarch-fix-03-traceability-release-governance`
+- **Substantive HEAD:** `4573b64dcc997aaaee8e81675a871201627d454e`
+- **Result:** 5 MAIN findings (`ANOX-MAINARCH-011`, `024`, `026`, `027`, `036`) moved to `Ready For Retest`; no findings `Closed`.
+- **Artifacts:** V1.3 mandatory amendment, invariant traceability doc + machine registry, B-021 test matrix, implementation-readiness registry, `validate_mainarch_fix03.py` + adversarial tests.
+- **Milestone flags:** `ANOX-MAINARCH-003`, `007`, and `024` flagged for next Security Architecture review.
+- **Tests:** `validate_mainarch_fix03.py` PASS; `test_mainarch_fix03.py` PASS; `validate_mainarch_fix02.py` PASS; `validate_mainarch_fix01.py` PASS; `validate_mainarch_retest02_ingest.py` PASS; `validate_mainarch_retest01_ingest.py` PASS; `validate_b027_integrity.py` PASS.
+- **Product status:** remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- **No product/Rust/CI/DB/backend/SQL changes.**
+- **No remote mutation.**
+- **Next:** `MAINARCH-RETEST-03` — targeted delta retest (pending human authorization).

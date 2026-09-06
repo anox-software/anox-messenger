@@ -2,13 +2,13 @@
 
 ## Authorized and completed
 
-- `MAINARCH-RETEST-02` — targeted delta retest of the 8 MAINARCH-FIX-02 findings: PASS (8/8), canonical SHA `739ea1c36c3d6f8eedb9a315fc6fba5173a82289`.
-- `MAINARCH-RETEST-02-INGEST` on branch `audit/mainarch-retest-02-ingest` (substantive HEAD `8ee4ccaa33e4ba134a8b85ab87fef164ffed447d`)
-  - Status: complete, 8 findings Closed; FIX-02 validator hardened; retest-02 ingestion validator added.
+- `MAINARCH-FIX-03` — traceability / test matrix / release-governance / implementation-readiness architecture remediation on branch `remediation/mainarch-fix-03-traceability-release-governance` (substantive HEAD `4573b64dcc997aaaee8e81675a871201627d454e`)
+  - Status: complete, 5 findings Ready For Retest; none Closed.
+  - Artifacts: V1.3 amendment, invariant traceability, B-021 matrix, implementation-readiness model, release/incident/branch-protection governance architecture, `validate_mainarch_fix03.py` + adversarial tests.
 
 ## Next authorized task (pending human assignment)
 
-- `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION`
+- `MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE / IMPLEMENTATION-READINESS FINDINGS`
 
 ## Blocked
 
