@@ -908,3 +908,18 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - **No product/Rust/CI/DB/backend/SQL changes.**
 - **No remote mutation.**
 - **Next:** MAINARCH-RETEST-03
+
+## ANOX-EVENT-0034 — MAINARCH-RETEST-03-INGEST
+
+- Date: 2026-09-06
+- Task: MAINARCH-RETEST-03-INGEST
+- Result: PASS
+- Retest: MAINARCH-RETEST-03 PASS (5/5) at 88ea18c9b7078c376ee027d0cacc4d4f147ebbf5
+- 5 MAIN findings Closed (011, 024, 026, 027, 036); total Closed 30, remaining Open 6 (013, 018, 019, 023, 030, 031)
+- MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE; Final Pre-Product Audit remains IN PROGRESS
+- 003/007/024 milestone Security Architecture review PENDING (machine-readable); no Claude
+- ANOX-MAINARCH-018 remains PHYSICAL_VERIFICATION_REQUIRED
+- FIX-03 validator hardened + 26 adversarial tests + retest-03 ingest validator
+- Product: BLOCKED_PENDING_FINAL_AUDIT
+- Next: LEGACY-AUDIT-B002 (first session of the LEGACY / BUILD / HARDWARE VERIFICATION phase)
+

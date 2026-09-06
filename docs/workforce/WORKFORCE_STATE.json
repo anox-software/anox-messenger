@@ -1,7 +1,7 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "MAINARCH-RETEST-03 \u2014 TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (PLANNED; pending human authorization)",
+  "current_gate": "LEGACY-AUDIT-B002 \u2014 DEVICE AUTHENTICATION LEGACY VERIFICATION (first session of the required LEGACY / BUILD / HARDWARE VERIFICATION phase per docs/workforce/audits/legacy-audit-plan.json; pending human authorization)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
@@ -9,14 +9,14 @@
   "blocked_tasks": [],
   "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-FIX03TRACE0001",
+    "task_id": "ANOX-TASK-RET03INGEST",
     "role_id": "ROLE-009",
-    "branch": "remediation/mainarch-fix-03-traceability-release-governance"
+    "branch": "audit/mainarch-retest-03-ingest"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": "ANOX-MAINARCH-035",
-  "latest_run_id": "ANOX-RUN-FIX03TRACE0001",
+  "latest_run_id": "ANOX-RUN-RET03INGEST0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -37,7 +37,10 @@
       "LEGACY-AUDIT-BUILD",
       "LEGACY-AUDIT-INTEGRATION"
     ],
-    "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT"
+    "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
+    "main_architecture_audit": "COMPLETE",
+    "main_architecture_remediation_phase": "COMPLETE",
+    "next_phase": "LEGACY_BUILD_HARDWARE_VERIFICATION"
   },
   "notes": [
     "B027-C final integration merged to main; B027-A/B/C canonical.",
@@ -49,6 +52,13 @@
     "MAINARCH-RETEST-02 PASS: 8 findings verified and Closed (MAIN Closed total 25; remaining 11).",
     "MAINARCH-FIX-03 complete: invariant traceability (35/35), B-021 verification matrix (150 stable test IDs), release/signing/incident governance, branch-protection release gate, and implementation-readiness state model established; 5 findings (011, 024, 026, 027, 036) moved to Ready For Retest; none Closed.",
     "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007; ANOX-MAINARCH-024 added (newly defined signing/release custody + incident trust boundary).",
-    "Next planned task: MAINARCH-RETEST-03 \u2014 TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (pending human authorization)."
+    "Next planned task: MAINARCH-RETEST-03 \u2014 TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (pending human authorization).",
+    "MAINARCH-FIX-03 completed and merged to main via PR #14.",
+    "MAINARCH-RETEST-03 PASS: 5 findings (011, 024, 026, 027, 036) verified and Closed; MAIN Closed total 30; remaining Open 6 (013, 018, 019, 023, 030, 031); no findings remain Ready For Retest.",
+    "MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE.",
+    "Milestone security review remains PENDING for ANOX-MAINARCH-003, ANOX-MAINARCH-007 and ANOX-MAINARCH-024 (closure = architecture remediation verified, not milestone security audit).",
+    "ANOX-MAINARCH-018 physical GrapheneOS/StrongBox verification remains PHYSICAL_VERIFICATION_REQUIRED; no repository evidence may substitute.",
+    "B-004 and B-005 implementation remain NOT_STARTED; implementation_readiness.json unchanged in this respect.",
+    "Next planned task: LEGACY / BUILD / HARDWARE VERIFICATION phase \u2014 first session LEGACY-AUDIT-B002 per docs/workforce/audits/legacy-audit-plan.json (pending human authorization)."
   ]
 }

@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-09-02
-**Latest material event:** `ANOX-EVENT-0033` — MAINARCH-FIX-03 completed; 5 findings Ready For Retest (no new closures; total Closed remains 25)
+**Date:** 2026-09-06
+**Latest material event:** `ANOX-EVENT-0034` — MAINARCH-RETEST-03-INGEST completed; 5 findings Closed (total Closed 30, remaining Open 6); MAIN architecture remediation phase COMPLETE
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -17,11 +17,12 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0031 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0032 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0033 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0034 -->
 
 ## Repository truth
 
-- Branch: `remediation/mainarch-fix-03-traceability-release-governance`
-- **Current HEAD:** `4573b64dcc997aaaee8e81675a871201627d454e` (MAINARCH-FIX-03 SUBSTANTIVE)
+- Branch: `audit/mainarch-retest-03-ingest`
+- **Current HEAD:** `876e63565942c65df738afc5f4578a6b16a331b0` (MAINARCH-RETEST-03-INGEST SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
@@ -29,11 +30,11 @@
 - **Previous baseline HEAD:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, PR #7)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE / IMPLEMENTATION-READINESS ARCHITECTURE REMEDIATION`
-- **Current authorized task:** `MAINARCH-FIX-03 COMPLETE; 5 findings Ready For Retest; NEXT: MAINARCH-RETEST-03`
-- **Open blockers:** remaining 11 MAIN findings remediation before product gate may advance
-- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` (5 findings Ready For Retest)
-- **Next authorized task:** `MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS` (START WHEN HUMAN ASSIGNS)
+- **Current effective gate:** `MAINARCH-RETEST-03-INGEST — CANONICAL RETEST RESULT INGESTION, VERIFIED FINDING CLOSURE AND TARGETED VALIDATOR HARDENING`
+- **Current authorized task:** `MAINARCH-RETEST-03-INGEST COMPLETE; 5 findings Closed; MAIN 30/6; NEXT: LEGACY-AUDIT-B002 (LEGACY / BUILD / HARDWARE VERIFICATION phase)`
+- **Open blockers:** 6 deferred MAIN findings (013, 018, 019, 023, 030, 031) + required legacy/build/hardware verification before product gate may advance
+- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**
+- **Next authorized task:** `LEGACY-AUDIT-B002 — DEVICE AUTHENTICATION LEGACY VERIFICATION` (first session per `docs/workforce/audits/legacy-audit-plan.json`; START WHEN HUMAN ASSIGNS)
 - **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 
 
@@ -142,3 +143,19 @@ product/infrastructure/release/audit gates.
 - Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
 - No product/Rust/CI/DB/backend/architecture changes.
 - Next task: `MAINARCH-FIX-03` (pending human authorization).
+
+## ANOX-EVENT-0034 — MAINARCH-RETEST-03-INGEST Verified Finding Closure + Remediation-Phase Completion + Validator Hardening
+
+**Branch:** `audit/mainarch-retest-03-ingest`
+**Substantive HEAD:** `876e63565942c65df738afc5f4578a6b16a331b0`
+**Date:** 2026-09-06
+
+- `MAINARCH-RETEST-03` PASS ingested: 5/5 findings verified at canonical SHA `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5`; no failures, no regressions, no Claude.
+- Findings `ANOX-MAINARCH-011`, `024`, `026`, `027`, `036` are `Closed` with severities and original evidence preserved. MAIN Closed total: 30; remaining Open: 6 (`013`, `018`, `019`, `023`, `030`, `031`). No finding remains `Ready For Retest`.
+- **MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE**; Final Pre-Product Audit remains IN PROGRESS.
+- `ANOX-MAINARCH-003`, `007`, `024` milestone Security Architecture review remains `PENDING` (machine-readable `milestone_security_review` field; closure = architecture remediation verified).
+- `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification remains `PHYSICAL_VERIFICATION_REQUIRED`.
+- `tools/audit/validate_mainarch_fix03.py` hardened (verification-ID cross-check; pinned-SHA recorded-delivery scope; governance cross-references) with 26 adversarial tests and `tools/audit/validate_mainarch_retest03_ingest.py` added.
+- Product development remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- No product/Rust/CI/DB/backend/architecture changes.
+- Next task: `LEGACY-AUDIT-B002` — first session of the LEGACY / BUILD / HARDWARE VERIFICATION phase per `docs/workforce/audits/legacy-audit-plan.json` (pending human authorization).

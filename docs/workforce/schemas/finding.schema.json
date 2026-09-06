@@ -25,7 +25,13 @@
     },
     "severity": {
       "type": "string",
-      "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"]
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "INFO"
+      ]
     },
     "status": {
       "type": "string",
@@ -83,6 +89,15 @@
     },
     "notes": {
       "type": "string"
+    },
+    "milestone_security_review": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "COVERED",
+        "NOT_REQUIRED"
+      ],
+      "description": "Machine-readable milestone Security Architecture review state for findings whose closure means architecture-remediation-verified but whose trust boundary still requires scheduled milestone security coverage."
     }
   },
   "additionalProperties": false

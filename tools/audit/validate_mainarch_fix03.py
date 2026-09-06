@@ -32,6 +32,15 @@ FIX03_TARGETS = {
     "ANOX-MAINARCH-036",
 }
 
+# Recorded FIX-03 delivery SHAs. These are stable historical evidence pinned from
+# the canonical merge transition; the scope/secret checks verify the recorded
+# delivery diff FIX03_BASE..FIX03_MERGE and do not depend on the delivery branch
+# still existing or on a vacuous post-merge `git diff main HEAD`.
+FIX03_BASE_SHA = "349509b63fc0f516a88bee69833b5caf8a244b9c"  # canonical parent of PR #14 merge
+FIX03_SUBSTANTIVE_SHA = "4573b64dcc997aaaee8e81675a871201627d454e"
+FIX03_METADATA_SHA = "c81ed78aee82eabc816d858e03e01231f5b28461"
+FIX03_MERGE_SHA = "88ea18c9b7078c376ee027d0cacc4d4f147ebbf5"  # canonical merge (PR #14)
+
 FIX03_SEVERITIES = {
     "ANOX-MAINARCH-011": "HIGH",
     "ANOX-MAINARCH-024": "MEDIUM",
@@ -146,26 +155,43 @@ def git(args):
         return None
 
 
-def find_changed_files():
-    """Return all changed/staged/untracked files relative to main."""
-    changed = set()
-    out = git(["diff", "--name-only", "main"])
-    if out:
-        changed.update(out.splitlines())
-    status = git(["status", "--porcelain"])
-    if status:
-        for line in status.splitlines():
-            # Git short status: 2 status columns (XY) then a separator then the path.
-            # Path begins at index 2 in all observed cases; strip to be safe.
-            if len(line) >= 3:
-                changed.add(line[2:].strip())
-    return sorted(changed)
+def git_is_ancestor(ancestor, descendant):
+    return subprocess.run(["git", "merge-base", "--is-ancestor", ancestor, descendant],
+                          cwd=REPO, capture_output=True).returncode == 0
 
 
-def check_changed_scope(errors, changed=None):
-    if changed is None:
-        changed = find_changed_files()
-    ok(f"Detected {len(changed)} changed files relative to main")
+def git_diff_name_only(base, head):
+    out = git(["diff", "--name-only", base, head])
+    return out.splitlines() if out else []
+
+
+def git_file_bytes(sha, path):
+    try:
+        return subprocess.check_output(["git", "show", f"{sha}:{path}"], cwd=REPO,
+                                       stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        return None
+
+
+def fix03_delivery_files():
+    """Return the recorded FIX-03 delivery diff FIX03_BASE..FIX03_MERGE.
+
+    Verifies the recorded ancestry first: the substantive and metadata commits
+    must be ancestors of the canonical merge, and the base must be the merge's
+    canonical first parent. Returns None on any inconsistency (fail-closed).
+    """
+    for label, anc in (("substantive", FIX03_SUBSTANTIVE_SHA),
+                       ("metadata", FIX03_METADATA_SHA)):
+        if not git_is_ancestor(anc, FIX03_MERGE_SHA):
+            return None
+    parents = git(["rev-list", "--parents", "-n", "1", FIX03_MERGE_SHA])
+    if not parents or FIX03_BASE_SHA not in parents.split()[1:]:
+        return None
+    return git_diff_name_only(FIX03_BASE_SHA, FIX03_MERGE_SHA)
+
+
+def _classify_delivery_paths(changed):
+    """Return the subset of paths that violate the FIX-03 delivery scope."""
     bad = []
     for f in changed:
         if any(re.search(p, f) for p in DISALLOWED_PATTERNS):
@@ -173,6 +199,22 @@ def check_changed_scope(errors, changed=None):
             continue
         if not any(f.startswith(a) for a in ALLOWED_PREFIXES):
             bad.append(f)
+    return bad
+
+
+def check_fix03_delivery_scope(errors, changed=None):
+    """Verify the recorded FIX-03 delivery diff contains no Android/Kotlin
+    product code, Rust, backend, SQL/migrations, Supabase, CI/workflows, or
+    signing/secret files. Uses pinned SHAs so the check remains meaningful
+    after the canonical merge."""
+    if changed is None:
+        changed = fix03_delivery_files()
+        if changed is None:
+            fail("Could not verify recorded FIX-03 delivery ancestry/diff "
+                 "(base/substantive/metadata/merge SHA mismatch)", errors)
+            return
+    ok(f"Recorded FIX-03 delivery diff contains {len(changed)} changed files")
+    bad = _classify_delivery_paths(changed)
     if bad:
         fail(f"FIX-03 delivery contains prohibited or unexpected files: {bad}", errors)
     else:
@@ -180,27 +222,37 @@ def check_changed_scope(errors, changed=None):
 
 
 def check_no_secrets(errors):
-    changed = find_changed_files()
+    """Scan the recorded FIX-03 delivery file contents at the merge SHA."""
+    changed = fix03_delivery_files()
+    if changed is None:
+        fail("Could not resolve recorded FIX-03 delivery for secret scan", errors)
+        return
     hits = []
     for f in changed:
         if not f.endswith((".md", ".json", ".jsonl", ".py", ".yml", ".yaml", ".txt")):
             continue
-        full = REPO / f
-        try:
-            data = full.read_bytes()
-        except (OSError, PermissionError):
+        data = git_file_bytes(FIX03_MERGE_SHA, f)
+        if data is None:
             continue
         for pat in SECRET_PATTERNS:
-            if re.search(pat, data):
+            for m in re.finditer(pat, data):
+                # A match sitting on a line that defines a raw-bytes pattern
+                # literal (rb"..." / rb'...') is this scanner's own pattern
+                # table or similar detector source, not real key material.
+                line_start = data.rfind(b"\n", 0, m.start()) + 1
+                line_end = data.find(b"\n", m.end())
+                line = data[line_start: line_end if line_end != -1 else len(data)]
+                if b'rb"' in line or b"rb'" in line:
+                    continue
                 hits.append(f)
                 break
-    # The matrix/test docs mention service_role legitimately; ignore that exact
-    # word in text files as long as no PEM/PEM-like marker matches.
-    hits = [h for h in hits if "service_role" not in (REPO / h).read_text(encoding="utf-8", errors="ignore").lower()]
+            else:
+                continue
+            break
     if hits:
-        fail(f"Potential secret/key material in changed files: {hits}", errors)
+        fail(f"Potential secret/key material in recorded FIX-03 delivery files: {hits}", errors)
     else:
-        ok("No apparent secret/key material in changed files")
+        ok("No apparent secret/key material in recorded FIX-03 delivery")
 
 
 def check_invariants_traced(errors, inv_rows=None):
@@ -241,6 +293,51 @@ def check_invariants_traced(errors, inv_rows=None):
         if not r.get("verification_ids"):
             fail(f"{r['invariant_id']} missing verification IDs", errors)
     ok("All 35 invariants have source, domains, enforcement surfaces, verification IDs")
+
+
+def check_verification_id_refs(errors, inv_rows=None, mat_rows=None):
+    """Every verification_id referenced by the invariant traceability registry
+    must exist exactly once in the B-021 matrix, and every matrix 'verifies'
+    reference must point at an existing invariant. Malformed references fail."""
+    if inv_rows is None:
+        inv_rows = read_jsonl(INV_REG)
+    if mat_rows is None:
+        mat_rows = read_jsonl(MAT_REG)
+    test_ids = [r["test_id"] for r in mat_rows]
+    id_counts = {tid: test_ids.count(tid) for tid in set(test_ids)}
+    ref_re = re.compile(r"ANOX-TEST-(B0\d{2}|INV)-\d+$")
+    problems = []
+    for r in inv_rows:
+        for vid in r.get("verification_ids", []):
+            if not ref_re.fullmatch(vid):
+                problems.append(f"{r['invariant_id']} malformed verification_id {vid}")
+                continue
+            if vid not in id_counts:
+                problems.append(f"{r['invariant_id']} references missing matrix test {vid}")
+            elif id_counts[vid] != 1:
+                problems.append(f"{r['invariant_id']} references duplicated matrix test {vid}")
+    if problems:
+        fail(f"verification_id reference violations: {problems[:10]}", errors)
+    else:
+        ok("All invariant verification_ids resolve to exactly one B-021 matrix row")
+
+    inv_ids = {r["invariant_id"] for r in inv_rows}
+    bad_verifies = []
+    for r in mat_rows:
+        for v in r.get("verifies", []):
+            if not re.fullmatch(r"INV-\d{2}", v) or v not in inv_ids:
+                bad_verifies.append(f"{r['test_id']} verifies unknown invariant {v}")
+    if bad_verifies:
+        fail(f"matrix verifies violations: {bad_verifies[:10]}", errors)
+    else:
+        ok("All matrix 'verifies' references resolve to existing invariants")
+
+    inv_tests = {f"ANOX-TEST-INV-{i:02d}" for i in range(1, 36)}
+    missing = sorted(inv_tests - set(test_ids))
+    if missing:
+        fail(f"matrix missing per-invariant tests: {missing}", errors)
+    else:
+        ok("Matrix contains all 35 per-invariant tests ANOX-TEST-INV-01..35")
 
 
 def check_state_model_honest(errors, inv_rows=None):
@@ -349,9 +446,16 @@ def check_matrix_coverage(errors, mat_rows=None):
         ok("PASS rows have evidence references")
 
 
-def check_release_governance(errors, v13_text=None, master_text=None):
+def check_release_governance(errors, v13_text=None, master_text=None,
+                             roles=None, decisions=None, ir_data=None):
     v13 = (v13_text or read_text(V1_3)).lower()
     master = (master_text or read_text(MASTER)).lower()
+    if roles is None:
+        roles = json.loads(read_text("docs/workforce/registries/roles.json"))
+    if decisions is None:
+        decisions = read_jsonl("docs/workforce/registries/decisions.jsonl")
+    if ir_data is None:
+        ir_data = json.loads(read_text(IR_REG))
 
     required = [
         "k_apk_release",
@@ -386,7 +490,9 @@ def check_release_governance(errors, v13_text=None, master_text=None):
         ok("V1.3 contains required release/incident governance language")
 
     false_claims = ["branch protection is enforced", "ruleset is enabled",
-                    "server-side branch protection exists", "github free plan has branch rulesets"]
+                    "server-side branch protection exists", "github free plan has branch rulesets",
+                    "branch protection is active", "branch protection is enabled",
+                    "rulesets are active", "ruleset is active", "protection is enforced by github"]
     for c in false_claims:
         if c in v13:
             fail(f"V1.3 contains a false branch-protection claim: {c}", errors)
@@ -397,6 +503,42 @@ def check_release_governance(errors, v13_text=None, master_text=None):
         ok("V1.3 records an honest compensating control")
     else:
         fail("V1.3 does not record an honest compensating control", errors)
+
+    # Deterministic cross-references: roles must exist, release gate must
+    # reference B-022/B-023, no fabricated human decision may authorize an
+    # equivalent branch-protection control, and release readiness must remain
+    # unresolved until real evidence/decision exists.
+    role_ids = {r.get("role_id") for r in roles.get("roles", [])}
+    for rid in ("ROLE-001", "ROLE-018"):
+        if rid in role_ids:
+            ok(f"{rid} exists in roles registry")
+        else:
+            fail(f"{rid} missing from roles registry", errors)
+    if "b-022" in v13 and "b-023" in v13:
+        ok("V1.3 references the B-022/B-023 release gate")
+    else:
+        fail("V1.3 does not reference the B-022/B-023 release gate", errors)
+    fabricated = [
+        d for d in decisions
+        if any(t in json.dumps(d).lower()
+               for t in ("branch protection", "ruleset", "equivalent control",
+                         "risk-accept", "risk accept"))
+    ]
+    if fabricated:
+        fail(f"Fabricated/unexpected branch-protection human decision records: "
+             f"{[d.get('decision_id') for d in fabricated]}", errors)
+    else:
+        ok("No fabricated branch-protection risk-acceptance decision exists")
+    ir_bad = []
+    for d in ("B-018", "B-019", "B-023"):
+        dom = ir_data.get("domains", {}).get(d, {})
+        if dom.get("release_readiness") != "NOT_RELEASE_READY" or \
+                dom.get("implementation_state") != "NOT_STARTED":
+            ir_bad.append(d)
+    if ir_bad:
+        fail(f"implementation_readiness falsely advances release/incident domains: {ir_bad}", errors)
+    else:
+        ok("B-018/B-019/B-023 remain NOT_STARTED / NOT_RELEASE_READY (release prerequisite unresolved)")
 
     if "mainarch-fix-03" in master and "027" in master:
         ok("Master Audit Report contains MAINARCH-FIX-03 section")
@@ -429,10 +571,22 @@ def check_implementation_readiness(errors, ir_data=None):
         fail("V1.3 does not state the architecture/implementation/release axiom", errors)
 
 
-def check_findings(errors, findings=None):
+def check_findings(errors, findings=None, audits=None):
     if findings is None:
         findings = read_jsonl("docs/workforce/registries/findings.jsonl")
+    if audits is None:
+        audits = read_jsonl("docs/workforce/registries/audits.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
+
+    # A FIX-03 target may only be Closed after a recorded MAINARCH-RETEST-03
+    # PASS that explicitly covers the finding.
+    retest03_ids = set()
+    for a in audits:
+        if a.get("audit_id") == "MAINARCH-RETEST-03" and a.get("result") == "PASS":
+            if a.get("finding_id"):
+                retest03_ids.add(a["finding_id"])
+            for fid in (a.get("findings") or a.get("closed_findings") or []):
+                retest03_ids.add(fid)
 
     for fid, sev in FIX03_SEVERITIES.items():
         f = by_id.get(fid)
@@ -441,21 +595,33 @@ def check_findings(errors, findings=None):
             continue
         if f.get("severity") != sev:
             fail(f"{fid} severity changed: expected {sev}, got {f.get('severity')}", errors)
-        if f.get("status") != "Ready For Retest":
-            fail(f"{fid} status is {f.get('status')}, expected Ready For Retest", errors)
+        st = f.get("status")
+        if st == "Ready For Retest":
+            continue  # pre-ingest lifecycle state
+        if st == "Closed" and fid in retest03_ids:
+            continue  # verified closure with MAINARCH-RETEST-03 PASS evidence
+        fail(f"{fid} status is {st} without MAINARCH-RETEST-03 PASS evidence", errors)
 
-    if not any(errors):
-        ok("All 5 FIX-03 target findings exist, severities preserved, Ready For Retest")
+    if not any("status" in e or "severity" in e or "missing" in e for e in errors):
+        ok("All 5 FIX-03 target findings exist, severities preserved, "
+           "Ready For Retest or Closed with RETEST-03 evidence")
 
+    verified_closed = FIX03_TARGETS & retest03_ids & {
+        f["finding_id"] for f in findings if f.get("status") == "Closed"
+    }
     closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if closed == PRE_FIX03_CLOSED and len(closed) == 25:
-        ok("Closed set remains exactly the 25 pre-FIX-03 verified findings")
+    if closed == PRE_FIX03_CLOSED | verified_closed:
+        if verified_closed:
+            ok(f"Closed set = 25 pre-FIX-03 verified + {len(verified_closed)} RETEST-03 verified")
+        else:
+            ok("Closed set remains exactly the 25 pre-FIX-03 verified findings")
     else:
-        fail(f"Closed set is not exactly the pre-FIX-03 25: {sorted(closed)}", errors)
+        fail(f"Closed set mismatch: {sorted(closed)}", errors)
 
     remaining = set(by_id) - closed
-    if remaining == (UNTOUCHED_OPEN | FIX03_TARGETS):
-        ok("Open/RFR set matches exactly: 6 untouched + 5 FIX-03 targets")
+    expected_remaining = UNTOUCHED_OPEN | (FIX03_TARGETS - verified_closed)
+    if remaining == expected_remaining:
+        ok("Open/RFR set matches exactly: untouched deferred + unclosed FIX-03 targets")
     else:
         fail(f"Unexpected remaining finding set: {sorted(remaining)}", errors)
 
@@ -467,17 +633,36 @@ def check_findings(errors, findings=None):
         ok("Untouched legacy/hardware findings remain Open and unchanged")
 
 
-def check_milestone_flags(errors):
-    v12 = read_text(V1_2)
-    v13 = read_text(V1_3)
-    for fid in ("ANOX-MAINARCH-003", "ANOX-MAINARCH-007"):
-        if fid in v12 and "Milestone" in v12:
-            continue
-        fail(f"Milestone flag for {fid} not preserved in V1.2", errors)
-    if "ANOX-MAINARCH-024" in v13 and "milestone" in v13.lower():
-        ok("Milestone flag 024 added; 003/007 preserved")
-    else:
-        fail("Milestone flag 024 not added in V1.3", errors)
+def check_milestone_flags(errors, v12_text=None, v13_text=None, findings=None, audits=None):
+    v12 = v12_text if v12_text is not None else read_text(V1_2)
+    v13 = v13_text if v13_text is not None else read_text(V1_3)
+    if findings is None:
+        findings = read_jsonl("docs/workforce/registries/findings.jsonl")
+    if audits is None:
+        audits = read_jsonl("docs/workforce/registries/audits.jsonl")
+    by_id = {f["finding_id"]: f for f in findings}
+
+    flag_sources = {
+        "ANOX-MAINARCH-003": v12,
+        "ANOX-MAINARCH-007": v12,
+        "ANOX-MAINARCH-024": v13,
+    }
+    audit_flagged = set()
+    for a in audits:
+        for fid in a.get("milestone_security_review_flags", []):
+            audit_flagged.add(fid)
+
+    for fid, src in flag_sources.items():
+        text_ok = fid in src and "milestone" in src.lower()
+        f = by_id.get(fid, {})
+        note_ok = "ilestone" in f.get("notes", "") and "PENDING" in f.get("notes", "")
+        field_ok = f.get("milestone_security_review") == "PENDING"
+        audit_ok = fid in audit_flagged
+        if text_ok and note_ok and field_ok and audit_ok:
+            ok(f"{fid} milestone security-review flag PENDING (authority text + notes + field + audit record)")
+        else:
+            fail(f"{fid} milestone security-review flag incomplete "
+                 f"(text={text_ok}, notes={note_ok}, field={field_ok}, audit={audit_ok})", errors)
 
 
 def check_product_blocked(errors):
@@ -489,16 +674,24 @@ def check_product_blocked(errors):
 
     gate = ws.get("current_gate", "")
     notes = " ".join(ws.get("notes", []))
-    if "MAINARCH-RETEST-03" in gate and "MAINARCH-RETEST-03" in notes:
-        ok("Next planned task is MAINARCH-RETEST-03")
+    # Valid post-FIX-03 lifecycle successors: MAINARCH-RETEST-03 (planned or
+    # ingest), or the required LEGACY / BUILD / HARDWARE verification phase.
+    successor_ok = (
+        ("MAINARCH-RETEST-03" in gate or "LEGACY" in gate)
+        and "MAINARCH-RETEST-03" in notes
+        and "MAINARCH-FIX-03" in notes
+    )
+    if successor_ok:
+        ok("Next planned task is a valid post-FIX-03 successor (RETEST-03 or legacy phase)")
     else:
-        fail("WORKFORCE_STATE does not point to MAINARCH-RETEST-03 as next planned task", errors)
+        fail("WORKFORCE_STATE does not point to a valid post-FIX-03 successor", errors)
 
     cw = ws.get("current_writer", {})
-    if cw.get("task_id") == "ANOX-TASK-FIX03TRACE0001" and cw.get("role_id") == "ROLE-009":
-        ok("WORKFORCE_STATE current_writer points to FIX-03 task")
+    valid_writers = {"ANOX-TASK-FIX03TRACE0001", "ANOX-TASK-RET03INGEST"}
+    if cw.get("task_id") in valid_writers and cw.get("role_id") == "ROLE-009":
+        ok("WORKFORCE_STATE current_writer points to a FIX-03/RETEST-03 lifecycle task")
     else:
-        fail("WORKFORCE_STATE current_writer does not point to FIX-03 task", errors)
+        fail("WORKFORCE_STATE current_writer does not point to a FIX-03/RETEST-03 lifecycle task", errors)
 
 
 def check_no_claude(errors):
@@ -526,9 +719,10 @@ def main():
     errors = []
 
     check_authority_index(errors)
-    check_changed_scope(errors)
+    check_fix03_delivery_scope(errors)
     check_no_secrets(errors)
     check_invariants_traced(errors)
+    check_verification_id_refs(errors)
     check_state_model_honest(errors)
     check_matrix_coverage(errors)
     check_release_governance(errors)

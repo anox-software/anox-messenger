@@ -145,6 +145,27 @@
         "type": "string"
       }
     },
+    "not_reviewable_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "closed_findings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Finding IDs closed by canonical ingestion of this retest result."
+    },
+    "fix_substantive_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "fix_metadata_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
     "security_reassessment": {
       "type": "string",
       "minLength": 1
