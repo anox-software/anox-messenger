@@ -34,12 +34,12 @@
 | B-015 | Abuse / Rate Limits | FROZEN v1.1-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-015` |
 | B-016 | Production Infrastructure | FROZEN v1.3-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-016` |
 | B-017 | CI/CD + Supply Chain | FROZEN v1.2 | `docs/authority/B025/TRACK_B/B017_CICD_SUPPLY_CHAIN.md` |
-| B-018 | Release Signing + Secure Updates | FROZEN | `docs/authority/B025/TRACK_B/B018_RELEASE_SIGNING_UPDATES.md` |
-| B-019 | Operations + Incident Response | FROZEN | `docs/authority/B025/TRACK_B/B019_OPERATIONS_INCIDENT_RESPONSE.md` |
+| B-018 | Release Signing + Secure Updates | FROZEN v1.1-f03 (amended by B025_MANDATORY_AMENDMENTS_V1_3.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md#B-018` |
+| B-019 | Operations + Incident Response | FROZEN v1.1-f03 (amended by B025_MANDATORY_AMENDMENTS_V1_3.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md#B-019` |
 | B-020 | Full Product + UX | FROZEN v1.2 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-020` |
-| B-021 | Global Security Test Matrix | FROZEN v1.1 | `docs/authority/B025/TRACK_B/B021_SECURITY_TEST_MATRIX.md` |
+| B-021 | Global Security Test Matrix | FROZEN v1.2-f03 (amended by B025_MANDATORY_AMENDMENTS_V1_3.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md#B-021` |
 | B-022 | Independent Security Audit | FROZEN v1.1 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-022` |
-| B-023 | V1 Release Definition of Done | FROZEN v1.1 | `docs/authority/B025/TRACK_B/B023_RELEASE_DOD.md` |
+| B-023 | V1 Release Definition of Done | FROZEN v1.2-f03 (amended by B025_MANDATORY_AMENDMENTS_V1_3.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md#B-023` |
 | B-024 | Final MAIN Consistency Audit | PASS with mandatory amendments | `docs/authority/B025/TRACK_B/B024_FINAL_MAIN_CONSISTENCY_AUDIT.md` |
 | B-025 | New-Chat Handoff Package | COMPLETE | `docs/authority/B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` |
 | B-026 | Continuous Development Governance | FROZEN | `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` |

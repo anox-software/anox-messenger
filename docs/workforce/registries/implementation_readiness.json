@@ -1,0 +1,164 @@
+{
+  "schema_version": "IR-1",
+  "authority": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md",
+  "state_model": {
+    "architecture_state": [
+      "NOT_DEFINED",
+      "DEFINED",
+      "FROZEN"
+    ],
+    "implementation_state": [
+      "NOT_STARTED",
+      "IN_PROGRESS",
+      "IMPLEMENTED_UNVERIFIED",
+      "VERIFIED"
+    ],
+    "release_readiness": [
+      "NOT_RELEASE_READY",
+      "RELEASE_CANDIDATE",
+      "RELEASE_AUTHORIZED"
+    ]
+  },
+  "axiom": "ARCHITECTURE FROZEN does not imply implementation complete; implementation complete does not imply security verified; security verified does not imply release ready.",
+  "domains": {
+    "B-002": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Client foundation merged; server-side enforcement and physical StrongBox verification pending."
+    },
+    "B-003": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Client registration foundation merged; backend account/license enforcement not started."
+    },
+    "B-004": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Backend service architecture frozen by V1.2 amendment; backend/ does not exist."
+    },
+    "B-005": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "DB-SCHEMA-V1-FROZEN; no SQL/migrations/RLS deployed."
+    },
+    "B-006": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Rust crypto foundation exists; OTK/fallback server lifecycle not started."
+    },
+    "B-007": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "/v1 endpoint inventory frozen; no server implementation."
+    },
+    "B-008": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Messaging/sync semantics frozen; client/server messaging not implemented."
+    },
+    "B-009": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Local protected-state foundation exists; B-009 local DB forward model partially implemented; findings 023/030 open."
+    },
+    "B-010": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Contacts/verification frozen; SAS flows not implemented."
+    },
+    "B-011": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Push contract frozen; FCM integration not implemented."
+    },
+    "B-012": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Attachment crypto spec frozen; secretstream integration not implemented."
+    },
+    "B-013": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Lifecycle semantics frozen; server lifecycle flows not implemented."
+    },
+    "B-014": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Retention/erasure contract frozen; retention jobs not implemented."
+    },
+    "B-015": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Abuse/rate-limit contract frozen; enforcement not implemented."
+    },
+    "B-016": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Infrastructure spec frozen; no IaC/production environment exists."
+    },
+    "B-017": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "B-017-Lite implemented; full B-017 supply-chain controls deferred (finding 013)."
+    },
+    "B-018": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Release signing/update governance frozen by V1.3; no signing environment or key material exists."
+    },
+    "B-019": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Operations/IR artifact contract frozen by V1.3; operational artifacts not yet produced."
+    },
+    "B-020": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Security UX requirements frozen; product UI not implemented."
+    },
+    "B-021": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IN_PROGRESS",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Verification matrix architecture frozen by V1.3; product test implementation not started."
+    },
+    "B-022": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Independent audit mandatory before Production V1; not yet executed."
+    },
+    "B-023": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "NOT_STARTED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "Release DoD frozen incl. V1.3 branch-protection release gate."
+    },
+    "B-027": {
+      "architecture_state": "FROZEN",
+      "implementation_state": "IMPLEMENTED_UNVERIFIED",
+      "release_readiness": "NOT_RELEASE_READY",
+      "notes": "B027-A/B/C implemented and passing; milestone security reviews for findings 003/007/024 pending."
+    }
+  },
+  "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT"
+}

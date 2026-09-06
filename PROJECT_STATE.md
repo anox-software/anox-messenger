@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-09-02
-**Latest material event:** `ANOX-EVENT-0032` — MAINARCH-RETEST-02-INGEST completed; 8 findings Closed (total 25)
+**Latest material event:** `ANOX-EVENT-0033` — MAINARCH-FIX-03 completed; 5 findings Ready For Retest (no new closures; total Closed remains 25)
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -16,11 +16,12 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0030 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0031 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0032 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0033 -->
 
 ## Repository truth
 
-- Branch: `audit/mainarch-retest-02-ingest`
-- **Current HEAD:** `8ee4ccaa33e4ba134a8b85ab87fef164ffed447d` (MAINARCH-RETEST-02-INGEST SUBSTANTIVE)
+- Branch: `remediation/mainarch-fix-03-traceability-release-governance`
+- **Current HEAD:** `4573b64dcc997aaaee8e81675a871201627d454e` (MAINARCH-FIX-03 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Merged baseline branch:** `main`
@@ -28,23 +29,34 @@
 - **Previous baseline HEAD:** `aca7a8364a89423173440997ac01865c63552ca0` (B027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime, PR #7)
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `MAINARCH-RETEST-02-INGEST — CANONICAL RETEST RESULT INGESTION, VERIFIED FINDING CLOSURE AND TARGETED VALIDATOR HARDENING`
-- **Current authorized task:** `MAINARCH-RETEST-02-INGEST COMPLETE; 8 findings Closed; NEXT: MAINARCH-FIX-03`
+- **Current effective gate:** `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE / IMPLEMENTATION-READINESS ARCHITECTURE REMEDIATION`
+- **Current authorized task:** `MAINARCH-FIX-03 COMPLETE; 5 findings Ready For Retest; NEXT: MAINARCH-RETEST-03`
 - **Open blockers:** remaining 11 MAIN findings remediation before product gate may advance
-- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed)
-- **Next authorized task:** `MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION` (START WHEN HUMAN ASSIGNS)
+- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` (5 findings Ready For Retest)
+- **Next authorized task:** `MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS` (START WHEN HUMAN ASSIGNS)
 - **Product status:** `BLOCKED` pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 
 
 ## Architecture / governance
 
 - B-001…B-023: frozen/defined.
+- B-025 V1.3: FROZEN (traceability / test-matrix / release-governance / implementation-readiness).
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN.
 - B-027-A AI Workforce / Work-Control Governance Foundation: MERGED at `38b619e...`.
 - B-027-B State/Gate Resolver + Role Contracts + Task/Prompt/Communication Runtime: MERGED at `aca7a8...`.
 - B-027-C / B-027-D: B027-C MERGED at `0a4910e...` (PR #8); AUDIT-MAIN-ARCHITECTURE findings frozen, merged to main, and sealed; MAINARCH-RETEST-01-INGEST completed at `ec71127b51c0a4d33d18f14f2bf9c5e8209026da` on `audit/mainarch-retest-01-ingest`; 17 findings Closed; product blocked pending `FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT`; B027-D DEFERRED.
+
+## ANOX-EVENT-0033 — MAINARCH-FIX-03 Traceability / Test Matrix / Release-Governance / Implementation-Readiness Architecture Remediation
+
+- **Date:** 2026-09-05
+- **Branch:** `remediation/mainarch-fix-03-traceability-release-governance`
+- **Substantive HEAD:** `4573b64dcc997aaaee8e81675a871201627d454e`
+- **Result:** 5 findings (`ANOX-MAINARCH-011`, `024`, `026`, `027`, `036`) moved to `Ready For Retest`; none `Closed`. 25 MAIN findings remain `Closed`; 11 remain Open.
+- **Artifacts:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md`; `docs/security/SECURITY_INVARIANT_TRACEABILITY.md`; `docs/workforce/registries/security_invariant_traceability.jsonl`; `docs/workforce/registries/b021_verification_matrix.jsonl`; `docs/workforce/registries/implementation_readiness.json`; `tools/audit/validate_mainarch_fix03.py`; `tools/audit/test_mainarch_fix03.py`; updated `findings.jsonl`, `WORKFORCE_STATE.json`, Master Audit Report.
+- **Product status:** remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- **Next:** `MAINARCH-RETEST-03` — targeted delta retest of traceability / release-governance findings (pending human authorization).
 
 ## Functional progress
 
@@ -115,6 +127,7 @@ product/infrastructure/release/audit gates.
 - Next task: `MAINARCH-RETEST-02` (pending human authorization).
 
 <!-- ANOX_EVENT: ANOX-EVENT-0032 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0033 -->
 
 ## ANOX-EVENT-0032 — MAINARCH-RETEST-02-INGEST Verified Finding Closure + Validator Hardening
 

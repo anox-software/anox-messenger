@@ -23,6 +23,14 @@ FIX02_TARGETS = {
     "ANOX-MAINARCH-010", "ANOX-MAINARCH-015", "ANOX-MAINARCH-016", "ANOX-MAINARCH-017",
 }
 
+FIX03_TARGETS = {
+    "ANOX-MAINARCH-011", "ANOX-MAINARCH-024", "ANOX-MAINARCH-026",
+    "ANOX-MAINARCH-027", "ANOX-MAINARCH-036",
+}
+
+RETEST03_CLOSED = set()
+
+
 TARGETS = {
     "ANOX-MAINARCH-001",
     "ANOX-MAINARCH-002",
@@ -158,6 +166,11 @@ def main():
                 "MAINARCH-RETEST-02" in e for e in f.get("closure_evidence", [])
             ):
                 fail(f"FIX-02 target {fid} Closed without MAINARCH-RETEST-02 evidence", errors)
+        elif fid in FIX03_TARGETS:
+            if f.get("status") == "Closed" and fid not in RETEST03_CLOSED:
+                fail(f"FIX-03 target {fid} Closed without MAINARCH-RETEST-03 evidence", errors)
+            elif f.get("status") not in ("Open", "Ready For Retest", "Closed"):
+                fail(f"FIX-03 target {fid} changed unexpectedly to {f.get('status')}", errors)
         else:
             if f.get("status") != "Open":
                 fail(f"Unrelated {fid} changed to {f.get('status')}", errors)
@@ -194,7 +207,7 @@ def main():
     else:
         fail("WORKFORCE_STATE current_writer still references stale ANOX-TASK-MAINARCH0001", errors)
     current_gate = ws.get("current_gate") or ""
-    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03")):
+    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03", "MAINARCH-RETEST-03")):
         ok("WORKFORCE_STATE current_gate points to a recognized post-FIX-01 task")
     else:
         fail("WORKFORCE_STATE current_gate does not point to a recognized post-FIX-01 task", errors)

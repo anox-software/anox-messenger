@@ -1,14 +1,15 @@
 # Current Implementation State — anoX V1
 
 **Date:** 2026-09-05
-**Latest material event:** ANOX-EVENT-0032
-**Current branch:** audit/mainarch-retest-02-ingest
-**Current HEAD:** 8ee4ccaa33e4ba134a8b85ab87fef164ffed447d
+**Latest material event:** ANOX-EVENT-0033
+**Current branch:** remediation/mainarch-fix-03-traceability-release-governance
+**Current HEAD:** 4573b64dcc997aaaee8e81675a871201627d454e
 
 ## Architecture / governance
 
-- B-025 mandatory amendments V1.2 freeze DB/RLS/API/OTK/retention/privacy contracts; MAINARCH-RETEST-02 verified them (8/8 PASS).
-- B_FREEZE_REGISTRY and AUTHORITY_INDEX updated (V1.2 authoritative for amended items).
+- B-025 mandatory amendments V1.3 freeze traceability, test-matrix, release-governance, branch-protection, implementation-readiness, and evidence-state model.
+- B-025 mandatory amendments V1.2 remain in force for DB/RLS/API/OTK/retention/privacy contracts.
+- B_FREEZE_REGISTRY and AUTHORITY_INDEX updated (V1.3 authoritative for amended items).
 - B027-A/B/C implemented and passing.
 - Final pre-product audit still required before Product implementation may resume.
 
@@ -22,6 +23,11 @@
 - Android/Kotlin/Rust/JNI: unchanged.
 - CI workflows: unchanged.
 
+## Implementation-readiness architecture
+
+- Per-domain readiness is now tracked in `docs/workforce/registries/implementation_readiness.json`.
+- Architecture frozen does not imply implementation complete; implementation complete does not imply verified; verified does not imply release ready.
+
 ## Trust-boundary flags
 
-- ANOX-MAINARCH-003 (server ↔ DB/RLS) and ANOX-MAINARCH-007 (server ↔ backup/PITR) remain flagged for milestone Security Architecture review; both findings are Closed as architecture-remediation-verified.
+- ANOX-MAINARCH-003 (server ↔ DB/RLS), ANOX-MAINARCH-007 (server ↔ backup/PITR), and ANOX-MAINARCH-024 (signing/release custody + incident-response boundary) remain flagged for milestone Security Architecture review.

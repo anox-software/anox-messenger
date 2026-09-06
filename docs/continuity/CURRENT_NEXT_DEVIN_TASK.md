@@ -2,10 +2,10 @@
 
 ## Next task (pending human authorization)
 
-`MAINARCH-FIX-03 — TRACEABILITY / TEST MATRIX / RELEASE-GOVERNANCE ARCHITECTURE REMEDIATION`
+`MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE / IMPLEMENTATION-READINESS FINDINGS`
 
 - Do not start without explicit human authorization.
 - Do not implement product code.
 - Do not use Claude.
-- Scope: the 11 remaining Open MAIN architecture findings (`ANOX-MAINARCH-011`, `013`, `018`, `019`, `023`, `024`, `026`, `027`, `030`, `031`, `036`) as authorized by the human.
-- `ANOX-MAINARCH-003` and `ANOX-MAINARCH-007` are Closed as architecture-remediation-verified; their milestone Security Architecture review coverage remains pending.
+- Scope: the 5 MAINARCH-FIX-03 findings (`ANOX-MAINARCH-011`, `024`, `026`, `027`, `036`) retest and closure if verified.
+- `ANOX-MAINARCH-003`, `ANOX-MAINARCH-007`, and `ANOX-MAINARCH-024` remain flagged for the next Security Architecture milestone review; finding closure is not the same as milestone security audit.
