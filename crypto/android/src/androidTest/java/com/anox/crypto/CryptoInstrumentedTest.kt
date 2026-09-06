@@ -588,4 +588,88 @@ class CryptoInstrumentedTest {
 
         assertTrue("Corrupted wrapped state key must raise an exception", threw)
     }
+
+    // --- LEGACY-FIX-01 additions ---
+
+    @Test
+    fun missingStateKeyPreventsDeserializeButDoesNotCreateOne() {
+        val identity = bridge.createIdentity().getOrThrow()
+        val serialized = try {
+            bridge.serializeIdentity(identity).getOrThrow()
+        } finally {
+            bridge.destroyIdentity(identity)
+        }
+
+        val stateFile = File(context.filesDir, "test_missing_state_v1.enc")
+        stateFile.writeBytes(serialized)
+
+        // Capture the existing wrapped state key and remove it.
+        val wrappedFile = File(context.filesDir, "anox_state_key.enc")
+        val wrappedBackup = wrappedFile.readBytes()
+        wrappedFile.delete()
+
+        try {
+            val result = bridge.loadIdentity("test_missing_state_v1.enc")
+            assertTrue("Missing state key must fail deterministically", result is CryptoResult.Failure)
+            assertTrue(
+                "Failure must be MissingStateKey, not generic DeserializationFailed",
+                (result as CryptoResult.Failure).error is CryptoError.MissingStateKey
+            )
+            // loadIdentity must NOT have created a new state key.
+            assertFalse("Missing state key must not be silently created", wrappedFile.exists())
+        } finally {
+            stateFile.delete()
+            if (wrappedBackup.isNotEmpty()) {
+                wrappedFile.writeBytes(wrappedBackup)
+            }
+        }
+    }
+
+    @Test
+    fun oneTimeKeysPersistAfterGenerationBeforeUpload() {
+        val identity = bridge.createAndPersistFirstIdentity("test_otk_identity.enc").getOrThrow()
+        try {
+            val originalCurve = bridge.getCurve25519PublicKey(identity).getOrThrow()
+
+            bridge.generateOneTimeKeys(identity, 5).getOrThrow()
+            bridge.saveIdentity(identity, "test_otk_identity.enc").getOrThrow()
+
+            // Simulate process death by loading from disk.
+            val restored = bridge.loadIdentity("test_otk_identity.enc").getOrThrow()
+            try {
+                assertEquals(5, bridge.oneTimeKeysCount(restored).getOrThrow())
+                assertArrayEquals(originalCurve, bridge.getCurve25519PublicKey(restored).getOrThrow())
+            } finally {
+                bridge.destroyIdentity(restored)
+            }
+        } finally {
+            bridge.destroyIdentity(identity)
+            File(context.filesDir, "test_otk_identity.enc").delete()
+        }
+    }
+
+    @Test
+    fun undersizedOneTimeKeyBufferReturnsBufferTooSmall() {
+        val identity = bridge.createIdentity().getOrThrow()
+        try {
+            bridge.generateOneTimeKeys(identity, 1).getOrThrow()
+            val out = ByteArray(1)
+            val result = CryptoNative.cryptoGetOneTimeKey(identity, 0, out)
+            assertEquals("Undersized buffer must return BufferTooSmall", -11, result)
+        } finally {
+            bridge.destroyIdentity(identity)
+        }
+    }
+
+    @Test
+    fun undersizedCurve25519BufferReturnsBufferTooSmall() {
+        val identity = bridge.createIdentity().getOrThrow()
+        try {
+            val out = ByteArray(1)
+            val result = CryptoNative.cryptoGetCurve25519PublicKey(identity, out)
+            assertEquals("Undersized buffer must return BufferTooSmall", -11, result)
+        } finally {
+            bridge.destroyIdentity(identity)
+        }
+    }
 }

@@ -5,7 +5,7 @@ package com.anox.crypto
  * These errors do not expose sensitive information
  */
 sealed class CryptoError(message: String) : Exception(message) {
-    
+
     object InvalidInput : CryptoError("Invalid input parameters")
     object InvalidCiphertext : CryptoError("Invalid ciphertext")
     object InvalidSession : CryptoError("Invalid session")
@@ -17,9 +17,11 @@ sealed class CryptoError(message: String) : Exception(message) {
     object DeserializationFailed : CryptoError("Deserialization failed")
     object SessionCreationFailed : CryptoError("Session creation failed")
     object AuthenticationFailed : CryptoError("Authentication failed (data corrupted or tampered)")
-    
+    object MissingStateKey : CryptoError("State-protection key is missing")
+    object BufferTooSmall : CryptoError("Output buffer too small")
+
     data class UnknownError(val code: Int) : CryptoError("Unknown crypto error: $code")
-    
+
     companion object {
         fun fromCode(code: Int): CryptoError {
             return when (code) {
@@ -33,7 +35,7 @@ sealed class CryptoError(message: String) : Exception(message) {
                 -8 -> CryptoFailure
                 -9 -> UnsupportedVersion
                 -10 -> KeyGenerationFailed
-                -11 -> AuthenticationFailed
+                -11 -> BufferTooSmall
                 else -> UnknownError(code)
             }
         }

@@ -3,7 +3,9 @@ package com.anox.messenger.account
 import com.anox.messenger.security.deviceauth.DeviceAuthBindingStore
 import com.anox.messenger.security.deviceauth.DeviceAuthKeyManager
 import com.anox.messenger.security.deviceauth.DeviceAuthKeyStatus
+import com.anox.messenger.security.deviceauth.DeviceAuthNotProductionEligibleException
 import com.anox.messenger.security.deviceauth.DeviceAuthTerminalStateException
+import com.anox.messenger.security.deviceauth.HardwareSecurityLevel
 import java.time.Instant
 
 /**
@@ -95,7 +97,20 @@ class RegistrationOrchestrator(
             deviceAuthKeyManager.signer()
         } catch (e: DeviceAuthTerminalStateException) {
             return failStep(current, "Device Auth key is in a terminal state: ${e.message}")
+        } catch (e: DeviceAuthNotProductionEligibleException) {
+            return failStep(current, "Device Auth key is not production eligible: ${e.message}")
         }
+
+        // Fail closed before any remote call if the Device Auth key is not StrongBox/TEE.
+        if (!deviceAuthKeyManager.isProductionEligible()) {
+            val level = deviceAuthKeyManager.hardwareSecurityLevel() ?: HardwareSecurityLevel.UNKNOWN
+            return failStep(
+                current,
+                "Device Auth key is not production eligible: $level. " +
+                    "B-002 requires StrongBox or TEE."
+            )
+        }
+
         val proof = createDeviceAuthProof(reserved.registrationId)
 
         val next = when (
@@ -161,6 +176,14 @@ class RegistrationOrchestrator(
 
         expiredOrNull(current, nowForGrantStalenessCheck)?.let { return it }
 
+        // Re-validate Device Auth identity / eligibility before the irreversible arming.
+        // This catches key loss / downgrade / thumbprint changes between registration steps.
+        when (val validation = validateDeviceAuthForCommit(payload.deviceAuthJwkThumbprint)) {
+            is DeviceAuthValidation.Valid -> { /* proceed */ }
+            is DeviceAuthValidation.Invalid ->
+                return failStep(current, "Device Auth revalidation failed: ${validation.reason}")
+        }
+
         // Persist the armed state to the encrypted session store first. If this fails, the
         // durable guard has not been armed and the remote call is not attempted.
         val armed = RegistrationState.CommitArmed(
@@ -211,13 +234,16 @@ class RegistrationOrchestrator(
     /** Explicitly abandons an in-progress registration transaction. Not account deletion. */
     fun abandon() {
         val current = currentState()
-        if (current.isTerminal || deviceAuthBindingStore.isBound() || deviceAuthBindingStore.isArmed()) {
+        if (current.isTerminal ||
+            current is RegistrationState.CommitArmed ||
+            deviceAuthBindingStore.isBound() ||
+            deviceAuthBindingStore.isArmed()) {
             return
         }
         sessionStore.clear()
     }
 
-    private fun canStartNew(state: RegistrationState): Boolean {
+    internal fun canStartNew(state: RegistrationState): Boolean {
         if (deviceAuthBindingStore.isBound() || deviceAuthBindingStore.isArmed()) return false
         return when (state) {
             is RegistrationState.NotStarted,
@@ -231,6 +257,11 @@ class RegistrationOrchestrator(
         // Once the binding is durable (armed or bound), the local grant TTL is irrelevant; the
         // server already accepted (or will idempotently re-accept) the commit.
         if (deviceAuthBindingStore.isBound() || deviceAuthBindingStore.isArmed()) return null
+
+        // CommitArmed is a client-side safety precondition. Once the session has durably
+        // reached this state, grant expiry must NOT permit a downgrade to a fresh-registration
+        // state, even if the separate binding marker update failed/crashed.
+        if (state is RegistrationState.CommitArmed) return null
 
         fun handle(s: RegistrationState): RegistrationState? = when (s) {
             is RegistrationState.Reserved ->
@@ -246,12 +277,6 @@ class RegistrationOrchestrator(
                     expired
                 } else null
             is RegistrationState.PublicIdentityUploaded ->
-                if (s.grant.isExpired(now)) {
-                    val expired = RegistrationState.Expired(s.registrationId)
-                    sessionStore.save(expired)
-                    expired
-                } else null
-            is RegistrationState.CommitArmed ->
                 if (s.grant.isExpired(now)) {
                     val expired = RegistrationState.Expired(s.registrationId)
                     sessionStore.save(expired)
@@ -282,6 +307,44 @@ class RegistrationOrchestrator(
             return failed
         }
         return RegistrationState.Failed(reason)
+    }
+
+    /**
+     * Re-validates the Device Auth key immediately before the irreversible arming/commit step.
+     *
+     * Required invariant: the key must exist, be production eligible, and be the same public
+     * identity that was registered earlier in this transaction.
+     */
+    private fun validateDeviceAuthForCommit(expectedThumbprint: String): DeviceAuthValidation {
+        if (deviceAuthKeyManager.status() is DeviceAuthKeyStatus.TerminalKeyLoss) {
+            return DeviceAuthValidation.Invalid("Device Auth key is in a terminal key-loss state")
+        }
+
+        if (!deviceAuthKeyManager.isProductionEligible()) {
+            val level = deviceAuthKeyManager.hardwareSecurityLevel() ?: HardwareSecurityLevel.UNKNOWN
+            return DeviceAuthValidation.Invalid(
+                "Device Auth key is not production eligible: $level. B-002 requires StrongBox or TEE."
+            )
+        }
+
+        val currentThumbprint = try {
+            deviceAuthKeyManager.signer().jwkThumbprint()
+        } catch (e: DeviceAuthTerminalStateException) {
+            return DeviceAuthValidation.Invalid("Device Auth key is no longer usable: ${e.message}")
+        }
+
+        if (currentThumbprint != expectedThumbprint) {
+            return DeviceAuthValidation.Invalid(
+                "Device Auth thumbprint changed since registration: expected $expectedThumbprint, got $currentThumbprint"
+            )
+        }
+
+        return DeviceAuthValidation.Valid
+    }
+
+    private sealed class DeviceAuthValidation {
+        object Valid : DeviceAuthValidation()
+        data class Invalid(val reason: String) : DeviceAuthValidation()
     }
 
     companion object {

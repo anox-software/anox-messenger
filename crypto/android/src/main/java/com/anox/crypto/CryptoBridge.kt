@@ -5,35 +5,33 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Log
 import java.io.File
+import java.io.FileOutputStream
 import java.security.KeyStore
+import java.util.concurrent.locks.ReentrantLock
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
  * CryptoBridge - Main interface for cryptographic operations
  * Handles lifecycle, secure storage integration, and error translation
- * 
+ *
  * IMPORTANT: This is the ONLY way Android code should interact with cryptography
  * Direct Rust calls are only allowed through this bridge
  */
 class CryptoBridge private constructor(private val context: Context) {
-    
+
     companion object {
         private const val TAG = "CryptoBridge"
-        private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val MASTER_KEY_ALIAS = "anox_crypto_master_key"
         private const val MASTER_KEY_SIZE = 256
-        
+
         @Volatile
         private var instance: CryptoBridge? = null
-        
+
         /**
          * Get the singleton instance of CryptoBridge
          */
@@ -45,7 +43,7 @@ class CryptoBridge private constructor(private val context: Context) {
             }
         }
     }
-    
+
     /**
      * Initialize the crypto library and secure storage
      */
@@ -56,16 +54,16 @@ class CryptoBridge private constructor(private val context: Context) {
                 Log.e(TAG, "Failed to initialize native crypto library")
                 return
             }
-            
+
             // Initialize Android Keystore master key
             initializeMasterKey()
-            
+
             Log.i(TAG, "CryptoBridge initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize CryptoBridge", e)
         }
     }
-    
+
     /**
      * Initialize the master key in Android Keystore
      * This key is used to wrap the AES-256-GCM state-protection key; it is not itself
@@ -112,9 +110,24 @@ class CryptoBridge private constructor(private val context: Context) {
     }
 
     /**
+     * Thrown when the wrapped state-protection key is expected to exist but is missing.
+     *
+     * This MUST be distinguishable from corrupted ciphertext or first run so callers can
+     * report [LocalStateStatus.MissingStateKey] rather than a generic
+     * [CryptoError.DeserializationFailed].
+     */
+    class MissingStateKeyException(message: String) : IllegalStateException(message)
+
+    /**
      * Get or create the 32-byte state-protection key.
+     *
+     * Allowed only for creation paths: first initialization and state write/serialization.
+     * It MUST NOT be called from any read path where the state key is expected to already
+     * exist, because creating a new key would decrypt as garbage and silently manufacture
+     * a replacement [K_STATE].
+     *
      * The state key is encrypted (wrapped) by the non-extractable Keystore master key
-     * and persisted in the app's private directory. This keeps the actual key bound to
+     * and persisted in the app’s private directory. This keeps the actual key bound to
      * the device while still allowing it to be passed to the Rust crypto layer.
      */
     internal fun getOrCreateStateKey(): ByteArray {
@@ -132,6 +145,23 @@ class CryptoBridge private constructor(private val context: Context) {
             writeFileAtomic(wrappedKeyFile, wrapped)
             stateKey
         }
+    }
+
+    /**
+     * Read the existing wrapped state-protection key.
+     *
+     * Allowed only for existing-state read paths (deserialize / load). It NEVER creates a
+     * new key; missing state key is a deterministic failure.
+     */
+    internal fun getExistingStateKey(): ByteArray {
+        val wrappedKeyFile = File(context.filesDir, "anox_state_key.enc")
+
+        if (!wrappedKeyFile.exists()) {
+            throw MissingStateKeyException("Wrapped state-protection key is missing")
+        }
+
+        val wrapped = wrappedKeyFile.readBytes()
+        return unwrapStateKey(wrapped)
     }
 
     /**
@@ -163,170 +193,194 @@ class CryptoBridge private constructor(private val context: Context) {
         }
         return cipher.doFinal(ciphertext)
     }
-    
+
     /**
-     * Create a new cryptographic identity
-     * The identity keys are generated in Rust and stored securely
+     * Create a new cryptographic identity.
+     * The identity keys are generated in Rust and stored securely.
      */
     fun createIdentity(): CryptoResult<Long> {
         return try {
-            val identityPtr = CryptoNative.cryptoCreateIdentity()
-            if (identityPtr == 0L) {
-                CryptoResult.failure(CryptoError.KeyGenerationFailed)
-            } else {
-                CryptoResult.success(identityPtr)
+            cryptoLock.withLock {
+                val identityPtr = CryptoNative.cryptoCreateIdentity()
+                if (identityPtr == 0L) {
+                    CryptoResult.failure(CryptoError.KeyGenerationFailed)
+                } else {
+                    CryptoResult.success(identityPtr)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create identity", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
-     * Destroy an identity and securely clear its memory
+     * Destroy an identity and securely clear its memory.
      */
     fun destroyIdentity(identity: Long): CryptoResult<Unit> {
         return try {
-            CryptoNative.cryptoDestroyIdentity(identity)
-            CryptoResult.success(Unit)
+            cryptoLock.withLock {
+                CryptoNative.cryptoDestroyIdentity(identity)
+                CryptoResult.success(Unit)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to destroy identity", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Get the Curve25519 public key (32 bytes)
      */
     fun getCurve25519PublicKey(identity: Long): CryptoResult<ByteArray> {
         return try {
-            val out = ByteArray(32)
-            val result = CryptoNative.cryptoGetCurve25519PublicKey(identity, out)
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                CryptoResult.success(out)
+            cryptoLock.withLock {
+                val out = ByteArray(32)
+                val result = CryptoNative.cryptoGetCurve25519PublicKey(identity, out)
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    CryptoResult.success(out)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get Curve25519 public key", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Get the Ed25519 public key (32 bytes)
      */
     fun getEd25519PublicKey(identity: Long): CryptoResult<ByteArray> {
         return try {
-            val out = ByteArray(32)
-            val result = CryptoNative.cryptoGetEd25519PublicKey(identity, out)
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                CryptoResult.success(out)
+            cryptoLock.withLock {
+                val out = ByteArray(32)
+                val result = CryptoNative.cryptoGetEd25519PublicKey(identity, out)
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    CryptoResult.success(out)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get Ed25519 public key", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Generate one-time keys for session establishment
      */
     fun generateOneTimeKeys(identity: Long, count: Int): CryptoResult<Unit> {
         return try {
-            val result = CryptoNative.cryptoGenerateOneTimeKeys(identity, count)
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                CryptoResult.success(Unit)
+            cryptoLock.withLock {
+                val result = CryptoNative.cryptoGenerateOneTimeKeys(identity, count)
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    CryptoResult.success(Unit)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to generate one-time keys", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Get one-time key by index (for test/debug, not for normal UI use)
      */
     fun getOneTimeKey(identity: Long, index: Int): CryptoResult<ByteArray> {
         return try {
-            val out = ByteArray(32)
-            val result = CryptoNative.cryptoGetOneTimeKey(identity, index, out)
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                CryptoResult.success(out)
+            cryptoLock.withLock {
+                val out = ByteArray(32)
+                val result = CryptoNative.cryptoGetOneTimeKey(identity, index, out)
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    CryptoResult.success(out)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get one-time key", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Get the number of stored one-time keys
      */
     fun oneTimeKeysCount(identity: Long): CryptoResult<Int> {
         return try {
-            val result = CryptoNative.cryptoOneTimeKeysCount(identity)
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                CryptoResult.success(result)
+            cryptoLock.withLock {
+                val result = CryptoNative.cryptoOneTimeKeysCount(identity)
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    CryptoResult.success(result)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get one-time keys count", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
-     * Serialize identity with encryption
-     * The identity is encrypted using the master key before storage
+     * Serialize identity with encryption.
+     * The identity is encrypted using the master key before storage.
      */
     fun serializeIdentity(identity: Long): CryptoResult<ByteArray> {
         return try {
-            val key = getOrCreateStateKey()
-            
-            // Calculate required buffer size (estimate)
-            val out = ByteArray(4096) // Conservative estimate
-            val result = CryptoNative.cryptoSerializeIdentity(identity, key, out)
-            
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                // Trim to actual size
-                val actualData = out.copyOfRange(0, result)
-                CryptoResult.success(actualData)
+            cryptoLock.withLock {
+                val key = getOrCreateStateKey()
+
+                // Calculate required buffer size (estimate)
+                val out = ByteArray(4096) // Conservative estimate
+                val result = CryptoNative.cryptoSerializeIdentity(identity, key, out)
+
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    // Trim to actual size
+                    val actualData = out.copyOfRange(0, result)
+                    CryptoResult.success(actualData)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to serialize identity", e)
             CryptoResult.failure(CryptoError.SerializationFailed)
         }
     }
-    
+
     /**
-     * Deserialize identity from encrypted format
+     * Deserialize identity from encrypted format.
+     *
+     * Uses [getExistingStateKey] because loading an existing identity must never create a
+     * replacement state key.
      */
     fun deserializeIdentity(data: ByteArray): CryptoResult<Long> {
         return try {
-            val key = getOrCreateStateKey()
-            
-            val identityPtr = CryptoNative.cryptoDeserializeIdentity(data, key)
-            if (identityPtr == 0L) {
-                CryptoResult.failure(CryptoError.DeserializationFailed)
-            } else {
-                CryptoResult.success(identityPtr)
+            cryptoLock.withLock {
+                val key = getExistingStateKey()
+
+                val identityPtr = CryptoNative.cryptoDeserializeIdentity(data, key)
+                if (identityPtr == 0L) {
+                    CryptoResult.failure(CryptoError.DeserializationFailed)
+                } else {
+                    CryptoResult.success(identityPtr)
+                }
             }
+        } catch (e: MissingStateKeyException) {
+            Log.w(TAG, "Identity exists but state key is missing", e)
+            CryptoResult.failure(CryptoError.MissingStateKey)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to deserialize identity", e)
             CryptoResult.failure(CryptoError.DeserializationFailed)
         }
     }
-    
+
     /**
      * Create outbound session (for initiating communication)
      */
@@ -336,27 +390,29 @@ class CryptoBridge private constructor(private val context: Context) {
         theirOneTimeKey: ByteArray
     ): CryptoResult<Long> {
         return try {
-            if (theirIdentityKey.size != 32 || theirOneTimeKey.size != 32) {
-                return CryptoResult.failure(CryptoError.InvalidInput)
-            }
-            
-            val sessionPtr = CryptoNative.cryptoCreateOutboundSession(
-                identity,
-                theirIdentityKey,
-                theirOneTimeKey
-            )
-            
-            if (sessionPtr == 0L) {
-                CryptoResult.failure(CryptoError.CryptoFailure)
-            } else {
-                CryptoResult.success(sessionPtr)
+            cryptoLock.withLock {
+                if (theirIdentityKey.size != 32 || theirOneTimeKey.size != 32) {
+                    return CryptoResult.failure(CryptoError.InvalidInput)
+                }
+
+                val sessionPtr = CryptoNative.cryptoCreateOutboundSession(
+                    identity,
+                    theirIdentityKey,
+                    theirOneTimeKey
+                )
+
+                if (sessionPtr == 0L) {
+                    CryptoResult.failure(CryptoError.CryptoFailure)
+                } else {
+                    CryptoResult.success(sessionPtr)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create outbound session", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Create inbound session and decrypt initial PreKey message
      * Returns a pair of (session, plaintext) where plaintext is the first decrypted message
@@ -367,133 +423,151 @@ class CryptoBridge private constructor(private val context: Context) {
         preKeyMessage: ByteArray
     ): CryptoResult<Pair<Long, ByteArray>> {
         return try {
-            if (theirIdentityKey.size != 32) {
-                return CryptoResult.failure(CryptoError.InvalidInput)
-            }
-            
-            val outPlaintext = ByteArray(preKeyMessage.size + 256) // Extra space for plaintext
-            val outSession = LongArray(1)
-            
-            val result = CryptoNative.cryptoCreateInboundSession(
-                identity,
-                theirIdentityKey,
-                preKeyMessage,
-                outPlaintext,
-                outSession
-            )
-            
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                val sessionPtr = outSession[0]
-                val plaintext = outPlaintext.copyOfRange(0, result)
-                CryptoResult.success(Pair(sessionPtr, plaintext))
+            cryptoLock.withLock {
+                if (theirIdentityKey.size != 32) {
+                    return CryptoResult.failure(CryptoError.InvalidInput)
+                }
+
+                val outPlaintext = ByteArray(preKeyMessage.size + 256) // Extra space for plaintext
+                val outSession = LongArray(1)
+
+                val result = CryptoNative.cryptoCreateInboundSession(
+                    identity,
+                    theirIdentityKey,
+                    preKeyMessage,
+                    outPlaintext,
+                    outSession
+                )
+
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    val sessionPtr = outSession[0]
+                    val plaintext = outPlaintext.copyOfRange(0, result)
+                    CryptoResult.success(Pair(sessionPtr, plaintext))
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to create inbound session", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Encrypt a message
      * Returns a pair of (messageType, ciphertext) where messageType is 0=PreKey, 1=Normal
      */
     fun encrypt(session: Long, plaintext: ByteArray): CryptoResult<Pair<Int, ByteArray>> {
         return try {
-            val out = ByteArray(plaintext.size + 512) // Extra space for encryption overhead
-            val outLen = IntArray(1)
-            val result = CryptoNative.cryptoEncrypt(session, plaintext, out, outLen)
-            
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                val messageType = result
-                val ciphertextLen = outLen[0]
-                val ciphertext = out.copyOfRange(0, ciphertextLen)
-                CryptoResult.success(Pair(messageType, ciphertext))
+            cryptoLock.withLock {
+                val out = ByteArray(plaintext.size + 512) // Extra space for encryption overhead
+                val outLen = IntArray(1)
+                val result = CryptoNative.cryptoEncrypt(session, plaintext, out, outLen)
+
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    val messageType = result
+                    val ciphertextLen = outLen[0]
+                    val ciphertext = out.copyOfRange(0, ciphertextLen)
+                    CryptoResult.success(Pair(messageType, ciphertext))
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to encrypt message", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Decrypt a message
      * @param messageType 0=PreKey, 1=Normal
      */
     fun decrypt(session: Long, messageType: Int, ciphertext: ByteArray): CryptoResult<ByteArray> {
         return try {
-            val out = ByteArray(ciphertext.size + 256) // Extra space for decryption overhead
-            val result = CryptoNative.cryptoDecrypt(session, messageType, ciphertext, out)
-            
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                val actualData = out.copyOfRange(0, result)
-                CryptoResult.success(actualData)
+            cryptoLock.withLock {
+                val out = ByteArray(ciphertext.size + 256) // Extra space for decryption overhead
+                val result = CryptoNative.cryptoDecrypt(session, messageType, ciphertext, out)
+
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    val actualData = out.copyOfRange(0, result)
+                    CryptoResult.success(actualData)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to decrypt message", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Destroy session and securely clear its memory
      */
     fun destroySession(session: Long): CryptoResult<Unit> {
         return try {
-            CryptoNative.cryptoDestroySession(session)
-            CryptoResult.success(Unit)
+            cryptoLock.withLock {
+                CryptoNative.cryptoDestroySession(session)
+                CryptoResult.success(Unit)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to destroy session", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
     }
-    
+
     /**
      * Serialize session with encryption
      */
     fun serializeSession(session: Long): CryptoResult<ByteArray> {
         return try {
-            val key = getOrCreateStateKey()
-            
-            val out = ByteArray(4096) // Conservative estimate
-            val result = CryptoNative.cryptoSerializeSession(session, key, out)
-            
-            if (result < 0) {
-                CryptoResult.failure(CryptoError.fromCode(result))
-            } else {
-                val actualData = out.copyOfRange(0, result)
-                CryptoResult.success(actualData)
+            cryptoLock.withLock {
+                val key = getOrCreateStateKey()
+
+                val out = ByteArray(4096) // Conservative estimate
+                val result = CryptoNative.cryptoSerializeSession(session, key, out)
+
+                if (result < 0) {
+                    CryptoResult.failure(CryptoError.fromCode(result))
+                } else {
+                    val actualData = out.copyOfRange(0, result)
+                    CryptoResult.success(actualData)
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to serialize session", e)
             CryptoResult.failure(CryptoError.SerializationFailed)
         }
     }
-    
+
     /**
-     * Deserialize session from encrypted format
+     * Deserialize session from encrypted format.
+     *
+     * Uses [getExistingStateKey] because loading an existing session must never create a
+     * replacement state key.
      */
     fun deserializeSession(data: ByteArray): CryptoResult<Long> {
         return try {
-            val key = getOrCreateStateKey()
-            
-            val sessionPtr = CryptoNative.cryptoDeserializeSession(data, key)
-            if (sessionPtr == 0L) {
-                CryptoResult.failure(CryptoError.DeserializationFailed)
-            } else {
-                CryptoResult.success(sessionPtr)
+            cryptoLock.withLock {
+                val key = getExistingStateKey()
+
+                val sessionPtr = CryptoNative.cryptoDeserializeSession(data, key)
+                if (sessionPtr == 0L) {
+                    CryptoResult.failure(CryptoError.DeserializationFailed)
+                } else {
+                    CryptoResult.success(sessionPtr)
+                }
             }
+        } catch (e: MissingStateKeyException) {
+            Log.w(TAG, "Session exists but state key is missing", e)
+            CryptoResult.failure(CryptoError.MissingStateKey)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to deserialize session", e)
             CryptoResult.failure(CryptoError.DeserializationFailed)
         }
     }
-    
+
     /**
      * Securely destroy all cryptographic state
      * This should be called when the app is uninstalled or on explicit user request
@@ -545,15 +619,17 @@ class CryptoBridge private constructor(private val context: Context) {
                     return LocalStateStatus.MissingStateKey
                 }
 
-                val stateKey = getOrCreateStateKey()
+                val stateKey = getExistingStateKey()
                 val data = identityFile.readBytes()
                 when (val result = deserializeIdentity(data)) {
                     is CryptoResult.Success -> LocalStateStatus.IdentityReady(result.value)
                     is CryptoResult.Failure -> LocalStateStatus.CorruptedIdentityState(result.error.message ?: "unknown")
                 }
             }
+        } catch (e: MissingStateKeyException) {
+            LocalStateStatus.MissingStateKey
         } catch (e: Exception) {
-            if (e is android.security.KeyStoreException || e is javax.crypto.AEADBadTagException || e is java.security.UnrecoverableKeyException) {
+            if (isKeystoreOrUnwrapFailure(e)) {
                 LocalStateStatus.MissingKeystore
             } else {
                 LocalStateStatus.CorruptedIdentityState(e.message ?: "unknown")
@@ -675,6 +751,29 @@ class CryptoBridge private constructor(private val context: Context) {
             Log.e(TAG, "Failed to wipe local crypto", e)
             CryptoResult.failure(CryptoError.CryptoFailure)
         }
+    }
+
+    /**
+     * Fail-closed classifier for Keystore/unwrap failures.
+     *
+     * Does NOT reference [android.security.KeyStoreException] directly, because that class
+     * only exists on API 33+. On API 26–32 a direct reference would cause a class-loading
+     * crash. Instead the class name is checked by string, which is safe on all supported
+     * API levels.
+     */
+    private fun isKeystoreOrUnwrapFailure(e: Throwable): Boolean {
+        return isThrowableNamed(e, "android.security.KeyStoreException") ||
+            isThrowableNamed(e, "javax.crypto.AEADBadTagException") ||
+            isThrowableNamed(e, "java.security.UnrecoverableKeyException")
+    }
+
+    private fun isThrowableNamed(error: Throwable?, className: String): Boolean {
+        var current: Throwable? = error
+        while (current != null) {
+            if (current.javaClass.name == className) return true
+            current = current.cause
+        }
+        return false
     }
 
     /**

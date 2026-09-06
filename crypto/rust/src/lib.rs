@@ -161,7 +161,7 @@ mod jni_bridge {
             Err(_) => return -3,
         };
         if out_len < 32 {
-            return -2;
+            return -11;
         }
         let id_ref = unsafe { &*(identity as *const Identity) };
         let key = id_ref.curve25519_public_key();
@@ -186,7 +186,7 @@ mod jni_bridge {
             Err(_) => return -3,
         };
         if out_len < 32 {
-            return -2;
+            return -11;
         }
         let id_ref = unsafe { &*(identity as *const Identity) };
         let key = id_ref.ed25519_public_key();
@@ -242,7 +242,7 @@ mod jni_bridge {
             Err(_) => return -3,
         };
         if out_len < 32 {
-            return -2;
+            return -11;
         }
         let id_ref = unsafe { &*(identity as *const Identity) };
         match id_ref.get_one_time_key_by_index(index as usize) {
@@ -277,7 +277,7 @@ mod jni_bridge {
                     Err(_) => return -3,
                 };
                 if data.len() > out_len {
-                    return -2;
+                    return -11;
                 }
                 match write_byte_array(&mut env, &out, &data) {
                     Ok(_) => data.len() as jint,
@@ -372,7 +372,7 @@ mod jni_bridge {
                     Err(_) => return -3,
                 };
                 if plaintext.len() > out_len {
-                    return -2;
+                    return -11;
                 }
                 match write_byte_array(&mut env, &out_plaintext, &plaintext) {
                     Ok(_) => {}
@@ -420,7 +420,7 @@ mod jni_bridge {
                     Err(_) => return -3,
                 };
                 if encrypted.len() > out_capacity {
-                    return -2;
+                    return -11;
                 }
                 match write_byte_array(&mut env, &out, &encrypted) {
                     Ok(_) => {}
@@ -459,7 +459,7 @@ mod jni_bridge {
                     Err(_) => return -3,
                 };
                 if plaintext.len() > out_len {
-                    return -2;
+                    return -11;
                 }
                 match write_byte_array(&mut env, &out, &plaintext) {
                     Ok(_) => {}
@@ -507,7 +507,7 @@ mod jni_bridge {
                     Err(_) => return -3,
                 };
                 if data.len() > out_len {
-                    return -2;
+                    return -11;
                 }
                 match write_byte_array(&mut env, &out, &data) {
                     Ok(_) => data.len() as jint,

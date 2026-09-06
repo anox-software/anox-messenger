@@ -37,6 +37,14 @@ class CryptoBridgeLocalE2eeIdentityStep(
                 cryptoBridge.generateOneTimeKeys(identity, oneTimeKeyCount - existingCount),
                 "one-time key generation"
             )
+
+            // CRITICAL: the identity has been mutated by OTK generation. Persist the updated
+            // identity BEFORE public OTK material is returned for upload, so a crash after this
+            // point still has matching private OTK state locally.
+            requireSuccess(
+                cryptoBridge.saveIdentity(identity),
+                "persist identity after one-time key generation"
+            )
         }
 
         val oneTimeKeys = (0 until oneTimeKeyCount).map { index ->
