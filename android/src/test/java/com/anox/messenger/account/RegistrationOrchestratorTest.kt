@@ -2,6 +2,7 @@ package com.anox.messenger.account
 
 import com.anox.messenger.security.deviceauth.DeviceAuthKeyStatus
 import com.anox.messenger.security.deviceauth.FakeDeviceAuthKeyManager
+import com.anox.messenger.security.deviceauth.HardwareSecurityLevel
 import com.anox.messenger.security.deviceauth.InMemoryDeviceAuthBindingStore
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -271,5 +272,207 @@ class RegistrationOrchestratorTest {
         orchestrator.registerDeviceAuth()
         assertTrue(api.lastDpopProof?.startsWith("fake-dpop-proof-for-") == true)
         assertTrue(api.lastPublicJwk != null)
+    }
+
+    // --- LEGACY-FIX-01: ANOX-MAINARCH-019 production eligibility enforcement ---
+
+    @Test
+    fun `strongbox device auth proceeds with registration`() {
+        orchestrator.reserve(username, license)
+        val result = orchestrator.registerDeviceAuth()
+        assertTrue(result is RegistrationState.DeviceAuthRegistered)
+        assertEquals(1, api.registerDeviceAuthCallCount)
+    }
+
+    @Test
+    fun `tee device auth proceeds with registration`() {
+        deviceAuthKeyManager = FakeDeviceAuthKeyManager(bindingStore, HardwareSecurityLevel.TRUSTED_EXECUTION_ENVIRONMENT)
+        orchestrator = buildOrchestrator()
+
+        orchestrator.reserve(username, license)
+        val result = orchestrator.registerDeviceAuth()
+        assertTrue(result is RegistrationState.DeviceAuthRegistered)
+        assertEquals(1, api.registerDeviceAuthCallCount)
+    }
+
+    @Test
+    fun `software device auth is rejected before api call`() {
+        deviceAuthKeyManager = FakeDeviceAuthKeyManager(bindingStore, HardwareSecurityLevel.SOFTWARE)
+        orchestrator = buildOrchestrator()
+
+        orchestrator.reserve(username, license)
+        val result = orchestrator.registerDeviceAuth()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.registerDeviceAuthCallCount)
+        assertFalse(bindingStore.isBound())
+    }
+
+    @Test
+    fun `unknown device auth is rejected before api call`() {
+        deviceAuthKeyManager = FakeDeviceAuthKeyManager(bindingStore, HardwareSecurityLevel.UNKNOWN)
+        orchestrator = buildOrchestrator()
+
+        orchestrator.reserve(username, license)
+        val result = orchestrator.registerDeviceAuth()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.registerDeviceAuthCallCount)
+    }
+
+    @Test
+    fun `terminal key loss before device auth is rejected before api call`() {
+        bindingStore.markArmed()
+        deviceAuthKeyManager.simulateKeyInvalidation()
+
+        // Put the session directly into Reserved so the test can call registerDeviceAuth
+        // without first triggering the cannot-start-new guard.
+        val reservation = api.reservationResult as ReservationResult.Reserved
+        sessionStore.save(
+            RegistrationState.Reserved(reservation.registrationId, reservation.grant, username)
+        )
+
+        val result = orchestrator.registerDeviceAuth()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.registerDeviceAuthCallCount)
+    }
+
+    // --- LEGACY-FIX-01: ANOX-LEGACY-INTEGRATION-001 commit revalidation ---
+
+    @Test
+    fun `commit rejects when device auth key disappears after public identity upload`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        orchestrator.uploadPublicIdentity()
+
+        deviceAuthKeyManager.simulateKeyInvalidation()
+
+        val result = orchestrator.commit()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.commitCallCount)
+        assertFalse(bindingStore.isArmed())
+        assertFalse(bindingStore.isBound())
+    }
+
+    @Test
+    fun `commit rejects when device auth thumbprint changes after public identity upload`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        val uploaded = orchestrator.uploadPublicIdentity() as RegistrationState.PublicIdentityUploaded
+
+        // Simulate key replacement by forcing creation of a new key (only valid in test fake
+        // when not bound and not armed; temporarily clear binding state for this simulation).
+        bindingStore.clearBinding()
+        deviceAuthKeyManager.deleteKeyDestructively()
+        deviceAuthKeyManager.createKeyIfAbsent()
+
+        val result = orchestrator.commit()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.commitCallCount)
+    }
+
+    @Test
+    fun `commit rejects when device auth becomes software before arming`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        orchestrator.uploadPublicIdentity()
+
+        // Re-create key manager with SOFTWARE level to simulate downgrade
+        deviceAuthKeyManager = FakeDeviceAuthKeyManager(bindingStore, HardwareSecurityLevel.SOFTWARE)
+        orchestrator = buildOrchestrator()
+
+        val result = orchestrator.commit()
+        assertTrue(result is RegistrationState.Failed)
+        assertEquals(0, api.commitCallCount)
+    }
+
+    @Test
+    fun `commit with valid same eligible key proceeds`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        orchestrator.uploadPublicIdentity()
+
+        val result = orchestrator.commit()
+        assertTrue(result is RegistrationState.Committed)
+        assertEquals(1, api.commitCallCount)
+    }
+
+    // --- LEGACY-FIX-01: ANOX-LEGACY-INTEGRATION-003 CommitArmed divergence ---
+
+    @Test
+    fun `commitArmed session does not expire when grant ttl passes`() {
+        val issuedAt = Instant.parse("2026-08-22T00:00:00Z")
+        api.reservationResult = ReservationResult.Reserved(
+            RegistrationId.parse(java.util.UUID.randomUUID().toString())!!,
+            RegistrationGrantGenerator().newGrant(issuedAt)
+        )
+
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth(nowForGrantStalenessCheck = issuedAt)
+        val uploaded = orchestrator.uploadPublicIdentity(nowForGrantStalenessCheck = issuedAt) as RegistrationState.PublicIdentityUploaded
+
+        // Force the session straight to CommitArmed without going through commit()
+        // (e.g. a previous commit call armed the session but markArmed failed).
+        sessionStore.save(
+            RegistrationState.CommitArmed(
+                uploaded.registrationId,
+                uploaded.grant,
+                username,
+                uploaded.deviceAuthJwkThumbprint
+            )
+        )
+
+        val farInTheFuture = issuedAt.plusSeconds(60 * 60)
+        val result = orchestrator.commit(nowForGrantStalenessCheck = farInTheFuture)
+
+        // Should NOT become Expired; commit should proceed (or fail on the API call, not expiry).
+        assertTrue("CommitArmed must not be downgraded to Expired: $result", result !is RegistrationState.Expired)
+    }
+
+    @Test
+    fun `commitArmed plus binding not armed blocks new registration`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        val uploaded = orchestrator.uploadPublicIdentity() as RegistrationState.PublicIdentityUploaded
+        sessionStore.save(
+            RegistrationState.CommitArmed(
+                uploaded.registrationId,
+                uploaded.grant,
+                username,
+                uploaded.deviceAuthJwkThumbprint
+            )
+        )
+
+        assertFalse(
+            "CommitArmed session must prevent a new registration",
+            orchestrator.canStartNew(orchestrator.currentState())
+        )
+    }
+
+    @Test
+    fun `abandon does not clear commitArmed session`() {
+        orchestrator.reserve(username, license)
+        orchestrator.registerDeviceAuth()
+        val uploaded = orchestrator.uploadPublicIdentity() as RegistrationState.PublicIdentityUploaded
+        sessionStore.save(
+            RegistrationState.CommitArmed(
+                uploaded.registrationId,
+                uploaded.grant,
+                username,
+                uploaded.deviceAuthJwkThumbprint
+            )
+        )
+
+        orchestrator.abandon()
+        assertTrue(orchestrator.currentState() is RegistrationState.CommitArmed)
+    }
+
+    private fun buildOrchestrator(): RegistrationOrchestrator {
+        return RegistrationOrchestrator(
+            api = api,
+            deviceAuthKeyManager = deviceAuthKeyManager,
+            deviceAuthBindingStore = bindingStore,
+            sessionStore = sessionStore,
+            e2eeStep = e2eeStep,
+            createDeviceAuthProof = { "fake-dpop-proof-for-${it.value}" }
+        )
     }
 }

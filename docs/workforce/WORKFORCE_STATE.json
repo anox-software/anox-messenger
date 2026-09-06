@@ -1,7 +1,7 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION (Class-A legacy blockers; pending human authorization)",
+  "current_gate": "LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION (pending human authorization)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
@@ -9,14 +9,14 @@
   "blocked_tasks": [],
   "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-LEGACYFIX01",
+    "task_id": "ANOX-TASK-LEGACYRETEST01",
     "role_id": "ROLE-009",
-    "branch": "audit/legacy-audit-set-freeze-consolidation"
+    "branch": "audit/legacy-retest-01-foundation-safety"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
-  "latest_finding_id": "ANOX-LEGACY-B003-001",
-  "latest_run_id": "ANOX-RUN-LEGACYFREEZE0001",
+  "latest_finding_id": "ANOX-LEGACY-INTEGRATION-003",
+  "latest_run_id": "ANOX-RUN-LEGACYFIX01",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -46,7 +46,7 @@
     "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
     "main_architecture_audit": "COMPLETE",
     "main_architecture_remediation_phase": "COMPLETE",
-    "next_phase": "LEGACY-FIX-01",
+    "next_phase": "LEGACY-RETEST-01",
     "legacy_audit_set_status": "6/6 COMPLETE"
   },
   "notes": [
@@ -67,10 +67,11 @@
     "ANOX-MAINARCH-018 physical GrapheneOS/StrongBox verification remains PHYSICAL_VERIFICATION_REQUIRED; no repository evidence may substitute.",
     "B-004 and B-005 implementation remain NOT_STARTED; implementation_readiness.json unchanged in this respect.",
     "Next planned task: LEGACY / BUILD / HARDWARE VERIFICATION phase — first session LEGACY-AUDIT-B002 per docs/workforce/audits/legacy-audit-plan.json (pending human authorization).",
-    "LEGACY-AUDIT-SET-FREEZE (ANOX-RUN-LEGACYFREEZE0001) on f245dc429a9e4bd10f51692eb452d03ccb9a6749: six legacy audits 6/6 COMPLETE; 7 audit-local candidates promoted to canonical Legacy findings; Product remains BLOCKED_PENDING_FINAL_AUDIT; next task ANOX-TASK-LEGACYFIX01."
+    "LEGACY-AUDIT-SET-FREEZE (ANOX-RUN-LEGACYFREEZE0001) on f245dc429a9e4bd10f51692eb452d03ccb9a6749: six legacy audits 6/6 COMPLETE; 7 audit-local candidates promoted to canonical Legacy findings; Product remains BLOCKED_PENDING_FINAL_AUDIT; next task ANOX-TASK-LEGACYFIX01.",
+    "2026-09-06T08:58:11.484746Z: LEGACY-FIX-01 complete at 342d55386f1bd7ea1531fc70e0e0f14fca0f279f. 8 target findings moved to Ready For Retest (019,023,031,ANDROIDSEC-001,CRYPTO-005,INTEGRATION-001/002/003); product remains BLOCKED_PENDING_FINAL_AUDIT; next task LEGACY-RETEST-01."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "LEGACY-FIX-01",
+  "next_phase": "LEGACY-RETEST-01",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "legacy_audit_set_status": "6/6 COMPLETE"

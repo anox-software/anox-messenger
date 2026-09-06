@@ -2,6 +2,7 @@
 
 #[cfg(test)]
 mod tests {
+    use crate::CryptoError;
     use crate::identity::Identity;
     use crate::serialization::CryptoSerializer;
 
@@ -309,6 +310,32 @@ mod tests {
         
         // Should fail - no recovery mechanism
         assert!(result.is_err());
+    }
+
+    // Test: One-time keys survive serialize/deserialize
+    #[test]
+    fn test_one_time_keys_persist_through_serialization() {
+        let mut identity = Identity::new();
+        let key = [0u8; 32];
+
+        identity.generate_one_time_keys(5).unwrap();
+        let otk_before: std::collections::HashSet<[u8; 32]> =
+            identity.unpublished_one_time_keys().values().cloned().collect();
+
+        let serialized = identity.serialize(&key).unwrap();
+        let restored = Identity::deserialize(&serialized, &key).unwrap();
+
+        assert_eq!(restored.one_time_keys_count(), 5);
+        let otk_after: std::collections::HashSet<[u8; 32]> =
+            restored.unpublished_one_time_keys().values().cloned().collect();
+        assert_eq!(otk_before, otk_after, "one-time keys must survive serialization");
+    }
+
+    // Test: Buffer-too-small error maps to dedicated code -11
+    #[test]
+    fn test_buffer_too_small_error_code() {
+        let err: i32 = CryptoError::BufferTooSmall.into();
+        assert_eq!(err, -11, "BufferTooSmall must be mapped to -11");
     }
 
     // Test: Invalid state key length must not panic

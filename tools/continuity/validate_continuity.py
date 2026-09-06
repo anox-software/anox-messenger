@@ -160,6 +160,8 @@ METADATA_ONLY_ALLOWLIST = frozenset(
         "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
         "docs/workforce/registries/runs.jsonl",
         "docs/workforce/registries/tasks.jsonl",
+        "docs/workforce/registries/findings.jsonl",
+        "docs/workforce/WORKFORCE_STATE.json",
     }
 )
 

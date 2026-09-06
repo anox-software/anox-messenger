@@ -5,33 +5,36 @@ use thiserror::Error;
 pub enum CryptoError {
     #[error("Invalid input parameters")]
     InvalidInput,
-    
+
     #[error("Invalid ciphertext")]
     InvalidCiphertext,
-    
+
     #[error("Invalid session")]
     InvalidSession,
-    
+
     #[error("Session creation failed")]
     SessionCreationFailed,
-    
+
     #[error("Serialization error: {0}")]
     SerializationError(String),
-    
+
     #[error("Deserialization error: {0}")]
     DeserializationError(String),
-    
+
     #[error("State corrupted")]
     StateCorrupted,
-    
+
     #[error("Cryptographic operation failed")]
     CryptoFailure,
-    
+
     #[error("Unsupported version")]
     UnsupportedVersion,
-    
+
     #[error("Key error: {0}")]
     KeyError(String),
+
+    #[error("Output buffer too small")]
+    BufferTooSmall,
 }
 
 impl From<CryptoError> for i32 {
@@ -47,6 +50,7 @@ impl From<CryptoError> for i32 {
             CryptoError::CryptoFailure => -8,
             CryptoError::UnsupportedVersion => -9,
             CryptoError::KeyError(_) => -10,
+            CryptoError::BufferTooSmall => -11,
         }
     }
 }
