@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-09-07
-**Latest material event:** `ANOX-EVENT-0035` — LEGACY-AUDIT-SET-FREEZE completed; six legacy audits consolidated; 13 canonical Open findings; next LEGACY-FIX-01
+**Latest material event:** `ANOX-EVENT-0036` — LEGACY-FIX-01 complete; 8 Class-A findings Ready For Retest; next LEGACY-RETEST-01
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -19,24 +19,25 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0033 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0034 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0035 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0036 -->
 
 ## Repository truth
 
-- Branch: `audit/legacy-audit-set-freeze-consolidation`
-- **Current HEAD:** `1ffe6e7c2ee387cb925d74c8ba9a3a672bd9d27a` (LEGACY-AUDIT-SET-FREEZE SUBSTANTIVE)
+- Branch: `remediation/legacy-fix-01-foundation-safety`
+- **Current HEAD:** `342d55386f1bd7ea1531fc70e0e0f14fca0f279f` (LEGACY-FIX-01 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `f245dc429a9e4bd10f51692eb452d03ccb9a6749` (frozen baseline for legacy audit set)
+- **Latest merge to baseline:** `785e9a574fbbe072c454d8515a9a05022c282c46` (current main) (frozen baseline for legacy audit set)
 - **Previous baseline HEAD:** `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5`
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION`
-- **Current authorized task:** `LEGACY-AUDIT-SET-FREEZE COMPLETE; 6/6 legacy audits consolidated; 13 canonical Open findings; NEXT: LEGACY-FIX-01`
-- **Open blockers:** 13 canonical Open findings (6 MAIN + 7 Legacy) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review
+- **Current effective gate:** `LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION`
+- **Current authorized task:** `LEGACY-FIX-01 COMPLETE; 8 Class-A findings Ready For Retest; NEXT: LEGACY-RETEST-01`
+- **Open blockers:** 5 canonical Open findings remain unchanged (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review
 - **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**.
-- **Next authorized task:** `LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION` (START WHEN HUMAN ASSIGNS).
+- **Next authorized task:** `LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION` (START WHEN HUMAN ASSIGNS).
 - **Product status:** `BLOCKED_PENDING_FINAL_AUDIT`; no product/CI changes until all final/legacy audits are complete and the human final gate is recorded.
 
 ## Architecture / governance

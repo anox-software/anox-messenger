@@ -859,3 +859,17 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
 - **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein Claude. Keine Remote-Mutation.**
 - **Nächster Schritt:** `LEGACY-FIX-01` — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION (menschenautorisiert).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0036 -->
+## 2026-09-06 — ANOX-EVENT-0036 — LEGACY-FIX-01 foundation safety remediation complete
+
+- Delivery branch: `remediation/legacy-fix-01-foundation-safety`
+- Substantive HEAD: `342d55386f1bd7ea1531fc70e0e0f14fca0f279f`
+- Main baseline: `785e9a574fbbe072c454d8515a9a05022c282c46`
+- 8 target findings moved to **Ready For Retest** (none Closed):
+  - `ANOX-MAINARCH-019`, `023`, `031`
+  - `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-CRYPTO-005`, `ANOX-LEGACY-INTEGRATION-001/002/003`
+- Non-target findings unchanged (`ANOX-MAINARCH-013`, `018`, `030`, `ANOX-LEGACY-INTEGRATION-005`, `ANOX-LEGACY-B003-001`).
+- Product state: `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`.
+- Validation: JVM 177/0; Rust 17/0; Android lint 0 errors; B027 integrity PASS; continuity live PASS.
+- Next: `LEGACY-RETEST-01` pending human authorization.
