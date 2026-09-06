@@ -842,3 +842,20 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
 - **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein Claude. Keine Remote-Mutation.**
 - **Nächster Schritt:** `LEGACY-AUDIT-B002` — erste Session der LEGACY / BUILD / HARDWARE VERIFICATION Phase per `docs/workforce/audits/legacy-audit-plan.json` (menschenautorisiert).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0035 -->
+## ANOX-EVENT-0035 — LEGACY-AUDIT-SET-FREEZE Six-Session Legacy Audit Consolidation
+
+- **Date:** 2026-09-07
+- **Branch:** `audit/legacy-audit-set-freeze-consolidation`
+- **Substantive HEAD:** `1ffe6e7c2ee387cb925d74c8ba9a3a672bd9d27a`
+- **Ergebnis:** `LEGACY-AUDIT-SET-FREEZE` PASS WITH FINDINGS; sechs Legacy-Audits 6/6 abgeschlossen; 7 audit-lokale Kandidaten zu kanonischen Legacy-Befunden befördert; 6 verbleibende MAIN-Befunde revalidiert; kanonisch offen: 13 (6 MAIN + 7 Legacy).
+- **Set state:** LEGACY-AUDIT-B002, B003, CRYPTO, ANDROID-SEC, BUILD, INTEGRATION = all `PASS WITH FINDINGS`.
+- **Dispositionen:** 7 `PROMOTE_CANONICAL`; 5 `MERGE_INTO_EXISTING`; 3 `DEFER_AS_FUTURE_WORK`; 1 `VERIFICATION_GAP_ONLY`; 1 `DOCUMENTATION_CLEANUP`; 2 `NOT_A_FINDING`; 1 `REQUIRES_SCOPE_DECISION` (INTEGRATION-004 32-bit ABI).
+- **Class-A Blocker (pre-B004):** `ANOX-MAINARCH-019`, `023`, `031`, `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-CRYPTO-005`, `ANOX-LEGACY-INTEGRATION-001`, `ANOX-LEGACY-INTEGRATION-002`, `ANOX-LEGACY-INTEGRATION-003`.
+- **MAINARCH-030:** Class C (B-009/B-013) — aktuelles wipeLocalCrypto() korrekt; DB/WAL/SHM/Attachments/Temp und per-peer preferred_session_id zukünftig.
+- **Physical:** `ANOX-MAINARCH-018` bleibt `PHYSICAL_VERIFICATION_REQUIRED`.
+- **Artifakte:** `FINAL_PRE_PRODUCT_LEGACY_AUDIT_CONSOLIDATION.md`, `consolidate_legacy_audit_set.py`, `legacy_audit_set_freeze_data.json`, `validate_legacy_audit_consolidation.py` (+ adversarielle Tests), `findings.jsonl`/`audits.jsonl`/`WORKFORCE_STATE.json`-Updates.
+- **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
+- **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein Claude. Keine Remote-Mutation.**
+- **Nächster Schritt:** `LEGACY-FIX-01` — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION (menschenautorisiert).

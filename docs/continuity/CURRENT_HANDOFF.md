@@ -1,14 +1,14 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-Handoff version: MAINARCH-RETEST-03-INGEST — CANONICAL RETEST INGESTION, VERIFIED FIX-03 FINDING CLOSURE AND VALIDATOR HARDENING COMPLETE
-Date: 2026-09-06
-Delivery branch: `audit/mainarch-retest-03-ingest`
-Described HEAD: `876e63565942c65df738afc5f4578a6b16a331b0`
-Main baseline HEAD: `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5`
+Handoff version: LEGACY-AUDIT-SET-FREEZE — SIX-SESSION LEGACY AUDIT CONSOLIDATION AND CANONICAL FINDINGS FREEZE
+Date: 2026-09-07
+Delivery branch: `audit/legacy-audit-set-freeze-consolidation`
+Described HEAD: `1ffe6e7c2ee387cb925d74c8ba9a3a672bd9d27a`
+Main baseline HEAD: `f245dc429a9e4bd10f51692eb452d03ccb9a6749`
 Working tree: CLEAN
-Effective gate: MAINARCH-RETEST-03-INGEST — CANONICAL RETEST RESULT INGESTION, VERIFIED FINDING CLOSURE AND TARGETED VALIDATOR HARDENING
-Pre-merge gate: MAINARCH-RETEST-03-INGEST — CANONICAL RETEST RESULT INGESTION, VERIFIED FINDING CLOSURE AND TARGETED VALIDATOR HARDENING
-Post-merge gate: LEGACY-AUDIT-B002 — DEVICE AUTHENTICATION LEGACY VERIFICATION (FIRST SESSION OF THE LEGACY / BUILD / HARDWARE VERIFICATION PHASE)
+Effective gate: LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION
+Pre-merge gate: LEGACY-AUDIT-SET-FREEZE — CONSOLIDATE SIX LEGACY AUDITS ON FROZEN BASELINE
+Post-merge gate: LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION
 
 ---
 
@@ -27,23 +27,24 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `audit/mainarch-retest-03-ingest`
-- Current work branch: `audit/mainarch-retest-03-ingest`
-- Current HEAD: `876e63565942c65df738afc5f4578a6b16a331b0`
-- Main baseline HEAD: `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5`
+- Delivery branch: `audit/legacy-audit-set-freeze-consolidation`
+- Current work branch: `audit/legacy-audit-set-freeze-consolidation`
+- Current HEAD: `1ffe6e7c2ee387cb925d74c8ba9a3a672bd9d27a`
+- Main baseline HEAD: `f245dc429a9e4bd10f51692eb452d03ccb9a6749`
 - Working tree: CLEAN
-- Latest material event: `ANOX-EVENT-0034`
+- Latest material event: `ANOX-EVENT-0035`
 
 ## Latest completed work
 
-- `MAINARCH-RETEST-03` PASS ingested: 5 findings (`ANOX-MAINARCH-011`, `024`, `026`, `027`, `036`) verified and Closed.
-- `MAINARCH-RETEST-03-INGEST` on branch `audit/mainarch-retest-03-ingest`: canonical retest record, verified finding closures, `MAINARCH-FIX-03` validator hardened, `validate_mainarch_retest03_ingest.py` added.
-- **MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE.**
-- MAIN findings: 30 Closed, 6 remaining Open (`ANOX-MAINARCH-013`, `018`, `019`, `023`, `030`, `031` — deferred legacy/build/hardware items per canonical plan). No finding remains Ready For Retest.
+- `LEGACY-AUDIT-SET-FREEZE` PASS WITH FINDINGS: six legacy audits 6/6 complete.
+- `LEGACY-AUDIT-SET-FREEZE` on branch `audit/legacy-audit-set-freeze-consolidation`: canonical consolidation, 7 promoted Legacy findings, 6 revalidated MAIN findings, disposition map, Class-A remediation batch, consolidated report, and validator.
+- **MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE; LEGACY AUDIT SET = 6/6 COMPLETE.**
+- MAIN + Legacy findings: 30 Closed, 13 Open (6 MAIN + 7 Legacy). No finding remains Ready For Retest.
 
 ## Current open work
 
-- `LEGACY / BUILD / HARDWARE VERIFICATION` phase — first session `LEGACY-AUDIT-B002` per `docs/workforce/audits/legacy-audit-plan.json` (planned, pending human authorization).
+- `LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION` — dependency-sorted remediation of Class-A legacy blockers.
+- Class-A blockers: `ANOX-MAINARCH-019`, `023`, `031`, `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-CRYPTO-005`, `ANOX-LEGACY-INTEGRATION-001`, `ANOX-LEGACY-INTEGRATION-002`, `ANOX-LEGACY-INTEGRATION-003`.
 
 ## Trust-boundary / milestone flags
 
@@ -59,4 +60,4 @@ New sessions must read that file first.
 
 ## Next task
 
-`LEGACY-AUDIT-B002` — first required specialized verification session per the canonical legacy audit plan; start only with explicit human authorization.
+`LEGACY-FIX-01` — remediate Class-A legacy foundation blockers; start only with explicit human authorization.
