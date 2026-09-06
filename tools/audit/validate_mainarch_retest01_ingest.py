@@ -28,7 +28,25 @@ FIX03_TARGETS = {
     "ANOX-MAINARCH-027", "ANOX-MAINARCH-036",
 }
 
-RETEST03_CLOSED = set()
+# FIX-03 targets may be Closed only when covered by a recorded
+# MAINARCH-RETEST-03 PASS audit record.
+def _retest03_closed_ids():
+    ids = set()
+    audits_path = REPO / "docs/workforce/registries/audits.jsonl"
+    if audits_path.exists():
+        for line in audits_path.read_text().splitlines():
+            if not line.strip():
+                continue
+            a = json.loads(line)
+            if a.get("audit_id") == "MAINARCH-RETEST-03" and a.get("result") == "PASS":
+                if a.get("finding_id"):
+                    ids.add(a["finding_id"])
+                for fid in (a.get("findings") or a.get("closed_findings") or []):
+                    ids.add(fid)
+    return ids
+
+
+RETEST03_CLOSED = _retest03_closed_ids()
 
 
 TARGETS = {
@@ -177,14 +195,14 @@ def main():
     if closed_count == len(TARGETS):
         ok(f"All {len(TARGETS)} targeted findings Closed with preserved severities and closure evidence")
 
-    # 3. No unexpected Closed (after MAINARCH-RETEST-02 ingest the FIX-02
-    # targets may also be Closed; the closed set must remain a subset of the
-    # two verified closure groups).
+    # 3. No unexpected Closed (after later verified retests the FIX-02 and
+    # FIX-03 targets may also be Closed; the closed set must remain a subset of
+    # the verified closure groups).
     all_closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if TARGETS <= all_closed and all_closed <= (TARGETS | FIX02_TARGETS):
+    if TARGETS <= all_closed and all_closed <= (TARGETS | FIX02_TARGETS | FIX03_TARGETS):
         ok(f"Closed findings set contains the 17 targets and only verified groups ({len(all_closed)} closed)")
     else:
-        fail(f"Closed set mismatch: expected subset of {TARGETS | FIX02_TARGETS} containing {TARGETS}, got {all_closed}", errors)
+        fail(f"Closed set mismatch: expected subset of {TARGETS | FIX02_TARGETS | FIX03_TARGETS} containing {TARGETS}, got {all_closed}", errors)
 
     # 4. Workforce state synchronized
     state = (REPO / "docs/workforce/WORKFORCE_STATE.json").read_text(encoding="utf-8")
@@ -207,7 +225,8 @@ def main():
     else:
         fail("WORKFORCE_STATE current_writer still references stale ANOX-TASK-MAINARCH0001", errors)
     current_gate = ws.get("current_gate") or ""
-    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03", "MAINARCH-RETEST-03")):
+    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03",
+                                       "MAINARCH-RETEST-03", "LEGACY-AUDIT", "LEGACY")):
         ok("WORKFORCE_STATE current_gate points to a recognized post-FIX-01 task")
     else:
         fail("WORKFORCE_STATE current_gate does not point to a recognized post-FIX-01 task", errors)

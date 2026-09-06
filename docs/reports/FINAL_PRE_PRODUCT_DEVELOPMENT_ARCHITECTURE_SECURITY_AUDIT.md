@@ -434,7 +434,7 @@ Independent read-only targeted delta retest confirms the MAINARCH-FIX-02 server/
 
 ## MAINARCH-FIX-03 — Traceability / test matrix / release-governance / implementation-readiness remediation
 
-**Status:** COMPLETE — `Ready For Retest` pending `MAINARCH-RETEST-03` (targeted delta retest; no immediate security audit was triggered)
+**Status:** COMPLETE — verified by MAINARCH-RETEST-03 (5 findings Closed)
 **Branch:** `remediation/mainarch-fix-03-traceability-release-governance`
 **Substantive commit:** recorded in `docs/continuity/CURRENT_STATE.json` (`described_head`)
 **Amendment:** `docs/authority/B025_MANDATORY_AMENDMENTS_V1_3.md`
@@ -471,3 +471,42 @@ No product code, Rust, Android, backend, SQL, Supabase, messaging, Device Auth, 
 ### Validation
 
 `tools/audit/validate_mainarch_fix03.py` enforces all remediation checks deterministically; `tools/audit/test_mainarch_fix03.py` provides targeted adversarial regression tests. See `docs/continuity/CURRENT_STATE.json` for the recorded validation set and commit pointers.
+
+## MAINARCH-RETEST-03 — Targeted delta retest of FIX-03 findings
+
+**Status:** PASS
+**Mode:** READ-ONLY TARGETED DELTA RETEST
+**Canonical retest SHA:** `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5`
+**FIX-03 canonical merge SHA:** `88ea18c9b7078c376ee027d0cacc4d4f147ebbf5` (substantive `4573b64dcc997aaaee8e81675a871201627d454e` + metadata `c81ed78aee82eabc816d858e03e01231f5b28461`)
+**Original audit SHA:** `0a4910eab1a92622383721100879cda46f924ca0`
+**Model:** Devin SWE-1.7 Max
+**Retested findings:** 5
+**Pass — Remediated:** 5/5
+**Failures:** 0
+**Regressions:** 0
+**Not Reviewable:** 0
+**Claude used:** NO
+
+**Findings verified and Closed:**
+
+- HIGH: ANOX-MAINARCH-011
+- MEDIUM: ANOX-MAINARCH-024, ANOX-MAINARCH-026, ANOX-MAINARCH-027
+- INFO: ANOX-MAINARCH-036
+
+**Summary:**
+
+Independent read-only targeted delta retest confirms the MAINARCH-FIX-03 traceability / test-matrix / release-governance / implementation-readiness remediation removed the original material defects for the 5 findings: all 35 Security Invariants are deterministically traced to authoritative source, domains, enforcement surfaces, verification IDs and evidence state with an explicitly non-collapsible spec/implementation/verification model; the B-021 matrix provides 150 unique stable test IDs covering B-002…B-020, B-021 self-check and all invariants with honest result semantics (NOT_RUN/BLOCKED/UNVERIFIED never count as PASS) and nine execution classes including physical GrapheneOS and independent audit; release signing is bound to human-only `ROLE-018`/`K_APK_RELEASE` with D4 secret prohibition, hash-bound artifacts, an 8-state update/downgrade trust machine and a human-gated emergency path; the B-019 incident/PSIRT artifact contract is defined role-bound without fabricated contacts; the B-023 branch-protection record is honest (no server-side protection exists today) with a deterministic release gate requiring verified enforcement or an explicit recorded `ROLE-001` decision; and the implementation-readiness registry separates architecture/implementation/release-readiness axes with B-004/B-005 recorded FROZEN + NOT_STARTED. Severities preserved. No product, Rust, backend, SQL, or CI changes. No material regression found. No Claude audit executed or required now.
+
+**Validator observations (recorded, hardened in MAINARCH-RETEST-03-INGEST):**
+
+- Release-governance checks were substring-based — semantics verified by manual inspection; deterministic cross-references added.
+- Invariant `verification_ids` were not cross-validated for existence in the B-021 matrix — deterministic cross-check added.
+- Worktree-vs-main scope/secret scan was inert post-merge — replaced by pinned base/substantive/metadata/merge SHA verification.
+
+**Milestone security review coverage still pending:** ANOX-MAINARCH-003 (server ↔ DB/RLS), ANOX-MAINARCH-007 (server ↔ backup/PITR) and ANOX-MAINARCH-024 (signing/release custody + incident-response trust boundary) are Closed as *architecture remediation verified*; their trust boundaries remain scheduled (`PENDING`) for the next Security Architecture milestone review. This is not a Security Architecture Audit PASS.
+
+**MAIN finding totals after closure:** Closed = 30, Remaining = 6 (ANOX-MAINARCH-013, 018, 019, 023, 030, 031). **MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE.** The remaining six findings are specialized Legacy / Build / Hardware verification items; `ANOX-MAINARCH-018` remains `PHYSICAL_VERIFICATION_REQUIRED`.
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged). Final Pre-Product Audit remains IN PROGRESS (AUDIT-WORKFORCE-ARCHITECTURE, AUDIT-SECURITY-ARCHITECTURE and the six legacy audits not executed).
+
+**Next task:** first required specialized session per canonical `docs/workforce/audits/legacy-audit-plan.json` — `LEGACY-AUDIT-B002` (Legacy / Build / Hardware verification phase), pending human authorization.
