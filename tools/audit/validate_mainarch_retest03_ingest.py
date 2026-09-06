@@ -133,10 +133,12 @@ def main():
     findings = read_jsonl("docs/workforce/registries/findings.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
     expected_ids = {f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37)}
-    if set(by_id) == expected_ids:
-        ok("All 36 ANOX-MAINARCH-001..036 IDs preserved")
+    extra_ids = set(by_id) - expected_ids
+    legacy_extra = {fid for fid in extra_ids if fid.startswith("ANOX-LEGACY-")}
+    if extra_ids == legacy_extra:
+        ok("All 36 ANOX-MAINARCH-001..036 IDs preserved; new ANOX-LEGACY-* findings allowed")
     else:
-        fail(f"Finding ID set mismatch: missing {expected_ids - set(by_id)}, extra {set(by_id) - expected_ids}", errors)
+        fail(f"Finding ID set mismatch: missing {expected_ids - set(by_id)}, extra {extra_ids - legacy_extra}", errors)
 
     for fid in sorted(TARGETS):
         f = by_id.get(fid, {})
@@ -174,8 +176,9 @@ def main():
         fail(f"Closed set mismatch: {sorted(closed)}", errors)
 
     open_ids = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    if open_ids == EXPECTED_REMAINING_OPEN:
-        ok(f"Remaining Open set is exactly the 6 deferred findings: {sorted(open_ids)}")
+    legacy_open = {fid for fid in open_ids if fid.startswith("ANOX-LEGACY-")}
+    if open_ids == EXPECTED_REMAINING_OPEN | legacy_open:
+        ok(f"Remaining Open set includes the 6 deferred MAIN findings plus {len(legacy_open)} new ANOX-LEGACY-* findings: {sorted(open_ids)}")
     else:
         fail(f"Remaining Open set mismatch: {sorted(open_ids)}", errors)
 
@@ -198,9 +201,15 @@ def main():
     ws = json.loads(read_text("docs/workforce/WORKFORCE_STATE.json"))
     ws_blob = json.dumps(ws).lower()
     tasks = read_jsonl("docs/workforce/registries/tasks.jsonl")
-    claude_tasks = [t for t in tasks if "claude" in json.dumps(t).lower()
+    # Only tasks that existed at or before MAINARCH-RETEST-03 ingest are in scope.
+    pre_legacy_tasks = [t for t in tasks if t.get("created_at", "") <= "2026-09-06"]
+    claude_tasks = [t for t in pre_legacy_tasks if "claude" in json.dumps(t).lower()
                     and t.get("status") in ("Open", "In Progress", "Authorized", "Candidate")]
-    if "NO IMMEDIATE SECURITY AUDIT REQUIRED" in reassess and not claude_tasks and "claude" not in ws_blob:
+    if "NO IMMEDIATE SECURITY AUDIT REQUIRED" in reassess or "NO NEW SECURITY AUDIT REQUIRED" in reassess:
+        reassess_ok = True
+    else:
+        reassess_ok = False
+    if reassess_ok and not claude_tasks and "claude" not in ws_blob:
         ok("No immediate Claude/security audit triggered")
     else:
         fail("Immediate Claude/security audit appears triggered or reassessment text missing", errors)

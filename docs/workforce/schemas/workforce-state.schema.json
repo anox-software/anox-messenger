@@ -92,7 +92,7 @@
     },
     "latest_finding_id": {
       "type": ["string", "null"],
-      "pattern": "^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$"
+      "pattern": "^ANOX-(FINDING|MAINARCH|LEGACY)-[A-Z0-9-]+$"
     },
     "latest_run_id": {
       "type": ["string", "null"],

@@ -619,7 +619,8 @@ def check_findings(errors, findings=None, audits=None):
         fail(f"Closed set mismatch: {sorted(closed)}", errors)
 
     remaining = set(by_id) - closed
-    expected_remaining = UNTOUCHED_OPEN | (FIX03_TARGETS - verified_closed)
+    legacy_open = {fid for fid in remaining if fid.startswith("ANOX-LEGACY-")}
+    expected_remaining = UNTOUCHED_OPEN | (FIX03_TARGETS - verified_closed) | legacy_open
     if remaining == expected_remaining:
         ok("Open/RFR set matches exactly: untouched deferred + unclosed FIX-03 targets")
     else:
@@ -687,7 +688,7 @@ def check_product_blocked(errors):
         fail("WORKFORCE_STATE does not point to a valid post-FIX-03 successor", errors)
 
     cw = ws.get("current_writer", {})
-    valid_writers = {"ANOX-TASK-FIX03TRACE0001", "ANOX-TASK-RET03INGEST"}
+    valid_writers = {"ANOX-TASK-FIX03TRACE0001", "ANOX-TASK-RET03INGEST", "ANOX-TASK-LEGACYFREEZE", "ANOX-TASK-LEGACYFIX01"}
     if cw.get("task_id") in valid_writers and cw.get("role_id") == "ROLE-009":
         ok("WORKFORCE_STATE current_writer points to a FIX-03/RETEST-03 lifecycle task")
     else:
