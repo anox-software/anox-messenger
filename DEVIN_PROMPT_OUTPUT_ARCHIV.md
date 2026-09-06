@@ -923,3 +923,34 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Product: BLOCKED_PENDING_FINAL_AUDIT
 - Next: LEGACY-AUDIT-B002 (first session of the LEGACY / BUILD / HARDWARE VERIFICATION phase)
 
+## ANOX-EVENT-0035 — LEGACY-AUDIT-SET-FREEZE
+
+- Date: 2026-09-07
+- Task: LEGACY-AUDIT-SET-FREEZE
+- Result: PASS WITH FINDINGS — 6/6 legacy audits complete; 7 canonical Legacy findings promoted; 13 canonical Open findings
+- Substantive HEAD: `1ffe6e7c2ee387cb925d74c8ba9a3a672bd9d27a`
+- Class-A blockers recorded: 019, 023, 031, ANDROIDSEC-001, CRYPTO-005, INTEGRATION-001/002/003
+- Product: BLOCKED_PENDING_FINAL_AUDIT
+- Next: LEGACY-FIX-01
+
+## ANOX-EVENT-0036 — LEGACY-FIX-01
+
+- Date: 2026-09-06
+- Task: LEGACY-FIX-01
+- Result: PASS — 8 Class-A findings remediated, moved to Ready For Retest
+- Substantive HEAD: `342d55386f1bd7ea1531fc70e0e0f14fca0f279f`; metadata `37dffdb8aa9fff3dae63766f0bb45adbf52c644f`
+- Validation: JVM 177/0; Rust 17/0; lint 0 errors; instrumentation NOT_RUN
+- Product: BLOCKED_PENDING_FINAL_AUDIT
+- Next: LEGACY-RETEST-01
+
+## ANOX-EVENT-0037 — LEGACY-RETEST-01-INGEST
+
+- Date: 2026-09-07
+- Task: LEGACY-RETEST-01-INGEST
+- Result: PASS — LEGACY-RETEST-01 8/8 REMEDIATED ingested; exactly 8 findings Closed; 38 Closed / 5 Open; Class-A foundation blocker set CLOSED
+- Retest base: `3adf56c17936fdf60c864e4a26f1863243478f44`; substantive HEAD `f50dc79195c22a9f4e47ccc56f509908940632c2`
+- Artifacts: `validate_legacy_retest01_ingest.py` (23 checks), `lifecycle_legality.py`, 25 adversarial tests, hardened historical validators (snapshot vs live lifecycle; structured external-audit trigger detection)
+- No external audit triggered; no remote mutation; local-only two-commit delivery
+- Product: BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED
+- Next: AUDIT-WORKFORCE-ARCHITECTURE (Candidate `ANOX-TASK-WORKFORCEARCH001`, pending human authorization)
+

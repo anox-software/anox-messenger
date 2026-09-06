@@ -1,14 +1,14 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-Handoff version: LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION
-Date: 2026-09-06
-Delivery branch: `remediation/legacy-fix-01-foundation-safety`
-Described HEAD: `342d55386f1bd7ea1531fc70e0e0f14fca0f279f`
-Main baseline HEAD: `785e9a574fbbe072c454d8515a9a05022c282c46`
+Handoff version: LEGACY-RETEST-01-INGEST — VERIFIED FINDING CLOSURE AND VALIDATOR HARDENING
+Date: 2026-09-07
+Delivery branch: `audit/legacy-retest-01-ingest`
+Described HEAD: `f50dc79195c22a9f4e47ccc56f509908940632c2`
+Main baseline HEAD: `3adf56c17936fdf60c864e4a26f1863243478f44`
 Working tree: CLEAN
-Effective gate: LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION
-Pre-merge gate: LEGACY-FIX-01 — FOUNDATION STATE / REGISTRATION / CRYPTO SAFETY REMEDIATION
-Post-merge gate: LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION
+Effective gate: LEGACY-RETEST-01-INGEST — VERIFIED FINDING CLOSURE AND VALIDATOR HARDENING
+Pre-merge gate: LEGACY-RETEST-01-INGEST — VERIFIED FINDING CLOSURE AND VALIDATOR HARDENING
+Post-merge gate: AUDIT-WORKFORCE-ARCHITECTURE — B-027 WORKFORCE / WORK-CONTROL GOVERNANCE AUDIT (pending human authorization)
 
 ---
 
@@ -27,27 +27,24 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `remediation/legacy-fix-01-foundation-safety`
-- Current work branch: `remediation/legacy-fix-01-foundation-safety`
-- Current HEAD: `342d55386f1bd7ea1531fc70e0e0f14fca0f279f`
-- Main baseline HEAD: `785e9a574fbbe072c454d8515a9a05022c282c46`
+- Delivery branch: `audit/legacy-retest-01-ingest`
+- Current work branch: `audit/legacy-retest-01-ingest`
+- Current HEAD: `f50dc79195c22a9f4e47ccc56f509908940632c2`
+- Main baseline HEAD: `3adf56c17936fdf60c864e4a26f1863243478f44`
 - Working tree: CLEAN
-- Latest material event: `ANOX-EVENT-0036`
+- Latest material event: `ANOX-EVENT-0037`
 
 ## Latest completed work
 
-- `LEGACY-FIX-01` PASS: 8 Class-A findings moved to Ready For Retest.
-- Device Auth production eligibility enforced; identity revalidated before commit; CommitArmed/binding divergence fail-closed.
-- K_STATE read/create split and atomic write implemented.
-- API 26–32-safe Keystore exception classification.
-- JNI buffer error domain and Crypto concurrency protection.
-- OTK durability: identity persisted before public OTK material returned.
-- JVM unit tests 177/0; Rust tests 17/0; Android lint 0 errors; instrumentation NOT_RUN.
+- `LEGACY-RETEST-01` PASS: independent read-only targeted delta retest at canonical base `3adf56c` verified all 8 LEGACY-FIX-01 Class-A findings `PASS — REMEDIATED`; no FAIL/PARTIAL/REGRESSION/NOT-REVIEWABLE.
+- `LEGACY-RETEST-01-INGEST`: exactly 8 findings Closed (`019`, `023`, `031`, `ANDROIDSEC-001`, `CRYPTO-005`, `INTEGRATION-001/002/003`) with immutable FIX-01 → RETEST-01 closure chains; 38 Closed / 5 Open; no finding remains Ready For Retest.
+- Historical validators hardened to lifecycle-aware semantics (`tools/audit/lifecycle_legality.py`); new `validate_legacy_retest01_ingest.py` (23 checks) + 25 adversarial tests; structured Claude-trigger detection replaces prose substring matching.
+- JVM unit tests 177/0; Rust tests 17/0; Android lint 0 errors / 0 NewApi; instrumentation NOT_RUN (device/emulator required).
 - B027 integrity and continuity live validation PASS.
 
 ## Current open work
 
-- `LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION` — pending human authorization.
+- `AUDIT-WORKFORCE-ARCHITECTURE` — second required Final Pre-Product audit session (B-027 workforce/work-control governance), Candidate `ANOX-TASK-WORKFORCEARCH001`, pending human authorization.
 
 ## Trust-boundary / milestone flags
 
@@ -62,4 +59,4 @@ New sessions must read that file first.
 
 ## Next task
 
-`LEGACY-RETEST-01` — targeted retest of foundation safety remediation; start only with explicit human authorization.
+`AUDIT-WORKFORCE-ARCHITECTURE` — B-027 workforce/work-control governance audit per `docs/workforce/audits/final-audit-plan.json` (`ANOX-AUDIT-WORKFORCE-ARCH-001`); start only with explicit human authorization.
