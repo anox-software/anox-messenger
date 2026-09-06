@@ -827,3 +827,18 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **No product/Rust/CI/DB/backend/SQL changes.**
 - **No remote mutation.**
 - **Next:** `MAINARCH-RETEST-03` — targeted delta retest (pending human authorization).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0034 -->
+## ANOX-EVENT-0034 — MAINARCH-RETEST-03-INGEST Verified Finding Closure + Remediation-Phase Completion + Validator Hardening
+
+- **Date:** 2026-09-06
+- **Branch:** `audit/mainarch-retest-03-ingest`
+- **Substantive HEAD:** `876e63565942c65df738afc5f4578a6b16a331b0`
+- **Ergebnis:** `MAINARCH-RETEST-03` PASS kanonisch erfasst; 5 Befunde (`ANOX-MAINARCH-011`, `024`, `026`, `027`, `036`) verifiziert und auf `Closed` gesetzt. MAIN geschlossen gesamt: 30; verbleibend offen: 6 (`013`, `018`, `019`, `023`, `030`, `031`). Kein Befund bleibt `Ready For Retest`.
+- **Phase:** MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE; Final Pre-Product Audit bleibt IN PROGRESS.
+- **Vertrauensgrenzen:** `ANOX-MAINARCH-003`, `007` und `024` bleiben `PENDING` für die Meilenstein-Sicherheitsüberprüfung markiert (maschinenlesbares `milestone_security_review`-Feld).
+- **Physisch:** `ANOX-MAINARCH-018` bleibt `PHYSICAL_VERIFICATION_REQUIRED`.
+- **Artifakte:** `audits.jsonl` Retest-Ergebnis, `validate_mainarch_retest03_ingest.py`, gehärteter `validate_mainarch_fix03.py` (Verification-ID-Querverweis, Pinned-SHA-Delivery-Scope, Governance-Querverweise) + 26 adversarielle Tests.
+- **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`.
+- **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein Claude. Keine Remote-Mutation.**
+- **Nächster Schritt:** `LEGACY-AUDIT-B002` — erste Session der LEGACY / BUILD / HARDWARE VERIFICATION Phase per `docs/workforce/audits/legacy-audit-plan.json` (menschenautorisiert).
