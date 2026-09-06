@@ -510,3 +510,106 @@ Independent read-only targeted delta retest confirms the MAINARCH-FIX-03 traceab
 **Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged). Final Pre-Product Audit remains IN PROGRESS (AUDIT-WORKFORCE-ARCHITECTURE, AUDIT-SECURITY-ARCHITECTURE and the six legacy audits not executed).
 
 **Next task:** first required specialized session per canonical `docs/workforce/audits/legacy-audit-plan.json` — `LEGACY-AUDIT-B002` (Legacy / Build / Hardware verification phase), pending human authorization.
+## LEGACY-AUDIT-SET-FREEZE — Six-Session Legacy Audit Consolidation
+
+**Status:** COMPLETE
+**Mode:** READ-ONLY LEGACY FINDINGS FREEZE
+**Canonical base SHA:** `f245dc429a9e4bd10f51692eb452d03ccb9a6749`
+**Ending SHA (all six audits):** `f245dc429a9e4bd10f51692eb452d03ccb9a6749`
+**Model:** `Devin SWE-1.7 Max`
+**Run:** `ANOX-RUN-LEGACYFREEZE0001`
+**Result:** PASS WITH FINDINGS
+**Repository modified:** NO
+**Remote mutation:** NONE
+**Claude audit triggered:** NO
+
+### Legacy audit set completion
+
+All six canonical legacy audits were executed on the frozen base SHA:
+
+1. `LEGACY-AUDIT-B002` — Device Authentication
+2. `LEGACY-AUDIT-B003` — Account / License / Registration
+3. `LEGACY-AUDIT-CRYPTO` — Cryptography / vodozemac / JNI
+4. `LEGACY-AUDIT-ANDROID-SEC` — Android local security
+5. `LEGACY-AUDIT-BUILD` — Build / supply chain / native artifacts
+6. `LEGACY-AUDIT-INTEGRATION` — Cross-domain integration
+
+**Set state:** 6 / 6 COMPLETE
+
+### Existing MAIN findings revalidated
+
+The six remaining Open MAIN findings were revalidated and remain Open:
+
+- `ANOX-MAINARCH-013` — build/provenance (Class D)
+- `ANOX-MAINARCH-018` — physical GrapheneOS/StrongBox verification (Class E, `PHYSICAL_VERIFICATION_REQUIRED`)
+- `ANOX-MAINARCH-019` — Device Auth production eligibility not enforced (Class A)
+- `ANOX-MAINARCH-023` — K_STATE read-path silent recreation (Class A)
+- `ANOX-MAINARCH-030` — B-009/B-013 wipe/session persistence (Class C)
+- `ANOX-MAINARCH-031` — JNI output-buffer error mapping (Class A)
+
+### Promoted canonical Legacy findings
+
+7 audit-local candidates were promoted to canonical Open findings:
+
+- `ANOX-LEGACY-ANDROIDSEC-001` — API 26–32 KeyStoreException crash (HIGH, Class A)
+- `ANOX-LEGACY-CRYPTO-005` — unsafe concurrent `&mut` native Identity/Session access (HIGH, Class A)
+- `ANOX-LEGACY-INTEGRATION-001` — Device Auth key not re-verified before commit (HIGH, Class A)
+- `ANOX-LEGACY-INTEGRATION-002` — OTK private state not persisted after generation (HIGH, Class A)
+- `ANOX-LEGACY-INTEGRATION-003` — `CommitArmed` / binding-store divergence (MEDIUM, Class A)
+- `ANOX-LEGACY-INTEGRATION-005` — native Identity handle leak (MEDIUM, Class F)
+- `ANOX-LEGACY-B003-001` — UUIDv4 variant not verified (LOW, Class F)
+
+### Candidate disposition summary
+
+| Disposition | Count | Items |
+|---|---|---|
+| `PROMOTE_CANONICAL` | 7 | ANOX-LEGACY-B003-001, ANOX-LEGACY-CRYPTO-005, ANOX-LEGACY-ANDROIDSEC-001, ANOX-LEGACY-INTEGRATION-001, ANOX-LEGACY-INTEGRATION-002, ANOX-LEGACY-INTEGRATION-003, ANOX-LEGACY-INTEGRATION-005 |
+| `MERGE_INTO_EXISTING` | 5 | ANOX-LEGACY-CRYPTO-001, ANOX-LEGACY-CRYPTO-002, ANOX-LEGACY-CRYPTO-003, ANOX-LEGACY-CRYPTO-004, ANOX-LEGACY-BUILD-001 |
+| `DEFER_AS_FUTURE_WORK` | 3 | ANOX-LEGACY-B002-002, ANOX-LEGACY-CRYPTO-006, ANOX-LEGACY-CRYPTO-007 |
+| `VERIFICATION_GAP_ONLY` | 1 | ANOX-LEGACY-CRYPTO-008 |
+| `DOCUMENTATION_CLEANUP` | 1 | ANOX-LEGACY-B002-001 |
+| `NOT_A_FINDING` | 2 | ANOX-LEGACY-BUILD-002, ANOX-LEGACY-INTEGRATION-006 |
+| `REQUIRES_SCOPE_DECISION` | 1 | ANOX-LEGACY-INTEGRATION-004 |
+
+### MAINARCH-030 current-vs-future decomposition
+
+`ANOX-MAINARCH-030` is resolved as **Class C** (implement with B-008/B-009/B-013). The current `wipeLocalCrypto()` correctly removes the currently existing file-based crypto state. DB/WAL/SHM/attachments/temp, `preferred_session_id`, and per-peer session persistence are future Product implementation items, not current foundation defects.
+
+### INTEGRATION-004 32-bit ABI scope decision
+
+`ANOX-LEGACY-INTEGRATION-004` (missing 32-bit ABI `.so` artifacts) is **not auto-promoted**. `minSdk=26` is an API-level declaration, not a supported-CPU promise. The frozen product boundary names GrapheneOS (64-bit Pixel) as the primary V1 target. A human/scope decision is required before this becomes a release or build finding.
+
+### Pre-B004 foundation blockers (Class A)
+
+ANOX-MAINARCH-019, ANOX-MAINARCH-023, ANOX-MAINARCH-031, ANOX-LEGACY-ANDROIDSEC-001, ANOX-LEGACY-CRYPTO-005, ANOX-LEGACY-INTEGRATION-001, ANOX-LEGACY-INTEGRATION-002, ANOX-LEGACY-INTEGRATION-003
+
+### Release blockers
+
+ANOX-MAINARCH-013, ANOX-MAINARCH-018, ANOX-LEGACY-ANDROIDSEC-001
+
+### Physical verification blockers
+
+ANOX-MAINARCH-018
+
+### Milestone security-review flags (preserved)
+
+ANOX-MAINARCH-003, ANOX-MAINARCH-007, ANOX-MAINARCH-024
+
+### Product development state
+
+`BLOCKED_PENDING_FINAL_AUDIT` (unchanged). The next authorized task is `ANOX-TASK-LEGACYFIX01` — dependency-sorted remediation of the Class-A legacy blockers.
+
+### Constraints observed
+
+No product code, Rust, Android, backend, SQL, Supabase, messaging, Device Auth, crypto, or `.so` changes. No CI workflow changes. No signing keys created or imported. No secrets touched. No GitHub repository/configuration changes. No remote mutation. **CLAUDE AUDIT TRIGGERED: NO.**
+
+### Consolidation artifacts
+
+- `docs/workforce/registries/findings.jsonl` — existing Open MAIN findings updated; 7 canonical Legacy findings appended.
+- `docs/workforce/registries/audits.jsonl` — 6 legacy audit records appended.
+- `docs/workforce/schemas/audit-result.schema.json` — `PASS_WITH_FINDINGS` added to result enum.
+- `docs/workforce/WORKFORCE_STATE.json` — legacy audit set 6/6 complete; next task recorded.
+- `docs/reports/FINAL_PRE_PRODUCT_LEGACY_AUDIT_CONSOLIDATION.md` — full consolidation report.
+- `tools/audit/consolidate_legacy_audit_set.py` — this one-time ingest script.
+- `tools/audit/validate_legacy_audit_consolidation.py` — consolidation validator plus adversarial tests.
+

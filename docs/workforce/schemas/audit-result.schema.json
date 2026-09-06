@@ -78,7 +78,8 @@
         "PASS",
         "PARTIAL",
         "FAIL",
-        "BLOCKED"
+        "BLOCKED",
+        "PASS_WITH_FINDINGS"
       ],
       "description": "Overall audit result."
     },
@@ -86,7 +87,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$"
+        "pattern": "^ANOX-(FINDING|MAINARCH|LEGACY)-[A-Z0-9-]+$"
       },
       "description": "Findings produced or referenced by this audit session."
     },
