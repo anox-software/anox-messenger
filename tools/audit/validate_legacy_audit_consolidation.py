@@ -29,6 +29,9 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_PATH = REPO_ROOT / "tools" / "audit" / "legacy_audit_set_freeze_data.json"
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 REQUIRED_OPEN_MAIN = {
     "ANOX-MAINARCH-013",
     "ANOX-MAINARCH-018",
@@ -97,54 +100,105 @@ def validate_baseline():
     return True, head
 
 
-def validate_findings(data):
+def validate_findings(data, findings=None, audits=None):
+    """Validate the consolidation's canonical finding set.
+
+    The freeze-time snapshot (13 Open: 6 updated MAIN + 7 promoted Legacy) is
+    the historical record, anchored by the immutable freeze data and the
+    per-finding LEGACY-AUDIT-SET-FREEZE notes. The current live registry may
+    have legally progressed through the authorized Open -> Ready For Retest ->
+    Closed lifecycle (LEGACY-FIX-01 -> LEGACY-RETEST-01); only illegal states —
+    unauthorized closure, missing remediation evidence, disappearing findings —
+    still fail.
+    """
     findings_path = REPO_ROOT / "docs" / "workforce" / "registries" / "findings.jsonl"
-    findings = load_jsonl(findings_path)
+    if findings is None:
+        findings = load_jsonl(findings_path)
+    if audits is None:
+        audits = load_jsonl(REPO_ROOT / "docs" / "workforce" / "registries" / "audits.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
 
     results = []
 
-    # 1. Existing six Open MAIN findings are still Open and have legacy notes.
+    new_ids = {n["finding_id"] for n in data["new_findings"]}
+    updated_ids = set(data.get("updated_findings", {}).keys())
+    declared_ids = updated_ids | new_ids
+
+    # 1. The six revalidated MAIN findings must still exist, retain the freeze
+    #    note, and be in a legal live lifecycle state.
     for fid in REQUIRED_OPEN_MAIN:
         f = by_id.get(fid)
         if not f:
-            results.append(error(f"Missing required open finding {fid}"))
-            continue
-        if f.get("status") != "Open":
-            results.append(error(f"{fid} must remain Open, got {f.get('status')}"))
+            results.append(error(f"Missing required finding {fid}"))
             continue
         notes = f.get("notes", "")
         if "LEGACY-AUDIT-SET-FREEZE" not in notes:
             results.append(error(f"{fid} missing LEGACY-AUDIT-SET-FREEZE note"))
             continue
-        results.append(ok(f"{fid} revalidated and Open"))
+        legal, reason = ll.finding_status_legal(f, audits)
+        if not legal:
+            results.append(error(f"{fid} in illegal lifecycle state: {reason}"))
+            continue
+        results.append(ok(f"{fid} revalidated; live state {f.get('status')} is legal"))
 
-    # 2. New canonical legacy findings exist and are Open.
-    new_ids = {n["finding_id"] for n in data["new_findings"]}
+    # 2. The seven promoted canonical legacy findings must still exist with
+    #    canonical severity and a legal live lifecycle state.
     for new in data["new_findings"]:
         fid = new["finding_id"]
         f = by_id.get(fid)
         if not f:
             results.append(error(f"Missing promoted finding {fid}"))
             continue
-        if f.get("status") != "Open":
-            results.append(error(f"{fid} must be Open, got {f.get('status')}"))
-            continue
         # Severity may have been promoted; the new finding data is canonical.
         if f.get("severity") != new["severity"]:
             results.append(error(f"{fid} severity mismatch: {f.get('severity')} != {new['severity']}"))
             continue
-        results.append(ok(f"{fid} promoted and Open"))
+        legal, reason = ll.finding_status_legal(f, audits)
+        if not legal:
+            results.append(error(f"{fid} in illegal lifecycle state: {reason}"))
+            continue
+        results.append(ok(f"{fid} promoted; live state {f.get('status')} is legal"))
 
-    # 3. Total Open findings = 6 MAIN + 7 Legacy (13).
-    open_findings = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    expected_open = REQUIRED_OPEN_MAIN | new_ids
-    if open_findings != expected_open:
-        results.append(error(f"Open finding set mismatch.\nExpected: {sorted(expected_open)}\nGot: {sorted(open_findings)}"))
+    # 3. Freeze-data <-> registry consistency: every registry finding carrying a
+    #    LEGACY-AUDIT-SET-FREEZE note must be declared in the frozen snapshot
+    #    data, and every ANOX-LEGACY-* finding must have been promoted by this
+    #    consolidation (declared in new_findings). This detects a rewritten or
+    #    tampered snapshot as well as extra findings masquerading as
+    #    consolidation outputs.
+    undeclared = [
+        f["finding_id"] for f in findings
+        if "LEGACY-AUDIT-SET-FREEZE" in f.get("notes", "")
+        and f["finding_id"] not in declared_ids
+    ]
+    undeclared += [
+        f["finding_id"] for f in findings
+        if f["finding_id"].startswith("ANOX-LEGACY-")
+        and f["finding_id"] not in new_ids
+    ]
+    if undeclared:
+        results.append(error(f"Findings not declared in the frozen consolidation snapshot: {sorted(undeclared)}"))
     else:
-        results.append(ok(f"Open findings set is exactly 6 MAIN + 7 Legacy = {len(open_findings)}"))
+        results.append(ok("All consolidation findings are declared in the frozen snapshot data"))
 
-    # 4. No duplicate finding_ids.
+    # 4. Live lifecycle: the Open set must remain a subset of the 13 canonical
+    #    consolidation findings, and every registry finding must be in a legal
+    #    lifecycle state.
+    open_findings = {f["finding_id"] for f in findings if f.get("status") == "Open"}
+    extra_open = open_findings - declared_ids
+    if extra_open:
+        results.append(error(f"Open findings outside the canonical consolidation set: {sorted(extra_open)}"))
+    else:
+        results.append(ok(f"Open findings ({len(open_findings)}) are a subset of the 13 canonical consolidation findings"))
+    illegal = [
+        f["finding_id"] for f in findings
+        if not ll.finding_status_legal(f, audits)[0]
+    ]
+    if illegal:
+        results.append(error(f"Findings in illegal lifecycle states: {sorted(illegal)}"))
+    else:
+        results.append(ok("All registry findings are in legal lifecycle states"))
+
+    # 5. No duplicate finding_ids.
     ids = [f["finding_id"] for f in findings]
     if len(ids) != len(set(ids)):
         results.append(error(f"Duplicate finding IDs in findings.jsonl"))
@@ -270,58 +324,73 @@ def validate_no_remote_mutation(data):
 
 
 def self_test():
-    """Adversarial tests: create temporary corrupted copies and verify detection."""
+    """Adversarial tests: inject corrupted registries/data and verify the real
+    validate_findings detects them (lifecycle-aware semantics)."""
     with open(DATA_PATH, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     findings_path = REPO_ROOT / "docs" / "workforce" / "registries" / "findings.jsonl"
+    audits_path = REPO_ROOT / "docs" / "workforce" / "registries" / "audits.jsonl"
     original_findings = load_jsonl(findings_path)
+    real_audits = load_jsonl(audits_path)
 
     results = []
 
-    # Adversarial 1: remove one promoted finding, expect validate_findings to fail.
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp) / "findings.jsonl"
-        altered = [f for f in original_findings if f["finding_id"] != "ANOX-LEGACY-CRYPTO-005"]
-        save_jsonl(tmp_path, altered)
+    # Adversarial 1: remove one promoted finding -> must be detected.
+    altered = [f for f in original_findings if f["finding_id"] != "ANOX-LEGACY-CRYPTO-005"]
+    if not validate_findings(data, findings=altered, audits=real_audits):
+        results.append(ok("Adversarial 1: missing ANOX-LEGACY-CRYPTO-005 detected"))
+    else:
+        results.append(error("Adversarial 1 did not detect missing finding", "ADV-FAIL"))
 
-        # Monkey-patch validate_findings to use the temp path for this test.
-        # We do a targeted re-implementation to avoid side effects.
-        by_id = {f["finding_id"]: f for f in altered}
-        new_ids = {n["finding_id"] for n in data["new_findings"]}
-        open_findings = {f["finding_id"] for f in altered if f.get("status") == "Open"}
-        expected_open = REQUIRED_OPEN_MAIN | new_ids
-        if open_findings == expected_open:
-            results.append(error("Adversarial 1 did not detect missing finding", "ADV-FAIL"))
+    # Adversarial 2: unauthorized closure of a still-Open canonical finding
+    # (Closed with no closure chain) -> must be detected.
+    altered = copy.deepcopy(original_findings)
+    for f in altered:
+        if f["finding_id"] == "ANOX-MAINARCH-013":
+            f["status"] = "Closed"
+    if not validate_findings(data, findings=altered, audits=real_audits):
+        results.append(ok("Adversarial 2: unauthorized closure of ANOX-MAINARCH-013 detected"))
+    else:
+        results.append(error("Adversarial 2 did not detect unauthorized closure", "ADV-FAIL"))
+
+    # Adversarial 3: duplicate a finding -> must be detected.
+    altered = copy.deepcopy(original_findings)
+    altered.append(copy.deepcopy(altered[0]))
+    if not validate_findings(data, findings=altered, audits=real_audits):
+        results.append(ok("Adversarial 3: duplicate finding detected"))
+    else:
+        results.append(error("Adversarial 3 did not detect duplicate", "ADV-FAIL"))
+
+    # Adversarial 4: rewrite the frozen snapshot (drop a promoted finding from
+    # freeze data while the registry still carries the freeze note) -> must be
+    # detected as undeclared.
+    tampered_data = copy.deepcopy(data)
+    tampered_data["new_findings"] = [n for n in tampered_data["new_findings"]
+                                     if n["finding_id"] != "ANOX-LEGACY-B003-001"]
+    if not validate_findings(tampered_data, findings=original_findings, audits=real_audits):
+        results.append(ok("Adversarial 4: rewritten freeze snapshot detected"))
+    else:
+        results.append(error("Adversarial 4 did not detect freeze-data tampering", "ADV-FAIL"))
+
+    # Adversarial 5: strip the FIX->RETEST chain from a legally Closed finding
+    # (keep status Closed but remove closure_evidence) -> must be detected.
+    altered = copy.deepcopy(original_findings)
+    closed_target = next((f for f in altered
+                          if f.get("status") == "Closed" and f.get("closure_evidence")), None)
+    if closed_target is not None:
+        closed_target["closure_evidence"] = []
+        closed_target["closure_actor"] = ""
+        if not validate_findings(data, findings=altered, audits=real_audits):
+            results.append(ok(f"Adversarial 5: stripped closure chain on {closed_target['finding_id']} detected"))
         else:
-            results.append(ok("Adversarial 1: missing ANOX-LEGACY-CRYPTO-005 detected"))
+            results.append(error("Adversarial 5 did not detect stripped closure chain", "ADV-FAIL"))
 
-    # Adversarial 2: flip MAINARCH-019 status to Closed, expect mismatch.
-    with tempfile.TemporaryDirectory() as tmp:
-        tmp_path = Path(tmp) / "findings.jsonl"
-        altered = copy.deepcopy(original_findings)
-        for f in altered:
-            if f["finding_id"] == "ANOX-MAINARCH-019":
-                f["status"] = "Closed"
-        save_jsonl(tmp_path, altered)
-
-        open_findings = {f["finding_id"] for f in altered if f.get("status") == "Open"}
-        new_ids = {n["finding_id"] for n in data["new_findings"]}
-        expected_open = REQUIRED_OPEN_MAIN | new_ids
-        if open_findings == expected_open:
-            results.append(error("Adversarial 2 did not detect closed MAIN finding", "ADV-FAIL"))
-        else:
-            results.append(ok("Adversarial 2: closed ANOX-MAINARCH-019 detected"))
-
-    # Adversarial 3: duplicate a finding.
-    with tempfile.TemporaryDirectory() as tmp:
-        altered = copy.deepcopy(original_findings)
-        altered.append(copy.deepcopy(altered[0]))
-        ids = [f["finding_id"] for f in altered]
-        if len(ids) == len(set(ids)):
-            results.append(error("Adversarial 3 did not detect duplicate", "ADV-FAIL"))
-        else:
-            results.append(ok("Adversarial 3: duplicate finding detected"))
+    # Positive control: the real post-lifecycle registry must pass.
+    if validate_findings(data, findings=original_findings, audits=real_audits):
+        results.append(ok("Positive control: real post-lifecycle registry accepted"))
+    else:
+        results.append(error("Positive control failed: real registry rejected", "ADV-FAIL"))
 
     return all(results)
 

@@ -14,6 +14,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 RETEST_SHA = "fd1fbddbddcba7d8705f7a76318856ad56dafb19"
 ORIGINAL_AUDIT_SHA = "0a4910eab1a92622383721100879cda46f924ca0"
 
@@ -157,13 +160,20 @@ def main():
 
     # 2. Findings: 17 target IDs, all Closed, severities preserved, unrelated Open, no unexpected Closed
     findings = read_jsonl("docs/workforce/registries/findings.jsonl")
+    audits = read_jsonl("docs/workforce/registries/audits.jsonl")
     finding_ids = {f["finding_id"] for f in findings}
-    if set(f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37)) != finding_ids:
-        missing = set(f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37)) - finding_ids
-        extra = finding_ids - set(f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37))
-        fail(f"Finding ID set mismatch: missing {missing}, extra {extra}", errors)
+    # Canonical IDs = the 36 MAINARCH audit findings plus any finding introduced
+    # by a later recorded audit (e.g. the LEGACY-AUDIT-SET-FREEZE promotions).
+    expected_ids = {f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37)}
+    canonical_ids = ll.canonical_finding_ids(findings, audits)
+    if not expected_ids <= finding_ids:
+        missing = expected_ids - finding_ids
+        fail(f"Finding ID set mismatch: missing {missing}", errors)
+    elif finding_ids != canonical_ids:
+        extra = finding_ids - canonical_ids
+        fail(f"Non-canonical finding IDs present (not anchored to a recorded audit): {extra}", errors)
     else:
-        ok("All 36 ANOX-MAINARCH-001..036 IDs preserved")
+        ok(f"All 36 ANOX-MAINARCH-001..036 IDs preserved; {len(finding_ids - expected_ids)} later canonical finding(s) anchored to recorded audits")
 
     closed_count = 0
     for f in findings:
@@ -190,19 +200,26 @@ def main():
             elif f.get("status") not in ("Open", "Ready For Retest", "Closed"):
                 fail(f"FIX-03 target {fid} changed unexpectedly to {f.get('status')}", errors)
         else:
-            if f.get("status") != "Open":
-                fail(f"Unrelated {fid} changed to {f.get('status')}", errors)
+            # Lifecycle-aware: a later authorized FIX/RETEST may legally move a
+            # non-target finding; only a transition without recorded evidence fails.
+            legal, reason = ll.finding_status_legal(f, audits)
+            if not legal:
+                fail(f"Unrelated {fid} has illegal lifecycle state: {reason}", errors)
     if closed_count == len(TARGETS):
         ok(f"All {len(TARGETS)} targeted findings Closed with preserved severities and closure evidence")
 
-    # 3. No unexpected Closed (after later verified retests the FIX-02 and
-    # FIX-03 targets may also be Closed; the closed set must remain a subset of
-    # the verified closure groups).
+    # 3. No unexpected Closed (after later verified retests the FIX-02/FIX-03
+    # and LEGACY-FIX-01 targets may also be Closed; every closure beyond the 17
+    # targets must carry a complete recorded FIX->RETEST chain).
     all_closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if TARGETS <= all_closed and all_closed <= (TARGETS | FIX02_TARGETS | FIX03_TARGETS):
-        ok(f"Closed findings set contains the 17 targets and only verified groups ({len(all_closed)} closed)")
+    illegal_closed = [
+        fid for fid in all_closed - TARGETS
+        if not ll.has_legal_closure(next(f for f in findings if f["finding_id"] == fid), audits)[0]
+    ]
+    if TARGETS <= all_closed and not illegal_closed:
+        ok(f"Closed findings set contains the 17 targets plus only legally verified closures ({len(all_closed)} closed)")
     else:
-        fail(f"Closed set mismatch: expected subset of {TARGETS | FIX02_TARGETS | FIX03_TARGETS} containing {TARGETS}, got {all_closed}", errors)
+        fail(f"Closed set mismatch/illegal closures: extra or unevidenced {sorted(illegal_closed)}, closed={sorted(all_closed)}", errors)
 
     # 4. Workforce state synchronized
     state = (REPO / "docs/workforce/WORKFORCE_STATE.json").read_text(encoding="utf-8")
