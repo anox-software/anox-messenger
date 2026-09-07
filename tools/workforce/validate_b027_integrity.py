@@ -42,7 +42,7 @@ import validate_b027b as b027b  # noqa: E402
 
 _ROLE_ID_RE = re.compile(r"^ROLE-(0[0-9][0-9]|1[0-9])$")
 _TASK_ID_RE = re.compile(r"^ANOX-TASK-[A-Z0-9]+$")
-_FINDING_ID_RE = re.compile(r"^ANOX-(FINDING|MAINARCH)-[A-Z0-9]+$")
+_FINDING_ID_RE = re.compile(r"^ANOX-(FINDING|MAINARCH|LEGACY|WORKFORCE|SECURITY)-[A-Z0-9-]+$")
 _RUN_ID_RE = re.compile(r"^ANOX-RUN-[A-Z0-9]+$")
 _WORK_ID_RE = re.compile(r"^ANOX-WORK-[A-Z0-9]+$")
 _DECISION_ID_RE = re.compile(r"^ANOX-DECISION-[A-Z0-9]+$")
