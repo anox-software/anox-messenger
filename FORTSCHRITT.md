@@ -2,9 +2,10 @@
 
 <!-- ANOX_EVENT: ANOX-EVENT-0029 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0033 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0038 -->
 
-**Status:** MAINARCH-FIX-03 COMPLETE; 5 FINDINGS READY FOR RETEST; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
-**Updated:** 2026-09-05
+**Status:** AUDIT-WORKFORCE-ARCHITECTURE PASS WITH FINDINGS FROZEN; 3 WORKFORCE FINDINGS PROMOTED; NEXT: WORKFORCE-FIX-01; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
+**Updated:** 2026-09-07
 
 ## Architecture / governance
 
@@ -19,6 +20,20 @@
 - B-027-C INTEGRITY VALIDATOR + ADVERSARIAL SYSTEM TESTS + HANDOFF + COLD RECOVERY + FINAL B027 INTEGRATION: MERGED to `main` at `0a4910e...` (PR #8).
 - AUDIT-MAIN-ARCHITECTURE: COMPLETED — PASS WITH FINDINGS at `93c4d3c12da23868a620612a7cd3c2913095ede8` on `audit/main-architecture-findings-freeze`. 36 findings frozen (ANOX-MAINARCH-001..036); 13 blocking HIGH. Product remains blocked pending remaining final/legacy audits and human final gate. Next: MAINARCH-FIX-01.
 - CONTINUITY-001: ACCEPTED.
+
+## WORKFORCE-AUDIT-FINDINGS-FREEZE — 2026-09-07 (ANOX-EVENT-0038)
+
+- Branch: `audit/workforce-architecture-findings-freeze`
+- Substantive commit: `6d9c813439fe47d70457ef9e21759aa9424267af`
+- Canonical base SHA: `d5f76ba9dfdb332ac5f70b769c57b3f0ae6122b8`
+- Audit ID: `ANOX-AUDIT-WORKFORCE-ARCH-001`
+- Result: `PASS WITH FINDINGS`
+- Six audit-local candidates dispositioned: three promoted (`ANOX-WORKFORCE-AUDIT-001`, `002`, `005`), two merged into `002` (`003`, `004`), one scope decision (`006`).
+- New canonical report: `docs/reports/FINAL_PRE_PRODUCT_WORKFORCE_ARCHITECTURE_AUDIT.md`
+- New validator + adversarial tests: `tools/audit/validate_workforce_audit_findings_freeze.py`, `tools/audit/test_workforce_audit_findings_freeze.py`
+- Final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` requirement recorded.
+- Existing Product findings unchanged; Product remains `BLOCKED_PENDING_FINAL_AUDIT`.
+- Next: `WORKFORCE-FIX-01` (Candidate `ANOX-TASK-WORKFORCEFIX01`); `AUDIT-SECURITY-ARCHITECTURE` not authorized.
 
 ## Engineering milestones
 
@@ -888,3 +903,19 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`.
 - **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein externer Audit-Trigger. Keine Remote-Mutation.**
 - **Nächster Schritt:** `AUDIT-WORKFORCE-ARCHITECTURE` — zweite erforderliche Final-Pre-Product-Auditsession per `docs/workforce/audits/final-audit-plan.json` (menschenautorisiert; Candidate `ANOX-TASK-WORKFORCEARCH001`).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0038 -->
+## ANOX-EVENT-0038 — WORKFORCE-AUDIT-FINDINGS-FREEZE — Canonicalize Audit Findings
+
+- **Date:** 2026-09-07
+- **Branch:** `audit/workforce-architecture-findings-freeze`
+- **Substantive HEAD:** `6d9c813439fe47d70457ef9e21759aa9424267af`
+- **Base SHA:** `d5f76ba9dfdb332ac5f70b769c57b3f0ae6122b8`
+- **Result:** `AUDIT-WORKFORCE-ARCHITECTURE` (`ANOX-AUDIT-WORKFORCE-ARCH-001`) `PASS WITH FINDINGS`.
+- **Dispositions:** six candidates dispositioned; three promoted to canonical Open findings (`ANOX-WORKFORCE-AUDIT-001` merge-aware validator; `ANOX-WORKFORCE-AUDIT-002` post-merge continuity sync; `ANOX-WORKFORCE-AUDIT-005` `..` path normalization); two merged into `002` (`003` stale `WORKFORCE_STATE`; `004` stale Candidate `start_sha`); one scope decision (`006` wildcard semantics).
+- **Artifacts:** `docs/reports/FINAL_PRE_PRODUCT_WORKFORCE_ARCHITECTURE_AUDIT.md`, `tools/audit/validate_workforce_audit_findings_freeze.py`, `tools/audit/test_workforce_audit_findings_freeze.py`, `ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001` derived work, `ANOX-TASK-WORKFORCEFIX01` remediation candidate.
+- **Trust boundaries:** `ANOX-MAINARCH-003`, `007`, `024` remain `PENDING` milestone Security Architecture review.
+- **Physical:** `ANOX-MAINARCH-018` remains `PHYSICAL_VERIFICATION_REQUIRED`.
+- **Product development:** `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; `AUDIT-SECURITY-ARCHITECTURE` not authorized.
+- **No product/Rust/CI/DB/backend/authority changes. No external audit trigger. No remote mutation.**
+- **Next step:** `WORKFORCE-FIX-01` (`ANOX-TASK-WORKFORCEFIX01`) — Workforce Governance / Continuity Hardening; start only with explicit human authorization.

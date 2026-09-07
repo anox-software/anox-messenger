@@ -87,7 +87,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^ANOX-(FINDING|MAINARCH|LEGACY)-[A-Z0-9-]+$"
+        "pattern": "^ANOX-(FINDING|MAINARCH|LEGACY|WORKFORCE|SECURITY)-[A-Z0-9-]+$"
       },
       "description": "Findings produced or referenced by this audit session."
     },

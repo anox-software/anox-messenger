@@ -954,3 +954,27 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - Product: BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED
 - Next: AUDIT-WORKFORCE-ARCHITECTURE (Candidate `ANOX-TASK-WORKFORCEARCH001`, pending human authorization)
 
+## WORKFORCE-AUDIT-FINDINGS-FREEZE — 2026-09-07
+
+**Objective:** Canonicalize the completed `AUDIT-WORKFORCE-ARCHITECTURE` result from a fresh, read-only, single-model session on the frozen base `d5f76ba9dfdb332ac5f70b769c57b3f0ae6122b8`.
+
+**Result:** PASS WITH FINDINGS
+
+- Model: `Devin SWE-1.7 Max` (Cognition); no Claude; no remote mutation.
+- Substantive commit: `6d9c813439fe47d70457ef9e21759aa9424267af`
+- Delivery branch: `audit/workforce-architecture-findings-freeze`
+- Audit ID: `ANOX-AUDIT-WORKFORCE-ARCH-001`
+- Six audit-local candidates dispositioned:
+  - `001` PROMOTE_CANONICAL (merge-aware legacy validator)
+  - `002` PROMOTE_CANONICAL (post-merge continuity sync)
+  - `003` MERGE_INTO_EXISTING `002` (stale `WORKFORCE_STATE` pointers)
+  - `004` MERGE_INTO_EXISTING `002` (stale Candidate `start_sha`)
+  - `005` PROMOTE_CANONICAL (`..` path normalization)
+  - `006` REQUIRES_SCOPE_DECISION (wildcard semantics)
+- Canonical findings added: `ANOX-WORKFORCE-AUDIT-001`, `002`, `005` (Open)
+- Remediation candidate: `WORKFORCE-FIX-01` / `ANOX-TASK-WORKFORCEFIX01` (not authorized)
+- Final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` requirement recorded as derived work.
+- New report: `docs/reports/FINAL_PRE_PRODUCT_WORKFORCE_ARCHITECTURE_AUDIT.md`
+- New validator + adversarial tests: `tools/audit/validate_workforce_audit_findings_freeze.py`, `tools/audit/test_workforce_audit_findings_freeze.py`
+- Existing Product findings unchanged; Product remains `BLOCKED_PENDING_FINAL_AUDIT`
+- Next: `WORKFORCE-FIX-01` (Candidate, pending human authorization); `AUDIT-SECURITY-ARCHITECTURE` not authorized
