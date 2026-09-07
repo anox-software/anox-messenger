@@ -16,6 +16,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 RETEST_SHA = "739ea1c36c3d6f8eedb9a315fc6fba5173a82289"
 ORIGINAL_AUDIT_SHA = "0a4910eab1a92622383721100879cda46f924ca0"
 INGEST_EVENT_ID = "ANOX-EVENT-0032"
@@ -124,10 +127,13 @@ def main():
     by_id = {f["finding_id"]: f for f in findings}
     finding_ids = set(by_id.keys())
     expected_ids = {f"ANOX-MAINARCH-{i:03d}" for i in range(1, 37)}
-    if finding_ids == expected_ids:
-        ok("All 36 ANOX-MAINARCH-001..036 IDs preserved")
+    canonical_ids = ll.canonical_finding_ids(findings, audits)
+    if not expected_ids <= finding_ids:
+        fail(f"Finding ID set mismatch: missing {expected_ids - finding_ids}", errors)
+    elif finding_ids != canonical_ids:
+        fail(f"Non-canonical finding IDs present (not anchored to a recorded audit): {finding_ids - canonical_ids}", errors)
     else:
-        fail(f"Finding ID set mismatch: missing {expected_ids - finding_ids}, extra {finding_ids - expected_ids}", errors)
+        ok(f"All 36 ANOX-MAINARCH-001..036 IDs preserved; {len(finding_ids - expected_ids)} later canonical finding(s) anchored to recorded audits")
 
     for fid in sorted(TARGETS):
         f = by_id.get(fid, {})
@@ -158,15 +164,18 @@ def main():
             for fid in (a.get("findings") or a.get("closed_findings") or []):
                 retest03_ids.add(fid)
 
+    # Ready For Retest is a legal intermediate state only when recorded
+    # remediation evidence exists (any authorized FIX task, incl. FIX-03 and
+    # later LEGACY-FIX-01).
     still_rfr = [f["finding_id"] for f in findings if f.get("status") == "Ready For Retest"]
-    bad_rfr = [fid for fid in still_rfr if fid not in FIX03_TARGETS]
+    bad_rfr = [fid for fid in still_rfr if not ll.has_remediation_evidence(by_id[fid])]
     if not bad_rfr:
         if still_rfr:
-            ok(f"Ready For Retest set is limited to FIX-03 targets: {sorted(still_rfr)}")
+            ok(f"Ready For Retest set carries recorded remediation evidence: {sorted(still_rfr)}")
         else:
             ok("No finding remains Ready For Retest")
     else:
-        fail(f"Non-FIX-03 findings Ready For Retest: {bad_rfr}", errors)
+        fail(f"Findings Ready For Retest without remediation evidence: {bad_rfr}", errors)
 
     bad_fix03 = [
         fid for fid in FIX03_TARGETS
@@ -175,25 +184,34 @@ def main():
     if bad_fix03:
         fail(f"FIX-03 findings Closed without MAINARCH-RETEST-03 PASS evidence: {bad_fix03}", errors)
 
+    # Lifecycle-aware: later verified retests (RETEST-03, LEGACY-RETEST-01) may
+    # legally close additional findings. The closed set must contain the
+    # verified pre-FIX-03 baseline and every closure must carry a complete
+    # recorded FIX->RETEST chain.
     closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if closed == FIX01_CLOSED | TARGETS | retest03_ids:
-        if retest03_ids:
-            ok(f"Closed set matches verified findings (25 pre-FIX-03 + RETEST-03 verified: {sorted(retest03_ids)})")
-        else:
-            ok("Closed set is exactly the 25 verified findings (17 FIX-01 + 8 FIX-02)")
+    illegal_closed = [
+        fid for fid in closed - (FIX01_CLOSED | TARGETS | retest03_ids)
+        if not ll.has_legal_closure(by_id[fid], audits)[0]
+    ]
+    if (FIX01_CLOSED | TARGETS) <= closed and not illegal_closed:
+        ok(f"Closed set contains the verified baseline; all additional closures carry legal evidence ({len(closed)} closed)")
     else:
-        fail(f"Closed set mismatch: {sorted(closed)}", errors)
+        fail(f"Closed set mismatch/illegal closures: missing baseline={sorted((FIX01_CLOSED | TARGETS) - closed)}, unevidenced={sorted(illegal_closed)}", errors)
     if len(closed) >= 25 and (FIX01_CLOSED | TARGETS) <= closed:
-        ok(f"Total Closed MAIN findings = {len(closed)} (>= 25 verified pre-FIX-03 baseline)")
+        ok(f"Total Closed findings = {len(closed)} (>= 25 verified pre-FIX-03 baseline)")
     else:
         fail(f"Total Closed = {len(closed)}, expected >= 25 including all pre-FIX-03 closures", errors)
 
     open_ids = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    non_target_open = open_ids - FIX03_TARGETS
-    if non_target_open == EXPECTED_NONFIX03_OPEN:
-        ok("Non-FIX-03 Open findings exactly match expected deferred set")
+    # Every finding — target or not — must be in a legal lifecycle state.
+    illegal_states = [
+        fid for fid, f in by_id.items()
+        if not ll.finding_status_legal(f, audits)[0]
+    ]
+    if not illegal_states:
+        ok(f"All findings are in legal lifecycle states; Open = {sorted(open_ids)}")
     else:
-        fail(f"Non-FIX-03 Open set mismatch: {sorted(non_target_open)}", errors)
+        fail(f"Findings in illegal lifecycle states: {sorted(illegal_states)}", errors)
     unexpected_status = [
         fid for fid in FIX03_TARGETS
         if by_id.get(fid, {}).get("status") not in ("Open", "Ready For Retest", "Closed")
@@ -215,15 +233,17 @@ def main():
             fail(f"{fid} milestone security-review flag lost (notes={note_ok}, v12={v12_ok}, audit={audit_ok})", errors)
 
     # --- 16. No immediate Claude audit triggered ---
+    # Structured detection only: prose prohibitions (e.g. a task non_goal naming
+    # an external audit) are NOT triggers. Only structured trigger fields or
+    # provider/model fields referencing the external provider count.
     reassess = retest.get("security_reassessment", "")
     ws = json.loads(read_text("docs/workforce/WORKFORCE_STATE.json"))
-    ws_blob = json.dumps(ws).lower()
     tasks = read_jsonl("docs/workforce/registries/tasks.jsonl")
-    claude_tasks = [t for t in tasks if "claude" in json.dumps(t).lower() and t.get("status") in ("Open", "In Progress", "Authorized", "Candidate")]
-    if "NO IMMEDIATE SECURITY AUDIT REQUIRED" in reassess and not claude_tasks and "claude" not in ws_blob:
+    trigger_evidence = ll.detect_claude_trigger(tasks=tasks, audits=audits, workforce_state=ws)
+    if "NO IMMEDIATE SECURITY AUDIT REQUIRED" in reassess and not trigger_evidence:
         ok("No immediate Claude/security audit triggered")
     else:
-        fail("Immediate Claude/security audit appears triggered or reassessment text missing", errors)
+        fail(f"Immediate Claude/security audit appears triggered or reassessment text missing: {trigger_evidence}", errors)
 
     # --- 17. Product remains blocked ---
     if ws.get("final_pre_product_audit", {}).get("product_development_state") == "BLOCKED_PENDING_FINAL_AUDIT":
@@ -234,17 +254,18 @@ def main():
     # --- 18. Next planned task advanced past RETEST-02-INGEST ---
     # Valid successor states: MAINARCH-FIX-03 planned/running (pre-FIX-03), or
     # MAINARCH-RETEST-03 planned (post-FIX-03).
+    # Post-RETEST-02 lifecycle has since advanced through FIX-03/RETEST-03 and
+    # the LEGACY phase into the remaining Final Pre-Product audit sessions. The
+    # historical successor must still be recorded, and the current gate must
+    # resolve to a legal canonical successor (an uncompleted required audit or
+    # a lifecycle step).
     gate = ws.get("current_gate", "")
     notes_blob = " ".join(ws.get("notes", []))
-    successor_ok = (
-        ("MAINARCH-FIX-03" in gate and "MAINARCH-FIX-03" in notes_blob)
-        or ("MAINARCH-RETEST-03" in gate and "MAINARCH-RETEST-03" in notes_blob)
-        or ("MAINARCH-FIX-03" in notes_blob and "MAINARCH-RETEST-03" in notes_blob)
-    )
+    successor_ok = "MAINARCH-RETEST-03" in notes_blob and ll.gate_is_legal_successor(ws, gate)
     if successor_ok:
-        ok("Next planned task is a valid post-RETEST-02 successor (FIX-03 or RETEST-03)")
+        ok("Historical post-RETEST-02 successor recorded; current gate resolves to a canonical successor")
     else:
-        fail("WORKFORCE_STATE does not reference a valid post-RETEST-02 successor task", errors)
+        fail("WORKFORCE_STATE does not reference a valid post-RETEST-02 successor chain", errors)
     stale_writers = {"ANOX-TASK-FIX02SERVER0001", "ANOX-TASK-RET02INGEST"}
     if ws.get("current_writer", {}).get("task_id") in stale_writers:
         fail("WORKFORCE_STATE current_writer still references a stale pre-FIX-03 writer", errors)

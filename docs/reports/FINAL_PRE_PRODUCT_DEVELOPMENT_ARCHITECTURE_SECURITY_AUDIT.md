@@ -613,3 +613,58 @@ No product code, Rust, Android, backend, SQL, Supabase, messaging, Device Auth, 
 - `tools/audit/consolidate_legacy_audit_set.py` — this one-time ingest script.
 - `tools/audit/validate_legacy_audit_consolidation.py` — consolidation validator plus adversarial tests.
 
+## LEGACY-RETEST-01 — Targeted delta retest of LEGACY-FIX-01 foundation safety findings
+
+**Status:** PASS
+**Mode:** READ-ONLY TARGETED DELTA RETEST (fresh session; no product changes; working tree clean throughout)
+**Canonical retest base SHA:** `3adf56c17936fdf60c864e4a26f1863243478f44` (merged canonical `main` after PR #17)
+**LEGACY-FIX-01 delivery:** substantive `342d55386f1bd7ea1531fc70e0e0f14fca0f279f` + metadata `37dffdb8aa9fff3dae63766f0bb45adbf52c644f` — both verified ancestors of the retest base
+**Original audit SHA:** `0a4910eab1a92622383721100879cda46f924ca0` / legacy freeze base `f245dc429a9e4bd10f51692eb452d03ccb9a6749`
+**Model:** Devin SWE-1.7 Max
+**Retested findings:** 8
+**Pass — Remediated:** 8/8
+**Failures:** 0
+**Partial:** 0
+**Regressions:** 0
+**Not Reviewable:** 0
+**Closure eligible:** 8/8 — all 8 Closed by `LEGACY-RETEST-01-INGEST`
+**Claude used:** NO
+
+**Findings verified and Closed (severities preserved):**
+
+- HIGH: ANOX-LEGACY-ANDROIDSEC-001, ANOX-LEGACY-CRYPTO-005, ANOX-LEGACY-INTEGRATION-001, ANOX-LEGACY-INTEGRATION-002
+- MEDIUM: ANOX-MAINARCH-019, ANOX-MAINARCH-023, ANOX-LEGACY-INTEGRATION-003
+- LOW: ANOX-MAINARCH-031
+
+**Per-finding verdicts (all `PASS — REMEDIATED`, closure eligibility YES, independent model Devin SWE-1.7 Max, no regression):**
+
+- `ANOX-MAINARCH-019` — production Device Auth eligibility is checked before the remote registration call; only StrongBox- or TEE-backed keys are accepted; software, unknown, or absent backing is rejected fail-closed via `DeviceAuthNotProductionEligibleException`.
+- `ANOX-MAINARCH-023` — `getExistingStateKey()` is used for loading/deserialization/status paths while `getOrCreateStateKey()` is reserved for creation paths; `MissingStateKeyException` distinguishes a missing key and wrapped `K_STATE` is persisted atomically. Missing keys no longer silently mint replacement state keys.
+- `ANOX-MAINARCH-031` — native output-buffer error `-11` is mapped consistently to the dedicated `BufferTooSmall` error across the JNI boundary (`CryptoError.kt`, `crypto/rust/src/error.rs`, `crypto/rust/src/lib.rs`); `AuthenticationFailed` retained.
+- `ANOX-LEGACY-ANDROIDSEC-001` — direct runtime references to `android.security.KeyStoreException` were removed; the replacement classifier uses string-based class-name matching, and Android lint reports zero `NewApi` findings on minSdk 26.
+- `ANOX-LEGACY-CRYPTO-005` — `cryptoLock` serializes all 23 stateful native bridge calls (create/destroy identity, key extraction, OTK generation, session create/encrypt/decrypt/destroy, serialize/deserialize).
+- `ANOX-LEGACY-INTEGRATION-001` — Device Auth is revalidated immediately before the irreversible commit/arming step (`validateDeviceAuthForCommit` with `deviceAuthJwkThumbprint` comparison).
+- `ANOX-LEGACY-INTEGRATION-002` — the updated identity is saved after OTK generation and before public OTK material is returned (`saveIdentity` precedes `getOneTimeKey` inside `ensurePublicIdentityMaterial`).
+- `ANOX-LEGACY-INTEGRATION-003` — the `CommitArmed → Expired` downgrade path was removed (`CommitArmed` never expires; abandon/clear is blocked while `CommitArmed`); `CommitArmed` remains a safety precondition even if grant expiry or binding-marker persistence diverges.
+
+**Test and validation evidence:**
+
+- Android JVM unit tests: `177` passed, `0` failed, `0` errors, `0` skipped — PASS
+- Android lint: `0` errors, `17` warnings, `0` `NewApi` findings — PASS (`ANOX-LEGACY-ANDROIDSEC-001` `NewApi` defect absent)
+- Rust tests: `17` passed, `0` failed, `0` ignored — PASS
+- Android instrumentation: `NOT_RUN — DEVICE/EMULATOR REQUIRED`
+- Physical device / StrongBox / TEE / GrapheneOS evidence: none claimed
+- Source/diff regression review: no target-area regression; FIX-01 implementation untouched by this ingest
+
+**Validator observations (recorded, hardened in LEGACY-RETEST-01-INGEST):**
+
+- Historical validators encoded point-in-time registry equality (all-Open snapshots, closed-set equality, fixed writer/gate sets). They failed against the legal `Open → Ready For Retest → Closed` lifecycle. Hardened to distinguish frozen snapshot truth from current live state via `tools/audit/lifecycle_legality.py`; unauthorized disappearance/closure, evidence loss, illegal transitions, and physical-evidence fabrication still fail.
+- The Claude-audit check was a naive substring match that fired on prohibition prose (`non_goals: "Immediate Claude/security audit"`). Replaced by structured trigger/provider-field inspection; the prohibition is preserved and no longer false-positives.
+- The merged-base scope check in `validate_mainarch_retest03_ingest.py` was inert post-merge (empty `main..HEAD` diff) — delivery verification relies on the pinned-SHA recorded diff.
+
+**Finding totals after closure:** Closed = 38 (30 MAIN architecture + 8 legacy foundation), Remaining Open = 5 (`ANOX-MAINARCH-013`, `ANOX-MAINARCH-018`, `ANOX-MAINARCH-030`, `ANOX-LEGACY-INTEGRATION-005`, `ANOX-LEGACY-B003-001`). No finding remains `Ready For Retest`. **Class-A pre-B004 foundation blocker set = CLOSED.** `ANOX-MAINARCH-018` remains `PHYSICAL_VERIFICATION_REQUIRED`; `ANOX-MAINARCH-030` remains Open with its Class-C future-domain (B-009/B-013) decomposition preserved; milestone Security Architecture review flags for `ANOX-MAINARCH-003`, `007`, `024` remain `PENDING`.
+
+**Product development state:** `BLOCKED_PENDING_FINAL_AUDIT` (unchanged). Final Pre-Product Audit remains IN PROGRESS — the legacy audit set is 6/6 COMPLETE and the legacy foundation remediation+retest phase is COMPLETE; `AUDIT-WORKFORCE-ARCHITECTURE` and `AUDIT-SECURITY-ARCHITECTURE` are not executed. B-004/B-005 remain `NOT_STARTED`.
+
+**Next task:** `AUDIT-WORKFORCE-ARCHITECTURE` — second required Final Pre-Product audit session per canonical `docs/workforce/audits/final-audit-plan.json` (`ANOX-AUDIT-WORKFORCE-ARCH-001`), recorded as Candidate `ANOX-TASK-WORKFORCEARCH001`; start only with explicit human authorization.
+

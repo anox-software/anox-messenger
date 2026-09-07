@@ -31,6 +31,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 TARGETS = {
     "ANOX-MAINARCH-003",
     "ANOX-MAINARCH-007",
@@ -437,6 +440,9 @@ def main():
                     retest03_ids.add(a["finding_id"])
                 for fid in (a.get("findings") or a.get("closed_findings") or []):
                     retest03_ids.add(fid)
+    audits = []
+    if audits_path.exists():
+        audits = ll.load_jsonl(audits_path)
     unrelated_ok = True
     for f in findings:
         fid = f["finding_id"]
@@ -454,11 +460,16 @@ def main():
             elif st not in ("Open", "Ready For Retest", "Closed"):
                 fail(f"{fid} has unexpected status {st}", errors)
                 unrelated_ok = False
-        elif f["status"] != "Open":
-            fail(f"Unrelated {fid} status changed to {f['status']}", errors)
-            unrelated_ok = False
+        else:
+            # Lifecycle-aware: a later authorized FIX/RETEST may legally move a
+            # non-target finding to Ready For Retest or Closed. Only a
+            # transition without recorded evidence still fails.
+            legal, reason = ll.finding_status_legal(f, audits)
+            if not legal:
+                fail(f"Unrelated {fid} has illegal lifecycle state: {reason}", errors)
+                unrelated_ok = False
     if unrelated_ok:
-        ok("Unrelated findings unchanged")
+        ok("Unrelated findings unchanged or legally transitioned")
 
     # 17. Master Audit Report
     if "## MAINARCH-FIX-02" in master:

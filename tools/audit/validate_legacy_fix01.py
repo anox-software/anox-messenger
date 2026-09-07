@@ -14,6 +14,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 TARGET_FINDINGS = {
     "ANOX-MAINARCH-019",
     "ANOX-MAINARCH-023",
@@ -62,21 +65,30 @@ def git(args):
 
 def check_findings(errors):
     rows = read_jsonl("docs/workforce/registries/findings.jsonl")
+    audits = read_jsonl("docs/workforce/registries/audits.jsonl")
     by_id = {r["finding_id"]: r for r in rows}
 
+    # Pre-ingest lifecycle state: targets are Ready For Retest. After the
+    # authorized LEGACY-RETEST-01 ingest they may be legally Closed — but only
+    # with the complete recorded FIX-01 -> RETEST-01 closure chain. Any other
+    # status or an unevidenced closure still fails.
     for fid in TARGET_FINDINGS:
         if fid not in by_id:
             fail(f"Target finding {fid} not in findings.jsonl", errors)
             continue
         r = by_id[fid]
-        if r["status"] != "Ready For Retest":
-            fail(f"{fid} status is {r['status']}, expected Ready For Retest", errors)
-        else:
+        st = r["status"]
+        if st == "Ready For Retest":
             ok(f"{fid} is Ready For Retest")
-
-    for fid in TARGET_FINDINGS:
-        if by_id.get(fid, {}).get("status") == "Closed":
-            fail(f"Target finding {fid} was incorrectly Closed", errors)
+        elif st == "Closed":
+            ev = " ".join(r.get("closure_evidence", []))
+            legal, reasons = ll.has_legal_closure(r, audits)
+            if "LEGACY-FIX-01" in ev and "LEGACY-RETEST-01" in ev and legal:
+                ok(f"{fid} legally Closed after verified LEGACY-RETEST-01 PASS")
+            else:
+                fail(f"{fid} Closed without the LEGACY-FIX-01 -> LEGACY-RETEST-01 closure chain: {reasons}", errors)
+        else:
+            fail(f"{fid} status is {st}, expected Ready For Retest or legally Closed", errors)
 
     for fid in UNCHANGED_OPEN:
         if fid not in by_id:
@@ -90,10 +102,11 @@ def check_findings(errors):
 
     closed = [r["finding_id"] for r in rows if r["status"] == "Closed"]
     newly_closed = [fid for fid in closed if fid not in PRE_FIX01_CLOSED]
-    if newly_closed:
-        fail(f"Unexpected findings Closed: {newly_closed}", errors)
+    unexpected = [fid for fid in newly_closed if fid not in TARGET_FINDINGS]
+    if unexpected:
+        fail(f"Unexpected findings Closed: {unexpected}", errors)
     else:
-        ok("No non-target findings were Closed by this task")
+        ok("Only the 8 verified LEGACY-FIX-01 targets were newly Closed (post-retest ingest)")
 
 
 def check_product_state(errors):

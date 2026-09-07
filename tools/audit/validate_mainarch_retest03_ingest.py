@@ -18,6 +18,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 RETEST_SHA = "88ea18c9b7078c376ee027d0cacc4d4f147ebbf5"
 FIX03_SUBSTANTIVE_SHA = "4573b64dcc997aaaee8e81675a871201627d454e"
 FIX03_METADATA_SHA = "c81ed78aee82eabc816d858e03e01231f5b28461"
@@ -163,24 +166,53 @@ def main():
             continue
         ok(f"{fid} Closed with preserved severity, original evidence, and FIX-03/RETEST-03 closure refs")
 
+    # Ready For Retest remains a legal intermediate state for later authorized
+    # remediation batches (e.g. LEGACY-FIX-01), but only while backed by
+    # recorded remediation evidence. Unrecorded RFR transitions still fail.
     rfr = [f["finding_id"] for f in findings if f.get("status") == "Ready For Retest"]
-    if not rfr:
-        ok("No finding remains Ready For Retest")
+    bad_rfr = [fid for fid in rfr if not ll.has_remediation_evidence(by_id[fid])]
+    if not bad_rfr:
+        if rfr:
+            ok(f"Ready For Retest findings carry recorded remediation evidence: {sorted(rfr)}")
+        else:
+            ok("No finding remains Ready For Retest")
     else:
-        fail(f"Findings still Ready For Retest: {rfr}", errors)
+        fail(f"Ready For Retest findings without remediation evidence: {bad_rfr}", errors)
 
+    # Lifecycle-aware: later verified retests (e.g. LEGACY-RETEST-01) may
+    # legally close additional findings. The recorded RETEST-03 closure set is
+    # the historical floor; every additional closure must carry a complete
+    # recorded FIX->RETEST chain.
     closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if closed == PRE_FIX03_CLOSED | TARGETS and len(closed) == 30:
-        ok("Closed set is exactly the 25 pre-FIX-03 verified + 5 RETEST-03 verified = 30")
+    illegal_closed = [
+        fid for fid in closed - (PRE_FIX03_CLOSED | TARGETS)
+        if not ll.has_legal_closure(by_id[fid], audits)[0]
+    ]
+    if (PRE_FIX03_CLOSED | TARGETS) <= closed and not illegal_closed and len(closed) >= 30:
+        ok(f"Closed set contains the 30 verified findings; all later closures carry legal evidence ({len(closed)} closed)")
     else:
-        fail(f"Closed set mismatch: {sorted(closed)}", errors)
+        fail(f"Closed set mismatch/illegal closures: missing baseline={sorted((PRE_FIX03_CLOSED | TARGETS) - closed)}, unevidenced={sorted(illegal_closed)}", errors)
 
+    # Live lifecycle: the historical MAINARCH-remaining set (019/023/031
+    # included) may legally have progressed through LEGACY-FIX-01 ->
+    # LEGACY-RETEST-01. Every current state must be legal; every historical
+    # remaining finding must still exist.
     open_ids = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    legacy_open = {fid for fid in open_ids if fid.startswith("ANOX-LEGACY-")}
-    if open_ids == EXPECTED_REMAINING_OPEN | legacy_open:
-        ok(f"Remaining Open set includes the 6 deferred MAIN findings plus {len(legacy_open)} new ANOX-LEGACY-* findings: {sorted(open_ids)}")
+    illegal_states = [fid for fid, f in by_id.items() if not ll.finding_status_legal(f, audits)[0]]
+    if not illegal_states:
+        ok(f"All findings in legal lifecycle states; Open = {sorted(open_ids)}")
     else:
-        fail(f"Remaining Open set mismatch: {sorted(open_ids)}", errors)
+        fail(f"Findings in illegal lifecycle states: {sorted(illegal_states)}", errors)
+    for fid in sorted(EXPECTED_REMAINING_OPEN):
+        f = by_id.get(fid)
+        if f is None:
+            fail(f"Expected remaining finding {fid} is missing from the registry", errors)
+            continue
+        legal, reason = ll.finding_status_legal(f, audits)
+        if legal:
+            ok(f"Historical remaining finding {fid} in legal state ({f.get('status')})")
+        else:
+            fail(f"Historical remaining finding {fid} in illegal state: {reason}", errors)
 
     # --- 14-16. Milestone flags remain PENDING ---
     v13 = read_text(V1_3)
@@ -197,22 +229,21 @@ def main():
             fail(f"{fid} milestone flag lost/incomplete (notes={note_ok}, field={field_ok}, audit={audit_ok}, v13={text_ok})", errors)
 
     # --- 17. No immediate Claude audit ---
+    # Structured detection only: a prose prohibition (e.g. a task non_goal
+    # naming an external audit provider) is NOT a trigger. Only structured
+    # trigger fields or provider/model fields count.
     reassess = retest.get("security_reassessment", "")
     ws = json.loads(read_text("docs/workforce/WORKFORCE_STATE.json"))
-    ws_blob = json.dumps(ws).lower()
     tasks = read_jsonl("docs/workforce/registries/tasks.jsonl")
-    # Only tasks that existed at or before MAINARCH-RETEST-03 ingest are in scope.
-    pre_legacy_tasks = [t for t in tasks if t.get("created_at", "") <= "2026-09-06"]
-    claude_tasks = [t for t in pre_legacy_tasks if "claude" in json.dumps(t).lower()
-                    and t.get("status") in ("Open", "In Progress", "Authorized", "Candidate")]
     if "NO IMMEDIATE SECURITY AUDIT REQUIRED" in reassess or "NO NEW SECURITY AUDIT REQUIRED" in reassess:
         reassess_ok = True
     else:
         reassess_ok = False
-    if reassess_ok and not claude_tasks and "claude" not in ws_blob:
-        ok("No immediate Claude/security audit triggered")
+    trigger_evidence = ll.detect_claude_trigger(tasks=tasks, audits=audits, workforce_state=ws)
+    if reassess_ok and not trigger_evidence:
+        ok("No immediate Claude/security audit triggered (prohibition prose is not a trigger)")
     else:
-        fail("Immediate Claude/security audit appears triggered or reassessment text missing", errors)
+        fail(f"Immediate Claude/security audit appears triggered or reassessment text missing: {trigger_evidence}", errors)
 
     # --- 18. Product remains blocked ---
     fpa = ws.get("final_pre_product_audit", {})
@@ -264,11 +295,21 @@ def main():
         ok(f"Canonical legacy audit plan preserved: {plan_ids}")
     else:
         fail(f"Legacy audit plan mismatch: {plan_ids}", errors)
-    if ("LEGACY-AUDIT-B002" in gate and "LEGACY" in gate.upper()) or \
-       ("LEGACY-AUDIT-B002" in notes_blob and "LEGACY" in notes_blob.upper()):
-        ok("Next planned task resolves to first canonical legacy session (LEGACY-AUDIT-B002)")
+    # The LEGACY / BUILD / HARDWARE VERIFICATION phase was the legal successor
+    # of RETEST-03 and has since completed (6/6 legacy audits + LEGACY-FIX-01 +
+    # LEGACY-RETEST-01). The current gate must resolve to a canonical
+    # successor: an uncompleted required audit or a lifecycle step.
+    completed = set(fpa.get("completed_audit_ids") or [])
+    legacy_done = set(EXPECTED_LEGACY_AUDITS) <= completed
+    gate_ok = (
+        ("LEGACY-AUDIT-B002" in gate and "LEGACY" in gate.upper())
+        or ("LEGACY-AUDIT-B002" in notes_blob and "LEGACY" in notes_blob.upper())
+        or (legacy_done and ll.gate_is_legal_successor(ws, gate))
+    )
+    if gate_ok:
+        ok("Next planned task resolves to a canonical successor (legacy phase completed; gate is legal)")
     else:
-        fail("Next planned task does not resolve to the canonical legacy phase", errors)
+        fail("Next planned task does not resolve to a canonical successor", errors)
     required_legacy = fpa.get("required_legacy_audits", [])
     if required_legacy == EXPECTED_LEGACY_AUDITS:
         ok("required_legacy_audits preserved in WORKFORCE_STATE")

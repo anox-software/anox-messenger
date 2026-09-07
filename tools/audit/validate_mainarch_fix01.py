@@ -12,6 +12,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lifecycle_legality as ll  # noqa: E402
+
 
 def fail(msg, errors):
     errors.append(msg)
@@ -219,14 +222,19 @@ def main():
     else:
         ok("docs/README.md does not reference broken docs/history/raw1.1/")
 
-    # 22. finding IDs remain present
+    # 22. finding IDs remain present (canonical = the 36 MAINARCH IDs plus
+    # findings introduced by later recorded audits, e.g. the LEGACY freeze)
     findings = [json.loads(l) for l in (REPO / "docs/workforce/registries/findings.jsonl").read_text().splitlines() if l.strip()]
+    audits = ll.load_jsonl(REPO / "docs/workforce/registries/audits.jsonl")
     expected = {f"ANOX-MAINARCH-{n:03d}" for n in range(1, 37)}
     actual = {f["finding_id"] for f in findings}
-    if expected != actual:
-        fail(f"finding IDs mismatch: missing {expected-actual}, extra {actual-expected}", errors)
+    canonical = ll.canonical_finding_ids(findings, audits)
+    if not expected <= actual:
+        fail(f"finding IDs mismatch: missing {expected-actual}", errors)
+    elif actual != canonical:
+        fail(f"non-canonical finding IDs present (not anchored to a recorded audit): {actual - canonical}", errors)
     else:
-        ok("all 36 finding IDs preserved")
+        ok(f"all 36 finding IDs preserved; {len(actual - expected)} later canonical finding(s) anchored to recorded audits")
 
     # 23. severity unchanged
     target_ids = {
@@ -298,6 +306,9 @@ def main():
                     retest03_ids.add(a["finding_id"])
                 for fid in (a.get("findings") or a.get("closed_findings") or []):
                     retest03_ids.add(fid)
+    audits = []
+    if audits_path.exists():
+        audits = ll.load_jsonl(audits_path)
     unrelated_ok = True
     for f in findings:
         fid = f["finding_id"]
@@ -312,11 +323,16 @@ def main():
                 fail(f"{fid} has unexpected status {st}", errors)
                 unrelated_ok = False
             continue
-        if st != "Open":
-            fail(f"unrelated {fid} status changed to {st}", errors)
+        # Lifecycle-aware: a non-target finding may only leave "Open" through a
+        # recorded legal transition (remediation evidence for Ready For Retest,
+        # full FIX->RETEST closure chain for terminal states). An unauthorized
+        # status change still fails.
+        legal, reason = ll.finding_status_legal(f, audits)
+        if not legal:
+            fail(f"unrelated {fid} has illegal lifecycle state: {reason}", errors)
             unrelated_ok = False
     if unrelated_ok:
-        ok("unrelated findings unchanged (Open)")
+        ok("unrelated findings unchanged or legally transitioned (Open -> Ready For Retest -> Closed)")
 
     # 26. Product development still blocked
     ws = json.loads((REPO / "docs/workforce/WORKFORCE_STATE.json").read_text())

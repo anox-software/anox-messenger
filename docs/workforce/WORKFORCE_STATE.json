@@ -1,7 +1,7 @@
 {
   "schema_version": "B027C-v1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "LEGACY-RETEST-01 — TARGETED DELTA RETEST OF FOUNDATION SAFETY REMEDIATION (pending human authorization)",
+  "current_gate": "LEGACY-RETEST-01-INGEST — VERIFIED FINDING CLOSURE AND VALIDATOR HARDENING (local-only two-commit delivery; human merge pending)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
@@ -9,14 +9,14 @@
   "blocked_tasks": [],
   "authorized_tasks": [],
   "current_writer": {
-    "task_id": "ANOX-TASK-LEGACYRETEST01",
+    "task_id": "ANOX-TASK-LEGACYRET01INGEST",
     "role_id": "ROLE-009",
-    "branch": "audit/legacy-retest-01-foundation-safety"
+    "branch": "audit/legacy-retest-01-ingest"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": "ANOX-LEGACY-INTEGRATION-003",
-  "latest_run_id": "ANOX-RUN-LEGACYFIX01",
+  "latest_run_id": "ANOX-RUN-LEGACYRET01INGEST0001",
   "latest_work_candidate_id": null,
   "final_pre_product_audit": {
     "required": true,
@@ -46,8 +46,11 @@
     "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
     "main_architecture_audit": "COMPLETE",
     "main_architecture_remediation_phase": "COMPLETE",
-    "next_phase": "LEGACY-RETEST-01",
-    "legacy_audit_set_status": "6/6 COMPLETE"
+    "next_phase": "AUDIT-WORKFORCE-ARCHITECTURE",
+    "legacy_audit_set_status": "6/6 COMPLETE",
+    "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
+    "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
+    "class_a_foundation_blockers": "CLOSED"
   },
   "notes": [
     "B027-C final integration merged to main; B027-A/B/C canonical.",
@@ -68,10 +71,14 @@
     "B-004 and B-005 implementation remain NOT_STARTED; implementation_readiness.json unchanged in this respect.",
     "Next planned task: LEGACY / BUILD / HARDWARE VERIFICATION phase — first session LEGACY-AUDIT-B002 per docs/workforce/audits/legacy-audit-plan.json (pending human authorization).",
     "LEGACY-AUDIT-SET-FREEZE (ANOX-RUN-LEGACYFREEZE0001) on f245dc429a9e4bd10f51692eb452d03ccb9a6749: six legacy audits 6/6 COMPLETE; 7 audit-local candidates promoted to canonical Legacy findings; Product remains BLOCKED_PENDING_FINAL_AUDIT; next task ANOX-TASK-LEGACYFIX01.",
-    "2026-09-06T08:58:11.484746Z: LEGACY-FIX-01 complete at 342d55386f1bd7ea1531fc70e0e0f14fca0f279f. 8 target findings moved to Ready For Retest (019,023,031,ANDROIDSEC-001,CRYPTO-005,INTEGRATION-001/002/003); product remains BLOCKED_PENDING_FINAL_AUDIT; next task LEGACY-RETEST-01."
+    "2026-09-06T08:58:11.484746Z: LEGACY-FIX-01 complete at 342d55386f1bd7ea1531fc70e0e0f14fca0f279f. 8 target findings moved to Ready For Retest (019,023,031,ANDROIDSEC-001,CRYPTO-005,INTEGRATION-001/002/003); product remains BLOCKED_PENDING_FINAL_AUDIT; next task LEGACY-RETEST-01.",
+    "2026-09-07: LEGACY-RETEST-01 PASS — 8/8 foundation-safety findings independently verified PASS — REMEDIATED at canonical retest base 3adf56c17936fdf60c864e4a26f1863243478f44 (Devin SWE-1.7 Max, read-only); no FAIL/PARTIAL/REGRESSION/NOT-REVIEWABLE; JVM 177/0, Rust 17/0, lint 0 errors/0 NewApi; instrumentation NOT_RUN (device/emulator required).",
+    "2026-09-07: LEGACY-RETEST-01-INGEST complete — exactly 8 findings Closed (019, 023, 031, ANDROIDSEC-001, CRYPTO-005, INTEGRATION-001/002/003) with preserved severity/title/evidence; 38 Closed / 5 Open (013, 018, 030, INTEGRATION-005, B003-001); no Ready For Retest remain; Class-A foundation blocker set CLOSED.",
+    "2026-09-07: Historical audit validators hardened to lifecycle-aware semantics (snapshot expectations vs legal live transitions); stale equality checks for MAINARCH-FIX-01/02/03, RETEST-01/02/03-INGEST and the legacy consolidation updated; structured trigger detection replaces prose substring matching.",
+    "2026-09-07: Next canonical Final Pre-Product gate resolved: AUDIT-WORKFORCE-ARCHITECTURE (first unexecuted required audit session per final-audit-plan.json); Candidate task ANOX-TASK-WORKFORCEARCH001 recorded; start only on explicit human authorization."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "LEGACY-RETEST-01",
+  "next_phase": "AUDIT-WORKFORCE-ARCHITECTURE",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "legacy_audit_set_status": "6/6 COMPLETE"

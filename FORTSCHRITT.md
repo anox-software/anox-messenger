@@ -873,3 +873,18 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - Product state: `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`.
 - Validation: JVM 177/0; Rust 17/0; Android lint 0 errors; B027 integrity PASS; continuity live PASS.
 - Next: `LEGACY-RETEST-01` pending human authorization.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0037 -->
+## ANOX-EVENT-0037 — LEGACY-RETEST-01-INGEST Verified Finding Closure + Historical Validator Hardening
+
+- **Date:** 2026-09-07
+- **Branch:** `audit/legacy-retest-01-ingest`
+- **Substantive HEAD:** `f50dc79195c22a9f4e47ccc56f509908940632c2`
+- **Ergebnis:** `LEGACY-RETEST-01` PASS kanonisch erfasst; 8 Befunde (`ANOX-MAINARCH-019`, `023`, `031`, `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-CRYPTO-005`, `ANOX-LEGACY-INTEGRATION-001/002/003`) verifiziert und auf `Closed` gesetzt. Gesamt geschlossen: 38; verbleibend offen: 5 (`013`, `018`, `030`, `INTEGRATION-005`, `B003-001`). Kein Befund bleibt `Ready For Retest`. Class-A-Foundation-Blocker-Set = CLOSED.
+- **Phase:** MAIN ARCHITECTURE AUDIT + REMEDIATION = COMPLETE; LEGACY AUDIT SET 6/6 + LEGACY-FIX-01 + LEGACY-RETEST-01 = COMPLETE; Final Pre-Product Audit bleibt IN PROGRESS.
+- **Vertrauensgrenzen:** `ANOX-MAINARCH-003`, `007`, `024` bleiben `PENDING` für die Meilenstein-Sicherheitsüberprüfung.
+- **Physisch:** `ANOX-MAINARCH-018` bleibt `PHYSICAL_VERIFICATION_REQUIRED`.
+- **Artifakte:** `audits.jsonl` Retest-Ergebnis, `validate_legacy_retest01_ingest.py` + 25 adversarielle Tests, `lifecycle_legality.py` (kanonische Transition-Legalität), gehärtete historische Validatoren (Snapshot vs. Live-Lebenszyklus; strukturierte externe-Audit-Trigger-Erkennung statt Prosa-Substring).
+- **Produktentwicklung:** weiterhin `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`.
+- **Keine Produkt/Rust/CI/DB/backend/Architektur-Änderungen. Kein externer Audit-Trigger. Keine Remote-Mutation.**
+- **Nächster Schritt:** `AUDIT-WORKFORCE-ARCHITECTURE` — zweite erforderliche Final-Pre-Product-Auditsession per `docs/workforce/audits/final-audit-plan.json` (menschenautorisiert; Candidate `ANOX-TASK-WORKFORCEARCH001`).

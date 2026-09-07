@@ -231,6 +231,77 @@ class TestMilestoneFlags(unittest.TestCase):
         self.assertTrue(errors, "024 milestone text removal must fail")
 
 
+class TestLifecycleLegality(unittest.TestCase):
+    """Post-ingest lifecycle semantics: Open -> Ready For Retest -> Closed is
+    legal only with recorded evidence; unauthorized transitions still fail."""
+
+    def test_unauthorized_closure_detected(self):
+        findings = v.read_jsonl("docs/workforce/registries/findings.jsonl")
+        for f in findings:
+            if f["finding_id"] == "ANOX-MAINARCH-013":
+                f["status"] = "Closed"
+                break
+        errors = []
+        v.check_findings(errors, findings)
+        self.assertTrue(errors, "unauthorized closure without evidence must fail")
+
+    def test_rfr_without_remediation_evidence_detected(self):
+        findings = v.read_jsonl("docs/workforce/registries/findings.jsonl")
+        for f in findings:
+            if f["finding_id"] == "ANOX-MAINARCH-013":
+                f["status"] = "Ready For Retest"
+                f.pop("remediation_refs", None)
+                break
+        errors = []
+        v.check_findings(errors, findings)
+        self.assertTrue(errors, "RFR without remediation evidence must fail")
+
+    def test_rfr_with_remediation_evidence_accepted(self):
+        findings = v.read_jsonl("docs/workforce/registries/findings.jsonl")
+        for f in findings:
+            if f["finding_id"] == "ANOX-MAINARCH-013":
+                f["status"] = "Ready For Retest"
+                f["remediation_refs"] = ["MAINARCH-FIX-09", "tools/audit/validate_mainarch_fix09.py",
+                                         "git:" + "0" * 40]
+                break
+        errors = []
+        v.check_findings(errors, findings)
+        self.assertFalse(errors, f"legal RFR transition must be accepted: {errors}")
+
+    def test_legal_post_ingest_closures_accepted(self):
+        # The 8 LEGACY-FIX-01 findings Closed after a recorded LEGACY-RETEST-01
+        # PASS must not be reported as illegal.
+        errors = []
+        v.check_findings(errors)
+        self.assertFalse(errors, f"legal post-ingest state must pass: {errors}")
+
+
+class TestClaudeTriggerDetection(unittest.TestCase):
+    """Structured trigger detection: prose prohibitions must not fire."""
+
+    def test_prose_prohibition_is_not_a_trigger(self):
+        tasks = [{"task_id": "ANOX-TASK-X1", "status": "Candidate",
+                  "non_goals": ["Immediate Claude/security audit — prohibited"]}]
+        evidence = v.ll.detect_claude_trigger(tasks=tasks)
+        self.assertEqual(evidence, [], f"prohibition prose must not trigger: {evidence}")
+
+    def test_structured_trigger_field_fires(self):
+        tasks = [{"task_id": "ANOX-TASK-X2", "status": "Open",
+                  "claude_audit_triggered": True}]
+        evidence = v.ll.detect_claude_trigger(tasks=tasks)
+        self.assertTrue(evidence, "structured trigger field must be detected")
+
+    def test_provider_field_fires(self):
+        audits = [{"audit_id": "X", "provider": "anthropic-claude"}]
+        evidence = v.ll.detect_claude_trigger(audits=audits)
+        self.assertTrue(evidence, "provider field naming the external model must be detected")
+
+    def test_workforce_trigger_field_fires(self):
+        ws = {"claude_audit_triggered": "YES"}
+        evidence = v.ll.detect_claude_trigger(workforce_state=ws)
+        self.assertTrue(evidence, "WORKFORCE_STATE trigger field must be detected")
+
+
 class TestCanonicalState(unittest.TestCase):
     def test_valid_state_passes(self):
         self.assertEqual(v.main(), 0)
