@@ -1,18 +1,22 @@
 # CURRENT NEXT DEVIN TASK
 
-Effective as of 2026-09-07 (ANOX-EVENT-0037).
+Effective as of 2026-09-07 (ANOX-EVENT-0038).
 
 ## Next canonical task (Candidate — NOT authorized)
 
-`AUDIT-WORKFORCE-ARCHITECTURE — B-027 WORKFORCE / WORK-CONTROL GOVERNANCE AUDIT`
+`WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING`
 
-- Second required Final Pre-Product audit session per `docs/workforce/audits/final-audit-plan.json` (`ANOX-AUDIT-WORKFORCE-ARCH-001`).
-- Candidate task record: `ANOX-TASK-WORKFORCEARCH001` (fresh session, read-only, Findings Freeze before remediation).
-- Covers workforce, governance, resolver, continuity, role_permissions and state_gate_resolver domains.
-- Run `validate_b027_integrity.py`, `tools/continuity/validate_continuity.py --mode live`, and the hardened audit validators.
+- Candidate task record: `ANOX-TASK-WORKFORCEFIX01` (pending human authorization).
+- Targets the canonical Open findings from `AUDIT-WORKFORCE-ARCHITECTURE`:
+  - `ANOX-WORKFORCE-AUDIT-001`: make `validate_legacy_retest01_ingest.py` merge-aware (distinguish task-authored commits from Human merge commits).
+  - `ANOX-WORKFORCE-AUDIT-002`: harden post-merge continuity synchronization (`CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, `WORKFORCE_STATE.json`, Candidate `start_sha`).
+  - `ANOX-WORKFORCE-AUDIT-005`: normalize `..` (and absolute/symlink) path components in `tools/workforce/state_gate_resolver.py`.
+  - `ANOX-WORKFORCE-AUDIT-006`: document the wildcard path-scope semantics decision in `state_gate_resolver.py` / task-package schema.
+- Preserve and progress the final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` requirement (`ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001`).
+- Run `validate_workforce_audit_findings_freeze.py`, `test_workforce_audit_findings_freeze.py`, `validate_b027a.py`, `validate_b027b.py`, `validate_b027_integrity.py`, `tools/continuity/validate_continuity.py --mode live` and archive-mode handoff validation.
 - No product work, no backend/DB, no CI, no secrets, no remote mutation.
 - Start only with explicit human authorization.
 
 ## Completed prerequisite
 
-`LEGACY-RETEST-01` — PASS (8/8 findings verified REMEDIATED and Closed by LEGACY-RETEST-01-INGEST).
+`AUDIT-WORKFORCE-ARCHITECTURE` (`ANOX-AUDIT-WORKFORCE-ARCH-001`) — PASS WITH FINDINGS frozen; six audit-local candidates dispositioned; three promoted to canonical Open findings.
