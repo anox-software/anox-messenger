@@ -18,6 +18,40 @@
     "latest_run_id",
     "latest_work_candidate_id"
   ],
+  "$defs": {
+    "mergeStateBlock": {
+      "type": "object",
+      "properties": {
+        "described_head": {"type": "string"},
+        "current_gate": {"type": "string"},
+        "current_writer": {
+          "type": ["object", "null"],
+          "properties": {
+            "task_id": {"type": "string"},
+            "role_id": {"type": "string"},
+            "branch": {"type": "string"}
+          },
+          "required": ["task_id", "role_id", "branch"]
+        },
+        "next_phase": {"type": "string"},
+        "current_task": {"type": "string"},
+        "active_task": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "acceptanceGate": {
+      "type": "object",
+      "properties": {
+        "gate_id": {"type": "string"},
+        "title": {"type": "string"},
+        "status": {"type": "string"},
+        "result": {"type": "string"},
+        "work_candidate_id": {"type": "string"},
+        "rationale": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
   "properties": {
     "schema_version": {
       "type": "string"
@@ -107,7 +141,21 @@
       "items": {
         "type": "string"
       }
-    }
+    },
+    "canonical_branch": {"type": "string"},
+    "delivery_branch": {"type": "string"},
+    "described_head": {"type": "string"},
+    "pre_merge_state": {"$ref": "#/$defs/mergeStateBlock"},
+    "post_merge_state": {"$ref": "#/$defs/mergeStateBlock"},
+    "effective_state": {"$ref": "#/$defs/mergeStateBlock"},
+    "final_operational_handoff_acceptance_gate": {"$ref": "#/$defs/acceptanceGate"},
+    "product_development_state": {"type": "string"},
+    "next_phase": {"type": "string"},
+    "main_architecture_audit": {"type": "string"},
+    "main_architecture_remediation_phase": {"type": "string"},
+    "workforce_architecture_audit": {"type": "string"},
+    "legacy_audit_set_status": {"type": "string"},
+    "final_pre_product_audit": {"type": "object"}
   },
   "additionalProperties": false
 }

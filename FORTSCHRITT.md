@@ -3,8 +3,9 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0029 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0033 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0038 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0039 -->
 
-**Status:** AUDIT-WORKFORCE-ARCHITECTURE PASS WITH FINDINGS FROZEN; 3 WORKFORCE FINDINGS PROMOTED; NEXT: WORKFORCE-FIX-01; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
+**Status:** WORKFORCE-FIX-01 REMEDIATED TO READY FOR REMOTE; 3 WORKFORCE FINDINGS (001/002/005) READY FOR RETEST; WORKFORCE-RETEST-01 CANDIDATE RECORDED; PRODUCT REMAINS BLOCKED PENDING FINAL_PRE_PRODUCT_ARCHITECTURE_SECURITY_AUDIT
 **Updated:** 2026-09-07
 
 ## Architecture / governance
@@ -34,6 +35,21 @@
 - Final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` requirement recorded.
 - Existing Product findings unchanged; Product remains `BLOCKED_PENDING_FINAL_AUDIT`.
 - Next: `WORKFORCE-FIX-01` (Candidate `ANOX-TASK-WORKFORCEFIX01`); `AUDIT-SECURITY-ARCHITECTURE` not authorized.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0039 -->
+## WORKFORCE-FIX-01 — 2026-09-07 (ANOX-EVENT-0039)
+
+- Branch: `remediation/workforce-fix-01-governance-continuity`
+- Substantive commit: `3cc663e00a23e6a0cc342d3ad941a8e926772cd6`
+- Canonical base SHA: `7eede96b3830a9b4a49e43494b60d4163c1e5cb3`
+- Task ID: `ANOX-TASK-WORKFORCEFIX01`
+- Result: `Ready For Remote`
+- Targets remediated: `ANOX-WORKFORCE-AUDIT-001` (merge-aware exact two-commit delivery), `ANOX-WORKFORCE-AUDIT-002` (post-merge continuity/effective state), `ANOX-WORKFORCE-AUDIT-005` (`..`/absolute/UNC path normalization).
+- New validators + adversarial tests: `tools/audit/validate_workforce_fix01.py`, `tools/audit/test_workforce_fix01.py`.
+- `tools/audit/lifecycle_legality.py` canonical two-commit delivery proof; `tools/workforce/state_gate_resolver.py` derives effective post-merge state; `tools/workforce/validate_b027_integrity.py` updated for final operational handoff acceptance gate.
+- `ANOX-TASK-WORKFORCERETEST01` recorded as Candidate with `start_sha` NOT YET BOUND.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE.
+- Next: human merge to `main` then `WORKFORCE-RETEST-01` on a fresh post-merge `main` SHA.
 
 ## Engineering milestones
 
@@ -919,3 +935,18 @@ messenger functionality; the percentage reflects merged B-002 plus B-003 client 
 - **Product development:** `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; `AUDIT-SECURITY-ARCHITECTURE` not authorized.
 - **No product/Rust/CI/DB/backend/authority changes. No external audit trigger. No remote mutation.**
 - **Next step:** `WORKFORCE-FIX-01` (`ANOX-TASK-WORKFORCEFIX01`) — Workforce Governance / Continuity Hardening; start only with explicit human authorization.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0039 -->
+## WORKFORCE-FIX-01 — 2026-09-07 (ANOX-EVENT-0039)
+
+- Branch: `remediation/workforce-fix-01-governance-continuity`
+- Substantive commit: `3cc663e00a23e6a0cc342d3ad941a8e926772cd6`
+- Canonical base SHA: `7eede96b3830a9b4a49e43494b60d4163c1e5cb3`
+- Task ID: `ANOX-TASK-WORKFORCEFIX01`
+- Result: `Ready For Remote`
+- Targets remediated: `ANOX-WORKFORCE-AUDIT-001` (merge-aware exact two-commit delivery), `ANOX-WORKFORCE-AUDIT-002` (post-merge continuity/effective state), `ANOX-WORKFORCE-AUDIT-005` (`..`/absolute/UNC path normalization).
+- New validators + adversarial tests: `tools/audit/validate_workforce_fix01.py`, `tools/audit/test_workforce_fix01.py`.
+- `tools/audit/lifecycle_legality.py` canonical two-commit delivery proof; `tools/workforce/state_gate_resolver.py` derives effective post-merge state; `tools/workforce/validate_b027_integrity.py` updated for final operational handoff acceptance gate.
+- `ANOX-TASK-WORKFORCERETEST01` recorded as Candidate with `start_sha` NOT YET BOUND.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE.
+- Next: human merge to `main` then `WORKFORCE-RETEST-01` on a fresh post-merge `main` SHA.

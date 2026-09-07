@@ -36,6 +36,8 @@ RETEST_AUDIT_ID = "LEGACY-RETEST-01"
 RETEST_BASE_SHA = "3adf56c17936fdf60c864e4a26f1863243478f44"
 FIX01_SUBSTANTIVE_SHA = "342d55386f1bd7ea1531fc70e0e0f14fca0f279f"
 FIX01_METADATA_SHA = "37dffdb8aa9fff3dae63766f0bb45adbf52c644f"
+INGEST_SUBSTANTIVE_SHA = "f50dc79195c22a9f4e47ccc56f509908940632c2"
+INGEST_METADATA_SHA = "0f5c62a798c812922b89b5b9f51ceec4712320b4"
 ORIGINAL_AUDIT_SHA = "0a4910eab1a92622383721100879cda46f924ca0"
 INGEST_EVENT_ID = "ANOX-EVENT-0037"
 INGEST_TASK_ID = "ANOX-TASK-LEGACYRET01INGEST"
@@ -309,23 +311,26 @@ def check_target_closures(errors, findings=None, audits=None):
 
 
 def check_non_target_findings(errors, findings=None, audits=None):
-    """11-16. Exactly the 5 canonical non-target findings remain Open; no
-    unrelated closure; all registry findings in legal lifecycle states."""
+    """11-16. The 5 canonical non-target findings remain Open; the 8 targets
+    and 30 pre-ingest findings remain Closed; later legally-added findings may
+    also be Open. All registry findings in legal lifecycle states."""
     if findings is None:
         findings = read_jsonl("docs/workforce/registries/findings.jsonl")
     if audits is None:
         audits = read_jsonl("docs/workforce/registries/audits.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
     open_ids = {f["finding_id"] for f in findings if f.get("status") == "Open"}
-    if open_ids == EXPECTED_REMAINING_OPEN:
-        ok(f"Exactly the 5 canonical non-target findings remain Open: {sorted(open_ids)}")
+    if not EXPECTED_REMAINING_OPEN.issubset(open_ids):
+        missing = EXPECTED_REMAINING_OPEN - open_ids
+        fail(f"Canonical non-target findings no longer Open: {sorted(missing)}", errors)
     else:
-        fail(f"Open set mismatch: expected {sorted(EXPECTED_REMAINING_OPEN)}, got {sorted(open_ids)}", errors)
+        ok(f"All 5 canonical non-target findings remain Open")
     closed = {f["finding_id"] for f in findings if f.get("status") == "Closed"}
-    if closed == PRE_INGEST_CLOSED | TARGETS:
-        ok("Closed set = 30 pre-ingest verified + 8 LEGACY-RETEST-01 verified = 38")
+    if not (PRE_INGEST_CLOSED | TARGETS).issubset(closed):
+        missing = (PRE_INGEST_CLOSED | TARGETS) - closed
+        fail(f"Historical closed findings no longer Closed: {sorted(missing)}", errors)
     else:
-        fail(f"Closed set mismatch: {sorted(closed)}", errors)
+        ok("Closed set contains 30 pre-ingest + 8 LEGACY-RETEST-01 verified = 38")
     illegal = [fid for fid, f in by_id.items() if not ll.finding_status_legal(f, audits)[0]]
     if illegal:
         fail(f"Findings in illegal lifecycle states: {sorted(illegal)}", errors)
@@ -344,7 +349,7 @@ def check_non_target_findings(errors, findings=None, audits=None):
 
 def check_product_blocked(errors, ws=None, ir=None):
     """17-19. Product remains BLOCKED; B-004/B-005 NOT_STARTED; no product-code
-    changes in the ingest delivery diff (retest base..HEAD)."""
+    changes in the historical ingest delivery diff (retest base..delivery parent)."""
     if ws is None:
         ws = json.loads(read_text("docs/workforce/WORKFORCE_STATE.json"))
     fpa = ws.get("final_pre_product_audit", {})
@@ -367,7 +372,15 @@ def check_product_blocked(errors, ws=None, ir=None):
         fail(f"implementation_readiness drifted for: {bad}", errors)
     else:
         ok("B-004/B-005 remain FROZEN + NOT_STARTED")
-    changed = git(["diff", "--name-only", RETEST_BASE_SHA, "HEAD"])
+    # Resolve the historical ingest delivery parent so later main history is excluded.
+    ok_meta, delivery_parent, _, reason = ll.canonical_two_commit_delivery(
+        RETEST_BASE_SHA, INGEST_SUBSTANTIVE_SHA, None,
+        canonical_branch="main", delivery_branch="audit/legacy-retest-01-ingest"
+    )
+    if not ok_meta:
+        fail(f"Could not resolve ingest delivery for product-scope diff: {reason}", errors)
+        return
+    changed = git(["diff", "--name-only", RETEST_BASE_SHA, delivery_parent])
     if changed is None:
         fail("Could not resolve ingest delivery diff", errors)
     else:
@@ -435,30 +448,36 @@ def check_no_claude(errors, tasks=None, audits=None, ws=None, retest=None):
 def check_next_gate(errors, ws=None, tasks=None):
     """22. The next canonical gate resolves to the first uncompleted required
     Final Pre-Product audit (AUDIT-WORKFORCE-ARCHITECTURE) and a Candidate
-    task records it."""
-    if ws is None:
-        ws = json.loads(read_text("docs/workforce/WORKFORCE_STATE.json"))
-    if tasks is None:
-        tasks = read_jsonl("docs/workforce/registries/tasks.jsonl")
-    nxt = ll.next_canonical_gate(ws)
+    task records it. This is validated from the historical ingest state, not
+    today's live state."""
+    # Use the WORKFORCE_STATE as it existed at the ingest delivery.
+    ingest_end = INGEST_METADATA_SHA
+    if not ll._git_is_ancestor(ingest_end, "HEAD"):
+        fail("LEGACY-RETEST-01-INGEST metadata commit is not an ancestor of HEAD", errors)
+        return
+    hist_ws = ll.historical_json_at(ingest_end, "docs/workforce/WORKFORCE_STATE.json")
+    if hist_ws is None:
+        fail("Cannot read historical WORKFORCE_STATE at ingest delivery", errors)
+        return
+    nxt = ll.next_canonical_gate(hist_ws)
     if nxt == NEXT_GATE:
-        ok(f"Next canonical required audit resolves to {NEXT_GATE}")
+        ok(f"Historical next canonical required audit resolves to {NEXT_GATE}")
     else:
-        fail(f"Next canonical required audit is {nxt}, expected {NEXT_GATE}", errors)
-    fpa = ws.get("final_pre_product_audit", {})
-    if fpa.get("next_phase") == NEXT_GATE and ws.get("next_phase") == NEXT_GATE:
-        ok("WORKFORCE_STATE next_phase resolves to the canonical next audit")
+        fail(f"Historical next canonical required audit is {nxt}, expected {NEXT_GATE}", errors)
+    fpa = hist_ws.get("final_pre_product_audit", {})
+    if fpa.get("next_phase") == NEXT_GATE and hist_ws.get("next_phase") == NEXT_GATE:
+        ok("Historical WORKFORCE_STATE next_phase resolves to the canonical next audit")
     else:
-        fail("WORKFORCE_STATE next_phase does not resolve to AUDIT-WORKFORCE-ARCHITECTURE", errors)
+        fail("Historical WORKFORCE_STATE next_phase does not resolve to AUDIT-WORKFORCE-ARCHITECTURE", errors)
     task = next((t for t in tasks if t.get("task_id") == NEXT_TASK_ID), None)
     if task is None:
         fail(f"Candidate task {NEXT_TASK_ID} missing", errors)
-    elif task.get("status") != "Candidate":
-        fail(f"{NEXT_TASK_ID} status is {task.get('status')}, expected Candidate (not started)", errors)
+    elif task.get("status") != "Candidate" and task.get("status") != "Closed":
+        fail(f"{NEXT_TASK_ID} status is {task.get('status')}, expected Candidate/Closed", errors)
     elif "AUDIT-WORKFORCE-ARCHITECTURE" not in (task.get("title", "") + task.get("scope", "")):
         fail(f"{NEXT_TASK_ID} does not cover AUDIT-WORKFORCE-ARCHITECTURE", errors)
     else:
-        ok(f"Next gate recorded as Candidate task {NEXT_TASK_ID} (not authorized)")
+        ok(f"Next gate recorded as Candidate task {NEXT_TASK_ID}")
 
 
 # --- 23. Project Memory / continuity synchronization ---------------------------
@@ -522,16 +541,21 @@ def check_task_run_linkage(errors, tasks=None, runs=None):
 
 
 def check_two_commit_delivery(errors):
-    """The ingest branch contains exactly two commits ahead of the retest base:
-    a substantive commit and a metadata-only commit."""
-    out = git(["rev-list", "--count", f"{RETEST_BASE_SHA}..HEAD"])
-    if out != "2":
-        fail(f"Expected exactly 2 commits on ingest branch, found {out}", errors)
+    """The historical ingest delivery contains exactly two commits ahead of the
+    retest base: a substantive commit and a metadata-only commit. Later main
+    history (including the Human merge and any subsequent commits) must not be
+    counted as part of the ingest delivery."""
+    ok_meta, delivery_parent, substantive_head, reason = ll.canonical_two_commit_delivery(
+        RETEST_BASE_SHA, INGEST_SUBSTANTIVE_SHA, None,
+        canonical_branch="main", delivery_branch="audit/legacy-retest-01-ingest",
+        metadata_allowlist=METADATA_ONLY_ALLOWLIST
+    )
+    if not ok_meta:
+        fail(f"Canonical two-commit delivery failed: {reason}", errors)
         return
-    ok("Ingest branch contains exactly 2 commits ahead of the retest base")
+    ok("Ingest delivery contains exactly 2 task-authored commits above retest base")
     # The second commit (metadata) may only touch allowlisted metadata surfaces.
-    head = git(["rev-parse", "HEAD"])
-    meta_files = git(["diff", "--name-only", f"{head}~1", head]) or ""
+    meta_files = git(["diff", "--name-only", f"{delivery_parent}~1", delivery_parent]) or ""
     bad = [p for p in meta_files.splitlines() if p not in METADATA_ONLY_ALLOWLIST]
     if bad:
         fail(f"Metadata commit touches non-metadata files: {bad}", errors)

@@ -205,9 +205,18 @@ class B027CIntegrityValidator:
         state_path = WORKFORCE_DIR / "WORKFORCE_STATE.json"
         if state_path.exists():
             self.workforce_state = self.load_json(state_path)
+        else:
+            self.workforce_state = {}
 
         self.git_head = self._git_rev_parse("HEAD")
         self.git_branch = self._git_branch()
+
+        self.effective_workforce_state = sgr.derive_effective_workforce_state(
+            self.workforce_state,
+            live_branch=self.git_branch,
+            live_head=self.git_head,
+            repo_root=REPO_ROOT,
+        ) or self.workforce_state
 
     # ------------------------------------------------------------------
     # AT: Authority / Runtime Contract
@@ -457,8 +466,8 @@ class B027CIntegrityValidator:
                     f"{label} ({tid}) closed with open findings: {open_findings}",
                 )
 
-        # Current writer from workforce state.
-        cw = self.workforce_state.get("current_writer") or {}
+        # Current writer from effective workforce state.
+        cw = self.effective_workforce_state.get("current_writer") or {}
         if cw:
             self.record("AV-11", _TASK_ID_RE.match(cw.get("task_id", "")), "Workforce state current_writer task_id malformed")
             self.record("AV-12", cw.get("task_id") in self.task_by_id, "Workforce state current_writer references unknown task")
@@ -473,7 +482,7 @@ class B027CIntegrityValidator:
                     )
 
         # State active roles known.
-        for rid in self.workforce_state.get("active_roles", []):
+        for rid in self.effective_workforce_state.get("active_roles", self.workforce_state.get("active_roles", [])):
             self.record("AV-15", rid in known_ids, f"Workforce state active_roles unknown: {rid}")
 
         # Authorized/blocked task IDs known.
@@ -922,13 +931,16 @@ class B027CIntegrityValidator:
         )
 
         # Various incomplete conditions must all remain BLOCKED.
+        oa_pass = {"final_operational_handoff_acceptance": {"status": "PASS"}}
+        oa_pending = {"final_operational_handoff_acceptance": {"status": "NOT_EXECUTED"}}
         states = [
-            {"final_audit_complete": True, "legacy_audits": [], "blocking_findings": [], "name": "missing legacy"},
-            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [{"severity": "CRITICAL"}], "name": "open critical"},
-            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], "human_decision": False, "name": "all but human"},
-            {"final_audit_complete": False, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], "name": "no final audit"},
-            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], "retest_missing": True, "name": "retest missing"},
-            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], "systemic_required": True, "name": "systemic required"},
+            {"final_audit_complete": True, "legacy_audits": [], "blocking_findings": [], **oa_pass, "name": "missing legacy"},
+            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [{"severity": "CRITICAL"}], **oa_pass, "name": "open critical"},
+            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], **oa_pass, "human_decision": False, "name": "all but human"},
+            {"final_audit_complete": False, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], **oa_pass, "name": "no final audit"},
+            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], **oa_pass, "retest_missing": True, "name": "retest missing"},
+            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], **oa_pass, "systemic_required": True, "name": "systemic required"},
+            {"final_audit_complete": True, "legacy_audits": [{"satisfied": True}], "blocking_findings": [], **oa_pending, "human_decision": True, "machine_decision": True, "name": "operational handoff not executed"},
         ]
         for st in states:
             self.record(
@@ -937,11 +949,12 @@ class B027CIntegrityValidator:
                 f"Final product gate not BLOCKED for state: {st['name']}",
             )
 
-        # All machine + human final decision -> eligible (not necessarily AUTHORIZED).
+        # All machine + human final decision + operational handoff PASS -> eligible (not necessarily AUTHORIZED).
         complete = {
             "final_audit_complete": True,
             "legacy_audits": [{"satisfied": True}],
             "blocking_findings": [],
+            "final_operational_handoff_acceptance": {"status": "PASS"},
             "machine_decision": True,
             "human_decision": True,
         }
@@ -1220,6 +1233,11 @@ class B027CIntegrityValidator:
             return True
         if state.get("systemic_required"):
             return True
+        # Final operational handoff/bootstrap/employee cold-boot acceptance gate
+        # must be explicitly passed before the product gate can open.
+        oa = state.get("final_operational_handoff_acceptance") or {}
+        if oa.get("status", "NOT_EXECUTED").upper() not in ("PASS", "PASSED"):
+            return True
         if not state.get("human_decision"):
             return True
         return False
@@ -1231,6 +1249,9 @@ class B027CIntegrityValidator:
         if not all(l.get("satisfied") for l in state.get("legacy_audits", [])):
             return False
         if state.get("blocking_findings"):
+            return False
+        oa = state.get("final_operational_handoff_acceptance") or {}
+        if oa.get("status", "NOT_EXECUTED").upper() not in ("PASS", "PASSED"):
             return False
         if not (state.get("machine_decision") and state.get("human_decision")):
             return False
