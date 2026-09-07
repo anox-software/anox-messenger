@@ -3,7 +3,7 @@
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
   "delivery_branch": "remediation/workforce-fix-01-governance-continuity",
-  "described_head": "",
+  "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
   "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (In Progress; awaiting review)",
   "active_roles": [
     "ROLE-003",
@@ -61,11 +61,11 @@
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "",
-    "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (In Progress; awaiting review)",
+    "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
+    "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Ready For Remote; awaiting human merge)",
     "current_writer": {
       "task_id": "ANOX-TASK-WORKFORCEFIX01",
-      "role_id": "ROLE-009",
+      "role_id": "ROLE-003",
       "branch": "remediation/workforce-fix-01-governance-continuity"
     },
     "next_phase": "WORKFORCE-RETEST-01",
@@ -73,7 +73,7 @@
     "active_task": "ANOX-TASK-WORKFORCEFIX01"
   },
   "post_merge_state": {
-    "described_head": "",
+    "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
     "current_gate": "WORKFORCE-RETEST-01 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
     "current_writer": null,
     "next_phase": "WORKFORCE-RETEST-01",

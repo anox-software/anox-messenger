@@ -978,3 +978,27 @@ migration to `anox-software/anox-messenger` and the merge of governance PR #1.
 - New validator + adversarial tests: `tools/audit/validate_workforce_audit_findings_freeze.py`, `tools/audit/test_workforce_audit_findings_freeze.py`
 - Existing Product findings unchanged; Product remains `BLOCKED_PENDING_FINAL_AUDIT`
 - Next: `WORKFORCE-FIX-01` (Candidate, pending human authorization); `AUDIT-SECURITY-ARCHITECTURE` not authorized
+
+## WORKFORCE-FIX-01 — Workforce Governance / Continuity Hardening
+
+**Objective:** Remediate the canonical findings from AUDIT-WORKFORCE-ARCHITECTURE:
+- `ANOX-WORKFORCE-AUDIT-001`: merge-aware legacy retest validator (do not count Human merge commit as task-authored third commit).
+- `ANOX-WORKFORCE-AUDIT-002`: deterministic post-merge continuity/Workforce-state synchronization.
+- `ANOX-WORKFORCE-AUDIT-005`: fail-closed `..`/absolute/UNC path normalization in `state_gate_resolver.py`.
+- Preserve and progress `ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001`.
+
+**Result:** PASS — READY FOR HUMAN MERGE AND WORKFORCE-RETEST-01
+
+- Branch: `remediation/workforce-fix-01-governance-continuity`.
+- Substantive commit: `3cc663e00a23e6a0cc342d3ad941a8e926772cd6`.
+- Metadata commit: `__METADATA_SHA__` (sealed at metadata-commit time).
+- Canonical base SHA: `7eede96b3830a9b4a49e43494b60d4163c1e5cb3`.
+- Findings `ANOX-WORKFORCE-AUDIT-001`, `002`, `005` moved to `Ready For Retest` with `remediation_refs`.
+- `ANOX-TASK-WORKFORCEFIX01` status `Ready For Remote`; `ANOX-TASK-WORKFORCERETEST01` recorded as `Candidate` with `start_sha` `NOT YET BOUND`.
+- `tools/audit/lifecycle_legality.py` now proves exact two task-authored commits above base, distinguishes delivery parent from Human merge, and excludes later `main` history.
+- `tools/workforce/state_gate_resolver.py` derives effective `current_writer`/`current_gate` from `pre_merge_state` / `post_merge_state`.
+- `tools/workforce/validate_b027_integrity.py` updated for final operational handoff acceptance gate and effective state.
+- `tools/audit/validate_workforce_fix01.py` + `tools/audit/test_workforce_fix01.py` (17 adversarial and synthetic tests) PASS.
+- B027-A/B/C, `validate_legacy_retest01_ingest.py`, and `validate_workforce_audit_findings_freeze.py` PASS.
+- No product, backend, SQL, CI, or secret changes; no remote mutation.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; Security Architecture Audit `NOT_STARTED`.
