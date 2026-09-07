@@ -294,6 +294,59 @@ class B027BResolverTests(unittest.TestCase):
         r = sgr.check_path_enforcement(paths, self._task())
         self.assertEqual(r["result"], "BLOCKED")
 
+    def test_28a_path_dotdot_escape_blocked(self):
+        paths = ["docs/workforce/../backend/x.py"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28b_path_dotdot_multi_escape_blocked(self):
+        paths = ["docs/workforce/a/../../backend/x.py"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28c_path_root_escape_blocked(self):
+        paths = ["../android/x.kt"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28d_path_absolute_posix_blocked(self):
+        paths = ["/absolute/path"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28e_path_absolute_windows_blocked(self):
+        paths = ["C:\\outside\\x"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28f_path_unc_blocked(self):
+        paths = ["\\\\server\\share\\x"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28g_path_dot_component_allowed(self):
+        paths = ["docs/workforce/./x.md"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "ALLOWED")
+
+    def test_28h_path_duplicate_separators_allowed(self):
+        paths = ["docs//workforce///x.md"]
+        r = sgr.check_path_enforcement(paths, self._task())
+        self.assertEqual(r["result"], "ALLOWED")
+
+    def test_28i_wildcard_single_component_recursive_blocked(self):
+        # `docs/workforce/*` must NOT match a nested file.
+        task = self._task(allowed_paths=["docs/workforce/*"])
+        r = sgr.check_path_enforcement(["docs/workforce/x.md"], task)
+        self.assertEqual(r["result"], "ALLOWED")
+        r = sgr.check_path_enforcement(["docs/workforce/deep/sub/x.md"], task)
+        self.assertEqual(r["result"], "BLOCKED")
+
+    def test_28j_wildcard_double_recursive_allowed(self):
+        task = self._task(allowed_paths=["docs/workforce/**"])
+        r = sgr.check_path_enforcement(["docs/workforce/deep/sub/x.md"], task)
+        self.assertEqual(r["result"], "ALLOWED")
+
     def test_29_check_one_active_writer_pass(self):
         state = self._state(tasks=[{
             "task_id": "ANOX-TASK-OTHER",

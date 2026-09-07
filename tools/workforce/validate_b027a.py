@@ -78,6 +78,7 @@ RUN_RESULTS = ["PASS", "FAIL", "PARTIAL", "BLOCKED", "IN_PROGRESS"]
 _STABLE_ID_RE = re.compile(r"^ANOX-(TASK|FINDING|DECISION|RUN|WORK|MAINARCH|LEGACY|WORKFORCE|SECURITY)-[A-Z0-9-]+$")
 _ROLE_ID_RE = re.compile(r"^ROLE-(0[0-9][0-9]|1[0-9])$")
 _SHA40_RE = re.compile(r"^[0-9a-f]{40}$")
+_START_SHA_UNBOUND_RE = re.compile(r"^NOT YET BOUND")
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 _DATETIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$")
 
@@ -204,6 +205,13 @@ def _check_sha(field, obj, label, errors, required=True):
     value = obj.get(field)
     if not value and not required:
         return True
+    if value and _START_SHA_UNBOUND_RE.match(value):
+        # Unbound start_sha is permitted only for Candidate tasks awaiting
+        # human authorization of a future base.
+        if obj.get("status") == "Candidate":
+            return True
+        fail(f"{label} {field} unbound but task is not Candidate", errors)
+        return False
     if not value or not _SHA40_RE.match(value):
         fail(f"{label} {field} malformed: {value}", errors)
         return False

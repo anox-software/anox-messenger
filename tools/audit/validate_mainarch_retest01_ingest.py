@@ -242,8 +242,7 @@ def main():
     else:
         fail("WORKFORCE_STATE current_writer still references stale ANOX-TASK-MAINARCH0001", errors)
     current_gate = ws.get("current_gate") or ""
-    if any(t in current_gate for t in ("MAINARCH-FIX-02", "MAINARCH-RETEST-02", "MAINARCH-FIX-03",
-                                       "MAINARCH-RETEST-03", "LEGACY-AUDIT", "LEGACY")):
+    if ll.gate_is_legal_successor(ws, current_gate):
         ok("WORKFORCE_STATE current_gate points to a recognized post-FIX-01 task")
     else:
         fail("WORKFORCE_STATE current_gate does not point to a recognized post-FIX-01 task", errors)

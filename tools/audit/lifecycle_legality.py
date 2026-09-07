@@ -21,6 +21,7 @@ only structured trigger/provider fields count).
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -341,3 +342,162 @@ def gate_is_legal_successor(ws, gate, lifecycle_tokens=("LEGACY", "MAINARCH", "R
     if any(tok in gate.upper() for tok in lifecycle_tokens):
         return True
     return False
+
+
+# ---------------------------------------------------------------------------
+# Merge-aware canonical delivery proof
+# ---------------------------------------------------------------------------
+
+
+def _git(args, cwd=REPO):
+    try:
+        return subprocess.check_output(["git"] + list(args), cwd=cwd, text=True,
+                                       stderr=subprocess.DEVNULL).strip()
+    except subprocess.CalledProcessError:
+        return None
+
+
+def _git_is_ancestor(ancestor, descendant, cwd=REPO):
+    return subprocess.run(["git", "merge-base", "--is-ancestor", ancestor, descendant],
+                          cwd=cwd, capture_output=True).returncode == 0
+
+
+def _git_merge_parents(sha, cwd=REPO):
+    out = _git(["rev-list", "--parents", "-n", "1", sha], cwd=cwd)
+    if not out:
+        return None
+    parts = out.split()
+    if len(parts) < 2:
+        return None
+    return parts[1:]
+
+
+def git_find_canonical_merge(described_head, live_head, canonical_branch="main",
+                             delivery_branch=None, cwd=REPO):
+    """Identify the canonical integration merge M and its delivery/canonical parents.
+
+    Returns (merge_sha, delivery_parent, canonical_parent) or (None, None, None).
+    Only two-parent merges are supported. Ambiguous topologies fail closed.
+    """
+    out = _git(["rev-list", "--merges", "--first-parent",
+                f"{described_head}..{live_head}"], cwd=cwd)
+    if out is None:
+        return None, None, None
+    candidates = out.splitlines()
+    if not candidates:
+        return None, None, None
+
+    canonical_ref = _git(["rev-parse", canonical_branch], cwd=cwd) or canonical_branch
+    qualifying = []
+    for merge_sha in candidates:
+        parents = _git_merge_parents(merge_sha, cwd=cwd)
+        if not parents:
+            continue
+        if len(parents) != 2:
+            return None, None, None
+
+        has_desc = [_git_is_ancestor(described_head, p, cwd=cwd) for p in parents]
+        if has_desc.count(True) != 1:
+            continue
+
+        delivery_idx = has_desc.index(True)
+        delivery_parent = parents[delivery_idx]
+        canonical_parent = parents[1 - delivery_idx]
+
+        if not _git_is_ancestor(canonical_parent, canonical_ref, cwd=cwd):
+            continue
+        if not _git_is_ancestor(described_head, delivery_parent, cwd=cwd):
+            continue
+        qualifying.append((merge_sha, delivery_parent, canonical_parent))
+
+    if len(qualifying) != 1:
+        return None, None, None
+    return qualifying[0]
+
+
+def canonical_two_commit_delivery(base_sha, described_head, live_head,
+                                  canonical_branch="main", delivery_branch=None,
+                                  cwd=REPO, metadata_allowlist=None):
+    """Verify the historical two-commit delivery invariant.
+
+    Returns (ok, delivery_parent, substantive_head, reason) where:
+      - ok is True if exactly two task-authored commits exist between base_sha
+        and the delivery parent of the canonical merge;
+      - delivery_parent is the parent commit that contains the delivery lineage;
+      - substantive_head is the first of the two task-authored commits.
+    """
+    if live_head is None:
+        live_head = _git(["rev-parse", "HEAD"], cwd=cwd)
+    if not live_head:
+        return False, None, None, "cannot resolve live HEAD"
+
+    if not _git_is_ancestor(base_sha, live_head, cwd=cwd):
+        return False, None, None, f"base {base_sha[:12]} is not an ancestor of live {live_head[:12]}"
+
+    # If the described_head is the live head, we are on the unmerged delivery branch.
+    if live_head == described_head:
+        delivery_parent = live_head
+    else:
+        # First, try the unmerged delivery-branch case: live_head is exactly the
+        # metadata commit and its parent is the substantive described_head.
+        parents = _git_merge_parents(live_head, cwd=cwd)
+        if parents and len(parents) == 1 and parents[0] == described_head:
+            count = _git(["rev-list", "--count", f"{base_sha}..{live_head}"], cwd=cwd)
+            if count == "2":
+                delivery_parent = live_head
+            else:
+                return False, None, None, f"expected exactly 2 task-authored commits above base, found {count}"
+        else:
+            merge, delivery_parent, canonical_parent = git_find_canonical_merge(
+                described_head, live_head, canonical_branch=canonical_branch,
+                delivery_branch=delivery_branch, cwd=cwd
+            )
+            if merge is None:
+                return False, None, None, "cannot identify canonical integration merge"
+
+    count = _git(["rev-list", "--count", f"{base_sha}..{delivery_parent}"], cwd=cwd)
+    if count is None:
+        return False, None, None, "cannot count commits between base and delivery parent"
+    if count != "2":
+        return False, None, None, f"expected exactly 2 task-authored commits above base, found {count}"
+
+    # Verify topology: delivery_parent parent is the substantive head, which is a
+    # direct child of the base.
+    parents = _git_merge_parents(delivery_parent, cwd=cwd)
+    if not parents or len(parents) != 1:
+        return False, None, None, "delivery parent is not a single-parent commit"
+    substantive_head = parents[0]
+    if substantive_head != described_head:
+        return False, None, None, f"delivery parent parent {substantive_head[:12]} != described_head {described_head[:12]}"
+    if not _git_is_ancestor(base_sha, substantive_head, cwd=cwd):
+        return False, None, None, "substantive head is not a descendant of the base"
+
+    # Metadata commit may only touch metadata-allowlisted files.
+    if metadata_allowlist:
+        meta_files = _git(["diff", "--name-only", f"{delivery_parent}~1", delivery_parent], cwd=cwd)
+        if meta_files is None:
+            return False, None, None, "cannot read metadata commit diff"
+        bad = [p for p in meta_files.splitlines() if p not in metadata_allowlist]
+        if bad:
+            return False, None, None, f"metadata commit touches non-metadata files: {bad}"
+
+    return True, delivery_parent, substantive_head, "exact two-commit delivery proven"
+
+
+def historical_file_at(sha, rel_path, cwd=REPO):
+    """Return the contents of a repository file at a specific commit, or None."""
+    out = _git(["show", f"{sha}:{rel_path}"], cwd=cwd)
+    if out is None:
+        return None
+    return out
+
+
+def historical_json_at(sha, rel_path, cwd=REPO):
+    """Return a JSON object parsed from a repository file at a specific commit."""
+    text = historical_file_at(sha, rel_path, cwd=cwd)
+    if text is None:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return None

@@ -1,22 +1,27 @@
 {
-  "schema_version": "B027C-v1",
+  "schema_version": "B027C-v1.1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Candidate, pending human authorization)",
+  "canonical_branch": "main",
+  "delivery_branch": "remediation/workforce-fix-01-governance-continuity",
+  "described_head": "",
+  "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (In Progress; awaiting review)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
   ],
   "blocked_tasks": [],
-  "authorized_tasks": [],
+  "authorized_tasks": [
+    "ANOX-TASK-WORKFORCEFIX01"
+  ],
   "current_writer": {
-    "task_id": "ANOX-TASK-WORKFORCEFREEZE001",
+    "task_id": "ANOX-TASK-WORKFORCEFIX01",
     "role_id": "ROLE-009",
-    "branch": "audit/workforce-architecture-findings-freeze"
+    "branch": "remediation/workforce-fix-01-governance-continuity"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
   "latest_finding_id": "ANOX-WORKFORCE-AUDIT-005",
-  "latest_run_id": "ANOX-RUN-WORKFORCEFREEZE0001",
+  "latest_run_id": "ANOX-RUN-WORKFORCEFIX0001",
   "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
   "final_pre_product_audit": {
     "required": true,
@@ -49,11 +54,39 @@
     "main_architecture_remediation_phase": "COMPLETE",
     "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
     "security_architecture_audit": "NOT_STARTED",
-    "next_phase": "WORKFORCE-FIX-01",
+    "next_phase": "WORKFORCE-RETEST-01",
     "legacy_audit_set_status": "6/6 COMPLETE",
     "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
     "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
     "class_a_foundation_blockers": "CLOSED"
+  },
+  "pre_merge_state": {
+    "described_head": "",
+    "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (In Progress; awaiting review)",
+    "current_writer": {
+      "task_id": "ANOX-TASK-WORKFORCEFIX01",
+      "role_id": "ROLE-009",
+      "branch": "remediation/workforce-fix-01-governance-continuity"
+    },
+    "next_phase": "WORKFORCE-RETEST-01",
+    "current_task": "ANOX-TASK-WORKFORCEFIX01",
+    "active_task": "ANOX-TASK-WORKFORCEFIX01"
+  },
+  "post_merge_state": {
+    "described_head": "",
+    "current_gate": "WORKFORCE-RETEST-01 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "WORKFORCE-RETEST-01",
+    "current_task": "WORKFORCE-FIX-01 merged — awaiting independent retest",
+    "active_task": null
+  },
+  "final_operational_handoff_acceptance_gate": {
+    "gate_id": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
+    "title": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
+    "status": "NOT_EXECUTED",
+    "result": "PENDING",
+    "work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
+    "rationale": "Before the product final gate opens, the project must prove the complete development/workforce system can be reconstructed from the repository and handoff archive without chat history."
   },
   "notes": [
     "B027-C final integration merged to main; B027-A/B/C canonical.",
@@ -79,10 +112,11 @@
     "2026-09-07: LEGACY-RETEST-01-INGEST complete — exactly 8 findings Closed (019, 023, 031, ANDROIDSEC-001, CRYPTO-005, INTEGRATION-001/002/003) with preserved severity/title/evidence; 38 Closed / 5 Open (013, 018, 030, INTEGRATION-005, B003-001); no Ready For Retest remain; Class-A foundation blocker set CLOSED.",
     "2026-09-07: Historical audit validators hardened to lifecycle-aware semantics (snapshot expectations vs legal live transitions); stale equality checks for MAINARCH-FIX-01/02/03, RETEST-01/02/03-INGEST and the legacy consolidation updated; structured trigger detection replaces prose substring matching.",
     "2026-09-07: Next canonical Final Pre-Product gate resolved: AUDIT-WORKFORCE-ARCHITECTURE (first unexecuted required audit session per final-audit-plan.json); Candidate task ANOX-TASK-WORKFORCEARCH001 recorded; start only on explicit human authorization.",
-    "2026-09-07: AUDIT-WORKFORCE-ARCHITECTURE (ANOX-AUDIT-WORKFORCE-ARCH-001) completed as PASS WITH FINDINGS on frozen base d5f76ba. Six audit-local candidates dispositioned; three promoted to canonical Open findings (ANOX-WORKFORCE-AUDIT-001, 002, 005), two merged into 002 (003, 004), one scope decision (006). Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance recorded as derived work candidate ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001. Product remains BLOCKED_PENDING_FINAL_AUDIT; next candidate ANOX-TASK-WORKFORCEFIX01; Security Architecture Audit not authorized until blocking Workforce findings are closed."
+    "2026-09-07: AUDIT-WORKFORCE-ARCHITECTURE (ANOX-AUDIT-WORKFORCE-ARCH-001) completed as PASS WITH FINDINGS on frozen base d5f76ba. Six audit-local candidates dispositioned; three promoted to canonical Open findings (ANOX-WORKFORCE-AUDIT-001, 002, 005), two merged into 002 (003, 004), one scope decision (006). Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance recorded as derived work candidate ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001. Product remains BLOCKED_PENDING_FINAL_AUDIT; next candidate ANOX-TASK-WORKFORCEFIX01; Security Architecture Audit not authorized until blocking Workforce findings are closed.",
+    "2026-09-07T20:00:00Z: WORKFORCE-FIX-01 authorized. Finding 001 (merge-aware validator), Finding 002 (post-merge derived continuity state), and Finding 005 (path normalization) remediated to Ready For Retest. Final operational handoff acceptance gate defined as PENDING/NOT_EXECUTED. Product remains BLOCKED_PENDING_FINAL_AUDIT; next Candidate ANOX-TASK-WORKFORCERETEST01."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "WORKFORCE-FIX-01",
+  "next_phase": "WORKFORCE-RETEST-01",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",

@@ -229,22 +229,120 @@ def _extract_state(current, task=None):
     return None
 
 
+def _canonicalize_path(path):
+    """Return a repository-relative canonical path or None if unsafe.
+
+    Rules:
+    - reject empty paths
+    - reject absolute POSIX paths
+    - reject Windows absolute / drive / UNC paths
+    - reject NUL bytes
+    - normalize `.` and `..` BEFORE scope matching
+    - collapse duplicate separators
+    - reject paths that escape the repository root after normalization
+    - preserve a single trailing slash only for directory patterns
+    """
+    if not isinstance(path, str) or not path:
+        return None
+    if "\x00" in path:
+        return None
+    # Reject Windows/UNC drive-absolute forms.
+    if re.match(r"^[A-Za-z]:[/\\]", path):
+        return None
+    if path.startswith("\\\\") or path.startswith("//"):
+        return None
+    # Reject absolute POSIX paths.
+    if path.startswith("/"):
+        return None
+    # Convert backslashes to forward slashes for canonical matching.
+    p = path.replace("\\", "/")
+    parts = []
+    for part in p.split("/"):
+        if part == "" or part == ".":
+            continue
+        if part == "..":
+            if not parts:
+                return None  # escape above repo root
+            parts.pop()
+        else:
+            parts.append(part)
+    if not parts:
+        return ""
+    return "/".join(parts)
+
+
+def _canonicalize_pattern(pattern):
+    """Canonicalize a path pattern the same way, preserving `*` and `**`."""
+    if not isinstance(pattern, str) or not pattern:
+        return None
+    if "\x00" in pattern:
+        return None
+    if re.match(r"^[A-Za-z]:[/\\]", pattern):
+        return None
+    if pattern.startswith("\\\\") or pattern.startswith("//"):
+        return None
+    if pattern.startswith("/"):
+        return None
+    p = pattern.replace("\\", "/")
+    parts = []
+    for part in p.split("/"):
+        if part == "" or part == ".":
+            continue
+        if part == "..":
+            if not parts:
+                return None
+            if parts[-1] not in ("*", "**"):  # do not collapse wildcard segments
+                parts.pop()
+        else:
+            parts.append(part)
+    if not parts:
+        return ""
+    return "/".join(parts)
+
+
 def _path_matches(path, pattern):
-    return fnmatch.fnmatch(path, pattern)
+    """Match canonical path against canonical pattern.
+
+    Semantics:
+    - `*` matches exactly one path component (no directory separator).
+    - `**` matches zero or more complete path components.
+    - Other characters are matched literally.
+    """
+    # Escape literal characters, then replace `**` and `*` with regex equivalents.
+    # Order matters: handle `**` before `*`.
+    escaped = re.escape(pattern)
+    # `**` must match zero or more components, possibly preceded/followed by a slash.
+    escaped = escaped.replace(r"\*\*", r"(?:[^/]+/)*[^/]*")
+    # `*` must match exactly one non-slash component.
+    escaped = escaped.replace(r"\*", r"[^/]+")
+    regex = f"^{escaped}$"
+    return re.match(regex, path) is not None
 
 
 def _path_allowed(path, allowed, forbidden):
+    canonical = _canonicalize_path(path)
+    if canonical is None:
+        return False, "path_escape_or_invalid"
     for fp in forbidden or []:
-        if _path_matches(path, fp):
+        cp = _canonicalize_pattern(fp)
+        if cp is None:
+            continue
+        if _path_matches(canonical, cp):
             return False, "forbidden_path"
     for ap in allowed or []:
-        if path == ap:
+        cap = _canonicalize_pattern(ap)
+        if cap is None:
+            continue
+        # Exact match.
+        if canonical == cap:
             return True, "allowed"
-        if ap.endswith("/") and path.startswith(ap):
+        # Prefix match for directory pattern ending in `/`.
+        if cap.endswith("/") and canonical.startswith(cap):
             return True, "allowed"
-        if not ap.endswith("/") and (path == ap or path.startswith(ap + "/")):
+        # Prefix match for non-directory pattern.
+        if not cap.endswith("/") and (canonical == cap or canonical.startswith(cap + "/")):
             return True, "allowed"
-        if _path_matches(path, ap):
+        if _path_matches(canonical, cap):
             return True, "allowed"
     return False, "path_outside_allowed"
 
@@ -268,7 +366,8 @@ def check_path_enforcement(changed_paths, task):
     for cp in changed_paths:
         ok, reason = _path_allowed(cp, allowed, forbidden)
         if not ok:
-            bad.append({"path": cp, "reason": reason})
+            canonical = _canonicalize_path(cp)
+            bad.append({"path": cp, "canonical": canonical, "reason": reason})
     if bad:
         return {"result": "BLOCKED", "reason": "unauthorized_path", "unauthorized_paths": bad}
     return {"result": "ALLOWED", "reason": "paths_allowed", "unauthorized_paths": []}
@@ -336,8 +435,13 @@ def authorize_task(task, state=None, roles=None):
         reasons.append("missing_branch")
 
     start = task.get("start_sha")
-    if not _is_valid_sha(start):
+    start_unbound = isinstance(start, str) and start.startswith("NOT YET BOUND")
+    if not _is_valid_sha(start) and not start_unbound:
         reasons.append("malformed_start_sha")
+    elif start_unbound and task.get("status") == "Candidate":
+        # Unbound start_sha is legal only for Candidate tasks awaiting human
+        # authorization of the post-merge main SHA.
+        pass
     elif state and state.get("current_sha"):
         if start != state["current_sha"] and start not in state.get("ancestor_shas", []):
             reasons.append("start_sha_not_ancestor_or_match")
@@ -585,23 +689,117 @@ def resolve_legacy_revalidation(changed_domains):
     return sessions
 
 
+def derive_effective_workforce_state(workforce_state, live_branch=None, live_head=None, repo_root=None):
+    """Return the effective workforce state after canonical merge derivation.
+
+    If the state contains a `pre_merge_state` and `post_merge_state` block and
+    the current branch is the canonical branch with the delivery merge in its
+    ancestry, the post-merge state is the effective state. Otherwise the
+    recorded state (top-level or pre_merge) is the effective state.
+    """
+    if workforce_state is None:
+        return None
+    if not isinstance(workforce_state, dict):
+        return workforce_state
+
+    pre = workforce_state.get("pre_merge_state", workforce_state)
+    post = workforce_state.get("post_merge_state")
+    if not isinstance(post, dict):
+        return workforce_state
+
+    # If no live git context, prefer the recorded explicit effective state if set.
+    if live_branch is None or live_head is None or repo_root is None:
+        return workforce_state.get("effective_state", workforce_state)
+
+    # Determine whether the delivery described by pre_merge has been canonically merged.
+    # The post_merge state applies when we are on the canonical branch and the
+    # pre-merge described_head is an ancestor of the live head via a canonical merge.
+    canonical_branch = workforce_state.get("canonical_branch", "main")
+    delivery_branch = workforce_state.get("delivery_branch")
+    described_head = pre.get("described_head") or workforce_state.get("described_head")
+
+    if live_branch != canonical_branch:
+        return pre
+
+    if not described_head:
+        return pre
+
+    try:
+        import subprocess
+        def _git(args):
+            return subprocess.run(["git"] + list(args), cwd=repo_root,
+                                  capture_output=True, text=True).returncode == 0
+
+        # Quick ancestor check: described_head must be an ancestor of live_head.
+        if not _git(["merge-base", "--is-ancestor", described_head, live_head]):
+            return pre
+
+        # Find the canonical merge on first-parent path described..live.
+        out = subprocess.run(["git", "rev-list", "--merges", "--first-parent",
+                              f"{described_head}..{live_head}"],
+                             cwd=repo_root, capture_output=True, text=True).stdout.strip()
+        if not out:
+            return pre
+
+        live_canonical = subprocess.run(["git", "rev-parse", canonical_branch],
+                                        cwd=repo_root, capture_output=True, text=True).stdout.strip()
+
+        for merge_sha in out.splitlines():
+            parents = subprocess.run(["git", "rev-list", "--parents", "-n", "1", merge_sha],
+                                     cwd=repo_root, capture_output=True, text=True).stdout.strip().split()
+            if len(parents) < 2:
+                continue
+            parents = parents[1:]  # first token is the merge itself
+            has_desc = [subprocess.run(["git", "merge-base", "--is-ancestor", described_head, p],
+                                       cwd=repo_root, capture_output=True).returncode == 0
+                        for p in parents]
+            if has_desc.count(True) != 1:
+                continue
+            delivery_idx = has_desc.index(True)
+            delivery_parent = parents[delivery_idx]
+            canonical_parent = parents[1 - delivery_idx]
+            if not subprocess.run(["git", "merge-base", "--is-ancestor", canonical_parent, live_canonical],
+                                  cwd=repo_root, capture_output=True).returncode == 0:
+                continue
+            # Found the canonical merge; post_merge state is effective.
+            effective = dict(post)
+            effective["described_head"] = described_head
+            effective["merge_head"] = merge_sha
+            effective["delivery_head"] = delivery_parent
+            return effective
+    except Exception:
+        pass
+
+    return pre
+
+
 def resolve_final_product_gate(state=None):
     state = state or {}
     final = bool(state.get("final_audit_complete"))
     blocking = state.get("blocking_findings") or []
     legacy = state.get("legacy_audits") or []
     legacy_ok = all(l.get("satisfied") for l in legacy)
+    operational_acceptance = state.get("final_operational_handoff_acceptance", {})
+    oa_status = (operational_acceptance.get("status") or "").upper()
+    oa_pass = oa_status in ("PASS", "PASSED")
+    oa_missing_or_not_pass = not oa_pass
 
-    if final and not blocking and legacy_ok:
+    if not final or blocking or not legacy_ok:
         return {
             "result": "BLOCKED",
             "gate": "PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT",
-            "reason": "B027-B product gate remains closed despite final audit readiness",
+            "reason": "final audit incomplete, blocking findings, or legacy audits unsatisfied",
+        }
+    if oa_missing_or_not_pass:
+        return {
+            "result": "BLOCKED",
+            "gate": "PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT",
+            "reason": "final operational handoff/bootstrap acceptance not PASS",
         }
     return {
         "result": "BLOCKED",
         "gate": "PRODUCT_DEVELOPMENT_BLOCKED_PENDING_FINAL_AUDIT",
-        "reason": "final audit incomplete, blocking findings, or legacy audits unsatisfied",
+        "reason": "B027-B product gate remains closed despite final audit readiness",
     }
 
 
