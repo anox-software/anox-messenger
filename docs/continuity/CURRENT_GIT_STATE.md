@@ -2,12 +2,12 @@
 
 - Branch: __HANDOFF_BRANCH__
 - Head: __HANDOFF_HEAD__
-- Main baseline: 8385f4019184be9b568f65ec4748194595ef339c
-- Described HEAD: 9ed0c32efbb78e850a974af7ad2df5d026891a07
+- Main baseline: 81e091f3346a7c8653c100a334a1dbfe2c54d464
+- Described HEAD: 36ec5227dec4727950ce793df9bea013f8de8823
 - Working tree: __WORKING_TREE__
 - Effective gate: `__EFFECTIVE_GATE__`
-- Pre-merge gate: WORKFORCE-FIX-02 — HANDOFF ARCHIVE EFFECTIVE-STATE RENDERING (Ready For Remote; awaiting human merge)
-- Post-merge gate: WORKFORCE-RETEST-02 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)
+- Pre-merge gate: WORKFORCE-TEST-HARNESS-FIX-01
+- Post-merge gate: WORKFORCE-HARNESS-RECHECK-01
 - Canonical merge of MAINARCH-RETEST-01-INGEST: 4ee8fe94c71923ae4be038fc250c9ac980ccc7c1
 - Canonical merge of MAINARCH-FIX-02: 739ea1c36c3d6f8eedb9a315fc6fba5173a82289
 - Canonical merge of MAINARCH-FIX-03: 88ea18c9b7078c376ee027d0cacc4d4f147ebbf5

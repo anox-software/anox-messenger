@@ -1,14 +1,14 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING<!-- /ANOX:handoff_version -->`
+Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-TEST-HARNESS-FIX-01<!-- /ANOX:handoff_version -->`
 Date: 2026-09-07
-Delivery branch: `remediation/workforce-fix-02-handoff-archive`
-Described HEAD: `9ed0c32efbb78e850a974af7ad2df5d026891a07`
-Main baseline HEAD: `8385f4019184be9b568f65ec4748194595ef339c`
+Delivery branch: `remediation/workforce-test-harness-fix-01`
+Described HEAD: `36ec5227dec4727950ce793df9bea013f8de8823`
+Main baseline HEAD: `81e091f3346a7c8653c100a334a1dbfe2c54d464`
 Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
-Pre-merge gate: `<!-- ANOX:pre_merge_gate -->WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Ready For Remote; awaiting human merge)<!-- /ANOX:pre_merge_gate -->`
-Post-merge gate: `<!-- ANOX:post_merge_gate -->WORKFORCE-RETEST-01 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)<!-- /ANOX:post_merge_gate -->`
+Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-TEST-HARNESS-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
+Pre-merge gate: `<!-- ANOX:pre_merge_gate -->WORKFORCE-TEST-HARNESS-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:pre_merge_gate -->`
+Post-merge gate: `<!-- ANOX:post_merge_gate -->WORKFORCE-HARNESS-RECHECK-01<!-- /ANOX:post_merge_gate -->`
 
 ---
 
@@ -27,12 +27,12 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `remediation/workforce-fix-02-handoff-archive`
-- Current work branch: `<!-- ANOX:handoff_branch -->remediation/workforce-fix-02-handoff-archive<!-- /ANOX:handoff_branch -->`
-- Current HEAD: `<!-- ANOX:handoff_head -->c0b643cafff3b110f4f928182c68c59d00b9f832<!-- /ANOX:handoff_head -->`
+- Delivery branch: `remediation/workforce-test-harness-fix-01`
+- Current work branch: `<!-- ANOX:handoff_branch -->remediation/workforce-test-harness-fix-01<!-- /ANOX:handoff_branch -->`
+- Current HEAD: `<!-- ANOX:handoff_head -->36ec5227dec4727950ce793df9bea013f8de8823<!-- /ANOX:handoff_head -->`
 - Main baseline HEAD: `8385f4019184be9b568f65ec4748194595ef339c`
 - Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-- Latest material event: `<!-- ANOX:latest_material_event -->ANOX-EVENT-0039<!-- /ANOX:latest_material_event -->`
+- Latest material event: `<!-- ANOX:latest_material_event -->ANOX-EVENT-0041<!-- /ANOX:latest_material_event -->`
 
 ## Latest completed work
 

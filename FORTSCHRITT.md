@@ -15,3 +15,20 @@
 - `ANOX-WORKFORCE-AUDIT-002` remains `Ready For Retest` (not Closed). `ANOX-WORKFORCE-AUDIT-001` and `005` remain `Ready For Retest` with prior `PASS` evidence.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE.
 - Next: human merge to `main` then `WORKFORCE-RETEST-02` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0041 -->
+## WORKFORCE-TEST-HARNESS-FIX-01 — 2026-09-08 (ANOX-EVENT-0041)
+
+- Branch: `remediation/workforce-test-harness-fix-01`
+- Substantive commit: `36ec5227dec4727950ce793df9bea013f8de8823`
+- Canonical base SHA: `81e091f3346a7c8653c100a334a1dbfe2c54d464`
+- Task ID: `ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01`
+- Result: `Closed (test fixture repair)`
+- Purpose: repair auxiliary test-harness and fixture failures discovered during `WORKFORCE-RETEST-02` (`PASS WITH FAILURES`):
+  - `tools/audit/test_workforce_fix02.py`: branch-collision in `git checkout -b main`; replaced with `git checkout -B main`.
+  - `tools/continuity/test_handoff_and_validator.py`: copied `tools/workforce/state_gate_resolver.py` into fixtures; committed initial state for clean tree; added `schema_version`/`handoff_head`/`working_tree` placeholders; fixed coherent reauthored archive text replacements.
+- Verification: `test_workforce_fix02` 17/17 PASS; `test_handoff_and_validator` 171/171 PASS; `validate_workforce_fix02` PASS; `validate_workforce_fix01` PASS; `validate_continuity` archive PASS; B027-A/B/C PASS; B017 PASS; lifecycle-aware validator accepts FIX-02 -> Harness Fix and Harness Recheck legal progression; illegal closure/history rewrite/product unlock detected.
+- `ANOX-WORKFORCE-AUDIT-001`, `002`, `005` remain `Ready For Retest`; no closure evidence written.
+- Historical `WORKFORCE-RETEST-02` result preserved as `PASS WITH FAILURES`.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE.
+- Next: human merge to `main`, then `WORKFORCE-HARNESS-RECHECK-01` on a fresh post-merge `main` SHA.
