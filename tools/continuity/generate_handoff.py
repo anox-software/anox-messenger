@@ -1,19 +1,34 @@
 #!/usr/bin/env python3
-"""Generate an anoX V1 handoff ZIP."""
+"""Generate an anoX V1 handoff ZIP.
+
+The handoff is built in a temporary staging directory so archive-local surfaces
+can be rendered with the effective runtime state without modifying any tracked
+repository files. The staged tree is then packaged into a ZIP with SHA-256
+manifests and a GIT_SNAPSHOT.txt.
+"""
 
 import argparse
 import hashlib
 import io
 import json
 import os
+import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT_DIR = REPO_ROOT / "artifacts" / "handoff"
+
+# Make the canonical workforce resolver importable.
+WORKFORCE_PATH = REPO_ROOT / "tools" / "workforce"
+if str(WORKFORCE_PATH) not in sys.path:
+    sys.path.insert(0, str(WORKFORCE_PATH))
+import state_gate_resolver
 
 EXCLUDED_DIRS = {
     ".git",
@@ -32,6 +47,7 @@ EXCLUDED_FILES = {
     ".env",
     ".env.local",
     ".env.production",
+    ".env.staging",
     "CURRENT_STATE_RESOLVED.json",
 }
 
@@ -90,6 +106,24 @@ PEM_PRIVATE_KEY_MARKERS = (
     b"-----BEGIN DSA PRIVATE KEY-----",
     b"-----BEGIN ENCRYPTED PRIVATE KEY-----",
     b"-----BEGIN PGP PRIVATE KEY BLOCK-----",
+)
+
+# Markers that make a current-state surface runtime-derived.
+# The generator replaces <!-- ANOX:field -->value<!-- /ANOX:field --> with the
+# derived archive value. The tracked file keeps the recorded value as a fallback
+# and as a stable historical record.
+ANOX_MARKER_RE = re.compile(
+    r"<!--\s*ANOX:(\w+)\s*-->(.*?)<!--\s*/ANOX:\1\s*-->",
+    re.DOTALL,
+)
+
+PLACEHOLDER_MARKERS = (
+    b"__HANDOFF_HEAD__",
+    b"__WORKING_TREE__",
+    b"__HANDOFF_BRANCH__",
+    b"__EFFECTIVE_GATE__",
+    b"__PRE_MERGE_GATE__",
+    b"__POST_MERGE_GATE__",
 )
 
 
@@ -243,7 +277,7 @@ def check_unresolved_placeholders(rel_files):
         try:
             with open(full, "rb") as f:
                 data = f.read()
-            for marker in (b"__HANDOFF_HEAD__", b"__WORKING_TREE__", b"__HANDOFF_BRANCH__", b"__EFFECTIVE_GATE__", b"__PRE_MERGE_GATE__", b"__POST_MERGE_GATE__"):
+            for marker in PLACEHOLDER_MARKERS:
                 if marker in data:
                     placeholder_files.append(f"{rel} ({marker.decode('utf-8')})")
                     break
@@ -257,12 +291,15 @@ def check_unresolved_placeholders(rel_files):
     return True
 
 
-def resolve_placeholders(content, state):
+def resolve_placeholders(content, state, head=None, branch=None, working_tree=None):
     """Replace template placeholders with live Git and state values."""
-    head, _ = git_cmd(["rev-parse", "HEAD"])
-    status, _ = git_cmd(["status", "--short"])
-    working_tree = "clean" if status.strip() == "" else "dirty"
-    branch, _ = git_cmd(["branch", "--show-current"])
+    if head is None:
+        head, _ = git_cmd(["rev-parse", "HEAD"])
+    if branch is None:
+        branch, _ = git_cmd(["branch", "--show-current"])
+    if working_tree is None:
+        status, _ = git_cmd(["status", "--short"])
+        working_tree = "clean" if status.strip() == "" else "dirty"
 
     canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
     delivery_branch = state.get("delivery_branch", branch)
@@ -296,6 +333,284 @@ def resolve_placeholders(content, state):
         content = content.replace('"__POST_MERGE_GATE__"', json.dumps(state.get("post_merge_gate", "")))
 
     return content
+
+
+def _find_task_for_phase(phase, repo_root):
+    """Locate a task record whose task_id ends with the normalized phase name."""
+    if not phase:
+        return None
+    suffix = re.sub(r"[^A-Z0-9]", "", phase.upper())
+    tasks_path = repo_root / "docs" / "workforce" / "registries" / "tasks.jsonl"
+    if not tasks_path.exists():
+        return None
+    try:
+        for line in tasks_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            task = json.loads(line)
+            task_id = task.get("task_id", "")
+            title = task.get("title", "")
+            if task_id.upper().endswith(suffix) or title.startswith(phase):
+                return task
+    except (json.JSONDecodeError, OSError):
+        pass
+    return None
+
+
+def _task_bullet(phase, repo_root, fallback=None):
+    """Return a concise markdown bullet for the active task of a phase."""
+    task = _find_task_for_phase(phase, repo_root)
+    if task:
+        status = task.get("status", "")
+        start = task.get("start_sha", "")
+        if start and len(start) > 40:
+            start = start[:40] + "..."
+        start_note = f" `start_sha` {start}" if start and "NOT YET" not in start.upper() else " `start_sha` NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA"
+        return f"`{phase}` (`{task['task_id']}`) — {task.get('title', '')} — `{status}`;{start_note}"
+    if fallback:
+        return f"`{phase}` — {fallback}"
+    return f"`{phase}`"
+
+
+def _next_task_paragraph(phase, repo_root, fallback=None):
+    """Return a full Next-task paragraph for the archive."""
+    task = _find_task_for_phase(phase, repo_root)
+    if task:
+        status = task.get("status", "")
+        scope = task.get("scope", "").strip()
+        non_goals = task.get("non_goals", [])
+        ng = "; ".join(non_goals) if non_goals else "No product code; no Security Architecture audit; remote NONE"
+        start = task.get("start_sha", "")
+        if "NOT YET" in start.upper():
+            start = "NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA"
+        return (
+            f"`{phase}` (`{task['task_id']}`) — {task.get('title', '')} — `{status}`. "
+            f"Scope: {scope} {ng}."
+        )
+    if fallback:
+        return f"`{phase}` — {fallback}"
+    return f"`{phase}`"
+
+
+def derive_archive_context(state, head, branch, working_tree, repo_root):
+    """Derive the archive-effective runtime context from resolver/Git truth."""
+    workforce_state = {}
+    ws_path = repo_root / "docs" / "workforce" / "WORKFORCE_STATE.json"
+    if ws_path.exists():
+        try:
+            workforce_state = json.loads(ws_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    effective_state = state_gate_resolver.derive_effective_workforce_state(
+        workforce_state,
+        live_branch=branch,
+        live_head=head,
+        repo_root=repo_root,
+    ) or {}
+
+    canonical_branch = state.get("canonical_branch") or state.get("baseline_branch", "main")
+    delivery_branch = state.get("delivery_branch", branch)
+    if branch == canonical_branch:
+        effective_gate = state.get("post_merge_gate", state.get("current_gate", ""))
+    elif branch == delivery_branch:
+        effective_gate = state.get("pre_merge_gate", state.get("current_gate", ""))
+    else:
+        effective_gate = state.get("current_gate", "")
+
+    # Active work is the phase currently in effect.
+    active_phase = effective_state.get("current_gate") or effective_gate
+    # Extract a short phase token (e.g. "WORKFORCE-RETEST-01").
+    phase_match = re.match(r"^(WORKFORCE-[A-Z]+-\d+)", active_phase or "")
+    active_phase_token = phase_match.group(1) if phase_match else active_phase
+
+    next_phase = effective_state.get("next_phase") or state.get("post_merge_gate", "")
+    np_match = re.match(r"^(WORKFORCE-[A-Z]+-\d+)", next_phase or "")
+    next_phase_token = np_match.group(1) if np_match else next_phase
+
+    product_status = workforce_state.get("product_development_state") or "BLOCKED_PENDING_FINAL_AUDIT"
+
+    context = {
+        "handoff_version": active_phase or effective_gate,
+        "working_tree": working_tree,
+        "effective_gate": effective_gate,
+        "pre_merge_gate": state.get("pre_merge_gate", ""),
+        "post_merge_gate": state.get("post_merge_gate", ""),
+        "handoff_branch": branch,
+        "handoff_head": head,
+        "current_work_branch": branch,
+        "current_head": head,
+        "latest_material_event": state.get("latest_material_event_id", ""),
+        "product_status": product_status,
+        "b004_status": "NOT_STARTED",
+        "b005_status": "NOT_STARTED",
+        "current_open_work": _task_bullet(active_phase_token, repo_root, fallback="active work"),
+        "next_task": _next_task_paragraph(next_phase_token, repo_root, fallback="next task"),
+    }
+    return context
+
+
+def _rewrite_hardcoded_headers(text, state):
+    """Synchronize hardcoded handoff header lines with the resolved state.
+
+    CURRENT_HANDOFF.md and CURRENT_GIT_STATE.md intentionally keep human-readable
+    copies of described_head, delivery_branch, and main baseline. These must be
+    rewritten from the resolved state so that archive-mode validation does not
+    see a contradiction between the prose and CURRENT_STATE.json.
+    """
+    described = state.get("described_head", "")
+    delivery = state.get("delivery_branch", "")
+    baseline = state.get("main_baseline_head", "") or state.get("previous_baseline_head", "")
+    pre = state.get("pre_merge_gate", "")
+    post = state.get("post_merge_gate", "")
+    current = state.get("current_gate", "")
+
+    # CURRENT_HANDOFF.md uses backticks around values.
+    text = re.sub(
+        r"^(Delivery branch: `)[^`]+(`)$",
+        lambda m: f"{m.group(1)}{delivery}{m.group(2)}",
+        text,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(
+        r"^(Described HEAD: `)[^`]+(`)$",
+        lambda m: f"{m.group(1)}{described}{m.group(2)}",
+        text,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(
+        r"^(Main baseline HEAD: `)[^`]+(`)$",
+        lambda m: f"{m.group(1)}{baseline}{m.group(2)}",
+        text,
+        flags=re.MULTILINE,
+    )
+
+    # CURRENT_GIT_STATE.md uses plain values (no trailing backtick).
+    text = re.sub(
+        r"^(- Main baseline: )[0-9a-f]{40}$",
+        lambda m: f"{m.group(1)}{baseline}",
+        text,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(
+        r"^(- Described HEAD: )[0-9a-f]{40}$",
+        lambda m: f"{m.group(1)}{described}",
+        text,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(
+        r"^(- Pre-merge gate: ).+$",
+        lambda m: f"{m.group(1)}{pre}",
+        text,
+        flags=re.MULTILINE,
+    )
+    text = re.sub(
+        r"^(- Post-merge gate: ).+$",
+        lambda m: f"{m.group(1)}{post}",
+        text,
+        flags=re.MULTILINE,
+    )
+    # Effective gate line may contain a backtick value.
+    text = re.sub(
+        r"^(- Effective gate: `?)[^`\n]+(`?)$",
+        lambda m: f"{m.group(1)}{current}{m.group(2)}",
+        text,
+        flags=re.MULTILINE,
+    )
+    return text
+
+
+def render_archive_surface(text, context, fallback_to_recorded=True):
+    """Replace ANOX:field markers with derived archive values."""
+    def repl(match):
+        field = match.group(1)
+        if field in context:
+            return str(context[field])
+        if fallback_to_recorded:
+            return match.group(2)
+        return match.group(0)
+
+    return ANOX_MARKER_RE.sub(repl, text)
+
+
+def stage_archive_files(staging, rel_files, state, head, branch, working_tree, repo_root):
+    """Copy all tracked files into the staging directory and render archive surfaces."""
+    for rel in rel_files:
+        src = repo_root / rel
+        dst = staging / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if rel in ("docs/continuity/CURRENT_STATE.json", "docs/continuity/CURRENT_GIT_STATE.md"):
+            # These are resolved below.
+            shutil.copy2(src, dst)
+        else:
+            shutil.copy2(src, dst)
+
+    # Resolve CURRENT_STATE.json
+    state_path = staging / "docs" / "continuity" / "CURRENT_STATE.json"
+    state_text = state_path.read_text(encoding="utf-8")
+    resolved_state_text = resolve_placeholders(state_text, state, head=head, branch=branch, working_tree=working_tree)
+    resolved_state = json.loads(resolved_state_text)
+    # Synchronize the current_task with the effective runtime state.
+    ws_path = repo_root / "docs" / "workforce" / "WORKFORCE_STATE.json"
+    if ws_path.exists():
+        try:
+            workforce_state = json.loads(ws_path.read_text(encoding="utf-8"))
+            effective_state = state_gate_resolver.derive_effective_workforce_state(
+                workforce_state,
+                live_branch=branch,
+                live_head=head,
+                repo_root=repo_root,
+            ) or {}
+            resolved_state["current_task"] = effective_state.get("current_task") or resolved_state.get("current_task", "")
+        except (json.JSONDecodeError, OSError):
+            pass
+    state_path.write_text(json.dumps(resolved_state, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    # Resolve CURRENT_GIT_STATE.md and rewrite hardcoded headers.
+    git_state_path = staging / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
+    git_state_text = git_state_path.read_text(encoding="utf-8")
+    resolved_git_state = resolve_placeholders(git_state_text, state, head=head, branch=branch, working_tree=working_tree)
+    resolved_git_state = _rewrite_hardcoded_headers(resolved_git_state, resolved_state)
+    git_state_path.write_text(resolved_git_state, encoding="utf-8")
+
+    # Render runtime-derived surfaces in the archive.
+    context = derive_archive_context(state, head, branch, working_tree, repo_root)
+    archive_surfaces = [
+        "docs/continuity/CURRENT_HANDOFF.md",
+    ]
+    for rel in archive_surfaces:
+        p = staging / rel
+        if not p.exists():
+            continue
+        text = p.read_text(encoding="utf-8")
+        rendered = render_archive_surface(text, context)
+        rendered = _rewrite_hardcoded_headers(rendered, resolved_state)
+        p.write_text(rendered, encoding="utf-8")
+
+    # Sanity-check that archive surfaces do not contain unrendered ANOX markers.
+    for rel in archive_surfaces:
+        p = staging / rel
+        if ANOX_MARKER_RE.search(p.read_text(encoding="utf-8")):
+            raise RuntimeError(f"Archive surface {rel} still contains unrendered ANOX markers")
+
+    return context
+
+
+def validate_archive_staging(staging):
+    """Run the archive-mode continuity validator against the staged tree."""
+    validator = REPO_ROOT / "tools" / "continuity" / "validate_continuity.py"
+    result = subprocess.run(
+        [sys.executable, str(validator), "--mode", "archive", "--archive", str(staging)],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print("ERROR: Archive validation failed for staged handoff. Generation blocked.", file=sys.stderr)
+        print(result.stdout, file=sys.stderr)
+        print(result.stderr, file=sys.stderr)
+        return False
+    return True
 
 
 def validate_or_fail():
@@ -377,69 +692,69 @@ def main():
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     zip_path = ARTIFACT_DIR / zip_name
 
-    manifest = io.StringIO()
-    manifest.write(f"# ANOX V1 Handoff Manifest\n")
-    manifest.write(f"# Date: {date_str}\n")
-    manifest.write(f"# Handoff branch: {branch}\n")
-    manifest.write(f"# Handoff HEAD: {head}\n")
-    manifest.write(f"# Baseline branch: {baseline_branch}\n")
-    manifest.write(f"# Baseline HEAD: {baseline_head}\n")
-    manifest.write(f"# Status: {status_label}\n")
-    manifest.write(f"# File count: {len(rel_files)}\n")
-    manifest.write("\n")
+    working_tree = "clean" if not dirty else "dirty"
 
-    sha_manifest = io.StringIO()
-    sha_manifest.write(f"# SHA-256 manifest for {zip_name}\n")
-    sha_manifest.write(f"# HEAD: {head}\n\n")
+    with tempfile.TemporaryDirectory(prefix="anox_handoff_staging_") as td:
+        staging = Path(td)
 
-    effective_gate = resolve_placeholders("__EFFECTIVE_GATE__", state)
-    git_snapshot = build_git_snapshot(state, effective_gate)
+        # Build the archive tree in a temporary staging directory.
+        stage_archive_files(staging, rel_files, state, head, branch, working_tree, REPO_ROOT)
 
-    # Load current state template
-    state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
-    state_text = state_path.read_text(encoding="utf-8") if state_path.exists() else ""
-    resolved_state = resolve_placeholders(state_text, state)
+        manifest = io.StringIO()
+        manifest.write(f"# ANOX V1 Handoff Manifest\n")
+        manifest.write(f"# Date: {date_str}\n")
+        manifest.write(f"# Handoff branch: {branch}\n")
+        manifest.write(f"# Handoff HEAD: {head}\n")
+        manifest.write(f"# Baseline branch: {baseline_branch}\n")
+        manifest.write(f"# Baseline HEAD: {baseline_head}\n")
+        manifest.write(f"# Status: {status_label}\n")
+        manifest.write(f"# File count: {len(rel_files) + 3}\n")  # rel_files + GIT_SNAPSHOT + MANIFEST + SHA256
+        manifest.write("\n")
 
-    git_state_path = REPO_ROOT / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
-    git_state_text = git_state_path.read_text(encoding="utf-8") if git_state_path.exists() else ""
-    resolved_git_state = resolve_placeholders(git_state_text, state)
+        sha_manifest = io.StringIO()
+        sha_manifest.write(f"# SHA-256 manifest for {zip_name}\n")
+        sha_manifest.write(f"# HEAD: {head}\n\n")
 
-    # Collect all archive entries (relative path, bytes) before writing any
-    # manifest, so the SHA-256 manifest can cover every file except itself.
-    entries = []
-    for rel in rel_files:
-        if rel == "docs/continuity/CURRENT_STATE.json":
-            entries.append((rel, resolved_state.encode("utf-8")))
-        elif rel == "docs/continuity/CURRENT_GIT_STATE.md":
-            entries.append((rel, resolved_git_state.encode("utf-8")))
-        else:
-            entries.append((rel, (REPO_ROOT / rel).read_bytes()))
+        effective_gate = resolve_placeholders("__EFFECTIVE_GATE__", state, head=head, branch=branch, working_tree=working_tree)
+        git_snapshot = build_git_snapshot(state, effective_gate)
 
-    # Git snapshot is a generated integrity-critical surface.
-    entries.append(("GIT_SNAPSHOT.txt", git_snapshot.encode("utf-8")))
+        # Write generated integrity surfaces into the staging tree.
+        (staging / "GIT_SNAPSHOT.txt").write_text(git_snapshot, encoding="utf-8")
 
-    # Build the human-readable manifest now that the file list is final.
-    manifest.write("GIT_SNAPSHOT.txt\n")
-    for rel, _ in entries:
-        manifest.write(f"{rel}\n")
-    manifest_text = manifest.getvalue().encode("utf-8")
-    entries.append(("MANIFEST.txt", manifest_text))
+        # Build the human-readable manifest now that the file list is final.
+        manifest.write("GIT_SNAPSHOT.txt\n")
+        for rel in rel_files:
+            manifest.write(f"{rel}\n")
+        manifest_text = manifest.getvalue().encode("utf-8")
+        (staging / "MANIFEST.txt").write_bytes(manifest_text)
 
-    # Build SHA-256 manifest covering every regular file except SHA256_MANIFEST.txt.
-    sha_entries = []
-    for rel, data in entries:
-        sha_entries.append((hashlib.sha256(data).hexdigest(), rel))
-    sha_manifest_text = sha_manifest.getvalue()
-    for digest, rel in sha_entries:
-        sha_manifest_text += f"{digest}  {rel}\n"
+        # Build SHA-256 manifest covering every regular file except SHA256_MANIFEST.txt.
+        all_files = sorted(p.relative_to(staging) for p in staging.rglob("*") if p.is_file())
+        sha_entries = []
+        for fpath in all_files:
+            rel = fpath.as_posix()
+            if rel == "SHA256_MANIFEST.txt":
+                continue
+            data = (staging / fpath).read_bytes()
+            sha_entries.append((hashlib.sha256(data).hexdigest(), rel))
+        sha_manifest_text = sha_manifest.getvalue()
+        for digest, rel in sha_entries:
+            sha_manifest_text += f"{digest}  {rel}\n"
+        (staging / "SHA256_MANIFEST.txt").write_text(sha_manifest_text, encoding="utf-8")
 
-    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for rel, data in entries:
-            zf.writestr(rel, data)
-        zf.writestr("SHA256_MANIFEST.txt", sha_manifest_text)
+        # Recompute all_files after generated surfaces added.
+        all_files = sorted(p.relative_to(staging) for p in staging.rglob("*") if p.is_file())
+
+        # Fail-closed archive validation before packaging.
+        if not validate_archive_staging(staging):
+            return 1
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+            for fpath in all_files:
+                zf.write(staging / fpath, fpath.as_posix())
 
     zip_digest = sha256_file(zip_path)
-    total_files = len(entries) + 1  # +1 for SHA256_MANIFEST.txt
+    total_files = len(all_files)
 
     print(f"ZIP PATH:     {zip_path}")
     print(f"ZIP SHA-256:  {zip_digest}")

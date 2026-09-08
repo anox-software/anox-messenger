@@ -148,6 +148,18 @@
     "pre_merge_state": {"$ref": "#/$defs/mergeStateBlock"},
     "post_merge_state": {"$ref": "#/$defs/mergeStateBlock"},
     "effective_state": {"$ref": "#/$defs/mergeStateBlock"},
+    "previous_merges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "merge_head": {"type": "string"},
+          "pre_merge_state": {"$ref": "#/$defs/mergeStateBlock"},
+          "post_merge_state": {"$ref": "#/$defs/mergeStateBlock"}
+        },
+        "required": ["merge_head", "pre_merge_state", "post_merge_state"]
+      }
+    },
     "final_operational_handoff_acceptance_gate": {"$ref": "#/$defs/acceptanceGate"},
     "product_development_state": {"type": "string"},
     "next_phase": {"type": "string"},

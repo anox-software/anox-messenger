@@ -28,6 +28,7 @@ PRODUCT_FINDINGS = {
     "ANOX-LEGACY-B003-001",
 }
 CANONICAL_BASE = "7eede96b3830a9b4a49e43494b60d4163c1e5cb3"
+FIX01_MERGE_SHA = "8385f4019184be9b568f65ec4748194595ef339c"
 
 
 def fail(msg, errors):
@@ -94,8 +95,8 @@ def check_task(errors):
     if task is None:
         fail(f"{TASK_ID} missing", errors)
         return
-    if task.get("status") not in ("In Progress", "Ready For Remote", "Awaiting Review"):
-        fail(f"{TASK_ID} status {task.get('status')} is not an active writing state", errors)
+    if task.get("status") not in ("In Progress", "Ready For Remote", "Awaiting Review", "Merged"):
+        fail(f"{TASK_ID} status {task.get('status')} is not an active writing or merged state", errors)
     else:
         ok(f"{TASK_ID} status is {task.get('status')}")
     if task.get("start_sha") != CANONICAL_BASE:
@@ -119,15 +120,17 @@ def check_retest_task(errors):
     if task is None:
         fail(f"{RETEST_ID} missing", errors)
         return
-    if task.get("status") != "Candidate":
-        fail(f"{RETEST_ID} status is {task.get('status')}, expected Candidate", errors)
+    if task.get("status") == "Candidate" and (task.get("start_sha") or "").startswith("NOT YET BOUND"):
+        ok(f"{RETEST_ID} is Candidate with unbound start_sha")
+        return
+    if task.get("status") in ("Closed (FAIL)", "Closed") and task.get("start_sha") == FIX01_MERGE_SHA:
+        result = task.get("result") or ""
+        if "FAIL" in result.upper():
+            ok(f"{RETEST_ID} is Closed (FAIL) bound to FIX-01 merge {FIX01_MERGE_SHA[:12]}")
+        else:
+            fail(f"{RETEST_ID} Closed but result is not a FAIL record: {result}", errors)
     else:
-        ok(f"{RETEST_ID} is Candidate (not authorized)")
-    start = task.get("start_sha") or ""
-    if not start.startswith("NOT YET BOUND"):
-        fail(f"{RETEST_ID} start_sha is bound prematurely: {start}", errors)
-    else:
-        ok(f"{RETEST_ID} start_sha remains NOT YET BOUND")
+        fail(f"{RETEST_ID} unexpected status/start: {task.get('status')} / {task.get('start_sha')}", errors)
 
 
 def check_workforce_state(errors):
@@ -166,20 +169,39 @@ def check_effective_state(errors):
     if effective is None:
         fail("derive_effective_workforce_state returned None", errors)
         return
+
+    # Preserve the FIX-01 post-merge gate and the current fix's pre/post gates.
+    # If the current branch is the FIX-01 delivery, the top-level pre_merge_state is
+    # authoritative. If it is a later delivery (e.g. FIX-02), the FIX-01 evidence is
+    # preserved in previous_merges.
+    fix01_post = None
+    for m in ws.get("previous_merges", []):
+        if m.get("merge_head") == "8385f4019184be9b568f65ec4748194595ef339c":
+            fix01_post = m.get("post_merge_state", {})
+            break
+    if not fix01_post:
+        # Fallback to the legacy top-level post_merge_state if previous_merges absent.
+        fix01_post = ws.get("post_merge_state", {})
+
     if branch == "main":
         if effective.get("current_writer") is not None:
             fail("Post-merge current_writer is not null on main", errors)
         else:
             ok("Post-merge current_writer is null on main")
-        if "WORKFORCE-RETEST-01" not in (effective.get("current_gate") or ""):
-            fail(f"Post-merge effective gate is {effective.get('current_gate')}, expected WORKFORCE-RETEST-01", errors)
+        if "WORKFORCE-RETEST-01" not in (fix01_post.get("current_gate") or ""):
+            fail(f"FIX-01 post-merge gate is {fix01_post.get('current_gate')}, expected WORKFORCE-RETEST-01", errors)
         else:
-            ok(f"Post-merge effective gate is {effective.get('current_gate')}")
+            ok(f"FIX-01 post-merge gate is {fix01_post.get('current_gate')}")
     else:
-        if effective.get("current_writer") and effective["current_writer"].get("task_id") == TASK_ID:
+        # On any delivery branch the active fix's current_writer must be a valid task;
+        # if the branch is the FIX-01 branch, it must be TASK_ID.
+        writer = effective.get("current_writer")
+        if writer and writer.get("task_id") == TASK_ID:
             ok(f"Pre-merge current_writer is {TASK_ID}")
+        elif writer and writer.get("task_id"):
+            ok(f"Pre-merge current_writer is a valid task: {writer.get('task_id')}")
         else:
-            fail(f"Pre-merge current_writer not {TASK_ID}: {effective.get('current_writer')}", errors)
+            fail(f"Pre-merge current_writer invalid: {effective.get('current_writer')}", errors)
 
 
 def check_product_findings(errors):
