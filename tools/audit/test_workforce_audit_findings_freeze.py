@@ -29,12 +29,15 @@ def _git(cmd, cwd):
 
 
 def _setup_repo(mutation=None):
-    """Copy .git, reset to the canonical base, overlay current docs/tools,
-    commit base state, apply mutation, commit again.
+    """Copy .git, reset to the historical findings-freeze substantive head,
+    then create a single metadata/mutation commit above it.
 
-    This yields two task-authored commits above the original base so that the
-    validator's two-commit and base-ancestor checks accept the temp repo, while
-    preserving product files so that product-scope checks do not false-positive.
+    The validator's described_head for ANOX-AUDIT-WORKFORCE-ARCH-001 is the
+    historical substantive commit 6d9c813439fe47d70457ef9e21759aa9424267af.
+    Resetting to it and adding one test-authored commit produces exactly two
+    task-authored commits above the original baseline d5f76ba..., satisfying the
+    unmerged delivery-branch invariant while keeping the freeze state as the
+    authoritative starting point.
     """
     tmp = tempfile.mkdtemp(prefix="workforce-freeze-adv-")
     git_src = ORIGIN / ".git"
@@ -44,30 +47,30 @@ def _setup_repo(mutation=None):
     _git(["config", "user.email", "test@anox.software"], tmp)
     _git(["config", "user.name", "Test Runner"], tmp)
 
-    # Start a fresh test branch from the canonical base.
-    base = "d5f76ba9dfdb332ac5f70b769c57b3f0ae6122b8"
-    _git(["reset", "--hard", base], tmp)
+    # Start a fresh test branch from the historical findings-freeze substantive head.
+    freeze_substantive = "6d9c813439fe47d70457ef9e21759aa9424267af"
+    _git(["reset", "--hard", freeze_substantive], tmp)
     _git(["checkout", "-b", "test-adversarial"], tmp)
-
-    # Overlay the current docs/tools state (the freeze deliverables).
-    for sub in ("docs", "tools"):
-        src = ORIGIN / sub
-        dst = Path(tmp) / sub
-        if dst.exists():
-            shutil.rmtree(dst)
-        if src.exists():
-            shutil.copytree(src, dst, ignore=shutil.ignore_patterns(".DS_Store"))
-
-    # First commit: the base (unmutated) freeze state.
-    _git(["add", "-A"], tmp)
-    _git(["commit", "-m", "adversarial test base freeze state", "--no-verify"], tmp)
 
     if mutation:
         mutation(tmp)
 
-    # Second commit: the mutation (or an empty marker for the base-pass case).
+    # Single test-authored commit above the freeze substantive. In the base-pass
+    # case this is an empty marker; in adversarial cases it carries only
+    # metadata-allowlist mutations.
     _git(["add", "-A"], tmp)
     _git(["commit", "-m", "adversarial test mutation", "--allow-empty", "--no-verify"], tmp)
+
+    # The historical commit carries an older lifecycle_legality module. Overlay the
+    # current module into the working tree AFTER the test commit so the current
+    # validator can run against the historical state without polluting the
+    # canonical two-commit delivery proof.
+    lifecycle_src = ORIGIN / "tools" / "audit" / "lifecycle_legality.py"
+    lifecycle_dst = Path(tmp) / "tools" / "audit" / "lifecycle_legality.py"
+    if lifecycle_src.exists():
+        lifecycle_dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(lifecycle_src, lifecycle_dst)
+
     head = _git(["rev-parse", "HEAD"], tmp).stdout.strip()
     return tmp, head
 
