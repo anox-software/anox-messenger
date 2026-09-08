@@ -1,12 +1,12 @@
 # CURRENT OPEN WORK — anoX V1
 
-As of ANOX-EVENT-0039:
+As of ANOX-EVENT-0040:
 
-1. `WORKFORCE-FIX-01` — Workforce Governance / Continuity Hardening (`ANOX-TASK-WORKFORCEFIX01`, `Ready For Remote`; awaits human merge). Three target findings moved to `Ready For Retest`:
-   - `ANOX-WORKFORCE-AUDIT-001` — merge-aware legacy retest ingest validator.
-   - `ANOX-WORKFORCE-AUDIT-002` — post-merge continuity and Workforce state synchronization.
-   - `ANOX-WORKFORCE-AUDIT-005` — `..`/absolute/UNC path normalization in `state_gate_resolver.py`.
-2. `WORKFORCE-RETEST-01` — Independent Targeted Workforce Governance Delta Retest (`ANOX-TASK-WORKFORCERETEST01`), `Candidate`, start bound only after human merge and a fresh post-merge `main` SHA.
+1. `WORKFORCE-FIX-02` — Handoff Archive Effective-State Rendering (`ANOX-TASK-WORKFORCEFIX02`, `Ready For Remote`; awaits human merge). Remediates `ANOX-WORKFORCE-AUDIT-002` (stale human-readable effective gate in archive `CURRENT_HANDOFF.md`):
+   - `tools/continuity/generate_handoff.py` now renders archive `CURRENT_HANDOFF.md`, `CURRENT_GIT_STATE.md`, and `CURRENT_STATE.json` from the resolved effective workforce state.
+   - Tracked files remain stable templates; archive receives correct pre/post-merge gate.
+   - No third bookkeeping commit required for a canonical Human merge handoff.
+2. `WORKFORCE-RETEST-02` — Independent Targeted Workforce Governance Delta Retest (`ANOX-TASK-WORKFORCERETEST02`), `Candidate`, start bound only after human merge and a fresh post-merge `main` SHA. Scope: verify archive rendering, no tracked mutation, 001/005 regression guards, no third commit.
 3. `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification (`PHYSICAL_VERIFICATION_REQUIRED`).
 4. Milestone Security Architecture review for `ANOX-MAINARCH-003`, `007`, `024`.
 5. Final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` gate (`ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001`).
