@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[2]
+REPO = Path(os.environ.get("ANOX_REPO_ROOT", Path(__file__).resolve().parents[2]))
 
 TASK_ID = "ANOX-TASK-WORKFORCEFIX02"
 RETEST_ID = "ANOX-TASK-WORKFORCERETEST02"
@@ -67,6 +67,31 @@ def git(args):
 def git_is_ancestor(a, b):
     return subprocess.run(["git", "merge-base", "--is-ancestor", a, b],
                           cwd=REPO, capture_output=True).returncode == 0
+
+
+def _first_token(gate):
+    if not gate:
+        return ""
+    return gate.split(" — ")[0].split(" - ")[0].strip()
+
+
+def _event_for_described_head(ledger, described):
+    for e in ledger:
+        if e.get("end_head") == described:
+            return e
+    return None
+
+
+def _task_for_event(tasks, event):
+    task_name = event.get("task", "")
+    for t in tasks:
+        title = t.get("title", "")
+        if title.startswith(task_name):
+            return t
+        tid = t.get("task_id", "")
+        if tid and tid.replace("ANOX-TASK-", "").replace("-", "_").upper() == task_name.replace("-", "_").upper():
+            return t
+    return None
 
 
 def check_findings(errors):
@@ -277,27 +302,80 @@ def check_current_state(errors):
     state = load_json("docs/continuity/CURRENT_STATE.json")
     if state.get("continuity_001_status") != "ACCEPTED":
         fail(f"continuity_001_status is {state.get('continuity_001_status')}, expected ACCEPTED", errors)
-    else:
-        ok("continuity_001_status = ACCEPTED")
-    if state.get("delivery_branch") != "remediation/workforce-fix-02-handoff-archive":
-        fail(f"CURRENT_STATE delivery_branch is {state.get('delivery_branch')}, expected remediation/workforce-fix-02-handoff-archive", errors)
-    else:
-        ok("CURRENT_STATE delivery_branch is FIX-02 delivery branch")
-    if "WORKFORCE-FIX-02" not in (state.get("pre_merge_gate") or ""):
-        fail(f"CURRENT_STATE pre_merge_gate is {state.get('pre_merge_gate')}, expected WORKFORCE-FIX-02", errors)
-    else:
-        ok("CURRENT_STATE pre_merge_gate is WORKFORCE-FIX-02")
-    if "WORKFORCE-RETEST-02" not in (state.get("post_merge_gate") or ""):
-        fail(f"CURRENT_STATE post_merge_gate is {state.get('post_merge_gate')}, expected WORKFORCE-RETEST-02", errors)
-    else:
-        ok("CURRENT_STATE post_merge_gate is WORKFORCE-RETEST-02")
+        return
+    ok("continuity_001_status = ACCEPTED")
+
+    ledger = load_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
+    if not ledger:
+        fail("Project History Ledger is empty", errors)
+        return
+    latest_event = ledger[-1]
+
     described = state.get("described_head")
     if not (described and re.fullmatch(r"[0-9a-f]{40}", described)):
         fail(f"CURRENT_STATE described_head invalid: {described}", errors)
-    elif not git_is_ancestor(described, git(["rev-parse", "HEAD"])):
+        return
+    live_head = git(["rev-parse", "HEAD"])
+    if not live_head:
+        fail("cannot resolve current HEAD", errors)
+        return
+    if not git_is_ancestor(described, live_head):
         fail(f"CURRENT_STATE described_head {described[:12]} is not an ancestor of HEAD", errors)
+        return
+    ok(f"CURRENT_STATE described_head {described[:12]} is an ancestor of HEAD")
+
+    # The described_head must be sealed by a Project History Ledger event.
+    event = _event_for_described_head(ledger, described)
+    if event is None:
+        fail(f"CURRENT_STATE described_head {described[:12]} is not the sealed end_head of any Project History event", errors)
+        return
+    ok(f"CURRENT_STATE described_head sealed by {event.get('event_id')}")
+
+    # Current state must not lag behind the latest sealed event.
+    if event.get("event_id") != latest_event.get("event_id"):
+        fail(f"CURRENT_STATE describes {event.get('event_id')} but latest sealed event is {latest_event.get('event_id')}", errors)
+        return
+    ok("CURRENT_STATE matches the latest sealed Project History event")
+
+    # Pre/post gates must reflect the sealed event's task and gate_after.
+    event_task = _first_token(event.get("task", ""))
+    pre_gate = state.get("pre_merge_gate") or ""
+    if not event_task or event_task not in pre_gate:
+        fail(f"CURRENT_STATE pre_merge_gate {pre_gate!r} does not reference sealed event task {event_task!r}", errors)
     else:
-        ok(f"CURRENT_STATE described_head set to {described[:12]} and is an ancestor of HEAD")
+        ok(f"CURRENT_STATE pre_merge_gate references sealed event task {event_task}")
+
+    event_next = _first_token(event.get("gate_after", ""))
+    post_gate = state.get("post_merge_gate") or ""
+    if not event_next or event_next not in post_gate:
+        fail(f"CURRENT_STATE post_merge_gate {post_gate!r} does not reference sealed event next gate {event_next!r}", errors)
+    else:
+        ok(f"CURRENT_STATE post_merge_gate references sealed event next gate {event_next}")
+
+    # Delivery branch and current task must match the sealed task record.
+    tasks = load_jsonl("docs/workforce/registries/tasks.jsonl")
+    task = _task_for_event(tasks, event)
+    if task is None:
+        fail(f"sealed event task {event.get('task')!r} has no matching record in tasks.jsonl", errors)
+        return
+    if state.get("delivery_branch") != task.get("branch"):
+        fail(f"CURRENT_STATE delivery_branch {state.get('delivery_branch')} != task branch {task.get('branch')}", errors)
+    else:
+        ok("CURRENT_STATE delivery_branch matches the sealed task record")
+
+    current_task = state.get("current_task") or ""
+    if task.get("task_id") not in current_task and event.get("task") not in current_task:
+        fail(f"CURRENT_STATE current_task {current_task!r} does not reference sealed task", errors)
+    else:
+        ok("CURRENT_STATE current_task is consistent with sealed task record")
+
+    # The state must not predate the FIX-02 milestone.
+    event_ids = [e.get("event_id") for e in ledger]
+    if "ANOX-EVENT-0040" in event_ids:
+        if event_ids.index(event.get("event_id")) < event_ids.index("ANOX-EVENT-0040"):
+            fail(f"CURRENT_STATE event {event.get('event_id')} precedes the FIX-02 milestone", errors)
+        else:
+            ok("CURRENT_STATE is at or after the FIX-02 milestone")
 
 
 def check_effective_state(errors):

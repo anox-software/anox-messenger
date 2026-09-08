@@ -20,6 +20,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 VALIDATOR = REPO / "tools" / "continuity" / "validate_continuity.py"
 GENERATOR = REPO / "tools" / "continuity" / "generate_handoff.py"
+FIX02_VALIDATOR = REPO / "tools" / "audit" / "validate_workforce_fix02.py"
 
 
 def git(args, cwd=None, check=True):
@@ -63,7 +64,7 @@ def copy_tree(src, dst, ignore=None):
 
 def copy_project_skeleton(dst, source_repo=REPO):
     """Copy the current docs/tools tree into a fresh repo and commit as main."""
-    git(["checkout", "-b", "main"], dst, check=False)
+    git(["checkout", "-B", "main"], dst, check=False)
     for sub in ("docs", "tools", "PROJECT_STATE.md", "FORTSCHRITT.md", "DEVIN_PROMPT_OUTPUT_ARCHIV.md"):
         src = source_repo / sub
         if src.exists():
@@ -228,7 +229,7 @@ def setup_fixture_state(dst, described, pre_gate, post_gate, state_for_fixture=N
     (dst / "docs" / "workforce" / "WORKFORCE_STATE.json").write_text(json.dumps(ws, indent=2), encoding="utf-8")
 
 
-def synchronize_project_memory(dst, end_head, event_id="ANOX-EVENT-0041"):
+def synchronize_project_memory(dst, end_head, event_id="ANOX-EVENT-0042"):
     """Append a sealed fixture event to the ledger and update memory surfaces."""
     ledger_path = dst / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
     event = {
@@ -350,7 +351,7 @@ class ArchiveEffectiveStateTests(unittest.TestCase):
         """
         tmp = self.scratch / "real_fixture"
         git(["clone", "--quiet", str(REPO), str(tmp)])
-        git(["checkout", "-b", "main", "8385f4019184be9b568f65ec4748194595ef339c"], tmp)
+        git(["checkout", "-B", "main", "8385f4019184be9b568f65ec4748194595ef339c"], tmp)
         self._sanitize_for_fixture(tmp)
         # Overlay the new generator and template.
         shutil.copy2(REPO / "tools" / "continuity" / "generate_handoff.py",
@@ -568,7 +569,7 @@ class ArchiveEffectiveStateTests(unittest.TestCase):
         # Use a disposable clone because generating from the real repo may be dirty.
         tmp = Path(tempfile.mkdtemp(prefix="anox_fix02_notracked_"))
         git(["clone", "--quiet", str(REPO), str(tmp)])
-        git(["checkout", "-b", "main", "8385f4019184be9b568f65ec4748194595ef339c"], tmp)
+        git(["checkout", "-B", "main", "8385f4019184be9b568f65ec4748194595ef339c"], tmp)
         shutil.copy2(REPO / "tools" / "continuity" / "generate_handoff.py",
                      tmp / "tools" / "continuity" / "generate_handoff.py")
         shutil.copy2(REPO / "docs" / "continuity" / "CURRENT_HANDOFF.md",
@@ -626,6 +627,266 @@ class ArchiveEffectiveStateTests(unittest.TestCase):
         )
         bad = [p for p in changed if any(re.search(pat, p) for pat in forbidden)]
         self.assertEqual(bad, [], f"product/backend/SQL/CI/secret paths changed: {bad}")
+
+
+class LifecycleAwareValidatorTests(unittest.TestCase):
+    """Adversarial tests for the lifecycle-aware WORKFORCE-FIX-02 validator."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.scratch = Path(tempfile.mkdtemp(prefix="anox_fix02_lifecycle_"))
+        cls.base_clone = cls.scratch / "base_clone"
+        git(["clone", "--quiet", str(REPO), str(cls.base_clone)])
+        # Supporting validators resolve refs like `main` from local branches,
+        # but a fresh clone only creates the active branch.
+        git(["branch", "main", "origin/main"], cls.base_clone, check=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(cls.scratch, ignore_errors=True)
+
+    def setUp(self):
+        self.clone = self.scratch / f"clone_{self.id().split('.')[-1]}"
+        if self.clone.exists():
+            shutil.rmtree(self.clone)
+        shutil.copytree(self.base_clone, self.clone)
+
+    def tearDown(self):
+        shutil.rmtree(self.clone, ignore_errors=True)
+
+    def _run_validator(self, clone, expect_ok=True):
+        env = os.environ.copy()
+        env["ANOX_REPO_ROOT"] = str(clone)
+        r = subprocess.run([sys.executable, str(FIX02_VALIDATOR)], cwd=clone, env=env,
+                           capture_output=True, text=True)
+        if expect_ok:
+            self.assertEqual(r.returncode, 0, f"expected PASS:\n{r.stdout}\n{r.stderr}")
+        else:
+            self.assertNotEqual(r.returncode, 0, f"expected FAIL but passed:\n{r.stdout}")
+        return r
+
+    def _load_json(self, rel):
+        return json.loads((self.clone / rel).read_text(encoding="utf-8"))
+
+    def _write_json(self, rel, data):
+        (self.clone / rel).write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+    def _load_jsonl(self, rel):
+        p = self.clone / rel
+        if not p.exists():
+            return []
+        return [json.loads(l) for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+    def _write_jsonl(self, rel, rows):
+        (self.clone / rel).write_text("\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8")
+
+    def _current_head(self):
+        return git(["rev-parse", "HEAD"], self.clone).stdout.strip()
+
+    def test_10_harness_fix_state_pass(self):
+        """Legal progression: CURRENT_STATE may advance to WORKFORCE-TEST-HARNESS-FIX-01."""
+        head = self._current_head()
+        # Add the harness fix task record that the metadata commit will also add.
+        tasks_path = self.clone / "docs" / "workforce" / "registries" / "tasks.jsonl"
+        tasks = self._load_jsonl("docs/workforce/registries/tasks.jsonl")
+        tasks.append({
+            "task_id": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01",
+            "title": "WORKFORCE-TEST-HARNESS-FIX-01 — Workforce/Handoff test fixture repair",
+            "role_id": "ROLE-009",
+            "start_sha": "81e091f3346a7c8653c100a334a1dbfe2c54d464",
+            "branch": "remediation/workforce-test-harness-fix-01",
+            "allowed_paths": ["tools/audit/test_workforce_fix02.py", "tools/continuity/test_handoff_and_validator.py"],
+            "forbidden_paths": ["android/", "crypto/rust/", "backend/"],
+            "scope": "Test fixture repair only.",
+            "non_goals": ["product code"],
+            "security_class": "S2",
+            "data_egress": "D2",
+            "priority": "P1",
+            "required_evidence": "E3",
+            "reviewer_role": "ROLE-002",
+            "remote_permission": "NONE",
+            "stop_conditions": ["validate_workforce_fix02 PASS"],
+            "authority_refs": ["docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md"],
+            "created_at": "2026-09-08",
+            "status": "Closed",
+        })
+        self._write_jsonl("docs/workforce/registries/tasks.jsonl", tasks)
+
+        # Append a sealed event for the harness fix.
+        ledger = self._load_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
+        ledger.append({
+            "event_id": "ANOX-EVENT-0041",
+            "date": "2026-09-08",
+            "type": "remediation",
+            "task": "WORKFORCE-TEST-HARNESS-FIX-01",
+            "summary": "Harness fix.",
+            "status": "remediated",
+            "start_head": "81e091f3346a7c8653c100a334a1dbfe2c54d464",
+            "end_head": head,
+            "gate_after": "WORKFORCE-HARNESS-RECHECK-01",
+            "findings": ["ANOX-WORKFORCE-AUDIT-001:ready_for_retest", "ANOX-WORKFORCE-AUDIT-002:ready_for_retest", "ANOX-WORKFORCE-AUDIT-005:ready_for_retest"],
+            "tests": {},
+            "refs": [f"git:{head}"],
+            "evidence": [],
+        })
+        self._write_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", ledger)
+
+        state = self._load_json("docs/continuity/CURRENT_STATE.json")
+        state["described_head"] = head
+        state["delivery_branch"] = "remediation/workforce-test-harness-fix-01"
+        state["pre_merge_gate"] = "WORKFORCE-TEST-HARNESS-FIX-01"
+        state["post_merge_gate"] = "WORKFORCE-HARNESS-RECHECK-01"
+        state["current_task"] = "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01"
+        state["current_gate"] = "WORKFORCE-TEST-HARNESS-FIX-01"
+        state["latest_material_event_id"] = "ANOX-EVENT-0041"
+        state["latest_human_history_event_id"] = "ANOX-EVENT-0041"
+        state["latest_agent_history_event_id"] = "ANOX-EVENT-0041"
+        self._write_json("docs/continuity/CURRENT_STATE.json", state)
+
+        self._run_validator(self.clone, expect_ok=True)
+
+    def test_11_harness_recheck_future_state_pass(self):
+        """Legal later progression to the harness recheck candidate."""
+        head = self._current_head()
+        tasks = self._load_jsonl("docs/workforce/registries/tasks.jsonl")
+        for t in tasks:
+            if t.get("task_id") == "ANOX-TASK-HARNESSRECHECK01":
+                t["branch"] = "audit/workforce-harness-recheck-01"
+                t["status"] = "Candidate"
+                break
+        else:
+            tasks.append({
+                "task_id": "ANOX-TASK-HARNESSRECHECK01",
+                "title": "WORKFORCE-HARNESS-RECHECK-01 — INDEPENDENT TARGETED HARNESS RECHECK",
+                "role_id": "ROLE-009",
+                "start_sha": "NOT YET BOUND",
+                "branch": "audit/workforce-harness-recheck-01",
+                "allowed_paths": [],
+                "forbidden_paths": ["android/"],
+                "scope": "Recheck.",
+                "non_goals": ["product code"],
+                "security_class": "S2",
+                "data_egress": "D2",
+                "priority": "P1",
+                "required_evidence": "E3",
+                "reviewer_role": "ROLE-002",
+                "remote_permission": "NONE",
+                "stop_conditions": [],
+                "authority_refs": [],
+                "created_at": "2026-09-08",
+                "status": "Candidate",
+            })
+        self._write_jsonl("docs/workforce/registries/tasks.jsonl", tasks)
+
+        ledger = self._load_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
+        ledger.append({
+            "event_id": "ANOX-EVENT-0042",
+            "date": "2026-09-09",
+            "type": "remediation",
+            "task": "WORKFORCE-HARNESS-RECHECK-01",
+            "summary": "Harness recheck candidate.",
+            "status": "candidate",
+            "start_head": "NOT YET BOUND",
+            "end_head": head,
+            "gate_after": "AUDIT-SECURITY-ARCHITECTURE",
+            "findings": ["ANOX-WORKFORCE-AUDIT-001:ready_for_retest", "ANOX-WORKFORCE-AUDIT-002:ready_for_retest", "ANOX-WORKFORCE-AUDIT-005:ready_for_retest"],
+            "tests": {},
+            "refs": [f"git:{head}"],
+            "evidence": [],
+        })
+        self._write_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", ledger)
+
+        state = self._load_json("docs/continuity/CURRENT_STATE.json")
+        state["described_head"] = head
+        state["delivery_branch"] = "audit/workforce-harness-recheck-01"
+        state["pre_merge_gate"] = "WORKFORCE-HARNESS-RECHECK-01"
+        state["post_merge_gate"] = "AUDIT-SECURITY-ARCHITECTURE"
+        state["current_task"] = "ANOX-TASK-HARNESSRECHECK01"
+        state["current_gate"] = "WORKFORCE-HARNESS-RECHECK-01"
+        state["latest_material_event_id"] = "ANOX-EVENT-0042"
+        state["latest_human_history_event_id"] = "ANOX-EVENT-0042"
+        state["latest_agent_history_event_id"] = "ANOX-EVENT-0042"
+        self._write_json("docs/continuity/CURRENT_STATE.json", state)
+
+        self._run_validator(self.clone, expect_ok=True)
+
+    def test_12_illegal_finding_002_closure_fail(self):
+        """Finding 002 silently Closed must be rejected."""
+        findings = self._load_jsonl("docs/workforce/registries/findings.jsonl")
+        for f in findings:
+            if f.get("finding_id") == "ANOX-WORKFORCE-AUDIT-002":
+                f["status"] = "Closed"
+                f["closure_evidence"] = ["git:0000000000000000000000000000000000000000", "RETEST-02"]
+                break
+        self._write_jsonl("docs/workforce/registries/findings.jsonl", findings)
+        self._run_validator(self.clone, expect_ok=False)
+
+    def test_13_finding_002_disappearance_fail(self):
+        """Removing finding 002 must be rejected."""
+        findings = self._load_jsonl("docs/workforce/registries/findings.jsonl")
+        findings = [f for f in findings if f.get("finding_id") != "ANOX-WORKFORCE-AUDIT-002"]
+        self._write_jsonl("docs/workforce/registries/findings.jsonl", findings)
+        self._run_validator(self.clone, expect_ok=False)
+
+    def test_14_retest01_history_rewrite_fail(self):
+        """Changing RETEST-01 result/verdicts must be rejected."""
+        runs = self._load_jsonl("docs/workforce/registries/runs.jsonl")
+        for r in runs:
+            if r.get("run_id") == "ANOX-RUN-WORKFORCERETEST01":
+                r["result"] = "PASS"
+                verdicts = r.get("per_finding_verdicts") or {}
+                verdicts["ANOX-WORKFORCE-AUDIT-002"] = "PASS — REMEDIATED"
+                r["per_finding_verdicts"] = verdicts
+                break
+        self._write_jsonl("docs/workforce/registries/runs.jsonl", runs)
+        self._run_validator(self.clone, expect_ok=False)
+
+    def test_15_product_premature_unlock_fail(self):
+        """Product leaving BLOCKED_PENDING_FINAL_AUDIT must be rejected."""
+        ws = self._load_json("docs/workforce/WORKFORCE_STATE.json")
+        ws["product_development_state"] = "READY"
+        ws["final_pre_product_audit"]["product_development_state"] = "READY"
+        self._write_json("docs/workforce/WORKFORCE_STATE.json", ws)
+        self._run_validator(self.clone, expect_ok=False)
+
+    def test_16_broken_task_reference_fail(self):
+        """A CURRENT_STATE pointing to a nonexistent task must be rejected."""
+        head = self._current_head()
+        ledger = self._load_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
+        ledger.append({
+            "event_id": "ANOX-EVENT-0042",
+            "date": "2026-09-09",
+            "type": "remediation",
+            "task": "FAKE-TASK",
+            "summary": "Fake",
+            "status": "remediated",
+            "start_head": head,
+            "end_head": head,
+            "gate_after": "FAKE-NEXT",
+            "findings": [],
+            "tests": {},
+            "refs": [f"git:{head}"],
+            "evidence": [],
+        })
+        self._write_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", ledger)
+        state = self._load_json("docs/continuity/CURRENT_STATE.json")
+        state["described_head"] = head
+        state["pre_merge_gate"] = "FAKE-TASK"
+        state["post_merge_gate"] = "FAKE-NEXT"
+        state["delivery_branch"] = "remediation/fake"
+        state["current_task"] = "ANOX-TASK-NONEXISTENT"
+        state["latest_material_event_id"] = "ANOX-EVENT-0042"
+        state["latest_human_history_event_id"] = "ANOX-EVENT-0042"
+        state["latest_agent_history_event_id"] = "ANOX-EVENT-0042"
+        self._write_json("docs/continuity/CURRENT_STATE.json", state)
+        self._run_validator(self.clone, expect_ok=False)
+
+    def test_17_historical_delivery_tampering_fail(self):
+        """A described_head that is not a sealed ancestor must be rejected."""
+        state = self._load_json("docs/continuity/CURRENT_STATE.json")
+        state["described_head"] = "0000000000000000000000000000000000000000"
+        self._write_json("docs/continuity/CURRENT_STATE.json", state)
+        self._run_validator(self.clone, expect_ok=False)
 
 
 if __name__ == "__main__":
