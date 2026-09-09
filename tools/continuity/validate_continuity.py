@@ -11,6 +11,7 @@ Mode is always printed. Live and archive results are never conflated.
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -608,6 +609,9 @@ def _check_required_state_keys(state, schema_class=None):
 
 
 def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=None, mode=None, schema_class=None):
+    if mode is None:
+        mode = "archive" if live_branch is None and live_head is None else "live"
+
     print(f"\n[{label}] CURRENT_STATE.json")
     if state is None:
         print("  FAIL CURRENT_STATE.json missing or invalid JSON")
@@ -670,6 +674,17 @@ def validate_state_json(state, root, all_ok, label, live_branch=None, live_head=
                 all_ok = False
             effective_gate = state.get("current_gate", "")
 
+    # Structural guard: current_gate must be a resolvable placeholder or equal
+    # to the continuity effective gate.  Hardcoded stale pre/post gates that do
+    # not match the live effective gate are rejected fail-closed.
+    all_ok = validate_current_gate_resolved(state, effective_gate, mode, all_ok, label, schema_class=schema_class)
+
+    # Live-mode guard: the effective gate derived from the workforce resolver
+    # must agree with the continuity effective gate.
+    all_ok = validate_continuity_workforce_agreement(
+        state, effective_gate, live_branch, live_head, root, all_ok, label, mode
+    )
+
     if live_branch is not None:
         expected_branch = state.get("handoff_branch")
         if expected_branch == "__HANDOFF_BRANCH__":
@@ -718,6 +733,139 @@ def validate_described_head(described_head, live_head, root, all_ok, label):
         return False
 
     print("  OK   only metadata-only files changed (CASE 2 — METADATA-ONLY STATE ADVANCE)")
+    return all_ok
+
+
+def _derive_workforce_effective_gate(workforce_state, root, live_branch, live_head):
+    """Return (current_gate, error) from the B027 workforce gate resolver."""
+    resolver_path = root / "tools" / "workforce" / "state_gate_resolver.py"
+    if not resolver_path.exists():
+        return None, "tools/workforce/state_gate_resolver.py not found"
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "state_gate_resolver", resolver_path
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        effective = mod.derive_effective_workforce_state(
+            workforce_state,
+            live_branch=live_branch,
+            live_head=live_head,
+            repo_root=str(root),
+        )
+        if not isinstance(effective, dict):
+            return None, "workforce resolver returned non-dict"
+        gate = effective.get("current_gate")
+        if not gate:
+            return None, "workforce resolver returned empty current_gate"
+        return gate, None
+    except Exception as e:
+        return None, f"workforce resolver raised {type(e).__name__}: {e}"
+
+
+def _workforce_agreement_applicable(root, mode, live_branch, live_head, effective_gate):
+    """Determine whether the Continuity/Workforce agreement check should run.
+
+    The check only applies in live mode when the B027 workforce governance
+    authority and a WORKFORCE_STATE.json are present.  Fixtures without B027
+    (e.g. the legacy 171 handoff tests) skip it harmlessly.
+    """
+    if mode != "live" or live_branch is None or live_head is None:
+        return False
+    if not effective_gate:
+        return False
+    b027 = root / "docs" / "authority" / "B027_AI_WORKFORCE_GOVERNANCE.md"
+    if not b027.exists():
+        return False
+    ws = root / "docs" / "workforce" / "WORKFORCE_STATE.json"
+    return ws.exists()
+
+
+def validate_current_gate_resolved(state, effective_gate, mode, all_ok, label, schema_class=None):
+    """Ensure CURRENT_STATE.json current_gate uses the runtime placeholder.
+
+    The canonical current-lifecycle template must use __EFFECTIVE_GATE__ so the
+    live effective gate cannot silently become stale.  Archive mode is expected
+    to contain the resolved concrete gate.  Legacy schemas and unresolved gates
+    are handled fail-closed.
+    """
+    current_gate = state.get("current_gate", "")
+    if not current_gate:
+        print(f"  FAIL CURRENT_STATE.json current_gate missing")
+        return False
+
+    if current_gate == "__EFFECTIVE_GATE__":
+        if mode == "archive":
+            print(f"  FAIL CURRENT_STATE.json current_gate is unresolved placeholder in archive")
+            return False
+        print(f"  OK   CURRENT_STATE.json current_gate uses runtime placeholder __EFFECTIVE_GATE__")
+        return all_ok
+
+    if current_gate in PLACEHOLDER_MARKERS:
+        if mode == "archive":
+            print(f"  FAIL CURRENT_STATE.json current_gate contains unresolved placeholder {current_gate}")
+            return False
+        print(f"  OK   CURRENT_STATE.json current_gate uses runtime placeholder {current_gate}")
+        return all_ok
+
+    if effective_gate is None:
+        if mode == "live":
+            print(f"  FAIL CURRENT_STATE.json current_gate is hardcoded but continuity effective gate could not be resolved")
+            return False
+        # Archive mode with no resolved gate is a passthrough handled elsewhere.
+        return all_ok
+
+    if current_gate != effective_gate:
+        print(f"  FAIL CURRENT_STATE.json current_gate is hardcoded/stale")
+        print(f"       current_gate: {current_gate[:100]}")
+        print(f"       resolved effective gate: {effective_gate[:100]}")
+        return False
+
+    # A hardcoded current_gate that happens to match is still not the canonical
+    # dynamic representation; this is the exact stale-gate recurrence mode the
+    # sync fix is intended to prevent.
+    if mode == "live" and schema_class == ArchiveSchemaClass.CURRENT_LIFECYCLE:
+        print(f"  FAIL CURRENT_STATE.json current_gate is hardcoded in live current-lifecycle mode")
+        print(f"       current_gate: {current_gate[:100]}")
+        print(f"       use __EFFECTIVE_GATE__ or another resolvable placeholder")
+        return False
+
+    print(f"  OK   CURRENT_STATE.json current_gate matches resolved effective gate")
+    return all_ok
+
+
+def validate_continuity_workforce_agreement(
+    state, effective_gate, live_branch, live_head, root, all_ok, label, mode
+):
+    """Compare the continuity effective gate with the workforce resolver output."""
+    if not _workforce_agreement_applicable(root, mode, live_branch, live_head, effective_gate):
+        return all_ok
+
+    ws_path = root / "docs" / "workforce" / "WORKFORCE_STATE.json"
+    try:
+        with open(ws_path, "r", encoding="utf-8") as f:
+            workforce_state = json.load(f)
+    except Exception as e:
+        print(f"\n[{label}] Continuity/Workforce effective gate agreement")
+        print(f"  FAIL could not load WORKFORCE_STATE.json: {e}")
+        return False
+
+    workforce_gate, err = _derive_workforce_effective_gate(
+        workforce_state, root, live_branch, live_head
+    )
+    print(f"\n[{label}] Continuity/Workforce effective gate agreement")
+    if err:
+        print(f"  FAIL workforce resolver failed: {err}")
+        return False
+
+    if workforce_gate != effective_gate:
+        print(f"  FAIL continuity effective gate does not match workforce effective gate")
+        print(f"       continuity: {effective_gate[:100]}")
+        print(f"       workforce:  {workforce_gate[:100]}")
+        return False
+
+    print(f"  OK   continuity and workforce effective gates agree")
+    print(f"       effective gate: {effective_gate[:100]}")
     return all_ok
 
 

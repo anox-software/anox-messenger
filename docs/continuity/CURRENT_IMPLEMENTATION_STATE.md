@@ -9,8 +9,10 @@
 - `ANOX-TASK-WORKFORCERETEST01` status: Closed (FAIL) (post-merge retest completed; 001 and 005 PASS, 002 FAIL).
 - `ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01` status: Closed (test fixture repair complete; no product/CI changes).
 - `ANOX-TASK-WORKFORCEFIX02` status: Ready For Remote (remediation complete; archive effective-state rendering; awaits human merge).
-- `ANOX-TASK-WORKFORCERETEST02` status: Candidate
-- `ANOX-TASK-HARNESSRECHECK01` status: Candidate (post-merge harness recheck; not yet authorized). (post-merge retest; not yet authorized).
+- `ANOX-TASK-WORKFORCERETEST02` status: Candidate.
+- `ANOX-TASK-HARNESSRECHECK01` status: Closed (FAIL) (post-merge harness recheck at 88b312fb... blocked by continuity/Workforce state disagreement).
+- `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01` status: Ready For Remote (state synchronization; no product/CI changes).
+- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` status: Candidate (post-merge recheck of continuity-sync fix; not yet authorized).
 - B-004 backend implementation: `NOT_STARTED`.
 - B-005 database/RLS implementation: `NOT_STARTED`.
 - Local crypto/registration foundation: remediated, retested, and Closed.

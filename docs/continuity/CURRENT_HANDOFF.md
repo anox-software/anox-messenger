@@ -1,14 +1,14 @@
 # CURRENT HANDOFF — anoX Messenger V1
 
-Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-TEST-HARNESS-FIX-01<!-- /ANOX:handoff_version -->`
-Date: 2026-09-07
-Delivery branch: `remediation/workforce-test-harness-fix-01`
-Described HEAD: `36ec5227dec4727950ce793df9bea013f8de8823`
-Main baseline HEAD: `81e091f3346a7c8653c100a334a1dbfe2c54d464`
+Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-CONTINUITY-SYNC-FIX-01<!-- /ANOX:handoff_version -->`
+Date: 2026-09-09
+Delivery branch: `remediation/workforce-continuity-sync-fix-01`
+Described HEAD: `9b38352ebf60d1e0540bb631d97e16e1e72aa969`
+Main baseline HEAD: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-TEST-HARNESS-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
-Pre-merge gate: `<!-- ANOX:pre_merge_gate -->WORKFORCE-TEST-HARNESS-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:pre_merge_gate -->`
-Post-merge gate: `<!-- ANOX:post_merge_gate -->WORKFORCE-HARNESS-RECHECK-01<!-- /ANOX:post_merge_gate -->`
+Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-CONTINUITY-SYNC-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
+Pre-merge gate: `<!-- ANOX:pre_merge_gate -->WORKFORCE-CONTINUITY-SYNC-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:pre_merge_gate -->`
+Post-merge gate: `<!-- ANOX:post_merge_gate -->WORKFORCE-HARNESS-RECHECK-02 (Candidate, pending human authorization)<!-- /ANOX:post_merge_gate -->`
 
 ---
 
@@ -27,27 +27,27 @@ New sessions must read that file first.
 - Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
 - Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
 - Canonical branch: `main`
-- Delivery branch: `remediation/workforce-test-harness-fix-01`
-- Current work branch: `<!-- ANOX:handoff_branch -->remediation/workforce-test-harness-fix-01<!-- /ANOX:handoff_branch -->`
-- Current HEAD: `<!-- ANOX:handoff_head -->36ec5227dec4727950ce793df9bea013f8de8823<!-- /ANOX:handoff_head -->`
-- Main baseline HEAD: `8385f4019184be9b568f65ec4748194595ef339c`
+- Delivery branch: `remediation/workforce-continuity-sync-fix-01`
+- Current work branch: `<!-- ANOX:handoff_branch -->remediation/workforce-continuity-sync-fix-01<!-- /ANOX:handoff_branch -->`
+- Current HEAD: `<!-- ANOX:handoff_head -->9b38352ebf60d1e0540bb631d97e16e1e72aa969<!-- /ANOX:handoff_head -->`
+- Main baseline HEAD: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 - Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-- Latest material event: `<!-- ANOX:latest_material_event -->ANOX-EVENT-0041<!-- /ANOX:latest_material_event -->`
+- Latest material event: `ANOX-EVENT-0042`
 
 ## Latest completed work
 
-- `WORKFORCE-FIX-02` (`ANOX-TASK-WORKFORCEFIX02`) remediated to `Ready For Remote`: archive `CURRENT_HANDOFF.md` and `CURRENT_STATE.json` now render from the resolved effective workforce state; the generator does not mutate tracked files; `ANOX-WORKFORCE-AUDIT-002` remains `Ready For Retest` with archive/cold-recovery evidence.
+- `WORKFORCE-HARNESS-RECHECK-01` (`ANOX-TASK-HARNESSRECHECK01`) attempted at post-merge `main` SHA `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`: `validate_continuity --mode live` FAIL; `generate_handoff.py` fail-closed; cold recovery blocked. Root cause: `CURRENT_STATE.json` `current_gate` hardcoded to `WORKFORCE-TEST-HARNESS-FIX-01` and `WORKFORCE_STATE.json` `described_head` stale (FIX-02 era). Historical result preserved as FAIL; audit ID not reused.
+- `WORKFORCE-CONTINUITY-SYNC-FIX-01` (`ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01`) remediates the two root causes: `CURRENT_STATE.json` uses the runtime-derived effective-gate placeholder; `WORKFORCE_STATE.json` updated to the continuity-sync transition; `previous_merges` extended with the Harness-Fix R1 Human merge; new `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` Candidate created.
 - `WORKFORCE-RETEST-01` (`ANOX-TASK-WORKFORCERETEST01`) completed at post-merge `main` SHA `8385f4019184be9b568f65ec4748194595ef339c`: `ANOX-WORKFORCE-AUDIT-001` and `005` independently verified `PASS — REMEDIATED`; `ANOX-WORKFORCE-AUDIT-002` `FAIL — NOT REMEDIATED` (stale human-readable effective gate in archive `CURRENT_HANDOFF.md`); prior `PASS` evidence for 001 and 005 preserved.
+- `WORKFORCE-FIX-02` (`ANOX-TASK-WORKFORCEFIX02`) remediated to `Ready For Remote`; `ANOX-WORKFORCE-AUDIT-002` remains `Ready For Retest` with archive/cold-recovery evidence.
 - `ANOX-TASK-WORKFORCEFIX01` merged to `main` at `8385f4019184be9b568f65ec4748194595ef339c`; `ANOX-TASK-WORKFORCERETEST01` recorded as `Closed (FAIL)`.
-- New `tools/audit/validate_workforce_fix02.py` + `tools/audit/test_workforce_fix02.py` added; `validate_workforce_fix01.py` hardened to preserve FIX-01 evidence via `WORKFORCE_STATE.json` `previous_merges`.
-- `docs/workforce/schemas/workforce-state.schema.json` extended with `previous_merges`.
-- `tools/continuity/generate_handoff.py` now resolves archive effective-state surfaces from canonical pre/post merge blocks; no third bookkeeping commit is required for a valid Human merge handoff.
-- B027-A/B/C integrity, workforce fix validators, archive generator, and freeze adversarial tests PASS.
+- New `tools/audit/validate_workforce_continuity_sync_fix01.py` + `tools/audit/test_workforce_continuity_sync_fix01.py` added; `validate_continuity.py` hardened with Continuity/Workforce effective-state agreement guard and runtime-placeholder structural guard.
+- `validate_workforce_fix02.py` and `test_workforce_fix02.py` remain unchanged; `test_handoff_and_validator.py` 171/171 adversarial checks remain PASS.
 
 ## Current open work
 
-- <!-- ANOX:current_open_work -->`ANOX-TASK-WORKFORCEFIX01` — Workforce Governance / Continuity Hardening — `Ready For Remote`; awaits human merge.<!-- /ANOX:current_open_work -->
-- `ANOX-TASK-WORKFORCERETEST01` — Candidate; start only on explicit human authorization and a fresh post-merge `main` SHA.
+- `WORKFORCE-CONTINUITY-SYNC-FIX-01` (`ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01`) — `Ready For Remote`; awaits human merge.
+- `WORKFORCE-HARNESS-RECHECK-02` (`ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02`) — `Candidate`; `start_sha` NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA.
 - `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification (`PHYSICAL_VERIFICATION_REQUIRED`).
 - Milestone Security Architecture review for `ANOX-MAINARCH-003`, `007`, `024`.
 - `ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001` — final operational handoff/bootstrap/employee cold-boot acceptance gate.
@@ -65,4 +65,4 @@ New sessions must read that file first.
 
 ## Next task
 
-<!-- ANOX:next_task -->`WORKFORCE-RETEST-01` (`ANOX-TASK-WORKFORCERETEST01`) — Independent Targeted Workforce Governance Delta Retest — Candidate, pending human authorization. Scope: verify merge-aware validator, post-merge effective state, path authorization, final operational acceptance gate, and archive/cold recovery. No product code; no Security Architecture audit; remote `NONE`.<!-- /ANOX:next_task -->
+`WORKFORCE-HARNESS-RECHECK-02` (`ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02`) — `Candidate`, pending human authorization. Scope: independent read-only recheck of the continuity-sync fix; verify continuity/Workforce/handoff three-surface agreement, no third bookkeeping commit, wrong-merge fail-closed, and `ANOX-WORKFORCE-AUDIT-002` closure evidence completeness. No product code; no Security Architecture audit; remote `NONE`.

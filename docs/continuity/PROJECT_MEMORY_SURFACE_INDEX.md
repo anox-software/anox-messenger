@@ -1,51 +1,41 @@
 # Project Memory Surface Index — anoX V1
 
-**Latest material event:** ANOX-EVENT-0041
-**Latest human history event:** ANOX-EVENT-0041
+**Latest material event:** ANOX-EVENT-0042
+**Latest human history event:** ANOX-EVENT-0042
 
 | Surface | Latest reference |
 |---------|-----------------|
-| CURRENT_STATE.json | ANOX-EVENT-0040 |
-| CURRENT_GIT_STATE.md | ANOX-EVENT-0040 |
-| CURRENT_HANDOFF.md | ANOX-EVENT-0040 |
-| CURRENT_OPEN_WORK.md | ANOX-EVENT-0040 |
-| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0040 |
-| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0040 |
-| PROJECT_STATE.md | ANOX-EVENT-0040 |
-| FORTSCHRITT.md | ANOX-EVENT-0040 |
-| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0040 |
-| WORKFORCE_STATE.json | ANOX-EVENT-0040 |
+| CURRENT_STATE.json | ANOX-EVENT-0042 |
+| CURRENT_GIT_STATE.md | ANOX-EVENT-0042 |
+| CURRENT_HANDOFF.md | ANOX-EVENT-0042 |
+| CURRENT_OPEN_WORK.md | ANOX-EVENT-0042 |
+| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0042 |
+| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0042 |
+| PROJECT_STATE.md | ANOX-EVENT-0042 |
+| FORTSCHRITT.md | ANOX-EVENT-0042 |
+| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0042 |
+| WORKFORCE_STATE.json | ANOX-EVENT-0042 |
 | findings.jsonl | ANOX-EVENT-0040 |
-| tasks.jsonl | ANOX-EVENT-0040 |
-| runs.jsonl | ANOX-EVENT-0040 |
+| tasks.jsonl | ANOX-EVENT-0042 |
+| runs.jsonl | ANOX-EVENT-0042 |
 | audits.jsonl | ANOX-EVENT-0038 |
 | FINAL_PRE_PRODUCT_WORKFORCE_ARCHITECTURE_AUDIT.md | ANOX-EVENT-0038 |
 | FINAL_PRE_PRODUCT_DEVELOPMENT_ARCHITECTURE_SECURITY_AUDIT.md | ANOX-EVENT-0037 |
 | FINAL_PRE_PRODUCT_LEGACY_AUDIT_CONSOLIDATION.md | ANOX-EVENT-0035 |
 
 Surface updates in this event:
-- `docs/continuity/CURRENT_STATE.json` (ANOX-EVENT-0040; described_head updated to WORKFORCE-FIX-02 substantive; pre/post merge gates set to WORKFORCE-FIX-02 / WORKFORCE-RETEST-02)
-- `docs/continuity/CURRENT_GIT_STATE.md` (ANOX-EVENT-0040; main baseline 8385f401; described_head c0b643c; pre/post merge gates and canonical merge list)
-- `docs/continuity/CURRENT_HANDOFF.md` (ANOX-EVENT-0040; WORKFORCE-FIX-02 delivery branch and archive effective-state rendering)
-- `docs/continuity/CURRENT_OPEN_WORK.md` (ANOX-EVENT-0040; WORKFORCE-FIX-02 Ready For Remote, WORKFORCE-RETEST-02 Candidate, 002 Ready For Retest)
-- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md` (ANOX-EVENT-0040; WORKFORCE-RETEST-02 not authorized)
-- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md` (ANOX-EVENT-0040; WORKFORCEFIX01 Merged, WORKFORCERETEST01 Closed (FAIL), WORKFORCEFIX02 Ready For Remote, WORKFORCERETEST02 Candidate)
-- `PROJECT_STATE.md` (ANOX-EVENT-0040; branch, HEAD, effective gate, blocker set)
-- `FORTSCHRITT.md` (ANOX-EVENT-0040; WORKFORCE-FIX-02 and RETEST-01 FAIL sections)
-- `docs/workforce/WORKFORCE_STATE.json` (ANOX-EVENT-0040; described_head, pre/post merge state, previous_merges for FIX-01, final handoff acceptance gate)
-- `docs/workforce/registries/findings.jsonl` (ANOX-EVENT-0040; 002 references WORKFORCE-FIX-02; 001 and 005 Ready For Retest preserved)
-- `docs/workforce/registries/tasks.jsonl` (ANOX-EVENT-0040; WORKFORCEFIX01 Merged, WORKFORCERETEST01 Closed (FAIL), WORKFORCEFIX02 In Progress, WORKFORCERETEST02 Candidate)
-- `docs/workforce/registries/runs.jsonl` (ANOX-EVENT-0040; ANOX-RUN-WORKFORCERETEST01 FAIL record)
-- `docs/workforce/schemas/workforce-state.schema.json` (ANOX-EVENT-0040; previous_merges array)
-- `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0040)
-Surface updates in this event:
-- `docs/continuity/CURRENT_STATE.json` (ANOX-EVENT-0041; delivery_branch/described_head/pre/post merge gates updated to WORKFORCE-TEST-HARNESS-FIX-01 / WORKFORCE-HARNESS-RECHECK-01)
-- `docs/continuity/CURRENT_GIT_STATE.md` (ANOX-EVENT-0041; described_head 36ec5227dec4...; pre/post merge gates WORKFORCE-TEST-HARNESS-FIX-01 / WORKFORCE-HARNESS-RECHECK-01)
-- `docs/continuity/CURRENT_HANDOFF.md` (ANOX-EVENT-0041; WORKFORCE-TEST-HARNESS-FIX-01 delivery branch and archive surface fallbacks)
-- `docs/continuity/CURRENT_OPEN_WORK.md` (ANOX-EVENT-0041; test fixture repair complete, next candidate WORKFORCE-HARNESS-RECHECK-01)
-- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md` (ANOX-EVENT-0041; WORKFORCE-HARNESS-RECHECK-01 candidate)
-- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md` (ANOX-EVENT-0041; ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01 closed, ANOX-TASK-HARNESSRECHECK01 candidate)
-- `PROJECT_STATE.md` (ANOX-EVENT-0041; branch, HEAD, effective gate, next candidate)
-- `FORTSCHRITT.md` (ANOX-EVENT-0041; WORKFORCE-TEST-HARNESS-FIX-01 section)
-- `docs/workforce/registries/tasks.jsonl` (ANOX-EVENT-0041; ANOX-TASK-HARNESSRECHECK01 candidate)
-- `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0041)
+- `docs/continuity/CURRENT_STATE.json` (ANOX-EVENT-0042; `current_gate` uses the runtime-derived effective-gate placeholder; `pre_merge_gate` WORKFORCE-CONTINUITY-SYNC-FIX-01; `post_merge_gate` WORKFORCE-HARNESS-RECHECK-02; described_head sealed to substantive)
+- `docs/continuity/CURRENT_GIT_STATE.md` (ANOX-EVENT-0042; main baseline 88b312fb...; described_head sealed to substantive; pre/post merge gates and canonical merge list updated)
+- `docs/continuity/CURRENT_HANDOFF.md` (ANOX-EVENT-0042; WORKFORCE-CONTINUITY-SYNC-FIX-01 delivery branch and archive surface fallbacks)
+- `docs/continuity/CURRENT_OPEN_WORK.md` (ANOX-EVENT-0042; WORKFORCE-CONTINUITY-SYNC-FIX-01 Ready For Remote, WORKFORCE-HARNESS-RECHECK-02 Candidate, HARNESS-RECHECK-01 Closed FAIL)
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md` (ANOX-EVENT-0042; WORKFORCE-HARNESS-RECHECK-02 candidate)
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md` (ANOX-EVENT-0042; HARNESSRECHECK01 Closed (FAIL), WORKFORCE-CONTINUITY-SYNC-FIX-01 Ready For Remote, WORKFORCE-HARNESS-RECHECK-02 Candidate)
+- `PROJECT_STATE.md` (ANOX-EVENT-0042; branch, HEAD, effective gate, next candidate)
+- `FORTSCHRITT.md` (ANOX-EVENT-0042; WORKFORCE-CONTINUITY-SYNC-FIX-01 and HARNESS-RECHECK-01 FAIL sections)
+- `docs/workforce/WORKFORCE_STATE.json` (ANOX-EVENT-0042; described_head, pre/post merge state, previous_merges extended with Harness-Fix R1 merge)
+- `docs/workforce/registries/tasks.jsonl` (ANOX-EVENT-0042; HARNESSRECHECK01 Closed (FAIL), WORKFORCE-CONTINUITY-SYNC-FIX-01 Ready For Remote, WORKFORCE-HARNESS-RECHECK-02 Candidate)
+- `docs/workforce/registries/runs.jsonl` (ANOX-EVENT-0042; ANOX-RUN-HARNESSRECHECK01 FAIL record; ANOX-RUN-CONTINUITYSYNC0001 record)
+- `tools/audit/validate_workforce_continuity_sync_fix01.py` (ANOX-EVENT-0042)
+- `tools/audit/test_workforce_continuity_sync_fix01.py` (ANOX-EVENT-0042)
+- `tools/continuity/validate_continuity.py` (ANOX-EVENT-0042; agreement and structural guards)
+- `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0042)
