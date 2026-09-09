@@ -3,7 +3,7 @@
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
   "delivery_branch": "governance/workforce-retest-closure-ingest",
-  "described_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
+  "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
   "current_gate": "WORKFORCE-RETEST-CLOSURE-INGEST — INGEST HARNESS-RECHECK-02 PASS AND CLOSE 001/002/005 (Ready For Remote; awaiting human merge)",
   "active_roles": [
     "ROLE-003",
@@ -61,7 +61,7 @@
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
+    "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
     "current_gate": "WORKFORCE-RETEST-CLOSURE-INGEST — INGEST HARNESS-RECHECK-02 PASS AND CLOSE 001/002/005 (Ready For Remote; awaiting human merge)",
     "current_writer": {
       "task_id": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST",
@@ -73,7 +73,7 @@
     "active_task": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST"
   },
   "post_merge_state": {
-    "described_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
+    "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
     "current_gate": "AUDIT-SECURITY-ARCHITECTURE — FINAL PRE-PRODUCT SECURITY ARCHITECTURE AUDIT (Candidate, pending human authorization)",
     "current_writer": null,
     "next_phase": "AUDIT-SECURITY-ARCHITECTURE",
@@ -211,7 +211,8 @@
     "2026-09-07T22:00:00Z: WORKFORCE-RETEST-01 completed at post-merge main SHA 8385f4019184be9b568f65ec4748194595ef339c. Overall FAIL: Finding 001 PASS — REMEDIATED, Finding 005 PASS — REMEDIATED, Finding 002 FAIL — NOT REMEDIATED (stale human-readable effective gate in archive CURRENT_HANDOFF.md). Finding 002 remains Ready For Retest pending WORKFORCE-FIX-02. Findings 001 and 005 remain Ready For Retest with prior PASS evidence preserved.",
     "WORKFORCE-FIX-02: archive CURRENT_HANDOFF.md and CURRENT_STATE.json rendered from resolved effective state; no third bookkeeping commit required; no product/backend/SQL/CI/secret changes; no Security Architecture audit started.",
     "2026-09-09: WORKFORCE-CONTINUITY-SYNC-FIX-01 authorized. Synchronize CURRENT_STATE.json (current_gate = __EFFECTIVE_GATE__) and WORKFORCE_STATE.json (described_head / pre_merge_state / post_merge_state) for the Human merge of the continuity-sync branch. Add previous_merges record for the Harness-Fix R1 Human merge (88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f). Preserve WORKFORCE-HARNESS-RECHECK-01 FAIL as immutable historical evidence; do NOT reuse the failed audit ID; create Candidate ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED.",
-    "2026-09-10: WORKFORCE-RETEST-CLOSURE-INGEST ready on branch governance/workforce-retest-closure-ingest at base 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7. WORKFORCE-HARNESS-RECHECK-02 PASS: 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. Findings 001/002/005 Closed. ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02 Closed; ANOX-TASK-SECURITY-ARCH-001 recorded as Candidate. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED; remote mutation NONE."
+    "2026-09-10: WORKFORCE-RETEST-CLOSURE-INGEST ready on branch governance/workforce-retest-closure-ingest at base 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7. WORKFORCE-HARNESS-RECHECK-02 PASS: 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. Findings 001/002/005 Closed. ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02 Closed; ANOX-TASK-SECURITY-ARCH-001 recorded as Candidate. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED; remote mutation NONE.",
+    "2026-09-10: ANOX-EVENT-0043 metadata commit sealed described_head to 8572ab99f4e2e62e5be75abb3144f6f927aa9f68."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
   "next_phase": "AUDIT-SECURITY-ARCHITECTURE",

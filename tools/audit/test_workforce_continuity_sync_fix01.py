@@ -32,6 +32,16 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 
+
+def _load_json(path):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _load_gates():
+    cs = _load_json(REPO / "docs" / "continuity" / "CURRENT_STATE.json")
+    return cs["pre_merge_gate"], cs["post_merge_gate"]
+
+
 # Reuse the proven FIX-02 fixture helpers.
 if str(REPO / "tools" / "audit") not in sys.path:
     sys.path.insert(0, str(REPO / "tools" / "audit"))
@@ -42,12 +52,17 @@ if str(REPO / "tools" / "workforce") not in sys.path:
     sys.path.insert(0, str(REPO / "tools" / "workforce"))
 import state_gate_resolver as sgr
 
+# Immutable historical sync-fix/harness-recheck milestones.
 BASE_SHA = "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f"
-PRE_MERGE_TOKEN = "WORKFORCE-CONTINUITY-SYNC-FIX-01"
-POST_MERGE_TOKEN = "WORKFORCE-HARNESS-RECHECK-02"
+SYNC_FIX_PRE = "WORKFORCE-CONTINUITY-SYNC-FIX-01"
+SYNC_FIX_POST = "WORKFORCE-HARNESS-RECHECK-02"
 FAIL_TOKEN = "WORKFORCE-HARNESS-RECHECK-01"
 
-TASK_ID = "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+# Current live pre/post gates are read from CURRENT_STATE.json at import time.
+PRE_MERGE_TOKEN, POST_MERGE_TOKEN = _load_gates()
+
+TASK_ID = "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST"
+DELIVERY_BRANCH = "governance/workforce-retest-closure-ingest"
 RECHECK01_ID = "ANOX-TASK-HARNESSRECHECK01"
 RECHECK01_RUN = "ANOX-RUN-HARNESSRECHECK01"
 RECHECK02_ID = "ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02"
@@ -60,9 +75,8 @@ TARGET_FINDINGS = (
 
 
 def _fixture_overrides(event_id):
-    branch = "remediation/workforce-continuity-sync-fix-01"
     return {
-        "delivery_branch": branch,
+        "delivery_branch": DELIVERY_BRANCH,
         "canonical_branch": "main",
         "baseline_branch": "main",
         "current_task": f"{TASK_ID} (Ready For Remote; awaits human merge)",
@@ -131,15 +145,6 @@ def _bind_historical_task_start_shas(tmp, base):
     path.write_text("\n".join(json.dumps(t) for t in tasks) + "\n", encoding="utf-8")
 
 
-def _load_json(path):
-    return json.loads(Path(path).read_text(encoding="utf-8"))
-
-
-def _load_gates():
-    cs = _load_json(REPO / "docs" / "continuity" / "CURRENT_STATE.json")
-    return cs["pre_merge_gate"], cs["post_merge_gate"]
-
-
 def _workforce_state(tmp):
     return _load_json(tmp / "docs" / "workforce" / "WORKFORCE_STATE.json")
 
@@ -159,22 +164,21 @@ def _patch_current_state_baseline(tmp, base):
 
 
 def _patch_workforce_state_for_sync(tmp, pre_gate, post_gate, described):
-    """Rewrite the FIX-02 fixture WORKFORCE_STATE.json to continuity-sync values."""
+    """Rewrite the FIX-02 fixture WORKFORCE_STATE.json to closure-ingest values."""
     ws = _workforce_state(tmp)
-    branch = "remediation/workforce-continuity-sync-fix-01"
-    ws["delivery_branch"] = branch
+    ws["delivery_branch"] = DELIVERY_BRANCH
     ws["described_head"] = described
     ws["current_gate"] = pre_gate
     ws["current_writer"] = {
         "task_id": TASK_ID,
         "role_id": "ROLE-009",
-        "branch": branch,
+        "branch": DELIVERY_BRANCH,
     }
-    ws["next_phase"] = POST_MERGE_TOKEN
+    ws["next_phase"] = post_gate
     fpa = ws.setdefault("final_pre_product_audit", {})
     fpa["product_development_state"] = "BLOCKED_PENDING_FINAL_AUDIT"
     fpa["security_architecture_audit"] = "NOT_STARTED"
-    fpa["next_phase"] = POST_MERGE_TOKEN
+    fpa["next_phase"] = post_gate
 
     pre = ws.setdefault("pre_merge_state", {})
     pre["described_head"] = described
@@ -182,9 +186,9 @@ def _patch_workforce_state_for_sync(tmp, pre_gate, post_gate, described):
     pre["current_writer"] = {
         "task_id": TASK_ID,
         "role_id": "ROLE-009",
-        "branch": branch,
+        "branch": DELIVERY_BRANCH,
     }
-    pre["next_phase"] = POST_MERGE_TOKEN
+    pre["next_phase"] = post_gate
     pre["current_task"] = TASK_ID
     pre["active_task"] = TASK_ID
 
@@ -192,8 +196,8 @@ def _patch_workforce_state_for_sync(tmp, pre_gate, post_gate, described):
     post["described_head"] = described
     post["current_gate"] = post_gate
     post["current_writer"] = None
-    post["next_phase"] = POST_MERGE_TOKEN
-    post["current_task"] = f"{TASK_ID} merged — awaiting independent retest"
+    post["next_phase"] = post_gate
+    post["current_task"] = f"{TASK_ID} merged — awaiting independent security architecture audit"
     post["active_task"] = None
 
     (tmp / "docs" / "workforce" / "WORKFORCE_STATE.json").write_text(json.dumps(ws, indent=2), encoding="utf-8")
@@ -246,7 +250,7 @@ class WorkforceContinuitySyncFix01Tests(unittest.TestCase):
         self.addCleanup(shutil.rmtree, tmp, ignore_errors=True)
 
         base = _t2.copy_project_skeleton(tmp, source_repo=REPO)
-        branch = "remediation/workforce-continuity-sync-fix-01"
+        branch = DELIVERY_BRANCH
         _t2.git(["checkout", "-B", branch], tmp)
 
         _t2.setup_fixture_state(

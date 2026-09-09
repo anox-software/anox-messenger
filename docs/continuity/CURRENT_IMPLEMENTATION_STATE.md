@@ -1,5 +1,7 @@
 # CURRENT IMPLEMENTATION STATE
 
+> Sealed by `ANOX-EVENT-0043` at `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`.
+
 - `ANOX-TASK-LEGACYFIX01` status: Closed (8 findings remediated).
 - `ANOX-TASK-LEGACYRETEST01` status: Closed (LEGACY-RETEST-01 PASS — 8/8 verified REMEDIATED).
 - `ANOX-TASK-LEGACYRET01INGEST` status: Closed (evidence ingested; 8 findings Closed).

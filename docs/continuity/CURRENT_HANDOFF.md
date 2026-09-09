@@ -3,7 +3,7 @@
 Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-RETEST-CLOSURE-INGEST<!-- /ANOX:handoff_version -->`
 Date: 2026-09-10
 Delivery branch: `governance/workforce-retest-closure-ingest`
-Described HEAD: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
+Described HEAD: `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`
 Main baseline HEAD: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
 Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
 Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-RETEST-CLOSURE-INGEST (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
@@ -29,10 +29,10 @@ New sessions must read that file first.
 - Canonical branch: `main`
 - Delivery branch: `governance/workforce-retest-closure-ingest`
 - Current work branch: `<!-- ANOX:handoff_branch -->governance/workforce-retest-closure-ingest<!-- /ANOX:handoff_branch -->`
-- Current HEAD: `<!-- ANOX:handoff_head -->__HANDOFF_HEAD__<!-- /ANOX:handoff_head -->`
+- Current HEAD: `<!-- ANOX:handoff_head -->8572ab99f4e2e62e5be75abb3144f6f927aa9f68<!-- /ANOX:handoff_head -->`
 - Main baseline HEAD: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
 - Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-- Latest material event: `ANOX-EVENT-0042`
+- Latest material event: `ANOX-EVENT-0043`
 
 ## Latest completed work
 

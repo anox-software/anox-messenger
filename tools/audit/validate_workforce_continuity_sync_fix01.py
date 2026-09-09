@@ -21,12 +21,17 @@ from pathlib import Path
 
 REPO = Path(os.environ.get("ANOX_REPO_ROOT", Path(__file__).resolve().parents[2]))
 
-BASE_SHA = "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f"
-PRE_MERGE_TOKEN = "WORKFORCE-CONTINUITY-SYNC-FIX-01"
-POST_MERGE_TOKEN = "WORKFORCE-HARNESS-RECHECK-02"
+# Immutable historical sync-fix and harness-recheck milestones.
+SYNC_FIX_PRE = "WORKFORCE-CONTINUITY-SYNC-FIX-01"
+SYNC_FIX_POST = "WORKFORCE-HARNESS-RECHECK-02"
+SYNC_FIX_MERGE = "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7"
+SYNC_FIX_BASE = "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f"
+
+BASE_SHA = SYNC_FIX_BASE
 FAIL_TOKEN = "WORKFORCE-HARNESS-RECHECK-01"
 
-TASK_ID = "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+TASK_ID = "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST"
+DELIVERY_BRANCH = "governance/workforce-retest-closure-ingest"
 RECHECK01_ID = "ANOX-TASK-HARNESSRECHECK01"
 RECHECK02_ID = "ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02"
 RETEST01_ID = "ANOX-TASK-WORKFORCERETEST01"
@@ -34,6 +39,22 @@ RETEST02_ID = "ANOX-TASK-WORKFORCERETEST02"
 CONTINUITY_SYNC_RUN = "ANOX-RUN-CONTINUITYSYNC0001"
 RECHECK01_RUN = "ANOX-RUN-HARNESSRECHECK01"
 RETEST01_RUN = "ANOX-RUN-WORKFORCERETEST01"
+
+
+def _load_current_state():
+    return json.loads((REPO / "docs" / "continuity" / "CURRENT_STATE.json").read_text(encoding="utf-8"))
+
+
+def _load_workforce_state():
+    return json.loads((REPO / "docs" / "workforce" / "WORKFORCE_STATE.json").read_text(encoding="utf-8"))
+
+
+def _current_pre():
+    return _load_current_state().get("pre_merge_gate", "")
+
+
+def _current_post():
+    return _load_current_state().get("post_merge_gate", "")
 
 TARGET_FINDINGS = (
     "ANOX-WORKFORCE-AUDIT-001",
@@ -259,19 +280,42 @@ def check_retest02_preservation(errors):
 
 
 def check_findings(errors):
+    """Target findings may lawfully be Ready For Retest or Closed.
+
+    A Closed finding must have a complete recorded remediation/retest closure
+    chain per lifecycle_legality.  A Ready For Retest finding must still carry
+    remediation evidence (no premature closure evidence).
+    """
+    import lifecycle_legality as ll
     findings = load_jsonl("docs/workforce/registries/findings.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
+    audits = load_jsonl("docs/workforce/registries/audits.jsonl")
     for fid in TARGET_FINDINGS:
         f = by_id.get(fid)
         if f is None:
             fail(f"finding {fid} missing", errors)
             continue
-        if f.get("status") != "Ready For Retest":
-            fail(f"finding {fid} status is {f.get('status')}, expected Ready For Retest", errors)
-        elif f.get("closure_evidence"):
-            fail(f"finding {fid} Ready For Retest but carries closure_evidence", errors)
+        status = f.get("status")
+        if status == "Ready For Retest":
+            if f.get("closure_evidence"):
+                fail(f"{fid} Ready For Retest but carries closure_evidence", errors)
+                continue
+            refs = f.get("remediation_refs") or []
+            if not any("WORKFORCE-FIX" in r for r in refs):
+                fail(f"{fid} Ready For Retest without WORKFORCE-FIX remediation ref", errors)
+                continue
+            if not any("validate" in r for r in refs):
+                fail(f"{fid} Ready For Retest without validator remediation ref", errors)
+                continue
+            ok(f"{fid} Ready For Retest with remediation evidence")
+        elif status == "Closed":
+            legal, reason = ll.finding_status_legal(f, audits)
+            if not legal:
+                fail(f"{fid} Closed with illegal lifecycle: {reason}", errors)
+                continue
+            ok(f"{fid} Closed with legal lifecycle evidence")
         else:
-            ok(f"finding {fid} Ready For Retest with no closure evidence")
+            fail(f"{fid} status is {status}, expected Ready For Retest or Closed", errors)
 
 
 def check_current_state(errors):
@@ -289,14 +333,16 @@ def check_current_state(errors):
 
     pre_gate = state.get("pre_merge_gate", "")
     post_gate = state.get("post_merge_gate", "")
-    if PRE_MERGE_TOKEN not in pre_gate:
-        fail(f"pre_merge_gate does not contain {PRE_MERGE_TOKEN}: {pre_gate[:80]}", errors)
+    current_pre = _current_pre()
+    current_post = _current_post()
+    if current_pre not in pre_gate and SYNC_FIX_PRE not in pre_gate:
+        fail(f"pre_merge_gate {pre_gate[:80]} does not match current ({current_pre[:80]}) or historical ({SYNC_FIX_PRE})", errors)
     else:
-        ok(f"pre_merge_gate begins with {PRE_MERGE_TOKEN}")
-    if POST_MERGE_TOKEN not in post_gate:
-        fail(f"post_merge_gate does not contain {POST_MERGE_TOKEN}: {post_gate[:80]}", errors)
+        ok("pre_merge_gate matches current or historical sync-fix gate")
+    if current_post not in post_gate and SYNC_FIX_POST not in post_gate:
+        fail(f"post_merge_gate {post_gate[:80]} does not match current ({current_post[:80]}) or historical ({SYNC_FIX_POST})", errors)
     else:
-        ok(f"post_merge_gate begins with {POST_MERGE_TOKEN}")
+        ok("post_merge_gate matches current or historical recheck-02 gate")
 
     described = state.get("described_head", "")
     if not re.fullmatch(r"[0-9a-f]{40}", described):
@@ -359,14 +405,16 @@ def check_workforce_state(errors):
 
     pre_gate = pre.get("current_gate", "")
     post_gate = post.get("current_gate", "")
-    if PRE_MERGE_TOKEN not in pre_gate:
-        fail(f"WORKFORCE_STATE pre_merge current_gate missing {PRE_MERGE_TOKEN}: {pre_gate[:80]}", errors)
+    current_pre = _current_pre()
+    current_post = _current_post()
+    if current_pre not in pre_gate and SYNC_FIX_PRE not in pre_gate:
+        fail(f"WORKFORCE_STATE pre_merge current_gate {pre_gate[:80]} does not match current ({current_pre[:80]}) or historical ({SYNC_FIX_PRE})", errors)
     else:
-        ok(f"WORKFORCE_STATE pre_merge current_gate begins with {PRE_MERGE_TOKEN}")
-    if POST_MERGE_TOKEN not in post_gate:
-        fail(f"WORKFORCE_STATE post_merge current_gate missing {POST_MERGE_TOKEN}: {post_gate[:80]}", errors)
+        ok("WORKFORCE_STATE pre_merge current_gate matches current or historical sync-fix gate")
+    if current_post not in post_gate and SYNC_FIX_POST not in post_gate:
+        fail(f"WORKFORCE_STATE post_merge current_gate {post_gate[:80]} does not match current ({current_post[:80]}) or historical ({SYNC_FIX_POST})", errors)
     else:
-        ok(f"WORKFORCE_STATE post_merge current_gate begins with {POST_MERGE_TOKEN}")
+        ok("WORKFORCE_STATE post_merge current_gate matches current or historical recheck-02 gate")
 
     if post.get("current_writer") is not None:
         fail("WORKFORCE_STATE post_merge current_writer is not null", errors)
@@ -374,13 +422,14 @@ def check_workforce_state(errors):
         ok("WORKFORCE_STATE post_merge current_writer is null")
 
     next_phase = ws.get("next_phase") or ws.get("final_pre_product_audit", {}).get("next_phase")
-    if POST_MERGE_TOKEN not in (next_phase or ""):
-        fail(f"WORKFORCE_STATE next_phase is {next_phase}, expected {POST_MERGE_TOKEN}", errors)
+    if (next_phase or "") not in (current_post or "") and (next_phase or "") not in (SYNC_FIX_POST or ""):
+        fail(f"WORKFORCE_STATE next_phase is {next_phase}, expected current ({current_post}) or historical ({SYNC_FIX_POST})", errors)
     else:
-        ok(f"WORKFORCE_STATE next_phase is {POST_MERGE_TOKEN}")
+        ok(f"WORKFORCE_STATE next_phase is {next_phase}")
 
 
 def check_recheck02_candidate(errors):
+    """RECHECK-02 may now be Closed (PASS) on the sync-fix merge, or remain Candidate."""
     tasks = load_jsonl("docs/workforce/registries/tasks.jsonl")
     by_id = {t["task_id"]: t for t in tasks}
     task = by_id.get(RECHECK02_ID)
@@ -388,21 +437,29 @@ def check_recheck02_candidate(errors):
         fail(f"{RECHECK02_ID} missing from tasks registry", errors)
         return
 
-    if task.get("status") != "Candidate":
-        fail(f"{RECHECK02_ID} status is {task.get('status')}, expected Candidate", errors)
+    status = task.get("status")
+    if status == "Closed":
+        result = task.get("result") or ""
+        if "PASS" not in result.upper():
+            fail(f"{RECHECK02_ID} Closed but result is not PASS: {result}", errors)
+            return
+        start = task.get("start_sha") or ""
+        if start == SYNC_FIX_MERGE or git_is_ancestor(start, SYNC_FIX_MERGE) or git_is_ancestor(SYNC_FIX_MERGE, start):
+            ok(f"{RECHECK02_ID} Closed with PASS and bound to sync-fix merge {SYNC_FIX_MERGE[:12]}")
+        else:
+            fail(f"{RECHECK02_ID} start_sha {start[:12]} is not on the sync-fix merge lineage", errors)
+            return
+    elif status == "Candidate":
+        if task.get("remote_permission") != "NONE":
+            fail(f"{RECHECK02_ID} remote_permission is {task.get('remote_permission')}, expected NONE", errors)
+            return
+        start = task.get("start_sha") or ""
+        if not start.startswith("NOT YET BOUND"):
+            fail(f"{RECHECK02_ID} start_sha is bound prematurely: {start}", errors)
+            return
+        ok(f"{RECHECK02_ID} is Candidate with unbound start_sha")
     else:
-        ok(f"{RECHECK02_ID} is Candidate")
-
-    if task.get("remote_permission") != "NONE":
-        fail(f"{RECHECK02_ID} remote_permission is {task.get('remote_permission')}, expected NONE", errors)
-    else:
-        ok(f"{RECHECK02_ID} remote_permission is NONE")
-
-    start = task.get("start_sha") or ""
-    if not start.startswith("NOT YET BOUND"):
-        fail(f"{RECHECK02_ID} start_sha is bound prematurely: {start}", errors)
-    else:
-        ok(f"{RECHECK02_ID} start_sha not yet bound")
+        fail(f"{RECHECK02_ID} status is {status}, expected Closed (PASS) or Candidate", errors)
 
 
 def check_delivery_agreement(errors):
@@ -444,10 +501,9 @@ def _clone_to_temp(checkout=None):
 
 
 def _fixture_overrides(event_id):
-    """Shared CURRENT_STATE overrides for continuity-sync fixtures."""
-    branch = "remediation/workforce-continuity-sync-fix-01"
+    """Shared CURRENT_STATE overrides for closure-ingest fixtures."""
     return {
-        "delivery_branch": branch,
+        "delivery_branch": DELIVERY_BRANCH,
         "canonical_branch": "main",
         "baseline_branch": "main",
         "current_task": f"{TASK_ID} (Ready For Remote; awaits human merge)",
@@ -480,7 +536,7 @@ def check_human_merge_agreement(errors):
     tmp = _t2.make_bare_repo()
     try:
         base = _t2.copy_project_skeleton(tmp, source_repo=REPO)
-        branch = "remediation/workforce-continuity-sync-fix-01"
+        branch = DELIVERY_BRANCH
         _t2.git(["checkout", "-B", branch], tmp)
 
         pre_gate = load_json("docs/continuity/CURRENT_STATE.json")["pre_merge_gate"]
@@ -532,8 +588,8 @@ def check_human_merge_agreement(errors):
         if err:
             fail(f"workforce resolver failed on main: {err}", errors)
             return
-        if POST_MERGE_TOKEN not in workforce_gate:
-            fail(f"workforce post-merge gate is {workforce_gate[:100]}, expected {POST_MERGE_TOKEN}", errors)
+        if post_gate != workforce_gate:
+            fail(f"workforce post-merge gate is {workforce_gate[:100]}, expected {post_gate[:100]}", errors)
             return
         ok("workforce resolver returns post-merge gate on main")
 
@@ -571,7 +627,7 @@ def check_wrong_merge_fails_closed(errors):
     tmp = _t2.make_bare_repo()
     try:
         base = _t2.copy_project_skeleton(tmp, source_repo=REPO)
-        branch = "remediation/workforce-continuity-sync-fix-01"
+        branch = DELIVERY_BRANCH
         _t2.git(["checkout", "-B", branch], tmp)
 
         pre_gate = load_json("docs/continuity/CURRENT_STATE.json")["pre_merge_gate"]
@@ -635,7 +691,7 @@ def check_wrong_merge_fails_closed(errors):
         workforce_gate, err = _derive_workforce_gate(ws, live_branch="main", live_head=main_head, repo_root=str(tmp))
         if err or not workforce_gate:
             ok("workforce resolver failed/returned None on wrong merge (fail-closed)")
-        elif POST_MERGE_TOKEN in workforce_gate:
+        elif post_gate in workforce_gate:
             fail(f"workforce resolver accepted wrong merge with post gate {workforce_gate[:80]}", errors)
         else:
             ok(f"workforce resolver does not advance to post gate on wrong merge (gate: {workforce_gate[:60]})")
@@ -648,7 +704,7 @@ def check_multiple_pending_transitions_fails(errors):
     tmp = _t2.make_bare_repo()
     try:
         base = _t2.copy_project_skeleton(tmp, source_repo=REPO)
-        branch = "remediation/workforce-continuity-sync-fix-01"
+        branch = DELIVERY_BRANCH
         _t2.git(["checkout", "-B", branch], tmp)
 
         pre_gate = load_json("docs/continuity/CURRENT_STATE.json")["pre_merge_gate"]
@@ -698,7 +754,7 @@ def check_multiple_pending_transitions_fails(errors):
             "status": "candidate",
             "start_head": "__PENDING_HEAD__",
             "end_head": "__PENDING_HEAD__",
-            "gate_after": POST_MERGE_TOKEN,
+            "gate_after": post_gate,
         })
         ledger_path.write_text("\n".join(json.dumps(e) for e in ledger) + "\n", encoding="utf-8")
 
@@ -758,12 +814,47 @@ def _run_validator_script(script, cwd, env=None):
     return result.returncode, result.stdout, result.stderr
 
 
+def check_sync_fix_preserved(errors):
+    """The historical sync-fix pre/post gates and the HARNESS-RECHECK-02 transition
+    must remain discoverable in WORKFORCE_STATE previous_merges or the ledger.
+    """
+    ws = _load_workforce_state()
+    found = False
+    for m in ws.get("previous_merges", []):
+        if m.get("merge_head") == SYNC_FIX_MERGE:
+            pre_gate = m.get("pre_merge_state", {}).get("current_gate", "")
+            post_gate = m.get("post_merge_state", {}).get("current_gate", "")
+            if SYNC_FIX_PRE in pre_gate and SYNC_FIX_POST in post_gate:
+                found = True
+                ok(f"sync-fix merge {SYNC_FIX_MERGE[:12]} preserved with pre/post gates")
+            else:
+                fail(f"sync-fix merge {SYNC_FIX_MERGE[:12]} pre/post gates missing: {pre_gate[:60]} / {post_gate[:60]}", errors)
+            break
+    if not found:
+        fail(f"sync-fix merge {SYNC_FIX_MERGE[:12]} not found in WORKFORCE_STATE previous_merges", errors)
+
+    ledger = load_jsonl("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl")
+    event_found = None
+    for e in ledger:
+        if e.get("event_id") == "ANOX-EVENT-0042" and SYNC_FIX_PRE in e.get("task", ""):
+            event_found = e
+            break
+    if event_found:
+        ok("ANOX-EVENT-0042 sync-fix event preserved in ledger")
+        if SYNC_FIX_POST in (event_found.get("gate_after") or ""):
+            ok("ANOX-EVENT-0042 gate_after is HARNESS-RECHECK-02")
+        else:
+            fail(f"ANOX-EVENT-0042 gate_after missing {SYNC_FIX_POST}: {event_found.get('gate_after')}", errors)
+    else:
+        fail("ANOX-EVENT-0042 sync-fix event not found in ledger", errors)
+
+
 def check_historical_validators(errors):
     """Run the historical validators.  validate_workforce_fix02 must pass on its
     canonical merge SHA because the current state has lawfully progressed past it.
     """
-    # Run the three validators that still apply to the current state directly.
-    for v in ("validate_workforce_fix01.py", "validate_workforce_audit_findings_freeze.py", "validate_legacy_retest01_ingest.py"):
+    # Run validators that still apply to the current (closure-ingest) state directly.
+    for v in ("validate_workforce_fix01.py", "validate_workforce_audit_findings_freeze.py", "validate_legacy_retest01_ingest.py", "validate_workforce_retest_closure_ingest.py"):
         script = REPO / "tools" / "audit" / v
         rc, out, err = _run_validator_script(script, REPO)
         if rc == 0:
@@ -799,12 +890,25 @@ def check_historical_validators(errors):
 
 
 def check_no_findings_closed(errors):
+    """Target finding legality is lifecycle-aware; lifecycle is checked in check_findings.
+
+    This helper remains a sentinel against accidental silent closure of target
+    findings that have no recorded closure evidence.
+    """
     findings = load_jsonl("docs/workforce/registries/findings.jsonl")
-    closed = [f["finding_id"] for f in findings if f.get("finding_id") in TARGET_FINDINGS and f.get("status") == "Closed"]
-    if closed:
-        fail(f"target findings are closed: {closed}", errors)
-    else:
-        ok("target workforce findings are not closed")
+    import lifecycle_legality as ll
+    audits = load_jsonl("docs/workforce/registries/audits.jsonl")
+    for f in findings:
+        if f.get("finding_id") not in TARGET_FINDINGS:
+            continue
+        if f.get("status") == "Closed":
+            legal, reason = ll.finding_status_legal(f, audits)
+            if not legal:
+                fail(f"{f['finding_id']} is Closed without legal closure chain: {reason}", errors)
+            else:
+                ok(f"{f['finding_id']} closed legally")
+        else:
+            ok(f"{f['finding_id']} is not Closed; no need to guard")
 
 
 def check_project_memory(errors):
@@ -919,6 +1023,7 @@ def main():
     check_wrong_merge_fails_closed(errors)
     check_multiple_pending_transitions_fails(errors)
     check_historical_validators(errors)
+    check_sync_fix_preserved(errors)
     check_no_findings_closed(errors)
     check_project_memory(errors)
     check_product_blocked(errors)

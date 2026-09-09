@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-09-09
-**Latest material event:** `ANOX-EVENT-0042` — WORKFORCE-HARNESS-RECHECK-01 recorded as FAIL; WORKFORCE-CONTINUITY-SYNC-FIX-01 synchronized `CURRENT_STATE.json`/`WORKFORCE_STATE.json`; `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` recorded as Candidate.
+**Date:** 2026-09-10
+**Latest material event:** `ANOX-EVENT-0043` — WORKFORCE-HARNESS-RECHECK-02 PASS; WORKFORCE-RETEST-CLOSURE-INGEST closes 001/002/005; AUDIT-SECURITY-ARCHITECTURE recorded as Candidate.
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -26,24 +26,25 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0040 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0041 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0042 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0043 -->
 
 ## Repository truth
 
-- Branch: `remediation/workforce-continuity-sync-fix-01`
-- **Current HEAD:** `9b38352ebf60d1e0540bb631d97e16e1e72aa969` (WORKFORCE-CONTINUITY-SYNC-FIX-01 SUBSTANTIVE)
+- Branch: `governance/workforce-retest-closure-ingest`
+- **Current HEAD:** `8572ab99f4e2e62e5be75abb3144f6f927aa9f68` (WORKFORCE-RETEST-CLOSURE-INGEST SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f` (WORKFORCE-TEST-HARNESS-FIX-01 merge)
-- **Previous baseline HEAD:** `81e091f3346a7c8653c100a334a1dbfe2c54d464`
+- **Latest merge to baseline:** `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7` (WORKFORCE-CONTINUITY-SYNC-FIX-01 merge)
+- **Previous baseline HEAD:** `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `WORKFORCE-CONTINUITY-SYNC-FIX-01` — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)`
-- **Current authorized task:** `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01` (Ready For Remote; awaits human merge)
-- **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance.
+- **Current effective gate:** `WORKFORCE-RETEST-CLOSURE-INGEST` — INGEST HARNESS-RECHECK-02 PASS AND CLOSE 001/002/005 (Ready For Remote; awaiting human merge)
+- **Current authorized task:** `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST` (Ready For Remote; awaits human merge)
+- **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance. Workforce findings 001/002/005 are Closed.
 - **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded.
-- **Next candidate task:** `WORKFORCE-HARNESS-RECHECK-02` (`ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02`; NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA). Do NOT reuse `ANOX-TASK-HARNESSRECHECK01`.
+- **Next candidate task:** `AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`; NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA).
 - **Product status:** `BLOCKED_PENDING_FINAL_AUDIT`; no product/CI changes until all final/legacy/retest conditions are complete and the human final gate is recorded.
 
 ## Architecture / governance
@@ -64,11 +65,19 @@
 - `ANOX-MAINARCH-030` (B-009 wipe/session, Class C)
 - `ANOX-LEGACY-INTEGRATION-005` (native handle leak, Class F)
 - `ANOX-LEGACY-B003-001` (UUIDv4 variant, Class F)
-- `ANOX-WORKFORCE-AUDIT-001` (merge-aware legacy validator, MEDIUM) — Ready For Retest
-- `ANOX-WORKFORCE-AUDIT-002` (post-merge continuity / archive effective-state rendering, MEDIUM) — Ready For Retest
-- `ANOX-WORKFORCE-AUDIT-005` (`..` path normalization, MEDIUM) — Ready For Retest
+
 
 Closed by `LEGACY-FIX-01` + `LEGACY-RETEST-01` (verified PASS — REMEDIATED):
 `ANOX-MAINARCH-019`, `ANOX-MAINARCH-023`, `ANOX-MAINARCH-031`,
 `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-CRYPTO-005`,
 `ANOX-LEGACY-INTEGRATION-001`, `ANOX-LEGACY-INTEGRATION-002`, `ANOX-LEGACY-INTEGRATION-003`.
+
+---
+
+## ANOX-EVENT-0043 — WORKFORCE-RETEST-CLOSURE-INGEST (2026-09-10)
+
+- Substantive commit: `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`
+- Canonical base SHA: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
+- Task: `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`
+- Result: `Ready For Remote`
+- Summary: WORKFORCE-HARNESS-RECHECK-02 PASS at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`; per-finding verdicts 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. `ANOX-WORKFORCE-AUDIT-001/002/005` Closed with canonical closure evidence. `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` Closed. `ANOX-TASK-SECURITY-ARCH-001` recorded as Candidate. Product remains `BLOCKED_PENDING_FINAL_AUDIT`; Security Architecture Audit `NOT_STARTED`; remote mutation `NONE`.

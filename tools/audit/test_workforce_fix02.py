@@ -618,21 +618,36 @@ class ArchiveEffectiveStateTests(unittest.TestCase):
         shutil.rmtree(tmp)
 
     def test_08_001_005_regression_guards(self):
-        """Findings 001 and 005 must still be Ready For Retest and not closed."""
+        """Findings 001 and 005 must be Ready For Retest or lawfully Closed."""
+        sys.path.insert(0, str(REPO / "tools" / "audit"))
+        import lifecycle_legality as ll
         findings = load_jsonl("docs/workforce/registries/findings.jsonl")
+        audits = load_jsonl("docs/workforce/registries/audits.jsonl")
         by_id = {f["finding_id"]: f for f in findings}
         for fid in ("ANOX-WORKFORCE-AUDIT-001", "ANOX-WORKFORCE-AUDIT-005"):
             f = by_id.get(fid)
             self.assertIsNotNone(f, f"{fid} missing")
-            self.assertEqual(f.get("status"), "Ready For Retest")
-            self.assertIsNone(f.get("closure_evidence"))
-            self.assertTrue(any("WORKFORCE-FIX-01" in r for r in f.get("remediation_refs", [])),
+            if f.get("status") == "Ready For Retest":
+                self.assertIsNone(f.get("closure_evidence"))
+            elif f.get("status") == "Closed":
+                ok, reasons = ll.finding_status_legal(f, audits)
+                self.assertTrue(ok, f"{fid} Closed with illegal lifecycle: {reasons}")
+                self.assertIsNotNone(f.get("closure_evidence"))
+            else:
+                self.fail(f"{fid} unexpected status {f.get('status')}")
+            self.assertTrue(any("WORKFORCE-FIX-01" in r for r in (f.get("remediation_refs") or [])),
                             f"{fid} should still reference WORKFORCE-FIX-01 evidence")
 
         target = by_id.get("ANOX-WORKFORCE-AUDIT-002")
         self.assertIsNotNone(target)
-        self.assertEqual(target.get("status"), "Ready For Retest")
-        self.assertTrue(any("WORKFORCE-FIX-02" in r for r in target.get("remediation_refs", [])),
+        if target.get("status") == "Ready For Retest":
+            pass
+        elif target.get("status") == "Closed":
+            ok, reasons = ll.finding_status_legal(target, audits)
+            self.assertTrue(ok, f"002 Closed with illegal lifecycle: {reasons}")
+        else:
+            self.fail(f"002 unexpected status {target.get('status')}")
+        self.assertTrue(any("WORKFORCE-FIX-02" in r for r in (target.get("remediation_refs") or [])),
                         "002 should reference WORKFORCE-FIX-02")
 
     def test_09_no_product_scope_leak(self):

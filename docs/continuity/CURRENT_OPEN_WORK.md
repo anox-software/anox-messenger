@@ -1,6 +1,6 @@
 # CURRENT OPEN WORK — anoX V1
 
-As of ANOX-EVENT-0042:
+As of ANOX-EVENT-0043:
 
 1. `WORKFORCE-RETEST-CLOSURE-INGEST` (`ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`) — `Ready For Remote`; awaits human merge. Ingests the completed `WORKFORCE-HARNESS-RECHECK-02` PASS and closes exactly `ANOX-WORKFORCE-AUDIT-001`, `002`, and `005`. Creates `validate_workforce_retest_closure_ingest.py` + tests; synchronizes Workforce/Continuity/Project Memory; preserves all historical evidence; prepares `AUDIT-SECURITY-ARCHITECTURE` as the next candidate.
 2. `AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`) — `Candidate`; `start_sha` NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA. Scope: read-only independent Final Pre-Product Security Architecture audit per `docs/workforce/audits/final-audit-plan.json`. No product code, no Claude, no remote.

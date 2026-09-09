@@ -65,6 +65,9 @@ def git_is_ancestor(a, b):
 
 
 def check_findings(errors):
+    import sys
+    sys.path.insert(0, str(REPO / "tools" / "audit"))
+    import lifecycle_legality as ll
     findings = load_jsonl("docs/workforce/registries/findings.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
     for fid in sorted(FINDING_IDS):
@@ -72,20 +75,35 @@ def check_findings(errors):
         if f is None:
             fail(f"{fid} missing from findings registry", errors)
             continue
-        if f.get("status") != "Ready For Retest":
-            fail(f"{fid} status is {f.get('status')}, expected Ready For Retest", errors)
-            continue
-        if f.get("closure_evidence"):
-            fail(f"{fid} Ready For Retest but carries closure_evidence", errors)
-            continue
-        refs = f.get("remediation_refs") or []
-        if not any("WORKFORCE-FIX-01" in r for r in refs):
-            fail(f"{fid} remediation_refs missing WORKFORCE-FIX-01", errors)
-            continue
-        if not any("validate" in r for r in refs):
-            fail(f"{fid} remediation_refs missing validator reference", errors)
-            continue
-        ok(f"{fid} Ready For Retest with remediation evidence")
+        # Allow lawful lifecycle progression: RFR with no closure_evidence,
+        # or Closed with complete legal closure chain.
+        status = f.get("status")
+        if status == "Ready For Retest":
+            if f.get("closure_evidence"):
+                fail(f"{fid} Ready For Retest but carries closure_evidence", errors)
+                continue
+            refs = f.get("remediation_refs") or []
+            if not any("WORKFORCE-FIX-01" in r for r in refs):
+                fail(f"{fid} remediation_refs missing WORKFORCE-FIX-01", errors)
+                continue
+            if not any("validate" in r for r in refs):
+                fail(f"{fid} remediation_refs missing validator reference", errors)
+                continue
+            ok(f"{fid} Ready For Retest with remediation evidence")
+        elif status == "Closed":
+            if not f.get("closure_evidence"):
+                fail(f"{fid} Closed without closure_evidence", errors)
+                continue
+            if "WORKFORCE-FIX-01" not in " ".join(f.get("closure_evidence") or []):
+                fail(f"{fid} closure_evidence missing WORKFORCE-FIX-01", errors)
+                continue
+            legal, reasons = ll.finding_status_legal(f, load_jsonl("docs/workforce/registries/audits.jsonl"))
+            if not legal:
+                fail(f"{fid} Closed with illegal lifecycle: {'; '.join(reasons)}", errors)
+                continue
+            ok(f"{fid} Closed with legal lifecycle evidence")
+        else:
+            fail(f"{fid} status is {status}, expected Ready For Retest or Closed", errors)
 
 
 def check_task(errors):

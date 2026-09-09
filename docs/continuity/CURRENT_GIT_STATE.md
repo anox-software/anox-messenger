@@ -3,8 +3,8 @@
 - Branch: __HANDOFF_BRANCH__
 - Head: __HANDOFF_HEAD__
 - Main baseline: 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7
-- Described HEAD: 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7
-- Working tree: CLEAN
+- Described HEAD: 8572ab99f4e2e62e5be75abb3144f6f927aa9f68
+- Working tree: __WORKING_TREE__
 - Effective gate: __EFFECTIVE_GATE__
 - Pre-merge gate: WORKFORCE-RETEST-CLOSURE-INGEST
 - Post-merge gate: AUDIT-SECURITY-ARCHITECTURE
