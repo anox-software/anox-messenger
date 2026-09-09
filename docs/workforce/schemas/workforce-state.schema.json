@@ -73,14 +73,14 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+        "pattern": "^ANOX-TASK-[A-Z0-9-]+$"
       }
     },
     "authorized_tasks": {
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+        "pattern": "^ANOX-TASK-[A-Z0-9-]+$"
       }
     },
     "current_writer": {
@@ -88,7 +88,7 @@
       "properties": {
         "task_id": {
           "type": "string",
-          "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+          "pattern": "^ANOX-TASK-[A-Z0-9-]+$"
         },
         "role_id": {
           "type": "string",
@@ -108,7 +108,7 @@
         "properties": {
           "task_id": {
             "type": "string",
-            "pattern": "^ANOX-TASK-[A-Z0-9]+$"
+            "pattern": "^ANOX-TASK-[A-Z0-9-]+$"
           },
           "action": {
             "type": "string"

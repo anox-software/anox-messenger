@@ -32,3 +32,23 @@
 - Historical `WORKFORCE-RETEST-02` result preserved as `PASS WITH FAILURES`.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE.
 - Next: human merge to `main`, then `WORKFORCE-HARNESS-RECHECK-01` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0042 -->
+## WORKFORCE-CONTINUITY-SYNC-FIX-01 — 2026-09-09 (ANOX-EVENT-0042)
+
+- Branch: `remediation/workforce-continuity-sync-fix-01`
+- Substantive commit: `__SUBSTANTIVE_HEAD__`
+- Canonical base SHA: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
+- Task ID: `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01`
+- Result: `Ready For Remote`
+- Purpose: remediate the two root causes discovered by `WORKFORCE-HARNESS-RECHECK-01` (FAIL at main `88b312fb...`):
+  - `docs/continuity/CURRENT_STATE.json` `current_gate` was hardcoded to `WORKFORCE-TEST-HARNESS-FIX-01`; now uses the runtime-derived effective-gate placeholder.
+  - `docs/workforce/WORKFORCE_STATE.json` `described_head` and pre/post merge states were stale (FIX-02 era); now synchronized to the continuity-sync transition and `previous_merges` extended with the Harness-Fix R1 Human merge.
+- New validators + adversarial tests: `tools/audit/validate_workforce_continuity_sync_fix01.py`, `tools/audit/test_workforce_continuity_sync_fix01.py`.
+- `validate_continuity.py` hardened with Continuity/Workforce effective-state agreement guard and runtime-placeholder structural guard.
+- `ANOX-TASK-HARNESSRECHECK01` recorded as `Closed (FAIL)`; failed audit ID preserved and not reused.
+- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` recorded as Candidate with `start_sha` NOT YET BOUND.
+- `ANOX-WORKFORCE-AUDIT-001`, `002`, `005` remain `Ready For Retest`; no closure evidence written.
+- Historical `WORKFORCE-RETEST-01` FAIL and `WORKFORCE-RETEST-02` `PASS WITH FAILURES` preserved unchanged.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE.
+- Next: human merge to `main`, then `WORKFORCE-HARNESS-RECHECK-02` on a fresh post-merge `main` SHA.

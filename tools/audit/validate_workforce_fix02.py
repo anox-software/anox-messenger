@@ -34,6 +34,7 @@ PRODUCT_FINDINGS = {
     "ANOX-LEGACY-B003-001",
 }
 FIX01_MERGE_SHA = "8385f4019184be9b568f65ec4748194595ef339c"
+FIX02_MERGE_SHA = "81e091f3346a7c8653c100a334a1dbfe2c54d464"
 
 
 def fail(msg, errors):
@@ -245,24 +246,63 @@ def check_workforce_state(errors):
 
     pre = ws.get("pre_merge_state", {})
     post = ws.get("post_merge_state", {})
-    if "WORKFORCE-FIX-02" not in (pre.get("current_gate") or ""):
-        fail(f"pre_merge_state current_gate is {pre.get('current_gate')}, expected WORKFORCE-FIX-02", errors)
+    pre_gate = pre.get("current_gate") or ""
+    post_gate = post.get("current_gate") or ""
+    pre_token = _first_token(pre_gate)
+    post_token = _first_token(post_gate)
+    pre_next_token = _first_token(pre.get("next_phase") or "")
+    post_next_token = _first_token(post.get("next_phase") or "")
+
+    # Lifecycle-aware: the top-level pre/post may be the FIX-02 state itself
+    # (pre=WORKFORCE-FIX-02, post=WORKFORCE-RETEST-02) or any lawful later
+    # progression (pre=current phase, post=next phase). The historical FIX-02
+    # state must still be preserved in previous_merges.
+    if not pre_token:
+        fail(f"pre_merge_state current_gate is empty", errors)
     else:
-        ok(f"pre_merge_state current_gate is {pre.get('current_gate')}")
-    if "WORKFORCE-RETEST-02" not in (post.get("current_gate") or ""):
-        fail(f"post_merge_state current_gate is {post.get('current_gate')}, expected WORKFORCE-RETEST-02", errors)
+        ok(f"pre_merge_state current_gate is {pre_gate}")
+    if not post_token:
+        fail(f"post_merge_state current_gate is empty", errors)
     else:
-        ok(f"post_merge_state current_gate is {post.get('current_gate')}")
+        ok(f"post_merge_state current_gate is {post_gate}")
+
+    if pre_next_token and post_token and pre_next_token == post_token:
+        ok(f"pre_merge next_phase {pre_next_token} matches post_merge current_gate {post_token}")
+    else:
+        fail(f"pre_merge next_phase {pre_next_token} does not match post_merge current_gate {post_token}", errors)
+
+    if post_next_token:
+        ok(f"post_merge next_phase is {post_next_token}")
+    else:
+        fail("post_merge_state next_phase is empty", errors)
 
     writer = pre.get("current_writer") or {}
-    if writer.get("task_id") != TASK_ID:
-        fail(f"pre_merge_state current_writer {writer} != {TASK_ID}", errors)
+    if not writer.get("task_id"):
+        fail(f"pre_merge_state current_writer missing task_id: {writer}", errors)
     else:
-        ok(f"pre_merge_state current_writer is {TASK_ID}")
+        ok(f"pre_merge_state current_writer is {writer.get('task_id')}")
     if post.get("current_writer") is not None:
         fail("post_merge_state current_writer is not null", errors)
     else:
         ok("post_merge_state current_writer is null")
+
+    # Preserve FIX-02 history in addition to FIX-01.
+    found_fix02 = False
+    for m in ws.get("previous_merges", []):
+        if m.get("merge_head") == FIX02_MERGE_SHA:
+            found_fix02 = True
+            fix02_pre = m.get("pre_merge_state", {})
+            fix02_post = m.get("post_merge_state", {})
+            if "WORKFORCE-FIX-02" not in (fix02_pre.get("current_gate") or ""):
+                fail("previous_merges FIX-02 pre_merge_state missing WORKFORCE-FIX-02 gate", errors)
+            else:
+                ok("previous_merges preserves FIX-02 pre-merge gate")
+            if "WORKFORCE-RETEST-02" not in (fix02_post.get("current_gate") or ""):
+                fail("previous_merges FIX-02 post_merge_state missing WORKFORCE-RETEST-02 gate", errors)
+            else:
+                ok("previous_merges preserves FIX-02 post-merge gate")
+    if not found_fix02:
+        fail("WORKFORCE_STATE previous_merges missing FIX-02 merge", errors)
 
     oa = ws.get("final_operational_handoff_acceptance_gate") or {}
     if oa.get("status") != "NOT_EXECUTED" or oa.get("result") != "PENDING":
@@ -382,6 +422,10 @@ def check_effective_state(errors):
     sys.path.insert(0, str(REPO / "tools" / "workforce"))
     import state_gate_resolver as sgr
     ws = load_json("docs/workforce/WORKFORCE_STATE.json")
+    pre = ws.get("pre_merge_state", {})
+    post = ws.get("post_merge_state", {})
+    pre_token = _first_token(pre.get("current_gate") or "")
+    post_token = _first_token(post.get("current_gate") or "")
     branch = git(["branch", "--show-current"])
     head = git(["rev-parse", "HEAD"])
     effective = sgr.derive_effective_workforce_state(ws, live_branch=branch, live_head=head, repo_root=REPO)
@@ -394,16 +438,17 @@ def check_effective_state(errors):
             fail("Post-merge current_writer is not null on main", errors)
         else:
             ok("Post-merge current_writer is null on main")
-        if "WORKFORCE-RETEST-02" not in (effective.get("current_gate") or ""):
-            fail(f"Post-merge effective gate is {effective.get('current_gate')}, expected WORKFORCE-RETEST-02", errors)
-        else:
+        if _first_token(effective.get("current_gate") or "") == post_token:
             ok(f"Post-merge effective gate is {effective.get('current_gate')}")
+        else:
+            fail(f"Post-merge effective gate is {effective.get('current_gate')}, expected {post.get('current_gate')}", errors)
     else:
         writer = effective.get("current_writer") or {}
-        if writer.get("task_id") == TASK_ID and "WORKFORCE-FIX-02" in (effective.get("current_gate") or ""):
-            ok(f"Pre-merge current_writer is {TASK_ID}; effective gate is {effective.get('current_gate')}")
+        pre_writer = pre.get("current_writer") or {}
+        if writer.get("task_id") == pre_writer.get("task_id") and _first_token(effective.get("current_gate") or "") == pre_token:
+            ok(f"Pre-merge current_writer is {writer.get('task_id')}; effective gate is {effective.get('current_gate')}")
         else:
-            fail(f"Pre-merge state not FIX-02: current_writer={writer}, current_gate={effective.get('current_gate')}", errors)
+            fail(f"Pre-merge effective state inconsistent: current_writer={writer}, current_gate={effective.get('current_gate')}", errors)
 
 
 def check_product_findings(errors):

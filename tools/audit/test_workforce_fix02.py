@@ -229,8 +229,27 @@ def setup_fixture_state(dst, described, pre_gate, post_gate, state_for_fixture=N
     (dst / "docs" / "workforce" / "WORKFORCE_STATE.json").write_text(json.dumps(ws, indent=2), encoding="utf-8")
 
 
-def synchronize_project_memory(dst, end_head, event_id="ANOX-EVENT-0042"):
+def _next_event_id(ledger_path):
+    """Return the next sequential ANOX-EVENT ID not already in the ledger."""
+    max_n = 0
+    if ledger_path.exists():
+        for line in ledger_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            try:
+                event = json.loads(line)
+                m = re.match(r"ANOX-EVENT-(\d+)", event.get("event_id", ""))
+                if m:
+                    max_n = max(max_n, int(m.group(1)))
+            except json.JSONDecodeError:
+                continue
+    return f"ANOX-EVENT-{max_n + 1:04d}"
+
+
+def synchronize_project_memory(dst, end_head, event_id=None):
     """Append a sealed fixture event to the ledger and update memory surfaces."""
+    if event_id is None:
+        event_id = _next_event_id(dst / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl")
     ledger_path = dst / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
     event = {
         "event_id": event_id,
@@ -500,6 +519,12 @@ class ArchiveEffectiveStateTests(unittest.TestCase):
         setup_fixture_state(tmp, described=base,
                             pre_gate="WORKFORCE-FIX-02",
                             post_gate="WORKFORCE-RETEST-02")
+        update_handoff_git_state(
+            tmp, base,
+            "remediation/workforce-fix-02-handoff-archive",
+            "WORKFORCE-FIX-02",
+            "WORKFORCE-RETEST-02",
+        )
         synchronize_project_memory(tmp, base)
         git(["add", "-A"], tmp)
         git(["commit", "-m", "state"], tmp)
