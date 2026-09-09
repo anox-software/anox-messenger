@@ -3,7 +3,7 @@
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
   "delivery_branch": "remediation/workforce-continuity-sync-fix-01",
-  "described_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+  "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
   "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
   "active_roles": [
     "ROLE-003",
@@ -61,7 +61,7 @@
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
     "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
     "current_writer": {
       "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
@@ -73,7 +73,7 @@
     "active_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
   },
   "post_merge_state": {
-    "described_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
     "current_gate": "WORKFORCE-HARNESS-RECHECK-02 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
     "current_writer": null,
     "next_phase": "WORKFORCE-HARNESS-RECHECK-02",

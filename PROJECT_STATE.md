@@ -30,7 +30,7 @@
 ## Repository truth
 
 - Branch: `remediation/workforce-continuity-sync-fix-01`
-- **Current HEAD:** `__SUBSTANTIVE_HEAD__` (WORKFORCE-CONTINUITY-SYNC-FIX-01 SUBSTANTIVE)
+- **Current HEAD:** `9b38352ebf60d1e0540bb631d97e16e1e72aa969` (WORKFORCE-CONTINUITY-SYNC-FIX-01 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`

@@ -3,7 +3,7 @@
 - Branch: __HANDOFF_BRANCH__
 - Head: __HANDOFF_HEAD__
 - Main baseline: 88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f
-- Described HEAD: __SUBSTANTIVE_HEAD__
+- Described HEAD: 9b38352ebf60d1e0540bb631d97e16e1e72aa969
 - Working tree: __WORKING_TREE__
 - Effective gate: `__EFFECTIVE_GATE__`
 - Pre-merge gate: WORKFORCE-CONTINUITY-SYNC-FIX-01

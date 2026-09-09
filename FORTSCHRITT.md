@@ -37,7 +37,7 @@
 ## WORKFORCE-CONTINUITY-SYNC-FIX-01 — 2026-09-09 (ANOX-EVENT-0042)
 
 - Branch: `remediation/workforce-continuity-sync-fix-01`
-- Substantive commit: `__SUBSTANTIVE_HEAD__`
+- Substantive commit: `9b38352ebf60d1e0540bb631d97e16e1e72aa969`
 - Canonical base SHA: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 - Task ID: `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01`
 - Result: `Ready For Remote`

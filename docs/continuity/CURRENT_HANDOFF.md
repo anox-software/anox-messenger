@@ -3,7 +3,7 @@
 Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-CONTINUITY-SYNC-FIX-01<!-- /ANOX:handoff_version -->`
 Date: 2026-09-09
 Delivery branch: `remediation/workforce-continuity-sync-fix-01`
-Described HEAD: `__SUBSTANTIVE_HEAD__`
+Described HEAD: `9b38352ebf60d1e0540bb631d97e16e1e72aa969`
 Main baseline HEAD: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
 Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-CONTINUITY-SYNC-FIX-01 (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
@@ -29,7 +29,7 @@ New sessions must read that file first.
 - Canonical branch: `main`
 - Delivery branch: `remediation/workforce-continuity-sync-fix-01`
 - Current work branch: `<!-- ANOX:handoff_branch -->remediation/workforce-continuity-sync-fix-01<!-- /ANOX:handoff_branch -->`
-- Current HEAD: `<!-- ANOX:handoff_head -->__SUBSTANTIVE_HEAD__<!-- /ANOX:handoff_head -->`
+- Current HEAD: `<!-- ANOX:handoff_head -->9b38352ebf60d1e0540bb631d97e16e1e72aa969<!-- /ANOX:handoff_head -->`
 - Main baseline HEAD: `88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f`
 - Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
 - Latest material event: `ANOX-EVENT-0042`

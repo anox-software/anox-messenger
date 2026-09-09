@@ -7,7 +7,7 @@
   "canonical_branch": "main",
   "delivery_branch": "remediation/workforce-continuity-sync-fix-01",
   "baseline_branch": "main",
-  "described_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+  "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
   "baseline_tag": "v1-foundation-baseline",
   "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
   "latest_merge_to_baseline": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
