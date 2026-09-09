@@ -34,13 +34,21 @@ class LiveFixture:
         sec_dir.mkdir(parents=True)
         (sec_dir / "validate_apk_contents.py").write_text("# APK\n", encoding="utf-8")
 
+        # Copy the canonical Workforce runtime dependency used by the handoff generator.
+        workforce_dir = self.root / "tools" / "workforce"
+        workforce_dir.mkdir(parents=True)
+        (workforce_dir / "state_gate_resolver.py").write_text(
+            (REPO_ROOT / "tools" / "workforce" / "state_gate_resolver.py").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+
         self._setup_files(stale_claims)
 
         self._run(["git", "init"])
         self._run(["git", "config", "user.email", "test@anox.local"])
         self._run(["git", "config", "user.name", "Test"])
         # Create main branch with an initial commit, then a governance branch from it
-        self._run(["git", "checkout", "-b", "main"])
+        self._run(["git", "checkout", "-B", "main"])
         self._run(["git", "add", "."])
         self._run(["git", "commit", "-m", "init"])
         main_head = self._run(["git", "rev-parse", "main"]).stdout.strip()
@@ -54,6 +62,10 @@ class LiveFixture:
 
         if competing_precedence:
             self._write("docs/authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md", self._competing_precedence_md())
+
+        # Commit the canonical continuity state so the fixture starts with a clean tree.
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "state sync"])
 
         if add_synthetic_secret:
             (self.root / add_synthetic_secret).write_text("synthetic secret fixture", encoding="utf-8")
@@ -1042,7 +1054,10 @@ class TestHeadPrecedence(unittest.TestCase):
             f._write(
                 "docs/continuity/CURRENT_STATE.json",
                 '{'
+                '"schema_version": "B026-1.0",'
                 f'"handoff_branch": "governance/development-security-handoff-v1",'
+                '"handoff_head": "__HANDOFF_HEAD__",'
+                '"working_tree": "__WORKING_TREE__",'
                 f'"described_head": "{described}",'
                 f'"baseline_head": "{fallback}",'
                 f'"baseline_branch": "nonexistent-branch",'
@@ -1259,6 +1274,14 @@ class CMLFixture:
         sec_dir.mkdir(parents=True)
         (sec_dir / "validate_apk_contents.py").write_text("# APK\n", encoding="utf-8")
 
+        # Copy the canonical Workforce runtime dependency used by the handoff generator.
+        workforce_dir = self.root / "tools" / "workforce"
+        workforce_dir.mkdir(parents=True)
+        (workforce_dir / "state_gate_resolver.py").write_text(
+            (REPO_ROOT / "tools" / "workforce" / "state_gate_resolver.py").read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+
         self.pre_merge_gate = pre_merge_gate
         self.post_merge_gate = post_merge_gate
         self.delivery_branch = "delivery"
@@ -1268,13 +1291,13 @@ class CMLFixture:
         self._run(["git", "config", "user.email", "test@anox.local"])
         self._run(["git", "config", "user.name", "Test"])
 
-        self._run(["git", "checkout", "-b", "main"])
+        self._run(["git", "checkout", "-B", "main"])
         self._run(["git", "add", "."])
         self._run(["git", "commit", "-m", "base"])
         self.base = self._run(["git", "rev-parse", "main"]).stdout.strip()
 
         # Delivery branch starts with a substantive lifecycle payload.
-        self._run(["git", "checkout", "-b", "delivery"])
+        self._run(["git", "checkout", "-B", "delivery"])
         self._write("docs/continuity/CML_SUBSTANTIVE.md", "# Canonical merge lifecycle\n")
         self._run(["git", "add", "."])
         r = self._run(["git", "commit", "-m", "delivery init"])
@@ -2471,9 +2494,9 @@ class TestArchiveLifecycleTamper(unittest.TestCase):
                     text = text.replace("delivery", new_delivery)
                     # described_head appears in backticks
                     text = text.replace(original_described, new_described)
-                    # update pre/post gate declarations
-                    text = text.replace(f"Pre-merge gate: `{original_pre}`", f"Pre-merge gate: `{new_gate}`")
-                    text = text.replace(f"Post-merge gate: `{original_post}`", f"Post-merge gate: `{new_gate}`")
+                    # update pre/post gate declarations (archive format is backtick-free)
+                    text = text.replace(f"Pre-merge gate: {original_pre}", f"Pre-merge gate: {new_gate}")
+                    text = text.replace(f"Post-merge gate: {original_post}", f"Post-merge gate: {new_gate}")
                     # update the resolved current/effective gate and its parenthetical references
                     text = text.replace(f"Current gate: `{original_pre}`", f"Current gate: `{new_gate}`")
                     text = text.replace(f"Current gate: `{original_post}`", f"Current gate: `{new_gate}`")

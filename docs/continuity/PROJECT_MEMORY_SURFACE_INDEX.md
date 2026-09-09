@@ -1,7 +1,7 @@
 # Project Memory Surface Index — anoX V1
 
-**Latest material event:** ANOX-EVENT-0040
-**Latest human history event:** ANOX-EVENT-0040
+**Latest material event:** ANOX-EVENT-0041
+**Latest human history event:** ANOX-EVENT-0041
 
 | Surface | Latest reference |
 |---------|-----------------|
@@ -38,3 +38,14 @@ Surface updates in this event:
 - `docs/workforce/registries/runs.jsonl` (ANOX-EVENT-0040; ANOX-RUN-WORKFORCERETEST01 FAIL record)
 - `docs/workforce/schemas/workforce-state.schema.json` (ANOX-EVENT-0040; previous_merges array)
 - `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0040)
+Surface updates in this event:
+- `docs/continuity/CURRENT_STATE.json` (ANOX-EVENT-0041; delivery_branch/described_head/pre/post merge gates updated to WORKFORCE-TEST-HARNESS-FIX-01 / WORKFORCE-HARNESS-RECHECK-01)
+- `docs/continuity/CURRENT_GIT_STATE.md` (ANOX-EVENT-0041; described_head 36ec5227dec4...; pre/post merge gates WORKFORCE-TEST-HARNESS-FIX-01 / WORKFORCE-HARNESS-RECHECK-01)
+- `docs/continuity/CURRENT_HANDOFF.md` (ANOX-EVENT-0041; WORKFORCE-TEST-HARNESS-FIX-01 delivery branch and archive surface fallbacks)
+- `docs/continuity/CURRENT_OPEN_WORK.md` (ANOX-EVENT-0041; test fixture repair complete, next candidate WORKFORCE-HARNESS-RECHECK-01)
+- `docs/continuity/CURRENT_NEXT_DEVIN_TASK.md` (ANOX-EVENT-0041; WORKFORCE-HARNESS-RECHECK-01 candidate)
+- `docs/continuity/CURRENT_IMPLEMENTATION_STATE.md` (ANOX-EVENT-0041; ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01 closed, ANOX-TASK-HARNESSRECHECK01 candidate)
+- `PROJECT_STATE.md` (ANOX-EVENT-0041; branch, HEAD, effective gate, next candidate)
+- `FORTSCHRITT.md` (ANOX-EVENT-0041; WORKFORCE-TEST-HARNESS-FIX-01 section)
+- `docs/workforce/registries/tasks.jsonl` (ANOX-EVENT-0041; ANOX-TASK-HARNESSRECHECK01 candidate)
+- `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0041)
