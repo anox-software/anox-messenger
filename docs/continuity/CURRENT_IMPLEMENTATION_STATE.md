@@ -8,13 +8,16 @@
 - `ANOX-TASK-WORKFORCEFIX01` status: Merged at `8385f4019184be9b568f65ec4748194595ef339c` (remediation complete; WORKFORCE-RETEST-01 FAIL recorded).
 - `ANOX-TASK-WORKFORCERETEST01` status: Closed (FAIL) (post-merge retest completed; 001 and 005 PASS, 002 FAIL).
 - `ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01` status: Closed (test fixture repair complete; no product/CI changes).
-- `ANOX-TASK-WORKFORCEFIX02` status: Ready For Remote (remediation complete; archive effective-state rendering; awaits human merge).
-- `ANOX-TASK-WORKFORCERETEST02` status: Candidate.
+- `ANOX-TASK-WORKFORCEFIX02` status: Merged at `81e091f3346a7c8653c100a334a1dbfe2c54d464` (remediation complete; archive effective-state rendering).
+- `ANOX-TASK-WORKFORCERETEST02` status: Candidate (historical PASS WITH FAILURES preserved; not re-run).
 - `ANOX-TASK-HARNESSRECHECK01` status: Closed (FAIL) (post-merge harness recheck at 88b312fb... blocked by continuity/Workforce state disagreement).
-- `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01` status: Ready For Remote (state synchronization; no product/CI changes).
-- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` status: Candidate (post-merge recheck of continuity-sync fix; not yet authorized).
+- `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01` status: Merged at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7` (state synchronization; no product/CI changes).
+- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` status: Closed PASS (post-merge recheck of continuity-sync fix at 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7).
+- `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST` status: Ready For Remote (ingest HARNESS-RECHECK-02 PASS; close 001/002/005).
+- `ANOX-TASK-SECURITY-ARCH-001` status: Candidate (AUDIT-SECURITY-ARCHITECTURE; not authorized).
+- `ANOX-WORKFORCE-AUDIT-001`/`002`/`005` status: Closed.
 - B-004 backend implementation: `NOT_STARTED`.
 - B-005 database/RLS implementation: `NOT_STARTED`.
 - Local crypto/registration foundation: remediated, retested, and Closed.
 - No CI, no backend, no SQL, no secrets, no remote mutation.
-- `AUDIT-SECURITY-ARCHITECTURE` not authorized.
+- `AUDIT-SECURITY-ARCHITECTURE` recorded as the next Candidate, not yet authorized.
