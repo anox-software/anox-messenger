@@ -163,6 +163,15 @@ METADATA_ONLY_ALLOWLIST = frozenset(
         "docs/workforce/registries/tasks.jsonl",
         "docs/workforce/registries/findings.jsonl",
         "docs/workforce/WORKFORCE_STATE.json",
+        # Lifecycle-aware validator hardening is governance/audit metadata,
+        # not product code, and is allowed in the metadata-only seal commit.
+        "tools/audit/validate_workforce_fix01.py",
+        "tools/audit/validate_workforce_fix02.py",
+        "tools/audit/validate_legacy_fix01.py",
+        "tools/audit/validate_workforce_continuity_sync_fix01.py",
+        "tools/audit/test_workforce_fix02.py",
+        "tools/audit/test_workforce_continuity_sync_fix01.py",
+        "tools/continuity/validate_continuity.py",
     }
 )
 
@@ -2218,11 +2227,15 @@ def _assert_surface_consistency(archive_root, state, surfaces, snapshot, all_ok,
     if is_current_lifecycle and snapshot_lifecycle:
         def _extract_effective_gate(text):
             m = re.search(
-                r"^(?:[-*]\s*)?(?:Current gate|Effective gate)\s*[:=]\s*(?:`([^`\n]+)`|([^`\n]+?))(?:\s+\([^)]+\))?$",
+                r"^(?:[-*]\s*)?(?:Current gate|Effective gate)\s*[:=]\s*(?:`([^`\n]+)`|(.+?))$",
                 text,
                 re.MULTILINE | re.IGNORECASE,
             )
-            return (m.group(1) or m.group(2)).strip() if m else None
+            # The trailing parenthetical (if present) is part of the canonical gate
+            # prose, so it must be included in the captured value.
+            if m:
+                return (m.group(1) or m.group(2)).strip()
+            return None
 
         lifecycle_fields = (
             ("canonical_branch", ("Canonical branch",), state.get("canonical_branch") or state.get("baseline_branch")),

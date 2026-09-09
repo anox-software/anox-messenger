@@ -239,6 +239,27 @@ It is **NOT** authorized until the Workforce blocking findings (`ANOX-WORKFORCE-
 
 ---
 
+---
+
+## WORKFORCE-HARNESS-RECHECK-02 PASS and WORKFORCE-RETEST-CLOSURE-INGEST (2026-09-10)
+
+`WORKFORCE-HARNESS-RECHECK-02` (`ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02`) executed at the Human-merged `main` SHA `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`.
+Result: **PASS**.
+
+Per-finding verdicts:
+
+- `ANOX-WORKFORCE-AUDIT-001`: **PASS — NO REGRESSION**
+- `ANOX-WORKFORCE-AUDIT-002`: **PASS — REMEDIATED**
+- `ANOX-WORKFORCE-AUDIT-005`: **PASS — NO REGRESSION**
+
+The three Workforce Architecture findings were closed by `WORKFORCE-RETEST-CLOSURE-INGEST`:
+
+- `ANOX-WORKFORCE-AUDIT-001` closed with `WORKFORCE-FIX-01`, `WORKFORCE-RETEST-01`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-02`, and validator evidence.
+- `ANOX-WORKFORCE-AUDIT-002` closed with `WORKFORCE-FIX-01`, `WORKFORCE-FIX-02`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-02`, archive/cold-recovery validator evidence, and the Human merge of `WORKFORCE-CONTINUITY-SYNC-FIX-01` at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`.
+- `ANOX-WORKFORCE-AUDIT-005` closed with `WORKFORCE-FIX-01`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-02`, and path-normalization validator evidence.
+
+The continuity/Workforce/handoff three-surface agreement was re-verified at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`. No third bookkeeping commit, wrong-merge fail-closed, and historical `WORKFORCE-RETEST-01`, `WORKFORCE-RETEST-02`, and `WORKFORCE-HARNESS-RECHECK-01` results were preserved unchanged. `AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`) is now the next Candidate, pending explicit human authorization and a fresh post-merge `main` SHA.
+
 ## Product state
 
 - **Product development:** `BLOCKED_PENDING_FINAL_AUDIT`

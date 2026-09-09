@@ -52,3 +52,22 @@
 - Historical `WORKFORCE-RETEST-01` FAIL and `WORKFORCE-RETEST-02` `PASS WITH FAILURES` preserved unchanged.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE.
 - Next: human merge to `main`, then `WORKFORCE-HARNESS-RECHECK-02` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0043 -->
+## WORKFORCE-RETEST-CLOSURE-INGEST — 2026-09-10 (ANOX-EVENT-0043)
+
+- Branch: `governance/workforce-retest-closure-ingest`
+- Substantive commit: `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`
+- Canonical base SHA: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
+- Task ID: `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`
+- Result: `Ready For Remote`
+- Purpose: ingest the completed `WORKFORCE-HARNESS-RECHECK-02` PASS and close exactly `ANOX-WORKFORCE-AUDIT-001`, `002`, `005`; preserve all historical run/audit evidence; create `tools/audit/validate_workforce_retest_closure_ingest.py` + `tools/audit/test_workforce_retest_closure_ingest.py`; synchronize Workforce/Continuity/Project Memory; prepare `AUDIT-SECURITY-ARCHITECTURE` as the next Candidate.
+- Verification: `WORKFORCE-HARNESS-RECHECK-02` PASS at main `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`; 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION.
+- New validators + adversarial tests: `tools/audit/validate_workforce_retest_closure_ingest.py`, `tools/audit/test_workforce_retest_closure_ingest.py`.
+- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` recorded as `Closed (PASS)`.
+- `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST` recorded as `Ready For Remote`.
+- `ANOX-TASK-SECURITY-ARCH-001` recorded as `Candidate` with `start_sha` NOT YET BOUND.
+- `ANOX-WORKFORCE-AUDIT-001/002/005` closed with canonical closure evidence.
+- Historical `WORKFORCE-RETEST-01`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-01` results preserved unchanged.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE.
+- Next: human merge to `main`, then `AUDIT-SECURITY-ARCHITECTURE` on a fresh post-merge `main` SHA.

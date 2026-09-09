@@ -96,45 +96,55 @@ def _task_for_event(tasks, event):
 
 
 def check_findings(errors):
+    import sys
+    sys.path.insert(0, str(REPO / "tools" / "audit"))
+    import lifecycle_legality as ll
     findings = load_jsonl("docs/workforce/registries/findings.jsonl")
     by_id = {f["finding_id"]: f for f in findings}
+    audits = load_jsonl("docs/workforce/registries/audits.jsonl")
+
+    def _check(f, fix_token, kind):
+        st = f.get("status")
+        fid = f.get("finding_id")
+        if st == "Ready For Retest":
+            if f.get("closure_evidence"):
+                fail(f"{kind} {fid} Ready For Retest but carries closure_evidence", errors)
+                return
+            refs = f.get("remediation_refs") or []
+            if not any(fix_token in r for r in refs):
+                fail(f"{kind} {fid} remediation_refs missing {fix_token}", errors)
+                return
+            if not any("validate" in r for r in refs):
+                fail(f"{kind} {fid} remediation_refs missing validator reference", errors)
+                return
+            ok(f"{kind} {fid} Ready For Retest with remediation evidence")
+        elif st == "Closed":
+            if not f.get("closure_evidence"):
+                fail(f"{kind} {fid} Closed without closure_evidence", errors)
+                return
+            if fix_token not in " ".join(f.get("closure_evidence") or []):
+                fail(f"{kind} {fid} closure_evidence missing {fix_token}", errors)
+                return
+            legal, reasons = ll.finding_status_legal(f, audits)
+            if not legal:
+                fail(f"{kind} {fid} Closed with illegal lifecycle: {'; '.join(reasons)}", errors)
+                return
+            ok(f"{kind} {fid} Closed with legal lifecycle evidence (regression preservation)")
+        else:
+            fail(f"{kind} {fid} status is {st}, expected Ready For Retest or Closed", errors)
 
     target = by_id.get(TARGET_FINDING)
     if target is None:
         fail(f"{TARGET_FINDING} missing from findings registry", errors)
         return
-    if target.get("status") != "Ready For Retest":
-        fail(f"{TARGET_FINDING} status is {target.get('status')}, expected Ready For Retest", errors)
-    elif target.get("closure_evidence"):
-        fail(f"{TARGET_FINDING} Ready For Retest but carries closure_evidence", errors)
-    else:
-        ok(f"{TARGET_FINDING} Ready For Retest (not closed)")
-    refs = target.get("remediation_refs") or []
-    if not any("WORKFORCE-FIX-02" in r for r in refs):
-        fail(f"{TARGET_FINDING} remediation_refs missing WORKFORCE-FIX-02", errors)
-    else:
-        ok(f"{TARGET_FINDING} remediation refs include WORKFORCE-FIX-02")
-    if not any("validate" in r for r in refs):
-        fail(f"{TARGET_FINDING} remediation_refs missing validator reference", errors)
-    else:
-        ok(f"{TARGET_FINDING} remediation refs include validator")
+    _check(target, "WORKFORCE-FIX-02", "target")
 
     for fid in sorted(REGRESSION_FINDINGS):
         f = by_id.get(fid)
         if f is None:
             fail(f"regression finding {fid} missing", errors)
             continue
-        if f.get("status") != "Ready For Retest":
-            fail(f"regression finding {fid} status is {f.get('status')}, expected Ready For Retest", errors)
-        elif f.get("closure_evidence"):
-            fail(f"regression finding {fid} Ready For Retest but carries closure_evidence", errors)
-        else:
-            ok(f"regression finding {fid} remains Ready For Retest")
-        refs = f.get("remediation_refs") or []
-        if not any("WORKFORCE-FIX-01" in r for r in refs):
-            fail(f"regression finding {fid} remediation_refs missing WORKFORCE-FIX-01", errors)
-        else:
-            ok(f"regression finding {fid} still references WORKFORCE-FIX-01 evidence")
+        _check(f, "WORKFORCE-FIX-01", "regression finding")
 
 
 

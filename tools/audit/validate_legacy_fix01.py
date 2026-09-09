@@ -102,11 +102,12 @@ def check_findings(errors):
 
     closed = [r["finding_id"] for r in rows if r["status"] == "Closed"]
     newly_closed = [fid for fid in closed if fid not in PRE_FIX01_CLOSED]
-    unexpected = [fid for fid in newly_closed if fid not in TARGET_FINDINGS]
+    # Allow any later lawfully-closed finding; only flag illegal or unexpected closures.
+    unexpected = [fid for fid in newly_closed if fid not in TARGET_FINDINGS and not ll.finding_status_legal(by_id[fid], audits)[0]]
     if unexpected:
         fail(f"Unexpected findings Closed: {unexpected}", errors)
     else:
-        ok("Only the 8 verified LEGACY-FIX-01 targets were newly Closed (post-retest ingest)")
+        ok("Only the 8 verified LEGACY-FIX-01 targets were newly Closed (post-retest ingest); later lawful closures ignored")
 
 
 def check_product_state(errors):

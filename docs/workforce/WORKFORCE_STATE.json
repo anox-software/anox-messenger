@@ -2,26 +2,26 @@
   "schema_version": "B027C-v1.1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
-  "delivery_branch": "remediation/workforce-continuity-sync-fix-01",
-  "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
-  "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
+  "delivery_branch": "governance/workforce-retest-closure-ingest",
+  "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
+  "current_gate": "WORKFORCE-RETEST-CLOSURE-INGEST — INGEST HARNESS-RECHECK-02 PASS AND CLOSE 001/002/005 (Ready For Remote; awaiting human merge)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+    "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+    "task_id": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST",
     "role_id": "ROLE-009",
-    "branch": "remediation/workforce-continuity-sync-fix-01"
+    "branch": "governance/workforce-retest-closure-ingest"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": null,
-  "latest_finding_id": "ANOX-WORKFORCE-AUDIT-002",
-  "latest_run_id": "ANOX-RUN-CONTINUITYSYNC0001",
+  "latest_finding_id": "ANOX-WORKFORCE-AUDIT-005",
+  "latest_run_id": "ANOX-RUN-HARNESSRECHECK02",
   "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
   "final_pre_product_audit": {
     "required": true,
@@ -54,30 +54,30 @@
     "main_architecture_remediation_phase": "COMPLETE",
     "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
     "security_architecture_audit": "NOT_STARTED",
-    "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+    "next_phase": "AUDIT-SECURITY-ARCHITECTURE",
     "legacy_audit_set_status": "6/6 COMPLETE",
     "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
     "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
-    "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
+    "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
+    "current_gate": "WORKFORCE-RETEST-CLOSURE-INGEST — INGEST HARNESS-RECHECK-02 PASS AND CLOSE 001/002/005 (Ready For Remote; awaiting human merge)",
     "current_writer": {
-      "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+      "task_id": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST",
       "role_id": "ROLE-009",
-      "branch": "remediation/workforce-continuity-sync-fix-01"
+      "branch": "governance/workforce-retest-closure-ingest"
     },
-    "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
-    "current_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
-    "active_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+    "next_phase": "AUDIT-SECURITY-ARCHITECTURE",
+    "current_task": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST",
+    "active_task": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST"
   },
   "post_merge_state": {
-    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
-    "current_gate": "WORKFORCE-HARNESS-RECHECK-02 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
+    "described_head": "8572ab99f4e2e62e5be75abb3144f6f927aa9f68",
+    "current_gate": "AUDIT-SECURITY-ARCHITECTURE — FINAL PRE-PRODUCT SECURITY ARCHITECTURE AUDIT (Candidate, pending human authorization)",
     "current_writer": null,
-    "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
-    "current_task": "WORKFORCE-CONTINUITY-SYNC-FIX-01 merged — awaiting independent retest",
+    "next_phase": "AUDIT-SECURITY-ARCHITECTURE",
+    "current_task": "WORKFORCE-RETEST-CLOSURE-INGEST merged — awaiting independent security architecture audit",
     "active_task": null
   },
   "previous_merges": [
@@ -149,6 +149,29 @@
         "current_task": "WORKFORCE-TEST-HARNESS-FIX-01 merged — awaiting independent retest",
         "active_task": null
       }
+    },
+    {
+      "merge_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
+      "pre_merge_state": {
+        "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
+        "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
+        "current_writer": {
+          "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+          "role_id": "ROLE-009",
+          "branch": "remediation/workforce-continuity-sync-fix-01"
+        },
+        "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+        "current_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+        "active_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+      },
+      "post_merge_state": {
+        "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
+        "current_gate": "WORKFORCE-HARNESS-RECHECK-02 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
+        "current_writer": null,
+        "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+        "current_task": "WORKFORCE-CONTINUITY-SYNC-FIX-01 merged — awaiting independent retest",
+        "active_task": null
+      }
     }
   ],
   "final_operational_handoff_acceptance_gate": {
@@ -187,12 +210,15 @@
     "2026-09-07T20:00:00Z: WORKFORCE-FIX-01 authorized. Finding 001 (merge-aware validator), Finding 002 (post-merge derived continuity state), and Finding 005 (path normalization) remediated to Ready For Retest. Final operational handoff acceptance gate defined as PENDING/NOT_EXECUTED. Product remains BLOCKED_PENDING_FINAL_AUDIT; next Candidate ANOX-TASK-WORKFORCERETEST01.",
     "2026-09-07T22:00:00Z: WORKFORCE-RETEST-01 completed at post-merge main SHA 8385f4019184be9b568f65ec4748194595ef339c. Overall FAIL: Finding 001 PASS — REMEDIATED, Finding 005 PASS — REMEDIATED, Finding 002 FAIL — NOT REMEDIATED (stale human-readable effective gate in archive CURRENT_HANDOFF.md). Finding 002 remains Ready For Retest pending WORKFORCE-FIX-02. Findings 001 and 005 remain Ready For Retest with prior PASS evidence preserved.",
     "WORKFORCE-FIX-02: archive CURRENT_HANDOFF.md and CURRENT_STATE.json rendered from resolved effective state; no third bookkeeping commit required; no product/backend/SQL/CI/secret changes; no Security Architecture audit started.",
-    "2026-09-09: WORKFORCE-CONTINUITY-SYNC-FIX-01 authorized. Synchronize CURRENT_STATE.json (current_gate = __EFFECTIVE_GATE__) and WORKFORCE_STATE.json (described_head / pre_merge_state / post_merge_state) for the Human merge of the continuity-sync branch. Add previous_merges record for the Harness-Fix R1 Human merge (88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f). Preserve WORKFORCE-HARNESS-RECHECK-01 FAIL as immutable historical evidence; do NOT reuse the failed audit ID; create Candidate ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED."
+    "2026-09-09: WORKFORCE-CONTINUITY-SYNC-FIX-01 authorized. Synchronize CURRENT_STATE.json (current_gate = __EFFECTIVE_GATE__) and WORKFORCE_STATE.json (described_head / pre_merge_state / post_merge_state) for the Human merge of the continuity-sync branch. Add previous_merges record for the Harness-Fix R1 Human merge (88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f). Preserve WORKFORCE-HARNESS-RECHECK-01 FAIL as immutable historical evidence; do NOT reuse the failed audit ID; create Candidate ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED.",
+    "2026-09-10: WORKFORCE-RETEST-CLOSURE-INGEST ready on branch governance/workforce-retest-closure-ingest at base 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7. WORKFORCE-HARNESS-RECHECK-02 PASS: 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. Findings 001/002/005 Closed. ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02 Closed; ANOX-TASK-SECURITY-ARCH-001 recorded as Candidate. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED; remote mutation NONE.",
+    "2026-09-10: ANOX-EVENT-0043 metadata commit sealed described_head to 8572ab99f4e2e62e5be75abb3144f6f927aa9f68."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+  "next_phase": "AUDIT-SECURITY-ARCHITECTURE",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
-  "legacy_audit_set_status": "6/6 COMPLETE"
+  "legacy_audit_set_status": "6/6 COMPLETE",
+  "security_architecture_audit": "NOT_STARTED"
 }
