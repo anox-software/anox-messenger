@@ -1,67 +1,45 @@
-# CURRENT HANDOFF — anoX Messenger V1
+# CURRENT_HANDOFF — anoX V1
 
-Handoff version: `<!-- ANOX:handoff_version -->WORKFORCE-RETEST-CLOSURE-INGEST<!-- /ANOX:handoff_version -->`
-Date: 2026-09-10
-Delivery branch: `governance/workforce-retest-closure-ingest`
-Described HEAD: `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`
-Main baseline HEAD: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
-Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-Effective gate: `<!-- ANOX:effective_gate -->WORKFORCE-RETEST-CLOSURE-INGEST (Ready For Remote; awaiting human merge)<!-- /ANOX:effective_gate -->`
-Pre-merge gate: `<!-- ANOX:pre_merge_gate -->WORKFORCE-RETEST-CLOSURE-INGEST (Ready For Remote; awaiting human merge)<!-- /ANOX:pre_merge_gate -->`
-Post-merge gate: `<!-- ANOX:post_merge_gate -->AUDIT-SECURITY-ARCHITECTURE (Candidate, pending human authorization)<!-- /ANOX:post_merge_gate -->`
+**Event:** `ANOX-EVENT-0044` — SECURITY-ARCHITECTURE-FINDINGS-FREEZE-001  
+**Delivery branch:** `governance/security-architecture-findings-freeze`  
+**Substantive HEAD:** `e2e9f372e10038d0c8e075e20a9532d6d9d38dfe`  
+**Main baseline:** `c653a1d6a302758c0e006225987281643957f752`  
+**Effective gate:** `SECURITY-ARCHITECTURE-FINDINGS-FREEZE-001 — CANONICAL INGEST OF AUDIT-SECURITY-ARCHITECTURE (Ready For Remote; awaiting human merge)`
 
----
+Described HEAD: e2e9f372e10038d0c8e075e20a9532d6d9d38dfe
 
-## Project
+## Pre-merge gate
 
-anoX Messenger V1 — closed-source native Android/GrapheneOS messenger with vodozemac/Olm E2EE.
+`SECURITY-ARCHITECTURE-FINDINGS-FREEZE-001 — CANONICAL INGEST OF AUDIT-SECURITY-ARCHITECTURE (Ready For Remote; awaiting human merge)`
 
-## Architecture authority
+- Ingest the completed `ANOX-AUDIT-SECURITY-ARCH-001` result.
+- Promote 10 canonical `ANOX-SECURITY-ARCH-*` findings.
+- Record B-004 blocking/hardening set (001..004).
+- Record Human hardening decision `ANOX-DECISION-SECARCHHARDENING001`.
+- Update Project Memory and continuity surfaces.
+- No product/CI/SQL/secret changes; remote mutation NONE.
 
-Authority precedence is canonical in `docs/authority/AUTHORITY_INDEX.md`.
-New sessions must read that file first.
+## Post-merge gate
 
-## Current repository state
+`AUDIT-SECURITY-CODEBASE-001 — POST-FREEZE CODEBASE SECURITY RETEST (Candidate, pending human authorization)`
 
-- Canonical repository: `https://github.com/anox-software/anox-messenger`
-- Canonical SSH remote: `git@github.com:anox-software/anox-messenger.git`
-- Legacy provenance remote: `https://github.com/anox-admin/ax-messenger.git` (historical only)
-- Canonical branch: `main`
-- Delivery branch: `governance/workforce-retest-closure-ingest`
-- Current work branch: `<!-- ANOX:handoff_branch -->governance/workforce-retest-closure-ingest<!-- /ANOX:handoff_branch -->`
-- Current HEAD: `<!-- ANOX:handoff_head -->8572ab99f4e2e62e5be75abb3144f6f927aa9f68<!-- /ANOX:handoff_head -->`
-- Main baseline HEAD: `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`
-- Working tree: `<!-- ANOX:working_tree -->CLEAN<!-- /ANOX:working_tree -->`
-- Latest material event: `ANOX-EVENT-0043`
+## Open product findings
 
-## Latest completed work
+- `ANOX-MAINARCH-013`
+- `ANOX-MAINARCH-018` (`PHYSICAL_VERIFICATION_REQUIRED`)
+- `ANOX-MAINARCH-030`
+- `ANOX-LEGACY-INTEGRATION-005` (joint with `ANOX-SECURITY-ARCH-001`)
+- `ANOX-LEGACY-B003-001`
 
-- `WORKFORCE-HARNESS-RECHECK-02` (`ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02`) PASS at post-merge `main` SHA `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`: `ANOX-WORKFORCE-AUDIT-001` `PASS — NO REGRESSION`; `ANOX-WORKFORCE-AUDIT-002` `PASS — REMEDIATED`; `ANOX-WORKFORCE-AUDIT-005` `PASS — NO REGRESSION`.
-- `WORKFORCE-RETEST-CLOSURE-INGEST` (`ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`) closes exactly `ANOX-WORKFORCE-AUDIT-001`, `002`, and `005`; preserves historical `WORKFORCE-RETEST-01`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-01`, and `WORKFORCE-HARNESS-RECHECK-02` evidence.
-- `WORKFORCE-CONTINUITY-SYNC-FIX-01` (`ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01`) merged to `main` at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7`; continuity/Workforce/handoff three-surface agreement verified.
-- `ANOX-WORKFORCE-AUDIT-001` and `005` closed with `WORKFORCE-FIX-01`, `WORKFORCE-RETEST-01/02`, `WORKFORCE-HARNESS-RECHECK-02` evidence.
-- `ANOX-WORKFORCE-AUDIT-002` closed with `WORKFORCE-FIX-01`, `WORKFORCE-FIX-02`, `WORKFORCE-RETEST-02`, `WORKFORCE-HARNESS-RECHECK-02` archive/cold-recovery evidence.
-- New `tools/audit/validate_workforce_retest_closure_ingest.py` + `tools/audit/test_workforce_retest_closure_ingest.py` added.
+## New canonical findings
 
-## Current open work
+- `ANOX-SECURITY-ARCH-001`..`010` (Open)
+- B-004 blocking set: `ANOX-SECURITY-ARCH-001`..`004`
 
-- `WORKFORCE-RETEST-CLOSURE-INGEST` (`ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`) — `Ready For Remote`; awaits human merge.
-- `AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`) — `Candidate`; `start_sha` NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA.
-- `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification (`PHYSICAL_VERIFICATION_REQUIRED`).
-- Milestone Security Architecture review for `ANOX-MAINARCH-003`, `007`, `024`.
-- `ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001` — final operational handoff/bootstrap/employee cold-boot acceptance gate.
+## Product state
 
-## Trust-boundary / milestone flags
-
-- `ANOX-MAINARCH-003`, `007`, `024` remain `PENDING` milestone Security Architecture review.
-- `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification remains `PHYSICAL_VERIFICATION_REQUIRED`.
-
-## Product status
-
-- `<!-- ANOX:product_status -->BLOCKED_PENDING_FINAL_AUDIT<!-- /ANOX:product_status -->`.
-- `B-004` backend: `<!-- ANOX:b004_status -->NOT_STARTED<!-- /ANOX:b004_status -->`.
-- `B-005` DB/RLS: `<!-- ANOX:b005_status -->NOT_STARTED<!-- /ANOX:b005_status -->`.
-
-## Next task
-
-`AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`) — `Candidate`, pending human authorization. Scope: read-only independent Final Pre-Product Security Architecture audit per `docs/workforce/audits/final-audit-plan.json`. No product code, no Claude, no remote mutation.
+- `PRODUCT_DEVELOPMENT = BLOCKED_PENDING_FINAL_AUDIT`
+- `B004 = NOT_STARTED`
+- `B005 = NOT_STARTED`
+- `FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE = PENDING / NOT_EXECUTED`
+- `Human final product gate = NOT_EXECUTED`

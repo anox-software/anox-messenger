@@ -16,3 +16,12 @@
 - Result: `Ready For Remote`; `ANOX-WORKFORCE-AUDIT-001/002/005` `Closed`.
 - Key files: `docs/workforce/registries/findings.jsonl`, `docs/workforce/registries/runs.jsonl`, `docs/workforce/registries/audits.jsonl`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/CURRENT_STATE.json`, `tools/audit/validate_workforce_retest_closure_ingest.py`, `tools/audit/test_workforce_retest_closure_ingest.py`.
 - Invariants preserved: 001/002/005 closed with canonical evidence; HARNESS-RECHECK-01 FAIL preserved; WORKFORCE-RETEST-01/02 historical results preserved; product `BLOCKED_PENDING_FINAL_AUDIT`; Security Architecture Audit `NOT_STARTED`; next candidate `AUDIT-SECURITY-ARCHITECTURE`; no remote mutation.
+
+## ANOX-EVENT-0044 — SECURITY-ARCHITECTURE-FINDINGS-FREEZE-001 (2026-09-11)
+
+- Branch: `governance/security-architecture-findings-freeze`
+- Substantive commit: `e2e9f372e10038d0c8e075e20a9532d6d9d38dfe`
+- Ingested `ANOX-AUDIT-SECURITY-ARCH-001` PASS_WITH_FINDINGS.
+- 10 canonical findings frozen; B-004 blockers 001..004.
+- Validator and adversarial tests added; continuity live validated.
+- No product/CI/SQL/secret changes; no remote mutation.
