@@ -1,12 +1,10 @@
-# CURRENT OPEN WORK — anoX V1
+# CURRENT_OPEN_WORK — anoX V1
 
-As of ANOX-EVENT-0043:
+**Event:** `ANOX-EVENT-0044`
 
-1. `WORKFORCE-RETEST-CLOSURE-INGEST` (`ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST`) — `Ready For Remote`; awaits human merge. Ingests the completed `WORKFORCE-HARNESS-RECHECK-02` PASS and closes exactly `ANOX-WORKFORCE-AUDIT-001`, `002`, and `005`. Creates `validate_workforce_retest_closure_ingest.py` + tests; synchronizes Workforce/Continuity/Project Memory; preserves all historical evidence; prepares `AUDIT-SECURITY-ARCHITECTURE` as the next candidate.
-2. `AUDIT-SECURITY-ARCHITECTURE` (`ANOX-TASK-SECURITY-ARCH-001`) — `Candidate`; `start_sha` NOT YET BOUND — HUMAN SUPPLIES POST-MERGE MAIN SHA. Scope: read-only independent Final Pre-Product Security Architecture audit per `docs/workforce/audits/final-audit-plan.json`. No product code, no Claude, no remote.
-3. `ANOX-MAINARCH-018` physical GrapheneOS/StrongBox verification (`PHYSICAL_VERIFICATION_REQUIRED`).
-4. Milestone Security Architecture review for `ANOX-MAINARCH-003`, `007`, `024`.
-5. Final operational `Handoff / Bootstrap / Employee Cold-Boot Acceptance` gate (`ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001`).
-6. Remaining canonical Open findings after closure: `ANOX-MAINARCH-013`, `030` (deferred), `ANOX-LEGACY-INTEGRATION-005`, `ANOX-LEGACY-B003-001` (Class F, deferred). Workforce findings `001`/`002`/`005` are now `Closed`.
-
-Product development remains `BLOCKED_PENDING_FINAL_AUDIT`. B-004 and B-005 are `NOT_STARTED`. `AUDIT-SECURITY-ARCHITECTURE` is `NOT_STARTED` and recorded as the next Candidate.
+1. `SECURITY-ARCHITECTURE-FINDINGS-FREEZE-001` (`ANOX-TASK-SECURITY-ARCH-FREEZE-001`) — Ready For Remote; awaiting human merge to `main`.
+2. `AUDIT-SECURITY-CODEBASE-001` — Candidate; start only on explicit human authorization and a fresh post-merge `main` SHA.
+3. Physical GrapheneOS/StrongBox/TEE verification for `ANOX-MAINARCH-018`.
+4. Milestone Security Architecture reviews for `ANOX-MAINARCH-003`, `ANOX-MAINARCH-007`, `ANOX-MAINARCH-024`.
+5. Final operational handoff / bootstrap / employee cold-boot acceptance.
+6. Remaining canonical open findings: `ANOX-MAINARCH-013`, `ANOX-MAINARCH-030`, `ANOX-LEGACY-INTEGRATION-005`, `ANOX-LEGACY-B003-001`.

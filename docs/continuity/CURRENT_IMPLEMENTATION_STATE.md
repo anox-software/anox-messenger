@@ -1,25 +1,11 @@
-# CURRENT IMPLEMENTATION STATE
+# CURRENT_IMPLEMENTATION_STATE — anoX V1
 
-> Sealed by `ANOX-EVENT-0043` at `8572ab99f4e2e62e5be75abb3144f6f927aa9f68`.
+**Event:** `ANOX-EVENT-0044`
 
-- `ANOX-TASK-LEGACYFIX01` status: Closed (8 findings remediated).
-- `ANOX-TASK-LEGACYRETEST01` status: Closed (LEGACY-RETEST-01 PASS — 8/8 verified REMEDIATED).
-- `ANOX-TASK-LEGACYRET01INGEST` status: Closed (evidence ingested; 8 findings Closed).
-- `ANOX-TASK-WORKFORCEARCH001` status: Closed (audit complete; Findings Freeze delivered).
-- `ANOX-TASK-WORKFORCEFREEZE001` status: Closed (substantive + metadata commits; merged to main).
-- `ANOX-TASK-WORKFORCEFIX01` status: Merged at `8385f4019184be9b568f65ec4748194595ef339c` (remediation complete; WORKFORCE-RETEST-01 FAIL recorded).
-- `ANOX-TASK-WORKFORCERETEST01` status: Closed (FAIL) (post-merge retest completed; 001 and 005 PASS, 002 FAIL).
-- `ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01` status: Closed (test fixture repair complete; no product/CI changes).
-- `ANOX-TASK-WORKFORCEFIX02` status: Merged at `81e091f3346a7c8653c100a334a1dbfe2c54d464` (remediation complete; archive effective-state rendering).
-- `ANOX-TASK-WORKFORCERETEST02` status: Candidate (historical PASS WITH FAILURES preserved; not re-run).
-- `ANOX-TASK-HARNESSRECHECK01` status: Closed (FAIL) (post-merge harness recheck at 88b312fb... blocked by continuity/Workforce state disagreement).
-- `ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01` status: Merged at `1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7` (state synchronization; no product/CI changes).
-- `ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02` status: Closed PASS (post-merge recheck of continuity-sync fix at 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7).
-- `ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST` status: Ready For Remote (ingest HARNESS-RECHECK-02 PASS; close 001/002/005).
-- `ANOX-TASK-SECURITY-ARCH-001` status: Candidate (AUDIT-SECURITY-ARCHITECTURE; not authorized).
-- `ANOX-WORKFORCE-AUDIT-001`/`002`/`005` status: Closed.
-- B-004 backend implementation: `NOT_STARTED`.
-- B-005 database/RLS implementation: `NOT_STARTED`.
-- Local crypto/registration foundation: remediated, retested, and Closed.
-- No CI, no backend, no SQL, no secrets, no remote mutation.
-- `AUDIT-SECURITY-ARCHITECTURE` recorded as the next Candidate, not yet authorized.
+- `ANOX-TASK-SECURITY-ARCH-001` — Closed, `PASS_WITH_FINDINGS`.
+- `ANOX-TASK-SECURITY-ARCH-FREEZE-001` — Ready For Remote.
+- `B-004 backend` — `NOT_STARTED`.
+- `B-005 DB/RLS` — `NOT_STARTED`.
+- `ANOX-AUDIT-SECURITY-ARCH-001` — `COMPLETE_WITH_FINDINGS`.
+- `ANOX-SECURITY-ARCH-001`..`010` — Open; `001`..`004` B-004 blockers.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`.
