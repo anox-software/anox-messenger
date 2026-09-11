@@ -25,3 +25,13 @@
 - 10 canonical findings frozen; B-004 blockers 001..004.
 - Validator and adversarial tests added; continuity live validated.
 - No product/CI/SQL/secret changes; no remote mutation.
+
+## ANOX-EVENT-0045 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 (2026-09-11)
+
+- Task: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001`
+- Substantive commit: `1d924a1182d17c504b352ea29f9e1f346f492cc9`
+- Canonical base: `869b99acac040412a29bbaadc76342070fb2085c`
+- Result: `Ready For Remote`; five audit reports preserved byte-exact under `docs/reports/security/audits/`.
+- Key files: `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; `ANOX-LEGACY-CRYPTO-005` Closed; `ROOT-016` NOT_A_FINDING; `ROOT-005` no Audit-001 source; next gate `AUDIT-SECURITY-CRYPTO-JNI-001` Candidate/NOT_EXECUTED; no remote mutation.
+

@@ -89,3 +89,19 @@
 - Updated Project Memory and continuity surfaces; `described_head` sealed to substantive commit.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE.
 - Next: human merge to `main`, then `AUDIT-SECURITY-CODEBASE-001` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0045 -->
+## SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 — 2026-09-11 (ANOX-EVENT-0045)
+
+- Branch: `governance/security-audit-evidence-preservation-001`
+- Substantive commit: `1d924a1182d17c504b352ea29f9e1f346f492cc9`
+- Canonical base SHA: `869b99acac040412a29bbaadc76342070fb2085c`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001`
+- Result: `Ready For Remote`
+- Purpose: preserve all completed Security Hardening audit evidence inside the repository — immutable byte-exact reports, hash-bound registry/traceability, reproduced-evidence hashes, historical relations, fail-closed validator + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `AUDIT-SECURITY-ARCHITECTURE` (existing canonical), `AUDIT-SECURITY-CODEBASE-001` (21 candidates; MODEL_DEVIATION preserved), `AUDIT-SECURITY-CODEBASE-002` (blind; 17 candidates), `CODEBASE-SECURITY-CONSENSUS-001` (18 roots; 12 Pre-B004), `AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001` (12 candidates; BUILDSC-001 EVIDENCE_INTEGRITY=CRITICAL).
+- Historical closures preserved: `ANOX-LEGACY-CRYPTO-005` Closed (+ `LATER_AUDIT_PROVES_INEFFECTIVE_REMEDIATION`), `ANOX-LEGACY-INTEGRATION-005` Open (+ `NEW_ROOT_CAUSE_RELATED_TO_HISTORICAL_FINDING`); `ANOX-MAINARCH-031` Closed (flagged for consolidation, not reopened).
+- New validator `tools/audit/validate_security_audit_evidence_preservation.py` + `tools/audit/test_security_audit_evidence_preservation.py` (12 adversarial cases).
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
+- Next: human merge to `main`, then `AUDIT-SECURITY-CRYPTO-JNI-001` on a fresh post-merge `main` SHA.
+
