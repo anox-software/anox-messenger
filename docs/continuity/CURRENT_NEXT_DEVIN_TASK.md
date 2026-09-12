@@ -1,7 +1,9 @@
 # CURRENT_NEXT_DEVIN_TASK — anoX V1
 
-**Event:** `ANOX-EVENT-0044`
+**Event:** `ANOX-EVENT-0045`
 
-`AUDIT-SECURITY-CODEBASE-001` — Candidate, NOT AUTHORIZED. Start only on explicit human authorization and a fresh post-merge `main` SHA.
+`AUDIT-SECURITY-CRYPTO-JNI-001` — Candidate, NOT AUTHORIZED, NOT_EXECUTED. Start only on explicit human authorization and a fresh post-merge `main` SHA.
 
-Do not start B-004/B-005, product code changes, or Security Architecture remediation without a new authorized task.
+Preserved sequencing (from the consensus/build reports): Crypto/JNI specialist → AUTH/DPOP + ANDROID/STORAGE + ATTACKCHAIN specialists → consolidate all specialist findings → large dependency-safe remediation sessions → independent retests → only then B-004.
+
+Do not start B-004/B-005, product code changes, or any remediation without a new authorized task.
