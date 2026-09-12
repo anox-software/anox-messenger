@@ -28,6 +28,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-CODEBASE-002.md",
     "docs/reports/security/audits/CODEBASE-SECURITY-CONSENSUS-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
+    "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -180,7 +181,99 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
             "role_id": "ROLE-009",
         })
         _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "must remain Candidate")
+
+    # 12. Mutate the preserved Crypto/JNI report.
+    def test_12_mutated_cryptojni_report_fails(self):
+        p = self.root / "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 13. Remove Crypto/JNI Candidate-001 from traceability.
+    def test_13_removed_cryptojni_candidate_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "cryptojni_candidate" and r.get("candidate_id") == "ANOX-CRYPTOJNI-CANDIDATE-001")]
+        _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "Crypto/JNI")
+
+    # 14. Reduce the audit registry from 6 to 5 records.
+    def test_14_dropped_cryptojni_registry_record_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "6 audits")
+
+    # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
+    def test_15_downgraded_cryptojni_001_severity_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "cryptojni_candidate" and r.get("candidate_id") == "ANOX-CRYPTOJNI-CANDIDATE-001":
+                r["severity"] = "MEDIUM"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "ANOX-CRYPTOJNI-CANDIDATE-001")
+
+    # 16. Mark Crypto/JNI Candidate-004 as a Pre-B004 blocker.
+    def test_16_cryptojni_004_preb004_flag_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "cryptojni_candidate" and r.get("candidate_id") == "ANOX-CRYPTOJNI-CANDIDATE-004":
+                r["pre_b004_blocker"] = True
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "pre_b004")
+
+    # 17. Silently overwrite consensus ROOT-013 severity LOW -> MEDIUM.
+    def test_17_root013_silent_severity_overwrite_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "consensus_root" and r.get("root_id") == "ROOT-013":
+                r["severity"] = "MEDIUM"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "silently overwritten")
+
+    # 18. Remove the build-provenance limitation record.
+    def test_18_removed_provenance_limitation_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if r.get("record_type") != "provenance_limitation"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "provenance_limitation")
+
+    # 19. Replace the recorded temporary arm64 build hash.
+    def test_19_replaced_temp_arm64_hash_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "temp_build_evidence":
+                r["outputs"]["arm64-v8a"]["sha256"] = "0" * 64
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "temp_build_evidence")
+
+    # 20. Claim no JNI ABI revision is required.
+    def test_20_abi_revision_denied_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "abi_revision":
+                r["jni_abi_revision"] = "NO"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "JNI_ABI_REVISION")
+
+    # 21. Mark the Auth/DPoP audit gate executed.
+    def test_21_auth_dpop_executed_fails(self):
+        tp = self.root / "docs/workforce/registries/tasks.jsonl"
+        recs = _load_jsonl(tp)
+        recs.append({
+            "task_id": "ANOX-TASK-SECURITY-AUTH-DPOP-001",
+            "title": "AUDIT-SECURITY-AUTH-DPOP-001",
+            "status": "Closed",
+            "branch": "audit/security-auth-dpop",
+            "role_id": "ROLE-009",
+        })
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "must remain Candidate")
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 {
   "schema": "anox-security-audit-evidence-hashes-v1",
-  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001. Preserved report files are byte-exact copies of the human-supplied or already-canonical originals; no normalization was applied.",
+  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 and SECURITY-AUDIT-EVIDENCE-PRESERVATION-002. Preserved report files are byte-exact copies of the human-supplied or already-canonical originals; no normalization was applied.",
   "preservation_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+  "preservation_tasks": ["SECURITY-AUDIT-EVIDENCE-PRESERVATION-001", "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"],
   "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
+  "audit_base_sha_latest": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
   "reports": {
     "AUDIT-SECURITY-ARCHITECTURE": {
       "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
@@ -53,6 +55,16 @@
       "source_type": "HUMAN_SUPPLIED_FILE",
       "original_path": "/Users/3xpress/Downloads/markdown(20260910-204639).md eingefügt",
       "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
+    },
+    "AUDIT-SECURITY-CRYPTO-JNI-001": {
+      "audit_id": "AUDIT-SECURITY-CRYPTO-JNI-001",
+      "path": "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
+      "sha256": "c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b",
+      "bytes": 46268,
+      "source_present": "YES",
+      "source_type": "AUDIT_SESSION_FINAL_REPORT",
+      "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
     }
   },
   "native_artifact_evidence": {
@@ -72,7 +84,14 @@
     "current_source_rebuild_location": "/tmp/anox_buildsc_out_1 (audit artifact only — NOT authoritative, NOT preserved)",
     "debug_apk_sha256": "f202c5e17a24b68bf3c741de0a7d5b5f88cbede2fb0ec7a6744ff2daa357379d",
     "release_unsigned_apk_sha256": "7207548704d74e6b3e36438993cf08443fa828e39960d2cf5e8e75b5d1182dad",
-    "behavioral_delta": "committed/APK binaries return -2 (InvalidCiphertext) where current source returns -11 (BufferTooSmall) on 8 JNI functions"
+    "behavioral_delta": "committed/APK binaries return -2 (InvalidCiphertext) where current source returns -11 (BufferTooSmall) on 8 JNI functions",
+    "cryptojni_independent_recheck": {
+      "audit": "AUDIT-SECURITY-CRYPTO-JNI-001",
+      "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+      "result": "Independent temporary cargo-ndk rebuild reproduced IDENTICAL current-source hashes (arm64 05f3f40c..., x86_64 c002cc42...); committed .so confirmed stale since 7db20fa via disassembly (-0x2 vs -0xb at offset 0x3724c).",
+      "evidence_method_correction": "String-presence heuristic ('Output buffer too small') is NOT discriminating — absent in both committed and current-source builds (LTO); use disassembly or runtime.",
+      "canonicality": "TEMPORARY EVIDENCE ONLY — /tmp/anox_crypto_jni_ndk_out — NOT committed, NOT APK evidence"
+    }
   },
   "supporting_evidence": [
     {
