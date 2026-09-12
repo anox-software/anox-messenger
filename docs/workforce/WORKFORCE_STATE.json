@@ -2,21 +2,21 @@
   "schema_version": "B027C-v1.1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
-  "delivery_branch": "governance/security-audit-evidence-preservation-001",
-  "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
-  "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 \u2014 RETROSPECTIVE + CURRENT SECURITY AUDIT EVIDENCE PRESERVATION (Ready For Remote; awaiting human merge)",
+  "delivery_branch": "governance/security-audit-evidence-preservation-002",
+  "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
+  "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 \u2014 PRESERVE AUDIT-SECURITY-CRYPTO-JNI-001 EVIDENCE (Ready For Remote; awaiting human merge)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
+    "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+    "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
     "role_id": "ROLE-009",
-    "branch": "governance/security-audit-evidence-preservation-001"
+    "branch": "governance/security-audit-evidence-preservation-002"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": "ANOX-DECISION-SECARCHHARDENING001",
@@ -39,7 +39,8 @@
       "AUDIT-SECURITY-CODEBASE-001",
       "AUDIT-SECURITY-CODEBASE-002",
       "CODEBASE-SECURITY-CONSENSUS-001",
-      "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001"
+      "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
+      "AUDIT-SECURITY-CRYPTO-JNI-001"
     ],
     "required_audits": [
       "AUDIT-MAIN-ARCHITECTURE",
@@ -59,30 +60,30 @@
     "main_architecture_remediation_phase": "COMPLETE",
     "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
     "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
-    "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+    "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
     "legacy_audit_set_status": "6/6 COMPLETE",
     "legacy_fix01_status": "COMPLETE \u2014 all 8 Class-A foundation findings remediated",
     "legacy_retest01_status": "PASS \u2014 8/8 independently verified REMEDIATED and Closed",
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
-    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 \u2014 RETROSPECTIVE + CURRENT SECURITY AUDIT EVIDENCE PRESERVATION (Ready For Remote; awaiting human merge)",
+    "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 \u2014 PRESERVE AUDIT-SECURITY-CRYPTO-JNI-001 EVIDENCE (Ready For Remote; awaiting human merge)",
     "current_writer": {
-      "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+      "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
       "role_id": "ROLE-009",
-      "branch": "governance/security-audit-evidence-preservation-001"
+      "branch": "governance/security-audit-evidence-preservation-002"
     },
-    "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
-    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
+    "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
   },
   "post_merge_state": {
-    "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
-    "current_gate": "AUDIT-SECURITY-CRYPTO-JNI-001 \u2014 CRYPTO/JNI SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
+    "current_gate": "AUDIT-SECURITY-AUTH-DPOP-001 \u2014 AUTH/DPOP SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
     "current_writer": null,
-    "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
-    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 merged \u2014 awaiting Crypto/JNI specialist audit authorization",
+    "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 merged \u2014 awaiting Auth/DPoP specialist audit authorization",
     "active_task": null
   },
   "previous_merges": [
@@ -177,6 +178,29 @@
         "current_task": "WORKFORCE-CONTINUITY-SYNC-FIX-01 merged \u2014 awaiting independent retest",
         "active_task": null
       }
+    },
+    {
+      "merge_head": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+      "pre_merge_state": {
+        "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
+        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 \u2014 RETROSPECTIVE + CURRENT SECURITY AUDIT EVIDENCE PRESERVATION (Ready For Remote; awaiting human merge)",
+        "current_writer": {
+          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+          "role_id": "ROLE-009",
+          "branch": "governance/security-audit-evidence-preservation-001"
+        },
+        "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
+      },
+      "post_merge_state": {
+        "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
+        "current_gate": "AUDIT-SECURITY-CRYPTO-JNI-001 \u2014 CRYPTO/JNI SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+        "current_writer": null,
+        "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 merged \u2014 awaiting Crypto/JNI specialist audit authorization",
+        "active_task": null
+      }
     }
   ],
   "final_operational_handoff_acceptance_gate": {
@@ -223,7 +247,7 @@
     "2026-09-11: ANOX-EVENT-0045 SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 at base 869b99acac04. Five audit reports preserved byte-exact under docs/reports/security/audits/; canonical evidence registry + traceability under docs/security/audit-evidence/. CODEBASE-001/002 + CONSENSUS-001 + BUILD-SUPPLYCHAIN-001 outcomes recorded; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-CRYPTO-JNI-001 = Candidate/NOT_EXECUTED; remote mutation NONE."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+  "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",

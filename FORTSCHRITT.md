@@ -105,3 +105,19 @@
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
 - Next: human merge to `main`, then `AUDIT-SECURITY-CRYPTO-JNI-001` on a fresh post-merge `main` SHA.
 
+<!-- ANOX_EVENT: ANOX-EVENT-0046 -->
+## SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 — 2026-09-11 (ANOX-EVENT-0046)
+
+- Branch: `governance/security-audit-evidence-preservation-002`
+- Substantive commit: `45402df319f778d1fc11bcf25cec045ac9769401`
+- Canonical base SHA: `a79166ab7e65db71ba70e3a427df2ad017dc9225`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `AUDIT-SECURITY-CRYPTO-JNI-001` specialist evidence — byte-exact final report, registry/traceability extension, provenance limitation, temp-build evidence, ABI revision, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `AUDIT-SECURITY-CRYPTO-JNI-001` PASS_WITH_FINDINGS (6 `ANOX-CRYPTOJNI-CANDIDATE-001..006`, 0C/1H/3M/1L/1I; `JNI_ABI_REVISION=YES`; `COMPONENT_INTERNAL_REDESIGN_ONLY`; SEC-C not required).
+- Specialist relations recorded without consensus rewrite: ROOT-002/014 CONFIRMED; ROOT-003/004/005/013 CONFIRMED_AND_EXPANDED; ROOT-010 ADJACENT_EXPANDED; ROOT-011 CONFIRMED_NO_EXPANSION; `ROOT-013` severity overlay LOW→MEDIUM `PENDING_SPECIALIST_CONSOLIDATION`.
+- Gate sets recorded: `PRE_B004_CRYPTOJNI` (8 members), `B008_B009_CRYPTOJNI` (5 members). Provenance limitation active: committed `.so` stale since `7db20fa` (ROOT-001); all Crypto/JNI runtime values are `TEMP_CURRENT_SOURCE_BUILD_EVIDENCE`.
+- `ANOX-EVENT-0046` notes appended to `ANOX-LEGACY-CRYPTO-005` (Closed), `ANOX-LEGACY-INTEGRATION-005` (Open), `ANOX-MAINARCH-031` (Closed), `ANOX-SECURITY-ARCH-001/007/008` (Open) — no status/closure rewrite.
+- Validator extended (6 reports, 6 candidates, overlay, provenance, temp-build, ABI revision, Auth/DPoP not-executed); adversarial tests now 22.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
+- Next: human merge to `main`, then `AUDIT-SECURITY-AUTH-DPOP-001` on a fresh post-merge `main` SHA.

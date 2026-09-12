@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Security Hardening audit evidence-preservation validator.
 
-Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001:
-the five preserved audit reports, the audit-evidence registry, the
-traceability layer, and the lifecycle state that must remain unchanged.
+Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 and
+SECURITY-AUDIT-EVIDENCE-PRESERVATION-002: the six preserved audit reports
+(including AUDIT-SECURITY-CRYPTO-JNI-001), the audit-evidence registry, the
+traceability layer (including cryptojni candidates, specialist relations,
+severity overlays, provenance limitation, temp-build evidence and the ABI
+revision record), and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
 (test fixtures); git-dependent checks are skipped when no .git exists.
@@ -20,11 +23,12 @@ REPO_ROOT = Path(os.environ.get("SECURITY_AUDIT_PRESERVATION_REPO") or Path(__fi
 EVIDENCE_DIR = REPO_ROOT / "docs" / "security" / "audit-evidence"
 REPORTS_DIR = REPO_ROOT / "docs" / "reports" / "security" / "audits"
 REGISTRY_DIR = REPO_ROOT / "docs" / "workforce" / "registries"
-BASE_SHA = "869b99acac040412a29bbaadc76342070fb2085c"
-DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-001"
-TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
-NEXT_GATE_ID = "AUDIT-SECURITY-CRYPTO-JNI-001"
-LEDGER_EVENT = "ANOX-EVENT-0045"
+WAVE_BASE_SHA = "869b99acac040412a29bbaadc76342070fb2085c"
+BASE_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
+DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-002"
+TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
+NEXT_GATE_ID = "AUDIT-SECURITY-AUTH-DPOP-001"
+LEDGER_EVENT = "ANOX-EVENT-0046"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -47,6 +51,10 @@ EXPECTED_REPORTS = {
         "path": "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
         "sha256": "6afdd091d64ec9a30d40f8ba4e0fbe73bfb4812f105993bdbb42b49895acda1a",
     },
+    "AUDIT-SECURITY-CRYPTO-JNI-001": {
+        "path": "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
+        "sha256": "c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b",
+    },
 }
 
 EXPECTED_AUDITS = {
@@ -66,7 +74,7 @@ EXPECTED_AUDITS = {
         "provider": "Anthropic",
         "actual_model": "Claude Opus 5 Medium",
         "requested_model": "Claude Fable 5.1 High",
-        "audited_sha": BASE_SHA,
+        "audited_sha": WAVE_BASE_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 21, "critical_count": 1, "high_count": 3,
         "medium_count": 8, "low_count": 7, "info_count": 2,
@@ -78,7 +86,7 @@ EXPECTED_AUDITS = {
         "provider": "Anthropic",
         "actual_model": "Claude Fable 5.1 High",
         "requested_model": "Claude Fable 5.1 High",
-        "audited_sha": BASE_SHA,
+        "audited_sha": WAVE_BASE_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 17, "critical_count": 0, "high_count": 3,
         "medium_count": 6, "low_count": 6, "info_count": 2,
@@ -89,7 +97,7 @@ EXPECTED_AUDITS = {
         "audit_type": "CONSENSUS_ANALYSIS_AND_ARBITRATION",
         "provider": "Anthropic",
         "actual_model": "Claude Opus 5 High",
-        "audited_sha": BASE_SHA,
+        "audited_sha": WAVE_BASE_SHA,
         "result": "PASS",
         "candidate_count": 18,
         "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
@@ -100,10 +108,23 @@ EXPECTED_AUDITS = {
         "provider": "Anthropic",
         "actual_model": "Claude Fable 5.1 High",
         "requested_model": "Claude Fable 5.1 High",
-        "audited_sha": BASE_SHA,
+        "audited_sha": WAVE_BASE_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 12, "critical_count": 0, "high_count": 3,
         "medium_count": 5, "low_count": 3, "info_count": 1,
+        "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
+        "blindness_required": "NO",
+    },
+    "AUDIT-SECURITY-CRYPTO-JNI-001": {
+        "audit_type": "security_specialist_crypto_jni",
+        "provider": "Anthropic",
+        "actual_model": "Claude Fable 5.1 High",
+        "requested_model": "Claude Fable 5.1 High",
+        "model_requirement_status": "SATISFIED",
+        "audited_sha": BASE_SHA,
+        "result": "PASS_WITH_FINDINGS",
+        "candidate_count": 6, "critical_count": 0, "high_count": 1,
+        "medium_count": 3, "low_count": 1, "info_count": 1,
         "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
         "blindness_required": "NO",
     },
@@ -147,6 +168,35 @@ BUILDSC_SEVERITY = {
     "ANOX-BUILDSC-CANDIDATE-011": "LOW", "ANOX-BUILDSC-CANDIDATE-012": "INFO",
 }
 BUILDSC_IDS = set(BUILDSC_SEVERITY)
+
+CRYPTOJNI_SEVERITY = {
+    "ANOX-CRYPTOJNI-CANDIDATE-001": "HIGH",
+    "ANOX-CRYPTOJNI-CANDIDATE-002": "MEDIUM",
+    "ANOX-CRYPTOJNI-CANDIDATE-003": "MEDIUM",
+    "ANOX-CRYPTOJNI-CANDIDATE-004": "MEDIUM",
+    "ANOX-CRYPTOJNI-CANDIDATE-005": "LOW",
+    "ANOX-CRYPTOJNI-CANDIDATE-006": "INFO",
+}
+CRYPTOJNI_IDS = set(CRYPTOJNI_SEVERITY)
+CRYPTOJNI_PRE_B004 = {"ANOX-CRYPTOJNI-CANDIDATE-001", "ANOX-CRYPTOJNI-CANDIDATE-003"}
+CRYPTOJNI_RELATIONS = {
+    "ROOT-002": "CONFIRMED", "ROOT-014": "CONFIRMED",
+    "ROOT-003": "CONFIRMED_AND_EXPANDED", "ROOT-004": "CONFIRMED_AND_EXPANDED",
+    "ROOT-005": "CONFIRMED_AND_EXPANDED", "ROOT-013": "CONFIRMED_AND_EXPANDED",
+    "ROOT-010": "ADJACENT_EXPANDED", "ROOT-011": "CONFIRMED_NO_EXPANSION",
+}
+PRE_B004_CRYPTOJNI_GATE = [
+    "ROOT-002", "ROOT-003", "ROOT-004", "ROOT-005", "ROOT-013", "ROOT-014",
+    "ANOX-CRYPTOJNI-CANDIDATE-001", "ANOX-CRYPTOJNI-CANDIDATE-003",
+]
+B008_B009_CRYPTOJNI_GATE = [
+    "ANOX-CRYPTOJNI-CANDIDATE-002", "ANOX-CRYPTOJNI-CANDIDATE-004",
+    "ANOX-CRYPTOJNI-CANDIDATE-005", "ROOT-010", "ROOT-011",
+]
+TEMP_BUILD_HASHES = {
+    "arm64-v8a": "05f3f40cd4122ddd4286c513470f8bb6cdf54ca69b4c1879e53cb6a8ba22d7a2",
+    "x86_64": "c002cc420813f3b8473be7aa82eb0af334bd73e6847cd1c893ce500845dfe798",
+}
 
 METADATA_ALLOWLIST = {
     "PROJECT_STATE.md", "FORTSCHRITT.md", "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
@@ -273,8 +323,8 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 5:
-        fail(f"audit_registry.jsonl must contain exactly 5 audits, found {len(audits)}", errors)
+    if len(audits) != 6:
+        fail(f"audit_registry.jsonl must contain exactly 6 audits, found {len(audits)}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -401,6 +451,107 @@ def validate_traceability(errors):
         fail(f"next_gate record must be {NEXT_GATE_ID} CANDIDATE / NOT_EXECUTED", errors)
 
 
+def validate_cryptojni(errors):
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+
+    cj = {r.get("candidate_id"): r for r in recs if r.get("record_type") == "cryptojni_candidate"}
+    if set(cj) != CRYPTOJNI_IDS:
+        fail(f"Crypto/JNI traceability must cover exactly 6 candidates; got {sorted(cj)}", errors)
+    else:
+        print("  OK   Crypto/JNI 6/6 candidates traced")
+    for cid, sev in CRYPTOJNI_SEVERITY.items():
+        r = cj.get(cid) or {}
+        if r.get("severity") != sev:
+            fail(f"{cid} severity {r.get('severity')!r} != {sev!r}", errors)
+        if r.get("source_audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001":
+            fail(f"{cid} source_audit_id wrong: {r.get('source_audit_id')!r}", errors)
+        if r.get("status") != "Open":
+            fail(f"{cid} must remain Open (candidate), got {r.get('status')!r}", errors)
+        want_pre = cid in CRYPTOJNI_PRE_B004
+        if bool(r.get("pre_b004_blocker")) != want_pre:
+            fail(f"{cid} pre_b004_blocker={r.get('pre_b004_blocker')!r}, expected {want_pre}", errors)
+
+    rels = {r.get("root_id"): r for r in recs if r.get("record_type") == "specialist_relation" and r.get("source_audit_id") == "AUDIT-SECURITY-CRYPTO-JNI-001"}
+    if set(rels) != set(CRYPTOJNI_RELATIONS):
+        fail(f"specialist_relation roots must be exactly {sorted(CRYPTOJNI_RELATIONS)}; got {sorted(rels)}", errors)
+    for rid, rel in CRYPTOJNI_RELATIONS.items():
+        if (rels.get(rid) or {}).get("relation") != rel:
+            fail(f"specialist_relation {rid} relation {(rels.get(rid) or {}).get('relation')!r} != {rel!r}", errors)
+
+    ov = next((r for r in recs if r.get("record_type") == "severity_overlay" and r.get("root_id") == "ROOT-013"), None)
+    if ov is None:
+        fail("ROOT-013 severity overlay record missing", errors)
+    else:
+        if ov.get("prior_severity") != "LOW" or ov.get("proposed_severity") != "MEDIUM":
+            fail("ROOT-013 overlay must record prior LOW -> proposed MEDIUM", errors)
+        if ov.get("status") != "PENDING_SPECIALIST_CONSOLIDATION":
+            fail("ROOT-013 overlay status must be PENDING_SPECIALIST_CONSOLIDATION", errors)
+    roots = {r.get("root_id"): r for r in recs if r.get("record_type") == "consensus_root"}
+    if (roots.get("ROOT-013") or {}).get("severity") != "LOW":
+        fail("consensus_root ROOT-013 severity was silently overwritten (must remain LOW; overlay only)", errors)
+    else:
+        print("  OK   ROOT-013 overlay pending consolidation; consensus severity untouched")
+
+    gsets = {r.get("gate_set"): r for r in recs if r.get("record_type") == "gate_set" and r.get("gate_set")}
+    pre = gsets.get("PRE_B004_CRYPTOJNI") or {}
+    if sorted(pre.get("members") or []) != sorted(PRE_B004_CRYPTOJNI_GATE):
+        fail(f"PRE_B004_CRYPTOJNI members wrong: {pre.get('members')}", errors)
+    else:
+        print("  OK   PRE_B004_CRYPTOJNI 8-member gate set exact")
+    b89 = gsets.get("B008_B009_CRYPTOJNI") or {}
+    if sorted(b89.get("members") or []) != sorted(B008_B009_CRYPTOJNI_GATE):
+        fail(f"B008_B009_CRYPTOJNI members wrong: {b89.get('members')}", errors)
+    else:
+        print("  OK   B008_B009_CRYPTOJNI 5-member gate set exact")
+
+    prov = next((r for r in recs if r.get("record_type") == "provenance_limitation"), None)
+    if prov is None:
+        fail("provenance_limitation record missing", errors)
+    else:
+        for k, h in (("committed_arm64", "11a958a5f8b653692fdbf189dd42fa373cff729fdfef0cc5748afc5bfd3ea6c3"),
+                     ("committed_x86_64", "ecf9fdc1e83e419f1e1b9da6e83e184f5b3dfe694ee5de13529d68fc60653c88"),
+                     ("temp_arm64", TEMP_BUILD_HASHES["arm64-v8a"]),
+                     ("temp_x86_64", TEMP_BUILD_HASHES["x86_64"])):
+            if prov.get(k) != h:
+                fail(f"provenance_limitation {k} hash wrong", errors)
+        if "TEMP_CURRENT_SOURCE_BUILD_EVIDENCE" not in str(prov.get("runtime_policy", "")):
+            fail("provenance_limitation must restrict runtime claims to TEMP_CURRENT_SOURCE_BUILD_EVIDENCE", errors)
+        if "PROVENANCE_VERIFIED_CANONICAL_BINARY" not in str(prov.get("runtime_policy", "")):
+            fail("provenance_limitation must require PROVENANCE_VERIFIED_CANONICAL_BINARY for final closure", errors)
+        if "7db20fa4df8dc70392afd803fabaaf20c0b50d7d" not in str(prov.get("binary_source_commit", "")):
+            fail("provenance_limitation must record committed .so source commit 7db20fa", errors)
+
+    tb = next((r for r in recs if r.get("record_type") == "temp_build_evidence"), None)
+    if tb is None:
+        fail("temp_build_evidence record missing", errors)
+    else:
+        outs = tb.get("outputs") or {}
+        for abi, h in TEMP_BUILD_HASHES.items():
+            if (outs.get(abi) or {}).get("sha256") != h:
+                fail(f"temp_build_evidence {abi} hash wrong/missing", errors)
+        if tb.get("audited_sha") != BASE_SHA:
+            fail("temp_build_evidence audited_sha must equal audited SHA a79166ab", errors)
+        if "NOT" not in str(tb.get("canonicality", "")):
+            fail("temp_build_evidence must record non-canonical / temporary status", errors)
+
+    abi = next((r for r in recs if r.get("record_type") == "abi_revision"), None)
+    if abi is None:
+        fail("abi_revision record missing", errors)
+    else:
+        if abi.get("jni_abi_revision") != "YES":
+            fail("abi_revision must record JNI_ABI_REVISION=YES", errors)
+        if abi.get("sec_c_required") != "NO":
+            fail("abi_revision must record SEC_C_REQUIRED=NO", errors)
+        if abi.get("architecture_verdict") != "COMPONENT_INTERNAL_REDESIGN_ONLY":
+            fail("abi_revision verdict must be COMPONENT_INTERNAL_REDESIGN_ONLY", errors)
+
+    coupling = {(r.get("list")): r for r in recs if r.get("record_type") == "fix_coupling"}
+    if "MUST_FIX_TOGETHER" not in coupling or "MUST_NOT_FIX_ALONE" not in coupling:
+        fail("fix_coupling records (MUST_FIX_TOGETHER / MUST_NOT_FIX_ALONE) missing", errors)
+    else:
+        print("  OK   Crypto/JNI provenance limitation, temp-build evidence, ABI revision, fix couplings recorded")
+
+
 def validate_findings(errors):
     findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
     f5 = next((f for f in findings if f.get("finding_id") == "ANOX-LEGACY-CRYPTO-005"), None)
@@ -424,6 +575,14 @@ def validate_findings(errors):
         f = next((x for x in findings if x.get("finding_id") == fid), None)
         if f is None or f.get("status") not in ("Open", "Ready For Retest"):
             fail(f"existing product finding {fid} must remain Open/Ready For Retest", errors)
+    for fid, want in (("ANOX-LEGACY-CRYPTO-005", "Closed"), ("ANOX-LEGACY-INTEGRATION-005", "Open"),
+                      ("ANOX-MAINARCH-031", "Closed"), ("ANOX-SECURITY-ARCH-001", "Open"),
+                      ("ANOX-SECURITY-ARCH-007", "Open"), ("ANOX-SECURITY-ARCH-008", "Open")):
+        f = next((x for x in findings if x.get("finding_id") == fid), None)
+        if f is None or f.get("status") != want:
+            fail(f"EVENT-0046 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
+        elif "ANOX-EVENT-0046" not in str(f.get("notes", "")):
+            fail(f"{fid} lacks the preserved ANOX-EVENT-0046 relationship note", errors)
 
 
 def validate_lifecycle(errors):
@@ -452,7 +611,10 @@ def validate_lifecycle(errors):
         fail(f"{NEXT_GATE_ID} must not be in completed_audit_ids", errors)
     post = (ws.get("post_merge_state") or {}).get("current_gate", "")
     if NEXT_GATE_ID not in post or "CANDIDATE" not in post.upper() and "Candidate" not in post:
-        fail("post_merge_state gate must record AUDIT-SECURITY-CRYPTO-JNI-001 as Candidate", errors)
+        fail(f"post_merge_state gate must record {NEXT_GATE_ID} as Candidate", errors)
+    completed = set((ws.get("final_pre_product_audit") or {}).get("completed_audit_ids") or [])
+    if "AUDIT-SECURITY-CRYPTO-JNI-001" not in completed:
+        fail("completed_audit_ids must record AUDIT-SECURITY-CRYPTO-JNI-001 as executed+preserved", errors)
 
 
 def validate_tasks(errors):
@@ -468,11 +630,14 @@ def validate_tasks(errors):
         if t.get("branch") != DELIVERY_BRANCH:
             fail(f"{TASK_ID} branch must be {DELIVERY_BRANCH}", errors)
     for x in tasks:
+        if x.get("task_id") == TASK_ID:
+            continue
         blob = (x.get("task_id", "") + " " + x.get("title", "")).upper()
-        if "CRYPTO-JNI" in blob or "CRYPTO_JNI" in blob or "CRYPTOJNI" in blob:
+        audit_markers = ("CRYPTO-JNI", "CRYPTO_JNI", "CRYPTOJNI", "AUTH-DPOP", "AUTH_DPOP", "AUTHDPOP")
+        if any(m in blob for m in audit_markers):
             if x.get("status") not in ("Candidate",):
-                fail(f"Crypto/JNI audit task {x.get('task_id')} is {x.get('status')!r} — must remain Candidate/NOT_EXECUTED", errors)
-    print("  OK   Crypto/JNI gate is a candidate, not executed")
+                fail(f"Specialist audit task {x.get('task_id')} is {x.get('status')!r} — specialist audits are evidence-preserved via the audit-evidence registry, not executed task records; must remain Candidate/NOT_EXECUTED", errors)
+    print("  OK   next specialist gates are candidates, not executed")
 
 
 def validate_no_product_changes(errors):
@@ -481,7 +646,9 @@ def validate_no_product_changes(errors):
     out = subprocess.run(["git", "diff", "--name-only", BASE_SHA], cwd=REPO_ROOT, capture_output=True, text=True)
     changed = out.stdout.strip().splitlines()
     forbidden = [p for p in changed if p.startswith(FORBIDDEN_PREFIXES) or p.endswith(".sql")]
-    jni = [p for p in changed if "jni" in p.lower() or "AndroidManifest" in p or p.endswith(".so") or "gradle" in p.lower()]
+    jni = [p for p in changed
+           if not p.startswith("docs/")
+           and ("jni" in p.lower() or "AndroidManifest" in p or p.endswith(".so") or "gradle" in p.lower())]
     bad = sorted(set(forbidden + jni))
     if bad:
         fail(f"product/CI/native paths changed: {bad}", errors)
@@ -519,6 +686,8 @@ def main():
     validate_registry(errors)
     print("\n[EVIDENCE-PRESERVATION] Traceability / roots / gates")
     validate_traceability(errors)
+    print("\n[EVIDENCE-PRESERVATION] Crypto/JNI specialist evidence")
+    validate_cryptojni(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

@@ -35,3 +35,12 @@
 - Key files: `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`.
 - Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; `ANOX-LEGACY-CRYPTO-005` Closed; `ROOT-016` NOT_A_FINDING; `ROOT-005` no Audit-001 source; next gate `AUDIT-SECURITY-CRYPTO-JNI-001` Candidate/NOT_EXECUTED; no remote mutation.
 
+
+## ANOX-EVENT-0046 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 (2026-09-11)
+
+- Task: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002`
+- Substantive commit: `45402df319f778d1fc11bcf25cec045ac9769401`
+- Canonical base: `a79166ab7e65db71ba70e3a427df2ad017dc9225`
+- Result: `Ready For Remote`; `AUDIT-SECURITY-CRYPTO-JNI-001` evidence preserved byte-exact.
+- Key files: `docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged (ROOT-013 overlay only, pending consolidation); `ROOT-016` NOT_A_FINDING; `ANOX-LEGACY-CRYPTO-005` Closed; provenance limitation (committed `.so` stale) recorded; next gate `AUDIT-SECURITY-AUTH-DPOP-001` Candidate/NOT_EXECUTED; no remote mutation.

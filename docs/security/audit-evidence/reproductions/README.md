@@ -19,6 +19,18 @@ From `AUDIT-SECURITY-CODEBASE-001` / `AUDIT-SECURITY-CODEBASE-002`:
 - **`getInstance` defect:** four-line defect (`instance` never assigned) — no JVM test asserts singleton identity.
 - **Concurrency:** `RegistrationOrchestratorTest`/`RegistrationCrashConsistencyTest` use in-memory fakes; the only suite touching real JNI (`CryptoInstrumentedTest`, 39 tests) never runs in CI (no emulator job).
 
+From `AUDIT-SECURITY-CRYPTO-JNI-001` (at SHA `a79166ab7e65db71ba70e3a427df2ad017dc9225`; all values are `TEMP_CURRENT_SOURCE_BUILD_EVIDENCE` / host-only — ROOT-001 still unresolved):
+
+- **Independent temp rebuild:** `cargo ndk -t arm64-v8a -t x86_64 build --release --locked --offline` reproduced the *identical* current-source hashes (`05f3f40c…` / `c002cc42…`) — confirming the committed `.so` remains stale since `7db20fa`. Disassembly proof at offset `0x3724c`: committed `.so` emits `mov w0, #-0x2`, current-source emits `mov w0, #-0xb` (−11).
+- **Evidence-method correction:** `"Output buffer too small"` is absent from *both* binaries (LTO strips unused `Display` strings); string-presence is not a valid provenance check for the −2→−11 change.
+- **Identity serialization (current source):** 0 OTK 457 B; 10 → 2866 B; **20 → 5269–5287 B (> 4096)**; 50 → 12,537 B; 100 → 24,547 B; vodozemac cap 5000 → 1.23 MB. Publish removes unpublished publics (20 OTK: 5287→2878 B).
+- **Session serialization (current source):** initial ≈1.0–1.2 KB; 200 ping-pong ≈2.6–2.8 KB; ≥40 skipped keys ≈8 KB; bounded max (5 chains × 40 keys) ≈29.9 KB.
+- **OTK enumeration:** 20/20 index sweeps produced duplicates; worst sweep 10/20 unique; 140–146 omissions across 20 sweeps; `nth(i)` samples a fresh `HashMap` permutation per call.
+- **Handle/address reuse:** host allocator returned a freed `Identity` address for the next allocation in 7/100 trials; `Identity` (408 B) and `Session` (3752 B) are different size classes (cross-type reuse 0/100 — allocator luck, not a guarantee).
+- **Deserialize collapse:** `cryptoDeserialize*` return `0` for every error including `UnsupportedVersion` (−9 → 0), proven by reproduction.
+- **Count/set divergence:** after `mark_keys_as_published`, stored count 20 / unpublished 0 / index 0 → −3 `InvalidSession`.
+- **Host tests:** `cargo test` 17/17 pass — JNI module cfg-gated out, zero JNI evidence. JNI runtime tests: `NOT_RUN` (no approved runtime environment).
+
 ## Authoritative locations
 
 The authoritative evidence is:
@@ -26,7 +38,7 @@ The authoritative evidence is:
 1. The preserved report bodies in `docs/reports/security/audits/` (hash-bound in `../evidence_hashes.json`).
 2. The structured mappings in `../audit_traceability.jsonl` and `../audit_registry.jsonl`.
 
-**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
+**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
 
 ## Boundary
 
