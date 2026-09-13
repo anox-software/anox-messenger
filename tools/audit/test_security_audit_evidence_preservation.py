@@ -30,6 +30,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
+    "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -203,7 +204,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 7 audits")
+        self.assert_fails(self.run_validator(), "exactly 8 audits")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -296,12 +297,12 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         hp.write_text(json.dumps(data, indent=1), encoding="utf-8")
         self.assert_fails(self.run_validator())
 
-    # 25. Drop the Auth/DPoP registry record (7 -> 6 audits).
+    # 25. Drop the Auth/DPoP registry record (8 -> 7 audits).
     def test_25_dropped_authdpop_registry_record_fails(self):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 7 audits")
+        self.assert_fails(self.run_validator(), "exactly 8 audits")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -393,20 +394,23 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "BLOCKED_PENDING_FINAL_AUDIT")
 
-    # 36. Mark the Android/Storage gate executed in completed_audit_ids.
-    def test_36_android_storage_marked_completed_fails(self):
+    # 36. Post-merge gate regressed to a non-ATTACKCHAIN candidate.
+    def test_36_post_merge_gate_regressed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["final_pre_product_audit"]["completed_audit_ids"].append("AUDIT-SECURITY-ANDROID-STORAGE-001")
+        ws["post_merge_state"]["current_gate"] = "AUDIT-SECURITY-ANDROID-STORAGE-001 — Candidate"
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
-        self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
+        self.assert_fails(self.run_validator(), "post_merge_state")
 
-    # 37. Drop the preservation-003 task record.
-    def test_37_dropped_task_record_fails(self):
+    # 37. Preservation-004 task record marked with a non-delivery status.
+    def test_37_task_status_mutated_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
-        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"]
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("task_id") == "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004":
+                r["status"] = "Closed"
         _write_jsonl(tp, recs)
-        self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
+        self.assert_fails(self.run_validator(), "Ready For Remote")
 
     # 38. Forge a wrong gate member (drop a PRE_B004_AUTHDPOP member).
     def test_38_wrong_preb004_authdpop_gate_fails(self):
@@ -438,13 +442,185 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "40")
 
-    # 41. Break the ledger event chain (last event != ANOX-EVENT-0047).
+    # 41. Break the ledger event chain (last event != ANOX-EVENT-0048).
     def test_41_stale_project_memory_fails(self):
         lp = self.root / "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
         recs = _load_jsonl(lp)
         recs = recs[:-1]
         _write_jsonl(lp, recs)
         self.assert_fails(self.run_validator(), "Project Memory stale")
+
+    # 42. Delete the preserved Android/Storage report.
+    def test_42_deleted_androidstorage_report_fails(self):
+        (self.root / "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md").unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 43. Mutate the preserved Android/Storage report bytes.
+    def test_43_mutated_androidstorage_report_fails(self):
+        p = self.root / "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 44. Wrong recorded hash for the Android/Storage report.
+    def test_44_wrong_androidstorage_hash_fails(self):
+        hp = self.root / "docs/security/audit-evidence/evidence_hashes.json"
+        data = json.loads(hp.read_text(encoding="utf-8"))
+        data["reports"]["AUDIT-SECURITY-ANDROID-STORAGE-001"]["sha256"] = "0" * 64
+        hp.write_text(json.dumps(data, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator())
+
+    # 45. Drop the Android/Storage registry record (8 -> 7 audits).
+    def test_45_dropped_androidstorage_registry_record_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "exactly 8 audits")
+
+    # 46. Alter the Android/Storage audited SHA.
+    def test_46_altered_androidstorage_audited_sha_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-ANDROID-STORAGE-001":
+                r["audited_sha"] = "0" * 40
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "audited_sha")
+
+    # 47. Remove an Android/Storage candidate from traceability.
+    def test_47_removed_androidstorage_candidate_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "androidstorage_candidate" and r.get("candidate_id") == "ANOX-ANDROIDSTORAGE-CANDIDATE-002")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "Android/Storage")
+
+    # 48. Remove an Android/Storage architecture gap.
+    def test_48_removed_androidstorage_gap_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "androidstorage_gap" and r.get("gap_id") == "ANOX-ANDROIDSTORAGE-GAP-002")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "gaps")
+
+    # 49. Forge the wrong source audit on an Android/Storage candidate.
+    def test_49_wrong_androidstorage_source_audit_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "androidstorage_candidate" and r.get("candidate_id") == "ANOX-ANDROIDSTORAGE-CANDIDATE-001":
+                r["source_audit_id"] = "AUDIT-SECURITY-AUTH-DPOP-001"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "source_audit_id")
+
+    # 50. Re-severity an Android/Storage candidate LOW -> MEDIUM.
+    def test_50_reseveritized_androidstorage_001_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "androidstorage_candidate" and r.get("candidate_id") == "ANOX-ANDROIDSTORAGE-CANDIDATE-001":
+                r["severity"] = "MEDIUM"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "severity")
+
+    # 51. Wrong specialist relation (downgrade ROOT-007 expansion to CONFIRMED).
+    def test_51_downgraded_androidstorage_relation_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "specialist_relation" and r.get("source_audit_id") == "AUDIT-SECURITY-ANDROID-STORAGE-001" and r.get("root_id") == "ROOT-007":
+                r["relation"] = "CONFIRMED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "CONFIRMED_AND_EXPANDED")
+
+    # 52. Drop a PRE_B004_ANDROIDSTORAGE gate member.
+    def test_52_wrong_preb004_androidstorage_gate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "gate_set" and r.get("gate_set") == "PRE_B004_ANDROIDSTORAGE":
+                r["members"] = [m for m in r["members"] if m != "ANOX-ANDROIDSTORAGE-GAP-003 (contract)"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "PRE_B004_ANDROIDSTORAGE")
+
+    # 53. Corrupt the Android/Storage coverage counts.
+    def test_53_corrupted_androidstorage_coverage_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "androidstorage_coverage":
+                r["architecture_requirements_total"] = 41
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "42")
+
+    # 54. Swap the inventory/executed counts (153 <-> 177 confusion).
+    def test_54_swapped_androidstorage_counts_fail(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "androidstorage_coverage":
+                r["focused_test_inventory"]["total"] = 177
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "153")
+
+    # 55. Mark the Attackchain gate executed in completed_audit_ids.
+    def test_55_attackchain_marked_completed_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("AUDIT-SECURITY-ATTACKCHAIN-001")
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
+
+    # 56. Drop Android/Storage from completed_audit_ids (executed+preserved required).
+    def test_56_androidstorage_dropped_completed_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["final_pre_product_audit"]["completed_audit_ids"] = [
+            a for a in ws["final_pre_product_audit"]["completed_audit_ids"]
+            if a != "AUDIT-SECURITY-ANDROID-STORAGE-001"
+        ]
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "AUDIT-SECURITY-ANDROID-STORAGE-001")
+
+    # 57. Stale next gate: keep ANDROID-STORAGE as the post-merge gate.
+    def test_57_stale_next_gate_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["next_phase"] = "AUDIT-SECURITY-ANDROID-STORAGE-001"
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "next_phase")
+
+    # 58. Drop the preservation-004 task record.
+    def test_58_dropped_task_record_fails(self):
+        tp = self.root / "docs/workforce/registries/tasks.jsonl"
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
+
+    # 59. Strip an EVENT-0048 relationship note from a revalidated finding.
+    def test_59_missing_event0048_note_fails(self):
+        fp = self.root / "docs/workforce/registries/findings.jsonl"
+        recs = _load_jsonl(fp)
+        for r in recs:
+            if r.get("finding_id") == "ANOX-MAINARCH-023":
+                r["notes"] = "no event note"
+        _write_jsonl(fp, recs)
+        self.assert_fails(self.run_validator(), "ANOX-EVENT-0048")
+
+    # 60. Remove the Android/Storage attackchain handoff record.
+    def test_60_removed_androidstorage_handoff_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "attackchain_handoff" and r.get("source_audit_id") == "AUDIT-SECURITY-ANDROID-STORAGE-001")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "attackchain_handoff")
+
+    # 61. Claim the Android/Storage physical campaign executed.
+    def test_61_androidstorage_physical_executed_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "physical_evidence_requirements" and r.get("source_audit_id") == "AUDIT-SECURITY-ANDROID-STORAGE-001":
+                r["status"] = "EXECUTED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "NOT_EXECUTED")
 
 
 if __name__ == "__main__":

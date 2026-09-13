@@ -41,6 +41,17 @@ From `AUDIT-SECURITY-AUTH-DPOP-001` (at SHA `638e63a22c91ca81365bf55c8a59ec47878
 - **Test execution:** `./gradlew --offline --no-daemon :android:testDebugUnitTest --tests 'com.anox.messenger.security.deviceauth.*' --tests 'com.anox.messenger.account.*'` → 173 executed / 173 passed (deviceauth 69, account 104). Instrumented (27) + physical: NOT_RUN.
 - **Harness:** `/tmp/anox_auth_dpop_harness/` (`Harness.java`, `Size.java`) compiled against `android/build/tmp/kotlin-classes/debug` + `nimbus-jose-jwt-10.9.1` + `kotlin-stdlib-2.2.21` — 22 adversarial cases.
 
+From `AUDIT-SECURITY-ANDROID-STORAGE-001` (at SHA `b9abeb0850a476716403d224b87a857c1147502e`; JVM + source-review evidence only — no physical/device evidence):
+
+- **Marker state map (harness-verified, 16 states + 8 single-bit flips):** structural corruption (size≠6 / bad magic / unknown version) fails closed `(T,T)`; payload-level corruption fails **open** — v1 garbage flags (`0x03`, `0xff`) and v2 `0x00`/`0x04` → unbound; single-bit flips of `0x03` still block. Absence is interpreted as first run, not unknown state (ROOT-007).
+- **AndroidX `AtomicFile` (core:1.12.0) behaviours:** `finishWrite()` returns normally on fsync **and** rename failure (`Log.e` only) leaving `.new` residue; `openRead()`/`startWrite()` auto-rename a sibling `.bak` over the live file (planted `.bak` → returned by `readFully`); `delete()` results ignored by `clear()` (CANDIDATE-002).
+- **Empty file semantics:** zero-length registration session file → `readFully` len 0 → `NotStarted` (first-run downgrade; `FileRegistrationSessionStore.kt:44`).
+- **Codec bounds:** empty/1-byte/version-2/unknown-tag/truncated/negative/`0x7fffffff`/16385-length inputs all → null; trailing bytes ignored; tag relabel among identical-layout states accepted; empty grant accepted; NCS-variant UUID accepted (ROOT-015); malformed UTF-8 username rejected; 16384-B reason accepted, 16385 rejected.
+- **Create-on-read (source):** `RegistrationSessionKey.decrypt()` → `getOrCreateKey()` → `generateKey()`; `CryptoBridge.initializeMasterKey()` recreates `anox_crypto_master_key` on every `getInstance()` including status/read paths (ROOT-006 CONFIRMED + expansion).
+- **Wipe truthfulness (source):** `wipeLocalCrypto()` returns `Success` after ignored `File.delete()` results; `clear()` ignores all `AtomicFile.delete()` results; `anox.b003.session.v1` alias never deleted; no cross-domain wipe orchestrator (ROOT-012 EXPANDED, GAP-002).
+- **Test execution:** `./gradlew --offline --no-daemon :android:testDebugUnitTest --tests 'com.anox.messenger.account.*' --tests 'com.anox.messenger.security.deviceauth.*' --tests 'com.anox.crypto.*'` → 177 executed / 177 passed (account 104, deviceauth 69, crypto error-map 4). Instrumented (66) + physical: NOT_RUN.
+- **Harness:** `/tmp/anox_android_storage_audit/harness/` (`Harness.java`) compiled against `android/build/tmp/kotlin-classes/debug` + `kotlin-stdlib-2.2.21` + `androidx.core:core:1.12.0` `AtomicFile` source with stub `Context`/`Log`; `/tmp/anox_android_storage_audit/atomicfile/` held the extracted library source.
+
 ## Authoritative locations
 
 The authoritative evidence is:
@@ -48,7 +59,7 @@ The authoritative evidence is:
 1. The preserved report bodies in `docs/reports/security/audits/` (hash-bound in `../evidence_hashes.json`).
 2. The structured mappings in `../audit_traceability.jsonl` and `../audit_registry.jsonl`.
 
-**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
+**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), `/tmp/anox_android_storage_audit/` (AtomicFile extracted source + adversarial harness), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
 
 ## Boundary
 
