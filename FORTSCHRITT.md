@@ -155,3 +155,20 @@
 - Validator extended (8 reports; Android/Storage candidates/gaps, consensus relations, coverage 49/49 + 14/14 + 42 reqs, remediation coverage, Attackchain handoff, Attackchain not-executed); adversarial tests now 62.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
 - Next: human merge to `main`, then `AUDIT-SECURITY-ATTACKCHAIN-001` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0049 -->
+## SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 — 2026-09-13 (ANOX-EVENT-0049)
+
+- Branch: `governance/security-audit-evidence-preservation-005`
+- Substantive commit: `e8be5df19cee24f22e0f1f9af6b4cc4c792351c5`
+- Canonical base SHA: `e54584903a353e98ad154d1e8f90f93ed9d7db14`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `AUDIT-SECURITY-ATTACKCHAIN-001` specialist evidence — byte-exact final report, registry/traceability extension (15 chains, coverage maps, breakers, matrices), historical participation relations, gate sets, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `AUDIT-SECURITY-ATTACKCHAIN-001` PASS_WITH_FINDINGS (15 `ANOX-ATTACKCHAIN-CANDIDATE-001..015`, 0C/4H/7M/3L/1I — HIGH = AC-001/003/006/012; AC-003 `CONDITIONAL_CRITICAL_AT_B004_IF_VERIFIER_DEFAULTS_PORTED` overlay only; evidence E2=8/E1=6/E0=1; 68 items, UNMAPPED=0; `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C not required; 13 rejected hypotheses).
+- Relations recorded without consensus rewrite: root coverage 18/18 (`ROOT-016` remains REJECTED); specialist coverage 23/23; gap coverage 6/6 (CHAIN_CRITICAL: `ANOX-AUTHDPOP-GAP-002`, `ANOX-AUTHDPOP-GAP-003`, `ANOX-ANDROIDSTORAGE-GAP-001`); breakers S1–S18 / C1–C14; no chain allocated a canonical root ID.
+- Gate sets recorded: `PRE_B004_ATTACKCHAIN_CODE` (6), `PRE_B004_ATTACKCHAIN_CONTRACT` (7), `B004_IMPLEMENTATION_REQUIREMENTS` (6), `LATER_GATE_ATTACKCHAINS` (5); final re-audit mandatory = AC-001/003/006/012 + AC-005/008/010.
+- `ANOX-EVENT-0049` notes appended to 18 findings — no status/closure rewrite.
+- Validator extended (9 reports; attackchain candidates/coverage/breakers/gates/handoffs); adversarial tests now 92.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run; Master Specialist Consolidation NOT executed.
+- Next: human merge to `main`, then `MASTER-SPECIALIST-CONSOLIDATION` on a fresh post-merge `main` SHA.
