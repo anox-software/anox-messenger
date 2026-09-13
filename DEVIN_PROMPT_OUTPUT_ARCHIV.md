@@ -53,3 +53,12 @@
 - Result: `Ready For Remote`; `AUDIT-SECURITY-AUTH-DPOP-001` evidence preserved byte-exact (SHA-256 `57516d7d…`).
 - Key files: `docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
 - Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged; `ROOT-016` NOT_A_FINDING; `ANOX-LEGACY-INTEGRATION-001` remains Closed (PARTIALLY_EFFECTIVE preserved); physical verification requirements NOT_EXECUTED; next gate `AUDIT-SECURITY-ANDROID-STORAGE-001` Candidate/NOT_EXECUTED; no remote mutation.
+
+## ANOX-EVENT-0048 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 (2026-09-13)
+
+- Task: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004`
+- Substantive commit: `8b1cc8d4b3310a0fe910e5b493d2fd204635cba7`
+- Canonical base: `b9abeb0850a476716403d224b87a857c1147502e`
+- Result: `Ready For Remote`; `AUDIT-SECURITY-ANDROID-STORAGE-001` evidence preserved byte-exact (SHA-256 `7532877d…`).
+- Key files: `docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged; `ROOT-016` NOT_A_FINDING; `ANOX-MAINARCH-023` remains Closed (PARTIALLY_EFFECTIVE preserved); physical verification requirements NOT_EXECUTED; next gate `AUDIT-SECURITY-ATTACKCHAIN-001` Candidate/NOT_EXECUTED; no remote mutation.
