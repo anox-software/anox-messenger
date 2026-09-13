@@ -2,21 +2,21 @@
   "schema_version": "B027C-v1.1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
-  "delivery_branch": "governance/security-audit-evidence-preservation-003",
-  "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
-  "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+  "delivery_branch": "governance/security-audit-evidence-preservation-004",
+  "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
+  "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 — PRESERVE AUDIT-SECURITY-ANDROID-STORAGE-001 EVIDENCE (Ready For Remote; awaiting human merge)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+    "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+    "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
     "role_id": "ROLE-009",
-    "branch": "governance/security-audit-evidence-preservation-003"
+    "branch": "governance/security-audit-evidence-preservation-004"
   },
   "pending_human_remote_actions": [],
   "latest_decision_id": "ANOX-DECISION-SECARCHHARDENING001",
@@ -41,7 +41,8 @@
       "CODEBASE-SECURITY-CONSENSUS-001",
       "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
       "AUDIT-SECURITY-CRYPTO-JNI-001",
-      "AUDIT-SECURITY-AUTH-DPOP-001"
+      "AUDIT-SECURITY-AUTH-DPOP-001",
+      "AUDIT-SECURITY-ANDROID-STORAGE-001"
     ],
     "required_audits": [
       "AUDIT-MAIN-ARCHITECTURE",
@@ -61,30 +62,30 @@
     "main_architecture_remediation_phase": "COMPLETE",
     "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
     "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
-    "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+    "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
     "legacy_audit_set_status": "6/6 COMPLETE",
     "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
     "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
     "class_a_foundation_blockers": "CLOSED"
   },
   "pre_merge_state": {
-    "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
-    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+    "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 — PRESERVE AUDIT-SECURITY-ANDROID-STORAGE-001 EVIDENCE (Ready For Remote; awaiting human merge)",
     "current_writer": {
-      "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+      "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
       "role_id": "ROLE-009",
-      "branch": "governance/security-audit-evidence-preservation-003"
+      "branch": "governance/security-audit-evidence-preservation-004"
     },
-    "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
-    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
-    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+    "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
   },
   "post_merge_state": {
-    "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
-    "current_gate": "AUDIT-SECURITY-ANDROID-STORAGE-001 — ANDROID/STORAGE SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
+    "current_gate": "AUDIT-SECURITY-ATTACKCHAIN-001 — ATTACKCHAIN SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
     "current_writer": null,
-    "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
-    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 merged — awaiting Android/Storage specialist audit authorization",
+    "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 merged — awaiting Attackchain specialist audit authorization",
     "active_task": null
   },
   "previous_merges": [
@@ -225,6 +226,29 @@
         "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 merged — awaiting Auth/DPoP specialist audit authorization",
         "active_task": null
       }
+    },
+    {
+      "merge_head": "b9abeb0850a476716403d224b87a857c1147502e",
+      "pre_merge_state": {
+        "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
+        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+        "current_writer": {
+          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+          "role_id": "ROLE-009",
+          "branch": "governance/security-audit-evidence-preservation-003"
+        },
+        "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+      },
+      "post_merge_state": {
+        "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
+        "current_gate": "AUDIT-SECURITY-ANDROID-STORAGE-001 — ANDROID/STORAGE SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+        "current_writer": null,
+        "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 merged — awaiting Android/Storage specialist audit authorization",
+        "active_task": null
+      }
     }
   ],
   "final_operational_handoff_acceptance_gate": {
@@ -269,10 +293,11 @@
     "2026-09-11T00:00:00Z: ANOX-AUDIT-SECURITY-ARCH-001 completed PASS_WITH_FINDINGS at c653a1d6a302; 10 canonical findings frozen (ANOX-SECURITY-ARCH-001..010); 4 HIGH B-004 blockers; ANOX-TASK-SECURITY-ARCH-001 Closed; ANOX-TASK-SECURITY-ARCH-FREEZE-001 Ready For Remote; product remains BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.",
     "2026-09-11T00:00:00Z: ANOX-EVENT-0044 metadata commit sealed described_head to e2e9f372e100.",
     "2026-09-11: ANOX-EVENT-0045 SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 at base 869b99acac04. Five audit reports preserved byte-exact under docs/reports/security/audits/; canonical evidence registry + traceability under docs/security/audit-evidence/. CODEBASE-001/002 + CONSENSUS-001 + BUILD-SUPPLYCHAIN-001 outcomes recorded; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-CRYPTO-JNI-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-13: ANOX-EVENT-0047 SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 at base 638e63a22c91. AUDIT-SECURITY-AUTH-DPOP-001 executed PASS_WITH_FINDINGS (3 candidates 0C/0H/1M/2L/0I + 3 architecture gaps; ROOT-006/007 confirmed, ROOT-008/009 confirmed+expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 57516d7d); registry 7/7 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ANDROID-STORAGE-001 = Candidate/NOT_EXECUTED; remote mutation NONE."
+    "2026-09-13: ANOX-EVENT-0047 SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 at base 638e63a22c91. AUDIT-SECURITY-AUTH-DPOP-001 executed PASS_WITH_FINDINGS (3 candidates 0C/0H/1M/2L/0I + 3 architecture gaps; ROOT-006/007 confirmed, ROOT-008/009 confirmed+expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 57516d7d); registry 7/7 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ANDROID-STORAGE-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
+    "2026-09-13: ANOX-EVENT-0048 SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 at base b9abeb0850a4. AUDIT-SECURITY-ANDROID-STORAGE-001 executed PASS_WITH_FINDINGS (2 candidates 0C/0H/0M/2L/0I + 3 architecture gaps; ROOT-006/007/010/011/012/015/017 confirmed, 006/007/011/012 expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 7532877d); registry 8/8 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ATTACKCHAIN-001 = Candidate/NOT_EXECUTED; remote mutation NONE."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+  "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",

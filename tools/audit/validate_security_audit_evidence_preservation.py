@@ -2,13 +2,14 @@
 """Security Hardening audit evidence-preservation validator.
 
 Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001,
--002 and -003: the seven preserved audit reports (including
-AUDIT-SECURITY-CRYPTO-JNI-001 and AUDIT-SECURITY-AUTH-DPOP-001), the
-audit-evidence registry, the traceability layer (including cryptojni and
-authdpop candidates/gaps, specialist relations, severity overlays,
-provenance limitation, temp-build evidence, the ABI revision record,
-coverage/test evidence, remediation coverage and specialist handoffs),
-and the lifecycle state that must remain unchanged.
+-002, -003 and -004: the eight preserved audit reports (including
+AUDIT-SECURITY-CRYPTO-JNI-001, AUDIT-SECURITY-AUTH-DPOP-001 and
+AUDIT-SECURITY-ANDROID-STORAGE-001), the audit-evidence registry, the
+traceability layer (including cryptojni, authdpop and androidstorage
+candidates/gaps, specialist relations, severity overlays, provenance
+limitation, temp-build evidence, the ABI revision record, coverage/test
+evidence, historical revalidation, remediation coverage and specialist
+handoffs), and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
 (test fixtures); git-dependent checks are skipped when no .git exists.
@@ -27,11 +28,12 @@ REPORTS_DIR = REPO_ROOT / "docs" / "reports" / "security" / "audits"
 REGISTRY_DIR = REPO_ROOT / "docs" / "workforce" / "registries"
 WAVE_BASE_SHA = "869b99acac040412a29bbaadc76342070fb2085c"
 CRYPTOJNI_AUDIT_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
-BASE_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
-DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-003"
-TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
-NEXT_GATE_ID = "AUDIT-SECURITY-ANDROID-STORAGE-001"
-LEDGER_EVENT = "ANOX-EVENT-0047"
+AUTHDPOP_AUDIT_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
+BASE_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
+DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-004"
+TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
+NEXT_GATE_ID = "AUDIT-SECURITY-ATTACKCHAIN-001"
+LEDGER_EVENT = "ANOX-EVENT-0048"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -61,6 +63,10 @@ EXPECTED_REPORTS = {
     "AUDIT-SECURITY-AUTH-DPOP-001": {
         "path": "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
         "sha256": "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e",
+    },
+    "AUDIT-SECURITY-ANDROID-STORAGE-001": {
+        "path": "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
+        "sha256": "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720",
     },
 }
 
@@ -141,7 +147,7 @@ EXPECTED_AUDITS = {
         "actual_model": "Claude Fable 5.1 High",
         "requested_model": "Claude Fable 5.1 High",
         "model_requirement_status": "SATISFIED",
-        "audited_sha": BASE_SHA,
+        "audited_sha": AUTHDPOP_AUDIT_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 3, "architecture_gap_count": 3,
         "critical_count": 0, "high_count": 0,
@@ -150,6 +156,24 @@ EXPECTED_AUDITS = {
         "b002_relevant_test_files": "14/14 (100%)",
         "architecture_requirements": 40, "architecture_unmapped": 0,
         "focused_relevant_test_inventory": 155,
+        "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
+        "blindness_required": "NO",
+    },
+    "AUDIT-SECURITY-ANDROID-STORAGE-001": {
+        "audit_type": "security_specialist_android_storage",
+        "provider": "Devin CLI (Cognition) session runtime",
+        "actual_model": "Claude Fable 5.1 High",
+        "requested_model": "Claude Fable 5.1 High",
+        "model_requirement_status": "SATISFIED",
+        "audited_sha": BASE_SHA,
+        "result": "PASS_WITH_FINDINGS",
+        "candidate_count": 2, "architecture_gap_count": 3,
+        "critical_count": 0, "high_count": 0,
+        "medium_count": 0, "low_count": 2, "info_count": 0,
+        "android_storage_production_files": "49/49 (100%)",
+        "android_storage_relevant_test_files": "14/14 (100%)",
+        "architecture_requirements": 42, "architecture_unmapped": 0,
+        "focused_relevant_test_inventory": 153,
         "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
         "blindness_required": "NO",
     },
@@ -266,6 +290,63 @@ AUTHDPOP_COVERAGE_COUNTS = {
     "PHYSICAL_VERIFICATION_REQUIRED": 2, "UNMAPPED": 0,
 }
 AUTHDPOP_GROUPS = {"AD-A", "AD-B", "AD-C", "AD-D", "AD-E", "AD-F"}
+
+ANDROIDSTORAGE_ID = "AUDIT-SECURITY-ANDROID-STORAGE-001"
+ANDROIDSTORAGE_REPORT_SHA = "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720"
+ANDROIDSTORAGE_SEVERITY = {
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-001": "LOW",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-002": "LOW",
+}
+ANDROIDSTORAGE_CANDIDATE_IDS = set(ANDROIDSTORAGE_SEVERITY)
+ANDROIDSTORAGE_GAP_IDS = {
+    "ANOX-ANDROIDSTORAGE-GAP-001", "ANOX-ANDROIDSTORAGE-GAP-002",
+    "ANOX-ANDROIDSTORAGE-GAP-003",
+}
+ANDROIDSTORAGE_RELATIONS = {
+    "ROOT-006": "CONFIRMED_AND_EXPANDED", "ROOT-007": "CONFIRMED_AND_EXPANDED",
+    "ROOT-010": "CONFIRMED", "ROOT-011": "CONFIRMED_AND_EXPANDED",
+    "ROOT-012": "CONFIRMED_AND_EXPANDED", "ROOT-015": "CONFIRMED",
+    "ROOT-017": "CONFIRMED",
+}
+PRE_B004_ANDROIDSTORAGE_GATE = [
+    "ROOT-006", "ROOT-007",
+    "ROOT-011 (registration/marker slice only - AAD/version binding, marker freshness cross-check; inseparable from ROOT-007 fix)",
+    "ROOT-017",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-001 (contract half via GAP-001/Auth GAP-002; code fix in AS-B)",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-002",
+    "ANOX-ANDROIDSTORAGE-GAP-001",
+    "ANOX-ANDROIDSTORAGE-GAP-002 (contract)",
+    "ANOX-ANDROIDSTORAGE-GAP-003 (contract)",
+]
+LATER_ANDROIDSTORAGE_GATE = [
+    "ROOT-010 (Android best-effort clearing - B008/B009; AS-C/CJ-F; no exploit path before messaging)",
+    "ROOT-011 identity/session anti-rollback mechanism (server epoch + AAD hook - B008/B009 with CJ-C)",
+    "ROOT-012 wipe truthfulness + residue + cross-domain wipe implementation (B-013 lifecycle + Final Product Gate; design contract Pre-B004 via GAP-002)",
+    "ROOT-015 (Final Product Gate; no storage consequence)",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-001 code change (AS-B during B-004 registration wiring, after GAP-001 freeze)",
+    "physical GrapheneOS campaign P1-P14 (Final gate on provenance-verified binary; ROOT-001 prerequisite)",
+]
+ANDROIDSTORAGE_HIST_RELATIONS = {
+    "ANOX-SECURITY-ARCH-003": ("STILL_EFFECTIVE_OPEN_RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-007": ("INEFFECTIVE_REMEDIATION_SCOPE", "Open"),
+    "ANOX-MAINARCH-023": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-SECURITY-ARCH-008": ("STILL_EFFECTIVE_OPEN", "Open"),
+    "ANOX-SECURITY-ARCH-009": ("STILL_EFFECTIVE_OPEN_RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-MAINARCH-030": ("STILL_EFFECTIVE_OPEN", "Open"),
+    "ANOX-MAINARCH-018": ("PHYSICAL_REVALIDATION_REQUIRED", "Open"),
+    "ANOX-LEGACY-INTEGRATION-002": ("STILL_EFFECTIVE_ORDERING_RELATED_NEW_ROOT_CAUSE", "Closed"),
+    "ANOX-LEGACY-INTEGRATION-003": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-LEGACY-ANDROIDSEC-001": ("STILL_EFFECTIVE", "Closed"),
+    "ANOX-LEGACY-B003-001": ("SUPERSEDED_BY_SAME_ROOT_ROOT-015", "Open"),
+}
+ANDROIDSTORAGE_COVERAGE_COUNTS = {
+    "IMPLEMENTED_AND_VERIFIED": 6, "IMPLEMENTED_NOT_VERIFIED": 5,
+    "PARTIALLY_IMPLEMENTED": 10, "IMPLEMENTATION_DRIFT": 10,
+    "MISSING": 4, "NOT_APPLICABLE_YET": 3,
+    "PHYSICAL_VERIFICATION_REQUIRED": 3, "SERVER_PREREQUISITE": 0,
+    "ARCHITECTURE_GAP": 1, "UNMAPPED": 0,
+}
+ANDROIDSTORAGE_GROUPS = {"AS-A", "AS-B", "AS-C", "AS-D", "AS-E", "AS-F", "AS-G"}
 
 METADATA_ALLOWLIST = {
     "PROJECT_STATE.md", "FORTSCHRITT.md", "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
@@ -392,8 +473,8 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 7:
-        fail(f"audit_registry.jsonl must contain exactly 7 audits, found {len(audits)}", errors)
+    if len(audits) != 8:
+        fail(f"audit_registry.jsonl must contain exactly 8 audits, found {len(audits)}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -756,6 +837,145 @@ def validate_authdpop(errors):
     print("  OK   Auth/DPoP fix couplings + Android/Storage + Attackchain handoffs recorded")
 
 
+def validate_androidstorage(errors):
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+
+    cands = {r.get("candidate_id"): r for r in recs if r.get("record_type") == "androidstorage_candidate"}
+    if set(cands) != ANDROIDSTORAGE_CANDIDATE_IDS:
+        fail(f"Android/Storage traceability must cover exactly 2 candidates; got {sorted(cands)}", errors)
+    else:
+        print("  OK   Android/Storage 2/2 candidates traced")
+    for cid, sev in ANDROIDSTORAGE_SEVERITY.items():
+        r = cands.get(cid) or {}
+        if r.get("severity") != sev:
+            fail(f"{cid} severity {r.get('severity')!r} != {sev!r}", errors)
+        if r.get("source_audit_id") != ANDROIDSTORAGE_ID:
+            fail(f"{cid} source_audit_id wrong: {r.get('source_audit_id')!r}", errors)
+        if r.get("status") != "Open" or r.get("disposition") != "OPEN_PENDING_CONSOLIDATION":
+            fail(f"{cid} must remain Open/OPEN_PENDING_CONSOLIDATION", errors)
+        if r.get("pre_b004_blocker") is not True:
+            fail(f"{cid} pre_b004_blocker={r.get('pre_b004_blocker')!r}, expected True", errors)
+        if not (r.get("group") or r.get("remediation_group")):
+            fail(f"{cid} missing remediation-coverage group", errors)
+        if r.get("retest_required") != "YES" or not r.get("independent_retest_owner"):
+            fail(f"{cid} missing independent retest requirement", errors)
+
+    gaps = {r.get("gap_id"): r for r in recs if r.get("record_type") == "androidstorage_gap"}
+    if set(gaps) != ANDROIDSTORAGE_GAP_IDS:
+        fail(f"Android/Storage gaps must be exactly GAP-001..003; got {sorted(gaps)}", errors)
+    else:
+        print("  OK   Android/Storage 3/3 architecture gaps traced")
+    for gid in ANDROIDSTORAGE_GAP_IDS:
+        r = gaps.get(gid) or {}
+        if r.get("source_audit_id") != ANDROIDSTORAGE_ID or r.get("status") != "Open":
+            fail(f"{gid} source/status wrong", errors)
+        if r.get("pre_b004_contract_freeze") is not True:
+            fail(f"{gid} must record pre_b004_contract_freeze=True", errors)
+
+    rels = {r.get("root_id"): r for r in recs
+            if r.get("record_type") == "specialist_relation" and r.get("source_audit_id") == ANDROIDSTORAGE_ID}
+    if set(rels) != set(ANDROIDSTORAGE_RELATIONS):
+        fail(f"Android/Storage specialist_relation roots must be exactly {sorted(ANDROIDSTORAGE_RELATIONS)}; got {sorted(rels)}", errors)
+    for rid, rel in ANDROIDSTORAGE_RELATIONS.items():
+        if (rels.get(rid) or {}).get("relation") != rel:
+            fail(f"specialist_relation {rid} relation {(rels.get(rid) or {}).get('relation')!r} != {rel!r}", errors)
+    roots = {r.get("root_id"): r for r in recs if r.get("record_type") == "consensus_root"}
+    for rid in ANDROIDSTORAGE_RELATIONS:
+        if rid not in roots:
+            fail(f"specialist_relation {rid} points at a consensus root that does not exist", errors)
+    # Consensus severities must remain untouched by specialist relations.
+    unchanged = {"ROOT-006": "MEDIUM", "ROOT-007": "MEDIUM", "ROOT-010": "LOW",
+                 "ROOT-011": "MEDIUM", "ROOT-012": "LOW", "ROOT-015": "LOW"}
+    for rid, sev in unchanged.items():
+        if (roots.get(rid) or {}).get("severity") != sev:
+            fail(f"consensus_root {rid} severity silently overwritten (expected {sev})", errors)
+    if (roots.get("ROOT-016") or {}).get("status") != "REJECTED_NOT_A_FINDING":
+        fail("ROOT-016 must remain REJECTED_NOT_A_FINDING (Android/Storage must not revive it)", errors)
+    else:
+        print("  OK   Android/Storage relations exact (006/007/011/012 expanded; 010/015/017 confirmed); ROOT-016 remains rejected")
+
+    gsets = {r.get("gate_set"): r for r in recs if r.get("record_type") == "gate_set" and r.get("gate_set")}
+    pre = gsets.get("PRE_B004_ANDROIDSTORAGE") or {}
+    if sorted(pre.get("members") or []) != sorted(PRE_B004_ANDROIDSTORAGE_GATE):
+        fail(f"PRE_B004_ANDROIDSTORAGE members wrong: {pre.get('members')}", errors)
+    else:
+        print("  OK   PRE_B004_ANDROIDSTORAGE 9-member gate set exact")
+    lat = gsets.get("LATER_ANDROIDSTORAGE") or {}
+    if sorted(lat.get("members") or []) != sorted(LATER_ANDROIDSTORAGE_GATE):
+        fail(f"LATER_ANDROIDSTORAGE members wrong: {lat.get('members')}", errors)
+    else:
+        print("  OK   LATER_ANDROIDSTORAGE 6-item gate set exact")
+
+    relmap = {r.get("finding_id"): r for r in recs
+              if r.get("record_type") == "historical_relation" and r.get("source_audit_id") == ANDROIDSTORAGE_ID}
+    if set(relmap) != set(ANDROIDSTORAGE_HIST_RELATIONS):
+        fail(f"Android/Storage historical_relation records must cover {sorted(ANDROIDSTORAGE_HIST_RELATIONS)}; got {sorted(relmap)}", errors)
+    for fid, (rel, st) in ANDROIDSTORAGE_HIST_RELATIONS.items():
+        r = relmap.get(fid) or {}
+        if r.get("relationship") != rel or r.get("canonical_status") != st:
+            fail(f"historical_relation {fid}: relationship {r.get('relationship')!r}/{r.get('canonical_status')!r} != {rel!r}/{st!r}", errors)
+    reval = next((r for r in recs if r.get("record_type") == "androidstorage_historical_revalidation"
+                  and r.get("source_audit_id") == ANDROIDSTORAGE_ID), None)
+    if reval is None or len(reval.get("rows") or []) != 23:
+        fail("androidstorage_historical_revalidation record missing or must contain the 23 revalidation rows", errors)
+    else:
+        print("  OK   Android/Storage historical revalidation table preserved (23 rows)")
+
+    cov = next((r for r in recs if r.get("record_type") == "androidstorage_coverage"
+                and r.get("source_audit_id") == ANDROIDSTORAGE_ID), None)
+    if cov is None:
+        fail("androidstorage_coverage record missing", errors)
+    else:
+        if (cov.get("android_storage_production_files_reviewed"), cov.get("android_storage_production_files_discovered")) != (49, 49):
+            fail("androidstorage_coverage must record 49/49 production files", errors)
+        if (cov.get("android_storage_relevant_test_files_reviewed"), cov.get("android_storage_relevant_test_files_discovered")) != (14, 14):
+            fail("androidstorage_coverage must record 14/14 relevant test files", errors)
+        if cov.get("architecture_requirements_total") != 42:
+            fail("androidstorage_coverage must record 42 architecture requirements", errors)
+        if cov.get("status_counts") != ANDROIDSTORAGE_COVERAGE_COUNTS:
+            fail(f"androidstorage_coverage status_counts wrong: {cov.get('status_counts')}", errors)
+        inv = cov.get("focused_test_inventory") or {}
+        if (inv.get("total"), inv.get("jvm"), inv.get("instrumented"), inv.get("physical")) != (153, 87, 66, 0):
+            fail("androidstorage_coverage focused_test_inventory must be 153 (87 JVM / 66 instrumented / 0 physical)", errors)
+        ex = cov.get("audit_test_execution") or {}
+        if (ex.get("executed"), ex.get("passed"), ex.get("failed"), ex.get("errors"), ex.get("skipped")) != (177, 177, 0, 0, 0):
+            fail("androidstorage_coverage audit_test_execution must record 177/177 PASS", errors)
+        else:
+            print("  OK   Android/Storage coverage 49/49 + 14/14 + 42 reqs (0 unmapped); inventory 153; executed 177/177")
+
+    phys = next((r for r in recs if r.get("record_type") == "physical_evidence_requirements"
+                 and r.get("source_audit_id") == ANDROIDSTORAGE_ID), None)
+    if phys is None or "NOT_EXECUTED" not in str(phys.get("status", "")):
+        fail("Android/Storage physical_evidence_requirements record missing or not NOT_EXECUTED", errors)
+    elif len(phys.get("items") or []) != 14:
+        fail("Android/Storage physical_evidence_requirements must record the P1-P14 campaign", errors)
+    else:
+        print("  OK   Android/Storage physical evidence requirements (P1-P14) recorded as NOT_EXECUTED")
+
+    rem = next((r for r in recs if r.get("record_type") == "androidstorage_remediation"
+                and r.get("source_audit_id") == ANDROIDSTORAGE_ID), None)
+    if rem is None:
+        fail("androidstorage_remediation record missing", errors)
+    else:
+        if set(rem.get("groups") or {}) != ANDROIDSTORAGE_GROUPS:
+            fail(f"androidstorage_remediation groups must be AS-A..AS-G; got {sorted(rem.get('groups') or {})}", errors)
+        if rem.get("sec_c_required") != "NO" or rem.get("architecture_verdict") != "COMPONENT_INTERNAL_REDESIGN_ONLY":
+            fail("androidstorage_remediation SEC-C=NO / COMPONENT_INTERNAL_REDESIGN_ONLY verdict wrong", errors)
+        else:
+            print("  OK   Android/Storage remediation groups AS-A..AS-G; SEC-C=NO; COMPONENT_INTERNAL_REDESIGN_ONLY")
+
+    coupling = {(r.get("list"), r.get("source_audit_id")): r for r in recs if r.get("record_type") == "androidstorage_fix_coupling"}
+    if ("MUST_FIX_TOGETHER", ANDROIDSTORAGE_ID) not in coupling or ("MUST_NOT_FIX_ALONE", ANDROIDSTORAGE_ID) not in coupling:
+        fail("Android/Storage fix_coupling records (MUST_FIX_TOGETHER / MUST_NOT_FIX_ALONE) missing", errors)
+
+    h = next((r for r in recs if r.get("record_type") == "attackchain_handoff"
+              and r.get("source_audit_id") == ANDROIDSTORAGE_ID), None)
+    if h is None or "NOT_EXECUTED" not in str(h.get("status", "")):
+        fail("Android/Storage attackchain_handoff record missing or not CANDIDATE/NOT_EXECUTED", errors)
+    else:
+        print("  OK   Android/Storage fix couplings + Attackchain handoff recorded")
+
+
 def validate_findings(errors):
     findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
     f5 = next((f for f in findings if f.get("finding_id") == "ANOX-LEGACY-CRYPTO-005"), None)
@@ -797,6 +1017,17 @@ def validate_findings(errors):
             fail(f"EVENT-0047 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
         elif "ANOX-EVENT-0047" not in str(f.get("notes", "")):
             fail(f"{fid} lacks the preserved ANOX-EVENT-0047 relationship note", errors)
+    for fid, want in (("ANOX-SECURITY-ARCH-003", "Open"), ("ANOX-SECURITY-ARCH-007", "Open"),
+                      ("ANOX-SECURITY-ARCH-008", "Open"), ("ANOX-SECURITY-ARCH-009", "Open"),
+                      ("ANOX-MAINARCH-018", "Open"), ("ANOX-MAINARCH-023", "Closed"),
+                      ("ANOX-MAINARCH-030", "Open"), ("ANOX-LEGACY-INTEGRATION-002", "Closed"),
+                      ("ANOX-LEGACY-INTEGRATION-003", "Closed"), ("ANOX-LEGACY-ANDROIDSEC-001", "Closed"),
+                      ("ANOX-LEGACY-B003-001", "Open")):
+        f = next((x for x in findings if x.get("finding_id") == fid), None)
+        if f is None or f.get("status") != want:
+            fail(f"EVENT-0048 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
+        elif "ANOX-EVENT-0048" not in str(f.get("notes", "")):
+            fail(f"{fid} lacks the preserved ANOX-EVENT-0048 relationship note", errors)
 
 
 def validate_lifecycle(errors):
@@ -831,7 +1062,9 @@ def validate_lifecycle(errors):
         fail("completed_audit_ids must record AUDIT-SECURITY-CRYPTO-JNI-001 as executed+preserved", errors)
     if "AUDIT-SECURITY-AUTH-DPOP-001" not in completed:
         fail("completed_audit_ids must record AUDIT-SECURITY-AUTH-DPOP-001 as executed+preserved", errors)
-    for gid in ("AUDIT-SECURITY-ANDROID-STORAGE-001", "AUDIT-SECURITY-ATTACKCHAIN-001"):
+    if "AUDIT-SECURITY-ANDROID-STORAGE-001" not in completed:
+        fail("completed_audit_ids must record AUDIT-SECURITY-ANDROID-STORAGE-001 as executed+preserved", errors)
+    for gid in ("AUDIT-SECURITY-ATTACKCHAIN-001",):
         if gid in completed:
             fail(f"{gid} must NOT be in completed_audit_ids", errors)
 
@@ -910,6 +1143,8 @@ def main():
     validate_cryptojni(errors)
     print("\n[EVIDENCE-PRESERVATION] Auth/DPoP specialist evidence")
     validate_authdpop(errors)
+    print("\n[EVIDENCE-PRESERVATION] Android/Storage specialist evidence")
+    validate_androidstorage(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

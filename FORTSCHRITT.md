@@ -138,3 +138,20 @@
 - Validator extended (7 reports; Auth/DPoP candidates/gaps, consensus relations, coverage 29/29 + 14/14 + 40 reqs, remediation coverage, handoffs, Android/Storage not-executed); adversarial tests now 42.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
 - Next: human merge to `main`, then `AUDIT-SECURITY-ANDROID-STORAGE-001` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0048 -->
+## SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 — 2026-09-13 (ANOX-EVENT-0048)
+
+- Branch: `governance/security-audit-evidence-preservation-004`
+- Substantive commit: `8b1cc8d4b3310a0fe910e5b493d2fd204635cba7`
+- Canonical base SHA: `b9abeb0850a476716403d224b87a857c1147502e`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `AUDIT-SECURITY-ANDROID-STORAGE-001` specialist evidence — byte-exact final report, registry/traceability extension, historical revalidation, coverage/test/adversarial evidence, remediation groups, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `AUDIT-SECURITY-ANDROID-STORAGE-001` PASS_WITH_FINDINGS (2 `ANOX-ANDROIDSTORAGE-CANDIDATE-001..002`, 0C/0H/0M/2L/0I; 3 `ANOX-ANDROIDSTORAGE-GAP-001..003`; `COMPONENT_INTERNAL_REDESIGN_ONLY`; SEC-C not required).
+- Specialist relations recorded without consensus rewrite: ROOT-010/015/017 CONFIRMED; ROOT-006/007/011/012 CONFIRMED_AND_EXPANDED; `ROOT-016` remains REJECTED.
+- Gate sets recorded: `PRE_B004_ANDROIDSTORAGE` (9 members: ROOT-006/007/017 + ROOT-011 registration/marker slice + CANDIDATE-001 contract half + CANDIDATE-002 + GAP-001/002/003), `LATER_ANDROIDSTORAGE` (6 items incl. physical P1–P14 campaign, B-013 lifecycle, ROOT-010/015).
+- `ANOX-EVENT-0048` notes appended to 11 findings (`ANOX-SECURITY-ARCH-003/007/008/009`, `ANOX-MAINARCH-018/023/030`, `ANOX-LEGACY-INTEGRATION-002/003`, `ANOX-LEGACY-ANDROIDSEC-001`, `ANOX-LEGACY-B003-001`) — no status/closure rewrite.
+- Validator extended (8 reports; Android/Storage candidates/gaps, consensus relations, coverage 49/49 + 14/14 + 42 reqs, remediation coverage, Attackchain handoff, Attackchain not-executed); adversarial tests now 62.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
+- Next: human merge to `main`, then `AUDIT-SECURITY-ATTACKCHAIN-001` on a fresh post-merge `main` SHA.

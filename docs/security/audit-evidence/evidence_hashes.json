@@ -1,14 +1,15 @@
 {
   "schema": "anox-security-audit-evidence-hashes-v1",
-  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002 and -003. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; no normalization was applied.",
+  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003 and -004. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; no normalization was applied.",
   "preservation_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
   "preservation_tasks": [
     "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
     "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
-    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
   ],
   "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
-  "audit_base_sha_latest": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
+  "audit_base_sha_latest": "b9abeb0850a476716403d224b87a857c1147502e",
   "reports": {
     "AUDIT-SECURITY-ARCHITECTURE": {
       "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
@@ -79,6 +80,16 @@
       "source_type": "AUDIT_SESSION_FINAL_REPORT",
       "audited_sha": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
       "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
+    },
+    "AUDIT-SECURITY-ANDROID-STORAGE-001": {
+      "audit_id": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+      "path": "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
+      "sha256": "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720",
+      "bytes": 90991,
+      "source_present": "YES",
+      "source_type": "AUDIT_SESSION_FINAL_REPORT",
+      "audited_sha": "b9abeb0850a476716403d224b87a857c1147502e",
+      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session (UTF-8, LF, single trailing newline)"
     }
   },
   "native_artifact_evidence": {
