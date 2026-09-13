@@ -29,6 +29,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/CODEBASE-SECURITY-CONSENSUS-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
+    "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -202,7 +203,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "6 audits")
+        self.assert_fails(self.run_validator(), "exactly 7 audits")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -274,6 +275,176 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         })
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "must remain Candidate")
+
+    # 22. Delete the preserved Auth/DPoP report.
+    def test_22_deleted_authdpop_report_fails(self):
+        (self.root / "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md").unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 23. Mutate the preserved Auth/DPoP report bytes.
+    def test_23_mutated_authdpop_report_fails(self):
+        p = self.root / "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 24. Wrong recorded hash for the Auth/DPoP report.
+    def test_24_wrong_authdpop_hash_fails(self):
+        hp = self.root / "docs/security/audit-evidence/evidence_hashes.json"
+        data = json.loads(hp.read_text(encoding="utf-8"))
+        data["reports"]["AUDIT-SECURITY-AUTH-DPOP-001"]["sha256"] = "0" * 64
+        hp.write_text(json.dumps(data, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator())
+
+    # 25. Drop the Auth/DPoP registry record (7 -> 6 audits).
+    def test_25_dropped_authdpop_registry_record_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "exactly 7 audits")
+
+    # 26. Alter the Auth/DPoP audited SHA.
+    def test_26_altered_authdpop_audited_sha_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-AUTH-DPOP-001":
+                r["audited_sha"] = "0" * 40
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "audited_sha")
+
+    # 27. Rewrite the Auth/DPoP result as a clean PASS.
+    def test_27_altered_authdpop_result_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-AUTH-DPOP-001":
+                r["result"] = "PASS"
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "result")
+
+    # 28. Remove an Auth/DPoP candidate from traceability.
+    def test_28_removed_authdpop_candidate_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "authdpop_candidate" and r.get("candidate_id") == "ANOX-AUTHDPOP-CANDIDATE-003")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "Auth/DPoP")
+
+    # 29. Remove an Auth/DPoP architecture gap.
+    def test_29_removed_authdpop_gap_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "authdpop_gap" and r.get("gap_id") == "ANOX-AUTHDPOP-GAP-002")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "gaps")
+
+    # 30. Forge the wrong source audit on an Auth/DPoP candidate.
+    def test_30_wrong_source_audit_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "authdpop_candidate" and r.get("candidate_id") == "ANOX-AUTHDPOP-CANDIDATE-001":
+                r["source_audit_id"] = "AUDIT-SECURITY-CRYPTO-JNI-001"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "source_audit_id")
+
+    # 31. Fabricate executed state for a non-executed specialist gate.
+    def test_31_fabricated_executed_gate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "next_gate":
+                r["status"] = "EXECUTED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "NOT_EXECUTED")
+
+    # 32. Alter the Auth/DPoP model metadata.
+    def test_32_altered_authdpop_model_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-AUTH-DPOP-001":
+                r["actual_model"] = "Claude Opus 5 High"
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "actual_model")
+
+    # 33. Inflate the Auth/DPoP candidate count.
+    def test_33_inflated_authdpop_count_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-AUTH-DPOP-001":
+                r["candidate_count"] = 4
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "candidate_count")
+
+    # 34. Wrong next gate: keep AUTH-DPOP as the post-merge gate.
+    def test_34_stale_next_gate_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["next_phase"] = "AUDIT-SECURITY-AUTH-DPOP-001"
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "next_phase")
+
+    # 35. Unblock product development.
+    def test_35_product_unblocked_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["product_development_state"] = "UNBLOCKED"
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "BLOCKED_PENDING_FINAL_AUDIT")
+
+    # 36. Mark the Android/Storage gate executed in completed_audit_ids.
+    def test_36_android_storage_marked_completed_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("AUDIT-SECURITY-ANDROID-STORAGE-001")
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
+
+    # 37. Drop the preservation-003 task record.
+    def test_37_dropped_task_record_fails(self):
+        tp = self.root / "docs/workforce/registries/tasks.jsonl"
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
+
+    # 38. Forge a wrong gate member (drop a PRE_B004_AUTHDPOP member).
+    def test_38_wrong_preb004_authdpop_gate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "gate_set" and r.get("gate_set") == "PRE_B004_AUTHDPOP":
+                r["members"] = [m for m in r["members"] if m != "ANOX-AUTHDPOP-GAP-003"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "PRE_B004_AUTHDPOP")
+
+    # 39. Re-severity Auth/DPoP CANDIDATE-001 MEDIUM -> HIGH.
+    def test_39_reseveritized_authdpop_001_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "authdpop_candidate" and r.get("candidate_id") == "ANOX-AUTHDPOP-CANDIDATE-001":
+                r["severity"] = "HIGH"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "severity")
+
+    # 40. Corrupt the Auth/DPoP coverage counts.
+    def test_40_corrupted_authdpop_coverage_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "authdpop_coverage":
+                r["architecture_requirements_total"] = 39
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "40")
+
+    # 41. Break the ledger event chain (last event != ANOX-EVENT-0047).
+    def test_41_stale_project_memory_fails(self):
+        lp = self.root / "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+        recs = _load_jsonl(lp)
+        recs = recs[:-1]
+        _write_jsonl(lp, recs)
+        self.assert_fails(self.run_validator(), "Project Memory stale")
 
 
 if __name__ == "__main__":

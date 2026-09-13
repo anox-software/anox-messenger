@@ -1,10 +1,14 @@
 {
   "schema": "anox-security-audit-evidence-hashes-v1",
-  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 and SECURITY-AUDIT-EVIDENCE-PRESERVATION-002. Preserved report files are byte-exact copies of the human-supplied or already-canonical originals; no normalization was applied.",
+  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002 and -003. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; no normalization was applied.",
   "preservation_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-  "preservation_tasks": ["SECURITY-AUDIT-EVIDENCE-PRESERVATION-001", "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"],
+  "preservation_tasks": [
+    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
+    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+  ],
   "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
-  "audit_base_sha_latest": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+  "audit_base_sha_latest": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
   "reports": {
     "AUDIT-SECURITY-ARCHITECTURE": {
       "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
@@ -64,6 +68,16 @@
       "source_present": "YES",
       "source_type": "AUDIT_SESSION_FINAL_REPORT",
       "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
+    },
+    "AUDIT-SECURITY-AUTH-DPOP-001": {
+      "audit_id": "AUDIT-SECURITY-AUTH-DPOP-001",
+      "path": "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
+      "sha256": "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e",
+      "bytes": 71565,
+      "source_present": "YES",
+      "source_type": "AUDIT_SESSION_FINAL_REPORT",
+      "audited_sha": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
       "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
     }
   },
