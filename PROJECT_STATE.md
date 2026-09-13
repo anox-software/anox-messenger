@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-09-11
-**Latest material event:** `ANOX-EVENT-0046` — SECURITY-AUDIT-EVIDENCE-PRESERVATION-002: AUDIT-SECURITY-CRYPTO-JNI-001 executed (PASS_WITH_FINDINGS, 6 candidates, JNI ABI revision required) and preserved byte-exact; AUDIT-SECURITY-AUTH-DPOP-001 recorded as Candidate.
+**Date:** 2026-09-13
+**Latest material event:** `ANOX-EVENT-0047` — SECURITY-AUDIT-EVIDENCE-PRESERVATION-003: AUDIT-SECURITY-AUTH-DPOP-001 executed (PASS_WITH_FINDINGS, 3 candidates + 3 architecture gaps, COMPONENT_INTERNAL_REDESIGN_ONLY) and preserved byte-exact; AUDIT-SECURITY-ANDROID-STORAGE-001 recorded as Candidate.
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -30,24 +30,25 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0044 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0045 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0046 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0047 -->
 
 ## Repository truth
 
-- Branch: `governance/security-audit-evidence-preservation-002`
-- **Current HEAD:** `45402df319f778d1fc11bcf25cec045ac9769401` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 SUBSTANTIVE)
+- Branch: `governance/security-audit-evidence-preservation-003`
+- **Current HEAD:** `07fecde79643dd43c3d9c9b412225881780254c6` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `a79166ab7e65db71ba70e3a427df2ad017dc9225` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 merge)
-- **Previous baseline HEAD:** `869b99acac040412a29bbaadc76342070fb2085c`
+- **Latest merge to baseline:** `638e63a22c91ca81365bf55c8a59ec47878dd7fd` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 merge)
+- **Previous baseline HEAD:** `a79166ab7e65db71ba70e3a427df2ad017dc9225`
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `SECURITY-AUDIT-EVIDENCE-PRESERVATION-002` — PRESERVE AUDIT-SECURITY-CRYPTO-JNI-001 EVIDENCE (Ready For Remote; awaiting human merge)
-- **Current authorized task:** `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002` (Ready For Remote; awaits human merge)
-- **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance. Workforce findings 001/002/005 are Closed; 10 ANOX-SECURITY-ARCH-* findings frozen; B-004 blocking set = 001..004. Security Hardening wave evidence preserved: 18 consensus roots (12 Pre-B004), `ANOX-BUILDSC-CANDIDATE-001` EVIDENCE_INTEGRITY=CRITICAL, `ANOX-CRYPTOJNI-CANDIDATE-001..006` + `PRE_B004_CRYPTOJNI` (8 members).
-- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS).
-- **Next candidate task:** `AUDIT-SECURITY-AUTH-DPOP-001` (NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA).
+- **Current effective gate:** `SECURITY-AUDIT-EVIDENCE-PRESERVATION-003` — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)
+- **Current authorized task:** `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003` (Ready For Remote; awaits human merge)
+- **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance. Workforce findings 001/002/005 are Closed; 10 ANOX-SECURITY-ARCH-* findings frozen; B-004 blocking set = 001..004. Security Hardening wave evidence preserved: 18 consensus roots (12 Pre-B004), `ANOX-BUILDSC-CANDIDATE-001` EVIDENCE_INTEGRITY=CRITICAL, `ANOX-CRYPTOJNI-CANDIDATE-001..006` + `PRE_B004_CRYPTOJNI` (8 members), `ANOX-AUTHDPOP-CANDIDATE-001..003` + `ANOX-AUTHDPOP-GAP-001..003` + `PRE_B004_AUTHDPOP` (8 members).
+- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-AUTH-DPOP-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS).
+- **Next candidate task:** `AUDIT-SECURITY-ANDROID-STORAGE-001` (NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA).
 - **Product status:** `BLOCKED_PENDING_FINAL_AUDIT`; no product/CI changes until all final/legacy/retest conditions are complete and the human final gate is recorded.
 
 ## Architecture / governance
@@ -102,3 +103,19 @@ Closed by `LEGACY-FIX-01` + `LEGACY-RETEST-01` (verified PASS — REMEDIATED):
 - No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE.
 - Next: human merge to `main`, then `AUDIT-SECURITY-CRYPTO-JNI-001` on a fresh post-merge `main` SHA.
 
+
+## ANOX-EVENT-0047 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 (2026-09-13)
+
+- Branch: `governance/security-audit-evidence-preservation-003`
+- Substantive commit: `07fecde79643dd43c3d9c9b412225881780254c6`
+- Canonical base SHA: `638e63a22c91ca81365bf55c8a59ec47878dd7fd`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003`
+- Result: `Ready For Remote`
+- `AUDIT-SECURITY-AUTH-DPOP-001` preserved byte-exact under `docs/reports/security/audits/` (SHA-256 `57516d7d…`): PASS_WITH_FINDINGS at audited SHA `638e63a2`; 3 candidates (0C/0H/1M/2L/0I) + 3 architecture gaps; B-002 29/29 production + 14/14 test files; 40 requirements, 0 unmapped; 173/173 focused tests pass; physical verification still required.
+- Specialist relations recorded without consensus rewrite: ROOT-006/007 CONFIRMED; ROOT-008/009 CONFIRMED_AND_EXPANDED; ROOT-016 remains REJECTED.
+- Gate sets recorded: `PRE_B004_AUTHDPOP` (8 members), `LATER_AUTHDPOP` (5 items); remediation groups AD-A..AD-F (`COMPONENT_INTERNAL_REDESIGN_ONLY`, SEC-C not required); fix couplings + handoffs recorded.
+- `ANOX-EVENT-0047` notes appended to 12 revalidated findings — no status/closure rewrite.
+- Validator extended (7 reports, Auth/DPoP candidates/gaps, coverage, remediation coverage, Android/Storage not-executed); adversarial tests now 42.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; next gate `AUDIT-SECURITY-ANDROID-STORAGE-001` Candidate / NOT_EXECUTED.
+- No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE.
+- Next: human merge to `main`, then `AUDIT-SECURITY-ANDROID-STORAGE-001` on a fresh post-merge `main` SHA.

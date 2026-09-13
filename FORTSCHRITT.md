@@ -121,3 +121,20 @@
 - Validator extended (6 reports, 6 candidates, overlay, provenance, temp-build, ABI revision, Auth/DPoP not-executed); adversarial tests now 22.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
 - Next: human merge to `main`, then `AUDIT-SECURITY-AUTH-DPOP-001` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0047 -->
+## SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — 2026-09-13 (ANOX-EVENT-0047)
+
+- Branch: `governance/security-audit-evidence-preservation-003`
+- Substantive commit: `07fecde79643dd43c3d9c9b412225881780254c6`
+- Canonical base SHA: `638e63a22c91ca81365bf55c8a59ec47878dd7fd`
+- Task ID: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `AUDIT-SECURITY-AUTH-DPOP-001` specialist evidence — byte-exact final report, registry/traceability extension, historical revalidation, coverage/test/adversarial evidence, remediation groups, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `AUDIT-SECURITY-AUTH-DPOP-001` PASS_WITH_FINDINGS (3 `ANOX-AUTHDPOP-CANDIDATE-001..003`, 0C/0H/1M/2L/0I; 3 `ANOX-AUTHDPOP-GAP-001..003`; `COMPONENT_INTERNAL_REDESIGN_ONLY`; SEC-C not required).
+- Specialist relations recorded without consensus rewrite: ROOT-006/007 CONFIRMED; ROOT-008/009 CONFIRMED_AND_EXPANDED; `ROOT-016` remains REJECTED.
+- Gate sets recorded: `PRE_B004_AUTHDPOP` (8 members: ROOT-006/007/008/009 + CANDIDATE-001 + GAP-001/002/003), `LATER_AUTHDPOP` (5 items incl. physical verification, B-013 lifecycle, ROOT-017 instrumented CI).
+- `ANOX-EVENT-0047` notes appended to 12 findings (`ANOX-LEGACY-INTEGRATION-001/003`, `ANOX-MAINARCH-005/008/014/018/019`, `ANOX-SECURITY-ARCH-003/006/007/008`, `ANOX-LEGACY-B003-001`) — no status/closure rewrite.
+- Validator extended (7 reports; Auth/DPoP candidates/gaps, consensus relations, coverage 29/29 + 14/14 + 40 reqs, remediation coverage, handoffs, Android/Storage not-executed); adversarial tests now 42.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run.
+- Next: human merge to `main`, then `AUDIT-SECURITY-ANDROID-STORAGE-001` on a fresh post-merge `main` SHA.

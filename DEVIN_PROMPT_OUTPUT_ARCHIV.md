@@ -44,3 +44,12 @@
 - Result: `Ready For Remote`; `AUDIT-SECURITY-CRYPTO-JNI-001` evidence preserved byte-exact.
 - Key files: `docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
 - Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged (ROOT-013 overlay only, pending consolidation); `ROOT-016` NOT_A_FINDING; `ANOX-LEGACY-CRYPTO-005` Closed; provenance limitation (committed `.so` stale) recorded; next gate `AUDIT-SECURITY-AUTH-DPOP-001` Candidate/NOT_EXECUTED; no remote mutation.
+
+## ANOX-EVENT-0047 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 (2026-09-13)
+
+- Task: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003`
+- Substantive commit: `07fecde79643dd43c3d9c9b412225881780254c6`
+- Canonical base: `638e63a22c91ca81365bf55c8a59ec47878dd7fd`
+- Result: `Ready For Remote`; `AUDIT-SECURITY-AUTH-DPOP-001` evidence preserved byte-exact (SHA-256 `57516d7d…`).
+- Key files: `docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged; `ROOT-016` NOT_A_FINDING; `ANOX-LEGACY-INTEGRATION-001` remains Closed (PARTIALLY_EFFECTIVE preserved); physical verification requirements NOT_EXECUTED; next gate `AUDIT-SECURITY-ANDROID-STORAGE-001` Candidate/NOT_EXECUTED; no remote mutation.
