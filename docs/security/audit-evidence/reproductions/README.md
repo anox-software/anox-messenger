@@ -31,6 +31,16 @@ From `AUDIT-SECURITY-CRYPTO-JNI-001` (at SHA `a79166ab7e65db71ba70e3a427df2ad017
 - **Count/set divergence:** after `mark_keys_as_published`, stored count 20 / unpublished 0 / index 0 → −3 `InvalidSession`.
 - **Host tests:** `cargo test` 17/17 pass — JNI module cfg-gated out, zero JNI evidence. JNI runtime tests: `NOT_RUN` (no approved runtime environment).
 
+From `AUDIT-SECURITY-AUTH-DPOP-001` (at SHA `638e63a22c91ca81365bf55c8a59ec47878dd7fd`; JVM evidence only — no physical/device evidence):
+
+- **DPoP verifier fail-open defaults:** `verify(attackerProof,"POST",uri)` → `Valid` with an attacker-generated key; same proof accepted by two default-constructed verifiers; `expectedJwkThumbprint`/`accessToken`/`expectedNonce` all default `null` (`DpopProofVerifier.kt:46-48`); `DpopProofFactory.createProof(accessToken=null, nonce=null)` mirrors the default client-side.
+- **HTU collisions (harness-verified):** decoded `URI.getPath()` is signed — `/v1/a%2Fb` ≡ `/v1/a/b`; `%3F`/`%23`/`%00` decoded; double-decoding; userinfo retained in the signed claim; `:443` default port NOT elided (fail-closed interop).
+- **Replay cache:** check-and-insert atomic per instance (64 threads × 200 rounds ⇒ exactly 200 accepts); two instances both accept the same `jti`; 1,000,000 unique `jti` retained with no cap; wall-clock rollback after eviction re-accepts an evicted proof (−250 s ⇒ `Valid`).
+- **Malformed-input handling:** 5 JWK mutations + off-curve all → `MALFORMED`; every parse failure → `Invalid(reason)`, never throws; malleated ECDSA (n−s) → `REPLAYED_JTI` (jti identity, not bytes).
+- **Keystore/DeviceAuth:** missing alias → resolver → bound ⇒ Terminal (source + instrumented test); two simultaneous `createKeyIfAbsent()` → check-then-act, `generateKeyPair` overwrites alias, StrongBox-`catch` deletes the peer's key (source); `RegistrationSessionKey.decrypt()` → `getOrCreateKey()` still creates on read.
+- **Test execution:** `./gradlew --offline --no-daemon :android:testDebugUnitTest --tests 'com.anox.messenger.security.deviceauth.*' --tests 'com.anox.messenger.account.*'` → 173 executed / 173 passed (deviceauth 69, account 104). Instrumented (27) + physical: NOT_RUN.
+- **Harness:** `/tmp/anox_auth_dpop_harness/` (`Harness.java`, `Size.java`) compiled against `android/build/tmp/kotlin-classes/debug` + `nimbus-jose-jwt-10.9.1` + `kotlin-stdlib-2.2.21` — 22 adversarial cases.
+
 ## Authoritative locations
 
 The authoritative evidence is:
@@ -38,7 +48,7 @@ The authoritative evidence is:
 1. The preserved report bodies in `docs/reports/security/audits/` (hash-bound in `../evidence_hashes.json`).
 2. The structured mappings in `../audit_traceability.jsonl` and `../audit_registry.jsonl`.
 
-**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
+**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
 
 ## Boundary
 

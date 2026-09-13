@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Security Hardening audit evidence-preservation validator.
 
-Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 and
-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002: the six preserved audit reports
-(including AUDIT-SECURITY-CRYPTO-JNI-001), the audit-evidence registry, the
-traceability layer (including cryptojni candidates, specialist relations,
-severity overlays, provenance limitation, temp-build evidence and the ABI
-revision record), and the lifecycle state that must remain unchanged.
+Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001,
+-002 and -003: the seven preserved audit reports (including
+AUDIT-SECURITY-CRYPTO-JNI-001 and AUDIT-SECURITY-AUTH-DPOP-001), the
+audit-evidence registry, the traceability layer (including cryptojni and
+authdpop candidates/gaps, specialist relations, severity overlays,
+provenance limitation, temp-build evidence, the ABI revision record,
+coverage/test evidence, remediation coverage and specialist handoffs),
+and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
 (test fixtures); git-dependent checks are skipped when no .git exists.
@@ -24,11 +26,12 @@ EVIDENCE_DIR = REPO_ROOT / "docs" / "security" / "audit-evidence"
 REPORTS_DIR = REPO_ROOT / "docs" / "reports" / "security" / "audits"
 REGISTRY_DIR = REPO_ROOT / "docs" / "workforce" / "registries"
 WAVE_BASE_SHA = "869b99acac040412a29bbaadc76342070fb2085c"
-BASE_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
-DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-002"
-TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
-NEXT_GATE_ID = "AUDIT-SECURITY-AUTH-DPOP-001"
-LEDGER_EVENT = "ANOX-EVENT-0046"
+CRYPTOJNI_AUDIT_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
+BASE_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
+DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-003"
+TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+NEXT_GATE_ID = "AUDIT-SECURITY-ANDROID-STORAGE-001"
+LEDGER_EVENT = "ANOX-EVENT-0047"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -54,6 +57,10 @@ EXPECTED_REPORTS = {
     "AUDIT-SECURITY-CRYPTO-JNI-001": {
         "path": "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
         "sha256": "c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b",
+    },
+    "AUDIT-SECURITY-AUTH-DPOP-001": {
+        "path": "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
+        "sha256": "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e",
     },
 }
 
@@ -121,10 +128,28 @@ EXPECTED_AUDITS = {
         "actual_model": "Claude Fable 5.1 High",
         "requested_model": "Claude Fable 5.1 High",
         "model_requirement_status": "SATISFIED",
-        "audited_sha": BASE_SHA,
+        "audited_sha": CRYPTOJNI_AUDIT_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 6, "critical_count": 0, "high_count": 1,
         "medium_count": 3, "low_count": 1, "info_count": 1,
+        "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
+        "blindness_required": "NO",
+    },
+    "AUDIT-SECURITY-AUTH-DPOP-001": {
+        "audit_type": "security_specialist_device_auth_dpop",
+        "provider": "Devin CLI (Cognition) session runtime",
+        "actual_model": "Claude Fable 5.1 High",
+        "requested_model": "Claude Fable 5.1 High",
+        "model_requirement_status": "SATISFIED",
+        "audited_sha": BASE_SHA,
+        "result": "PASS_WITH_FINDINGS",
+        "candidate_count": 3, "architecture_gap_count": 3,
+        "critical_count": 0, "high_count": 0,
+        "medium_count": 1, "low_count": 2, "info_count": 0,
+        "b002_production_files": "29/29 (100%)",
+        "b002_relevant_test_files": "14/14 (100%)",
+        "architecture_requirements": 40, "architecture_unmapped": 0,
+        "focused_relevant_test_inventory": 155,
         "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
         "blindness_required": "NO",
     },
@@ -197,6 +222,50 @@ TEMP_BUILD_HASHES = {
     "arm64-v8a": "05f3f40cd4122ddd4286c513470f8bb6cdf54ca69b4c1879e53cb6a8ba22d7a2",
     "x86_64": "c002cc420813f3b8473be7aa82eb0af334bd73e6847cd1c893ce500845dfe798",
 }
+
+AUTHDPOP_ID = "AUDIT-SECURITY-AUTH-DPOP-001"
+AUTHDPOP_REPORT_SHA = "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e"
+AUTHDPOP_SEVERITY = {
+    "ANOX-AUTHDPOP-CANDIDATE-001": "MEDIUM",
+    "ANOX-AUTHDPOP-CANDIDATE-002": "LOW",
+    "ANOX-AUTHDPOP-CANDIDATE-003": "LOW",
+}
+AUTHDPOP_CANDIDATE_IDS = set(AUTHDPOP_SEVERITY)
+AUTHDPOP_GAP_IDS = {"ANOX-AUTHDPOP-GAP-001", "ANOX-AUTHDPOP-GAP-002", "ANOX-AUTHDPOP-GAP-003"}
+AUTHDPOP_RELATIONS = {
+    "ROOT-006": "CONFIRMED", "ROOT-007": "CONFIRMED",
+    "ROOT-008": "CONFIRMED_AND_EXPANDED", "ROOT-009": "CONFIRMED_AND_EXPANDED",
+}
+PRE_B004_AUTHDPOP_GATE = [
+    "ROOT-006", "ROOT-007", "ROOT-008", "ROOT-009",
+    "ANOX-AUTHDPOP-CANDIDATE-001",
+    "ANOX-AUTHDPOP-GAP-001", "ANOX-AUTHDPOP-GAP-002", "ANOX-AUTHDPOP-GAP-003",
+]
+LATER_AUTHDPOP_GATE = [
+    "ANOX-AUTHDPOP-CANDIDATE-002 (fix inside AD-A during B-004 Device-Auth wiring; NON_BLOCKING)",
+    "ANOX-AUTHDPOP-CANDIDATE-003 (B-004 backend verifier implementation gate; contract entry in GAP-002 now)",
+    "ANOX-MAINARCH-018 (physical StrongBox/TEE/Keystore semantics — Final Product Gate on provenance-verified binary)",
+    "logout/wipe/revoke Device-Auth behaviour (B-013 lifecycle gate)",
+    "instrumented DeviceAuth suites in CI (ROOT-017 track)",
+]
+AUTHDPOP_HIST_RELATIONS = {
+    "ANOX-LEGACY-INTEGRATION-001": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-LEGACY-INTEGRATION-003": ("STILL_EFFECTIVE", "Closed"),
+    "ANOX-MAINARCH-019": ("STILL_EFFECTIVE", "Closed"),
+    "ANOX-MAINARCH-008": ("STILL_EFFECTIVE_DOC_LAYER_RELATED_NEW_ROOT_CAUSE", "Closed"),
+    "ANOX-SECURITY-ARCH-006": ("STILL_EFFECTIVE_OPEN", "Open"),
+    "ANOX-SECURITY-ARCH-003": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-007": ("INEFFECTIVE_REMEDIATION_SCOPE", "Open"),
+    "ANOX-MAINARCH-005": ("STILL_EFFECTIVE", "Closed"),
+    "ANOX-MAINARCH-014": ("NO_LONGER_APPLICABLE", "Closed"),
+}
+AUTHDPOP_COVERAGE_COUNTS = {
+    "IMPLEMENTED_AND_VERIFIED": 15, "IMPLEMENTED_NOT_VERIFIED": 7,
+    "PARTIALLY_IMPLEMENTED": 6, "IMPLEMENTATION_DRIFT": 6,
+    "MISSING": 3, "NOT_APPLICABLE_YET": 3,
+    "PHYSICAL_VERIFICATION_REQUIRED": 2, "UNMAPPED": 0,
+}
+AUTHDPOP_GROUPS = {"AD-A", "AD-B", "AD-C", "AD-D", "AD-E", "AD-F"}
 
 METADATA_ALLOWLIST = {
     "PROJECT_STATE.md", "FORTSCHRITT.md", "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
@@ -323,8 +392,8 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 6:
-        fail(f"audit_registry.jsonl must contain exactly 6 audits, found {len(audits)}", errors)
+    if len(audits) != 7:
+        fail(f"audit_registry.jsonl must contain exactly 7 audits, found {len(audits)}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -529,7 +598,7 @@ def validate_cryptojni(errors):
         for abi, h in TEMP_BUILD_HASHES.items():
             if (outs.get(abi) or {}).get("sha256") != h:
                 fail(f"temp_build_evidence {abi} hash wrong/missing", errors)
-        if tb.get("audited_sha") != BASE_SHA:
+        if tb.get("audited_sha") != CRYPTOJNI_AUDIT_SHA:
             fail("temp_build_evidence audited_sha must equal audited SHA a79166ab", errors)
         if "NOT" not in str(tb.get("canonicality", "")):
             fail("temp_build_evidence must record non-canonical / temporary status", errors)
@@ -550,6 +619,141 @@ def validate_cryptojni(errors):
         fail("fix_coupling records (MUST_FIX_TOGETHER / MUST_NOT_FIX_ALONE) missing", errors)
     else:
         print("  OK   Crypto/JNI provenance limitation, temp-build evidence, ABI revision, fix couplings recorded")
+
+
+def validate_authdpop(errors):
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+
+    cands = {r.get("candidate_id"): r for r in recs if r.get("record_type") == "authdpop_candidate"}
+    if set(cands) != AUTHDPOP_CANDIDATE_IDS:
+        fail(f"Auth/DPoP traceability must cover exactly 3 candidates; got {sorted(cands)}", errors)
+    else:
+        print("  OK   Auth/DPoP 3/3 candidates traced")
+    for cid, sev in AUTHDPOP_SEVERITY.items():
+        r = cands.get(cid) or {}
+        if r.get("severity") != sev:
+            fail(f"{cid} severity {r.get('severity')!r} != {sev!r}", errors)
+        if r.get("source_audit_id") != AUTHDPOP_ID:
+            fail(f"{cid} source_audit_id wrong: {r.get('source_audit_id')!r}", errors)
+        if r.get("status") != "Open" or r.get("disposition") != "OPEN_PENDING_CONSOLIDATION":
+            fail(f"{cid} must remain Open/OPEN_PENDING_CONSOLIDATION", errors)
+        want_pre = cid == "ANOX-AUTHDPOP-CANDIDATE-001"
+        if bool(r.get("pre_b004_blocker")) != want_pre:
+            fail(f"{cid} pre_b004_blocker={r.get('pre_b004_blocker')!r}, expected {want_pre}", errors)
+        if not (r.get("group") or r.get("remediation_group")):
+            fail(f"{cid} missing remediation-coverage group", errors)
+        if r.get("retest_required") != "YES" or not r.get("independent_retest_owner"):
+            fail(f"{cid} missing independent retest requirement", errors)
+    if (cands.get("ANOX-AUTHDPOP-CANDIDATE-001") or {}).get("pre_b004_blocker") is True:
+        print("  OK   CANDIDATE-001 is the sole Pre-B004 blocker candidate")
+
+    gaps = {r.get("gap_id"): r for r in recs if r.get("record_type") == "authdpop_gap"}
+    if set(gaps) != AUTHDPOP_GAP_IDS:
+        fail(f"Auth/DPoP gaps must be exactly GAP-001..003; got {sorted(gaps)}", errors)
+    else:
+        print("  OK   Auth/DPoP 3/3 architecture gaps traced")
+    for gid in AUTHDPOP_GAP_IDS:
+        r = gaps.get(gid) or {}
+        if r.get("source_audit_id") != AUTHDPOP_ID or r.get("status") != "Open":
+            fail(f"{gid} source/status wrong", errors)
+        if r.get("pre_b004_contract_freeze") is not True:
+            fail(f"{gid} must record pre_b004_contract_freeze=True", errors)
+
+    rels = {r.get("root_id"): r for r in recs
+            if r.get("record_type") == "specialist_relation" and r.get("source_audit_id") == AUTHDPOP_ID}
+    if set(rels) != set(AUTHDPOP_RELATIONS):
+        fail(f"Auth/DPoP specialist_relation roots must be exactly {sorted(AUTHDPOP_RELATIONS)}; got {sorted(rels)}", errors)
+    for rid, rel in AUTHDPOP_RELATIONS.items():
+        if (rels.get(rid) or {}).get("relation") != rel:
+            fail(f"specialist_relation {rid} relation {(rels.get(rid) or {}).get('relation')!r} != {rel!r}", errors)
+    roots = {r.get("root_id"): r for r in recs if r.get("record_type") == "consensus_root"}
+    for rid in AUTHDPOP_RELATIONS:
+        if rid not in roots:
+            fail(f"specialist_relation {rid} points at a consensus root that does not exist", errors)
+    if (roots.get("ROOT-016") or {}).get("status") != "REJECTED_NOT_A_FINDING":
+        fail("ROOT-016 must remain REJECTED_NOT_A_FINDING (Auth/DPoP CANDIDATE-002 must not revive it)", errors)
+    else:
+        print("  OK   ROOT-016 remains rejected; Auth/DPoP relations exact (006/007 CONFIRMED, 008/009 CONFIRMED_AND_EXPANDED)")
+
+    gsets = {r.get("gate_set"): r for r in recs if r.get("record_type") == "gate_set" and r.get("gate_set")}
+    pre = gsets.get("PRE_B004_AUTHDPOP") or {}
+    if sorted(pre.get("members") or []) != sorted(PRE_B004_AUTHDPOP_GATE):
+        fail(f"PRE_B004_AUTHDPOP members wrong: {pre.get('members')}", errors)
+    else:
+        print("  OK   PRE_B004_AUTHDPOP 8-member gate set exact")
+    lat = gsets.get("LATER_AUTHDPOP") or {}
+    if sorted(lat.get("members") or []) != sorted(LATER_AUTHDPOP_GATE):
+        fail(f"LATER_AUTHDPOP members wrong: {lat.get('members')}", errors)
+    else:
+        print("  OK   LATER_AUTHDPOP 5-item gate set exact")
+
+    relmap = {r.get("finding_id"): r for r in recs
+              if r.get("record_type") == "historical_relation" and r.get("source_audit_id") == AUTHDPOP_ID}
+    if set(relmap) != set(AUTHDPOP_HIST_RELATIONS):
+        fail(f"Auth/DPoP historical_relation records must cover {sorted(AUTHDPOP_HIST_RELATIONS)}; got {sorted(relmap)}", errors)
+    for fid, (rel, st) in AUTHDPOP_HIST_RELATIONS.items():
+        r = relmap.get(fid) or {}
+        if r.get("relationship") != rel or r.get("canonical_status") != st:
+            fail(f"historical_relation {fid}: relationship {r.get('relationship')!r}/{r.get('canonical_status')!r} != {rel!r}/{st!r}", errors)
+    reval = next((r for r in recs if r.get("record_type") == "authdpop_historical_revalidation"
+                  and r.get("source_audit_id") == AUTHDPOP_ID), None)
+    if reval is None or len(reval.get("rows") or []) != 17:
+        fail("authdpop_historical_revalidation record missing or must contain the 17 revalidation rows", errors)
+    else:
+        print("  OK   Auth/DPoP historical revalidation table preserved (17 rows)")
+
+    cov = next((r for r in recs if r.get("record_type") == "authdpop_coverage"
+                and r.get("source_audit_id") == AUTHDPOP_ID), None)
+    if cov is None:
+        fail("authdpop_coverage record missing", errors)
+    else:
+        if (cov.get("b002_production_files_reviewed"), cov.get("b002_production_files_discovered")) != (29, 29):
+            fail("authdpop_coverage must record 29/29 production files", errors)
+        if (cov.get("b002_relevant_test_files_reviewed"), cov.get("b002_relevant_test_files_discovered")) != (14, 14):
+            fail("authdpop_coverage must record 14/14 relevant test files", errors)
+        if cov.get("architecture_requirements_total") != 40:
+            fail("authdpop_coverage must record 40 architecture requirements", errors)
+        if cov.get("status_counts") != AUTHDPOP_COVERAGE_COUNTS:
+            fail(f"authdpop_coverage status_counts wrong: {cov.get('status_counts')}", errors)
+        inv = cov.get("focused_test_inventory") or {}
+        if (inv.get("total"), inv.get("jvm"), inv.get("instrumented"), inv.get("physical")) != (155, 128, 27, 0):
+            fail("authdpop_coverage focused_test_inventory must be 155 (128 JVM / 27 instrumented / 0 physical)", errors)
+        ex = cov.get("audit_test_execution") or {}
+        if (ex.get("executed"), ex.get("passed"), ex.get("failed"), ex.get("errors"), ex.get("skipped")) != (173, 173, 0, 0, 0):
+            fail("authdpop_coverage audit_test_execution must record 173/173 PASS", errors)
+        if (cov.get("adversarial_harness") or {}).get("cases") != 22:
+            fail("authdpop_coverage must record 22 adversarial cases", errors)
+        else:
+            print("  OK   Auth/DPoP coverage 29/29 + 14/14 + 40 reqs (0 unmapped); inventory 155; executed 173/173; 22 adversarial cases")
+
+    phys = next((r for r in recs if r.get("record_type") == "physical_evidence_requirements"
+                 and r.get("source_audit_id") == AUTHDPOP_ID), None)
+    if phys is None or "NOT_EXECUTED" not in str(phys.get("status", "")):
+        fail("physical_evidence_requirements record missing or not NOT_EXECUTED", errors)
+    else:
+        print("  OK   Auth/DPoP physical evidence requirements recorded as NOT_EXECUTED")
+
+    rem = next((r for r in recs if r.get("record_type") == "authdpop_remediation"
+                and r.get("source_audit_id") == AUTHDPOP_ID), None)
+    if rem is None:
+        fail("authdpop_remediation record missing", errors)
+    else:
+        if set(rem.get("groups") or {}) != AUTHDPOP_GROUPS:
+            fail(f"authdpop_remediation groups must be AD-A..AD-F; got {sorted(rem.get('groups') or {})}", errors)
+        if rem.get("sec_c_required") != "NO" or rem.get("architecture_verdict") != "COMPONENT_INTERNAL_REDESIGN_ONLY":
+            fail("authdpop_remediation SEC-C=NO / COMPONENT_INTERNAL_REDESIGN_ONLY verdict wrong", errors)
+        else:
+            print("  OK   Auth/DPoP remediation groups AD-A..AD-F; SEC-C=NO; COMPONENT_INTERNAL_REDESIGN_ONLY")
+
+    coupling = {(r.get("list"), r.get("source_audit_id")): r for r in recs if r.get("record_type") == "authdpop_fix_coupling"}
+    if ("MUST_FIX_TOGETHER", AUTHDPOP_ID) not in coupling or ("MUST_NOT_FIX_ALONE", AUTHDPOP_ID) not in coupling:
+        fail("Auth/DPoP fix_coupling records (MUST_FIX_TOGETHER / MUST_NOT_FIX_ALONE) missing", errors)
+
+    for rt in ("attackchain_handoff", "android_storage_handoff"):
+        h = next((r for r in recs if r.get("record_type") == rt and r.get("source_audit_id") == AUTHDPOP_ID), None)
+        if h is None or "NOT_EXECUTED" not in str(h.get("status", "")):
+            fail(f"{rt} record missing or not CANDIDATE/NOT_EXECUTED", errors)
+    print("  OK   Auth/DPoP fix couplings + Android/Storage + Attackchain handoffs recorded")
 
 
 def validate_findings(errors):
@@ -583,6 +787,16 @@ def validate_findings(errors):
             fail(f"EVENT-0046 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
         elif "ANOX-EVENT-0046" not in str(f.get("notes", "")):
             fail(f"{fid} lacks the preserved ANOX-EVENT-0046 relationship note", errors)
+    for fid, want in (("ANOX-LEGACY-INTEGRATION-001", "Closed"), ("ANOX-LEGACY-INTEGRATION-003", "Closed"),
+                      ("ANOX-MAINARCH-019", "Closed"), ("ANOX-MAINARCH-008", "Closed"),
+                      ("ANOX-SECURITY-ARCH-006", "Open"), ("ANOX-SECURITY-ARCH-003", "Open"),
+                      ("ANOX-SECURITY-ARCH-007", "Open"), ("ANOX-MAINARCH-018", "Open"),
+                      ("ANOX-MAINARCH-005", "Closed"), ("ANOX-MAINARCH-014", "Closed")):
+        f = next((x for x in findings if x.get("finding_id") == fid), None)
+        if f is None or f.get("status") != want:
+            fail(f"EVENT-0047 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
+        elif "ANOX-EVENT-0047" not in str(f.get("notes", "")):
+            fail(f"{fid} lacks the preserved ANOX-EVENT-0047 relationship note", errors)
 
 
 def validate_lifecycle(errors):
@@ -615,6 +829,11 @@ def validate_lifecycle(errors):
     completed = set((ws.get("final_pre_product_audit") or {}).get("completed_audit_ids") or [])
     if "AUDIT-SECURITY-CRYPTO-JNI-001" not in completed:
         fail("completed_audit_ids must record AUDIT-SECURITY-CRYPTO-JNI-001 as executed+preserved", errors)
+    if "AUDIT-SECURITY-AUTH-DPOP-001" not in completed:
+        fail("completed_audit_ids must record AUDIT-SECURITY-AUTH-DPOP-001 as executed+preserved", errors)
+    for gid in ("AUDIT-SECURITY-ANDROID-STORAGE-001", "AUDIT-SECURITY-ATTACKCHAIN-001"):
+        if gid in completed:
+            fail(f"{gid} must NOT be in completed_audit_ids", errors)
 
 
 def validate_tasks(errors):
@@ -630,10 +849,11 @@ def validate_tasks(errors):
         if t.get("branch") != DELIVERY_BRANCH:
             fail(f"{TASK_ID} branch must be {DELIVERY_BRANCH}", errors)
     for x in tasks:
-        if x.get("task_id") == TASK_ID:
+        if x.get("task_id") == TASK_ID or str(x.get("task_id", "")).startswith("ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-"):
             continue
         blob = (x.get("task_id", "") + " " + x.get("title", "")).upper()
-        audit_markers = ("CRYPTO-JNI", "CRYPTO_JNI", "CRYPTOJNI", "AUTH-DPOP", "AUTH_DPOP", "AUTHDPOP")
+        audit_markers = ("CRYPTO-JNI", "CRYPTO_JNI", "CRYPTOJNI", "AUTH-DPOP", "AUTH_DPOP", "AUTHDPOP",
+                         "ANDROID-STORAGE", "ANDROID_STORAGE", "ATTACKCHAIN")
         if any(m in blob for m in audit_markers):
             if x.get("status") not in ("Candidate",):
                 fail(f"Specialist audit task {x.get('task_id')} is {x.get('status')!r} — specialist audits are evidence-preserved via the audit-evidence registry, not executed task records; must remain Candidate/NOT_EXECUTED", errors)
@@ -688,6 +908,8 @@ def main():
     validate_traceability(errors)
     print("\n[EVIDENCE-PRESERVATION] Crypto/JNI specialist evidence")
     validate_cryptojni(errors)
+    print("\n[EVIDENCE-PRESERVATION] Auth/DPoP specialist evidence")
+    validate_authdpop(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")
