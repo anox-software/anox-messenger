@@ -2,13 +2,14 @@
 """Security Hardening audit evidence-preservation validator.
 
 Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001,
--002, -003 and -004: the eight preserved audit reports (including
-AUDIT-SECURITY-CRYPTO-JNI-001, AUDIT-SECURITY-AUTH-DPOP-001 and
-AUDIT-SECURITY-ANDROID-STORAGE-001), the audit-evidence registry, the
-traceability layer (including cryptojni, authdpop and androidstorage
-candidates/gaps, specialist relations, severity overlays, provenance
-limitation, temp-build evidence, the ABI revision record, coverage/test
-evidence, historical revalidation, remediation coverage and specialist
+-002, -003, -004 and -005: the nine preserved audit reports (including
+AUDIT-SECURITY-CRYPTO-JNI-001, AUDIT-SECURITY-AUTH-DPOP-001,
+AUDIT-SECURITY-ANDROID-STORAGE-001 and AUDIT-SECURITY-ATTACKCHAIN-001),
+the audit-evidence registry, the traceability layer (including cryptojni,
+authdpop, androidstorage and attackchain candidates/gaps, specialist
+relations, severity overlays, provenance limitation, temp-build evidence,
+the ABI revision record, coverage/test evidence, historical revalidation,
+remediation coverage, chain breakers, gate sets and specialist
 handoffs), and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
@@ -29,11 +30,14 @@ REGISTRY_DIR = REPO_ROOT / "docs" / "workforce" / "registries"
 WAVE_BASE_SHA = "869b99acac040412a29bbaadc76342070fb2085c"
 CRYPTOJNI_AUDIT_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
 AUTHDPOP_AUDIT_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
-BASE_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
-DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-004"
-TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
-NEXT_GATE_ID = "AUDIT-SECURITY-ATTACKCHAIN-001"
-LEDGER_EVENT = "ANOX-EVENT-0048"
+ANDROIDSTORAGE_AUDIT_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
+ATTACKCHAIN_AUDIT_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
+BASE_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
+DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-005"
+TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005"
+NEXT_GATE_ID = "MASTER-SPECIALIST-CONSOLIDATION"
+PRIOR_GATE_ID = "AUDIT-SECURITY-ATTACKCHAIN-001"
+LEDGER_EVENT = "ANOX-EVENT-0049"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -67,6 +71,10 @@ EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ANDROID-STORAGE-001": {
         "path": "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
         "sha256": "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720",
+    },
+    "AUDIT-SECURITY-ATTACKCHAIN-001": {
+        "path": "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
+        "sha256": "a4feac55f49066647ec0c1665c40deab581115da4b102e81eb6742e72b80ca9e",
     },
 }
 
@@ -165,7 +173,7 @@ EXPECTED_AUDITS = {
         "actual_model": "Claude Fable 5.1 High",
         "requested_model": "Claude Fable 5.1 High",
         "model_requirement_status": "SATISFIED",
-        "audited_sha": BASE_SHA,
+        "audited_sha": ANDROIDSTORAGE_AUDIT_SHA,
         "result": "PASS_WITH_FINDINGS",
         "candidate_count": 2, "architecture_gap_count": 3,
         "critical_count": 0, "high_count": 0,
@@ -174,6 +182,23 @@ EXPECTED_AUDITS = {
         "android_storage_relevant_test_files": "14/14 (100%)",
         "architecture_requirements": 42, "architecture_unmapped": 0,
         "focused_relevant_test_inventory": 153,
+        "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
+        "blindness_required": "NO",
+    },
+    "AUDIT-SECURITY-ATTACKCHAIN-001": {
+        "audit_type": "cross_component_attackchain_security_audit",
+        "provider": "Devin CLI (Cognition) session runtime",
+        "actual_model": "Claude Fable 5.1 High",
+        "requested_model": "Claude Fable 5.1 High",
+        "model_requirement_status": "SATISFIED",
+        "audited_sha": ATTACKCHAIN_AUDIT_SHA,
+        "result": "PASS_WITH_FINDINGS",
+        "chain_count": 15, "critical_count": 0, "high_count": 4,
+        "medium_count": 7, "low_count": 3, "info_count": 1,
+        "e2_count": 8, "e1_count": 6, "e0_count": 1,
+        "security_items_considered": 68, "security_items_unmapped": 0,
+        "architecture_verdict": "CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED",
+        "sec_c_required": "NO",
         "repository_modified_by_audit": "NO", "remote_mutation_by_audit": "NONE",
         "blindness_required": "NO",
     },
@@ -348,6 +373,155 @@ ANDROIDSTORAGE_COVERAGE_COUNTS = {
 }
 ANDROIDSTORAGE_GROUPS = {"AS-A", "AS-B", "AS-C", "AS-D", "AS-E", "AS-F", "AS-G"}
 
+ATTACKCHAIN_ID = "AUDIT-SECURITY-ATTACKCHAIN-001"
+ATTACKCHAIN_REPORT_SHA = "a4feac55f49066647ec0c1665c40deab581115da4b102e81eb6742e72b80ca9e"
+ATTACKCHAIN_SEVERITY = {
+    "ANOX-ATTACKCHAIN-CANDIDATE-001": "HIGH",
+    "ANOX-ATTACKCHAIN-CANDIDATE-002": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-003": "HIGH",
+    "ANOX-ATTACKCHAIN-CANDIDATE-004": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-005": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-006": "HIGH",
+    "ANOX-ATTACKCHAIN-CANDIDATE-007": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-008": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-009": "LOW",
+    "ANOX-ATTACKCHAIN-CANDIDATE-010": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-011": "MEDIUM",
+    "ANOX-ATTACKCHAIN-CANDIDATE-012": "HIGH",
+    "ANOX-ATTACKCHAIN-CANDIDATE-013": "INFO",
+    "ANOX-ATTACKCHAIN-CANDIDATE-014": "LOW",
+    "ANOX-ATTACKCHAIN-CANDIDATE-015": "LOW",
+}
+ATTACKCHAIN_IDS = set(ATTACKCHAIN_SEVERITY)
+ATTACKCHAIN_EVIDENCE = {
+    "ANOX-ATTACKCHAIN-CANDIDATE-001": "E2", "ANOX-ATTACKCHAIN-CANDIDATE-002": "E2",
+    "ANOX-ATTACKCHAIN-CANDIDATE-003": "E2", "ANOX-ATTACKCHAIN-CANDIDATE-004": "E2",
+    "ANOX-ATTACKCHAIN-CANDIDATE-005": "E1", "ANOX-ATTACKCHAIN-CANDIDATE-006": "E1",
+    "ANOX-ATTACKCHAIN-CANDIDATE-007": "E2", "ANOX-ATTACKCHAIN-CANDIDATE-008": "E1",
+    "ANOX-ATTACKCHAIN-CANDIDATE-009": "E2", "ANOX-ATTACKCHAIN-CANDIDATE-010": "E1",
+    "ANOX-ATTACKCHAIN-CANDIDATE-011": "E1", "ANOX-ATTACKCHAIN-CANDIDATE-012": "E2",
+    "ANOX-ATTACKCHAIN-CANDIDATE-013": "E0", "ANOX-ATTACKCHAIN-CANDIDATE-014": "E2",
+    "ANOX-ATTACKCHAIN-CANDIDATE-015": "E1",
+}
+ATTACKCHAIN_HIGH = {"ANOX-ATTACKCHAIN-CANDIDATE-001", "ANOX-ATTACKCHAIN-CANDIDATE-003",
+                    "ANOX-ATTACKCHAIN-CANDIDATE-006", "ANOX-ATTACKCHAIN-CANDIDATE-012"}
+ATTACKCHAIN_ROOT_COVERAGE = {
+    "ROOT-001": "META_EVIDENCE_ISSUE", "ROOT-002": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ROOT-003": "CONFIRMED", "ROOT-004": "CONFIRMED", "ROOT-005": "CONFIRMED",
+    "ROOT-006": "CONFIRMED", "ROOT-007": "CONFIRMED", "ROOT-008": "CONFIRMED",
+    "ROOT-009": "CONFIRMED", "ROOT-010": "POTENTIAL", "ROOT-011": "CONFIRMED",
+    "ROOT-012": "CONFIRMED", "ROOT-013": "CONFIRMED", "ROOT-014": "CONFIRMED",
+    "ROOT-015": "STANDALONE_SECURITY_ISSUE", "ROOT-016": "NOT_CHAIN_RELEVANT",
+    "ROOT-017": "ENABLING_CONDITION_ONLY", "ROOT-018": "META_EVIDENCE_ISSUE",
+}
+ATTACKCHAIN_SPEC_COVERAGE = {
+    "ANOX-BUILDSC-CANDIDATE-001": "META_EVIDENCE_ISSUE",
+    "ANOX-BUILDSC-CANDIDATE-002": "ENABLING_CONDITION_ONLY",
+    "ANOX-BUILDSC-CANDIDATE-003": "ENABLING_CONDITION_ONLY",
+    "ANOX-BUILDSC-CANDIDATE-004": "META_EVIDENCE_ISSUE",
+    "ANOX-BUILDSC-CANDIDATE-005": "ENABLING_CONDITION_ONLY",
+    "ANOX-BUILDSC-CANDIDATE-006": "ENABLING_CONDITION_ONLY",
+    "ANOX-BUILDSC-CANDIDATE-007": "STANDALONE_SECURITY_ISSUE",
+    "ANOX-BUILDSC-CANDIDATE-008": "ENABLING_CONDITION_ONLY",
+    "ANOX-BUILDSC-CANDIDATE-009": "NOT_CHAIN_RELEVANT",
+    "ANOX-BUILDSC-CANDIDATE-010": "NOT_CHAIN_RELEVANT",
+    "ANOX-BUILDSC-CANDIDATE-011": "NOT_CHAIN_RELEVANT",
+    "ANOX-BUILDSC-CANDIDATE-012": "NOT_CHAIN_RELEVANT",
+    "ANOX-CRYPTOJNI-CANDIDATE-001": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-CRYPTOJNI-CANDIDATE-002": "PARTICIPATES_IN_POTENTIAL_CHAIN",
+    "ANOX-CRYPTOJNI-CANDIDATE-003": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-CRYPTOJNI-CANDIDATE-004": "PARTICIPATES_IN_POTENTIAL_CHAIN",
+    "ANOX-CRYPTOJNI-CANDIDATE-005": "PARTICIPATES_IN_POTENTIAL_CHAIN",
+    "ANOX-CRYPTOJNI-CANDIDATE-006": "ENABLING_CONDITION_ONLY",
+    "ANOX-AUTHDPOP-CANDIDATE-001": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-AUTHDPOP-CANDIDATE-002": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-AUTHDPOP-CANDIDATE-003": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-001": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+    "ANOX-ANDROIDSTORAGE-CANDIDATE-002": "PARTICIPATES_IN_CONFIRMED_CHAIN",
+}
+ATTACKCHAIN_GAP_COVERAGE = {
+    "ANOX-AUTHDPOP-GAP-001": "CHAIN_RELEVANT",
+    "ANOX-AUTHDPOP-GAP-002": "CHAIN_CRITICAL",
+    "ANOX-AUTHDPOP-GAP-003": "CHAIN_CRITICAL",
+    "ANOX-ANDROIDSTORAGE-GAP-001": "CHAIN_CRITICAL",
+    "ANOX-ANDROIDSTORAGE-GAP-002": "CHAIN_RELEVANT",
+    "ANOX-ANDROIDSTORAGE-GAP-003": "CHAIN_RELEVANT",
+}
+ATTACKCHAIN_PARTICIPATION = {
+    "total_security_items": 68, "mapped_to_confirmed_chain": 29,
+    "mapped_to_potential_chain": 6, "standalone": 3, "enabling_only": 14,
+    "meta_only": 9, "not_chain_relevant": 7, "unmapped": 0,
+}
+ATTACKCHAIN_SERVER_BREAKER_IDS = {f"S{i}" for i in range(1, 19)}
+ATTACKCHAIN_CLIENT_BREAKER_IDS = {f"C{i}" for i in range(1, 15)}
+ATTACKCHAIN_HIST_RELATIONS = {
+    "ANOX-SECURITY-ARCH-007": ("INEFFECTIVE_REMEDIATION_SCOPE", "Open"),
+    "ANOX-LEGACY-INTEGRATION-001": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-LEGACY-INTEGRATION-003": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-LEGACY-CRYPTO-005": ("LATER_AUDIT_PROVES_INEFFECTIVE_REMEDIATION", "Closed"),
+    "ANOX-MAINARCH-023": ("PARTIALLY_EFFECTIVE", "Closed"),
+    "ANOX-MAINARCH-031": ("FALSE_CLOSURE_HISTORICAL_INSTANCE", "Closed"),
+    "ANOX-SECURITY-ARCH-001": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-002": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-003": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-004": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-006": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-008": ("RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-SECURITY-ARCH-009": ("STILL_EFFECTIVE_OPEN_RELATED_NEW_ROOT_CAUSE", "Open"),
+    "ANOX-MAINARCH-013": ("STILL_EFFECTIVE_OPEN", "Open"),
+    "ANOX-MAINARCH-018": ("PHYSICAL_REVALIDATION_REQUIRED", "Open"),
+    "ANOX-MAINARCH-030": ("STILL_EFFECTIVE_OPEN", "Open"),
+    "ANOX-LEGACY-INTEGRATION-005": ("NEW_ROOT_CAUSE_RELATED_TO_HISTORICAL_FINDING", "Open"),
+    "ANOX-LEGACY-B003-001": ("SUPERSEDED_BY_SAME_ROOT_ROOT-015", "Open"),
+}
+ATTACKCHAIN_REAUDIT_MANDATORY = [
+    "ANOX-ATTACKCHAIN-CANDIDATE-001", "ANOX-ATTACKCHAIN-CANDIDATE-003",
+    "ANOX-ATTACKCHAIN-CANDIDATE-006", "ANOX-ATTACKCHAIN-CANDIDATE-012",
+]
+PRE_B004_ATTACKCHAIN_CODE_GATE = [
+    "AC-001 client half (C1-C5; AS-A/AS-B/AD-E)",
+    "AC-006 + AC-007 merged JNI ABI revision (CJ-A/B/C/D/E; C6-C8)",
+    "AC-011 (singletons + serialized creation; CJ-E/AD-A/AS-A)",
+    "AC-012 native build chain (pin, cross-build, hash gate, validator v2, instrumented JNI - precondition)",
+    "AC-002/AC-003/AC-004 client-side API hardening (C9; AD-B/AD-C/AD-D)",
+    "AC-009 (C4)",
+]
+PRE_B004_ATTACKCHAIN_CONTRACT_GATE = [
+    "ANOX-AUTHDPOP-GAP-003 (S1, S2, S16)",
+    "ANOX-AUTHDPOP-GAP-002 (S7, S8, S10, S11, S12, S17, S4)",
+    "ANOX-AUTHDPOP-GAP-001 (S9)",
+    "ANOX-AUTHDPOP-CANDIDATE-001 (S5)",
+    "ANOX-ANDROIDSTORAGE-GAP-001 (marker/session/first-run/armed-release contract)",
+    "ANOX-ANDROIDSTORAGE-GAP-002 (wipe/logout/delete contract)",
+    "ANOX-ANDROIDSTORAGE-GAP-003 (backup/reinstall/anti-rollback authority - S15)",
+]
+B004_IMPLEMENTATION_GATE = [
+    "server enforces S1-S12 and S17",
+    "shared replay store",
+    "registration PoP verification",
+    "AuthenticatedDeviceContext from validated key",
+    "AC-014 RejectedAfterArm code change during registration wiring (after GAP-001 freeze)",
+    "ANOX-AUTHDPOP-CANDIDATE-002 fix inside Device-Auth wiring",
+]
+LATER_GATE_ATTACKCHAINS_GATE = [
+    "AC-005 -> B006 (publication/ACK/epoch, S13-S15) and B008/B009 (session rollback, CJ-CAND-002)",
+    "AC-008 -> B013 (wipe/logout/delete) + B006 (S16) + Final gate (ROOT-012 retest); contract half Pre-B004 via AS-GAP-002",
+    "AC-015 -> B008/B009 (CJ-F/AS-C)",
+    "AC-013 -> Final/Physical only, on provenance-verified binary (ROOT-001 prerequisite)",
+    "AC-004 server half -> B004 backend implementation gate (contract entry Pre-B004)",
+]
+ATTACKCHAIN_EVENT0049_FINDINGS = {
+    "ANOX-SECURITY-ARCH-001": "Open", "ANOX-SECURITY-ARCH-002": "Open",
+    "ANOX-SECURITY-ARCH-003": "Open", "ANOX-SECURITY-ARCH-004": "Open",
+    "ANOX-SECURITY-ARCH-006": "Open", "ANOX-SECURITY-ARCH-007": "Open",
+    "ANOX-SECURITY-ARCH-008": "Open", "ANOX-SECURITY-ARCH-009": "Open",
+    "ANOX-MAINARCH-013": "Open", "ANOX-MAINARCH-018": "Open",
+    "ANOX-MAINARCH-023": "Closed", "ANOX-MAINARCH-030": "Open",
+    "ANOX-MAINARCH-031": "Closed", "ANOX-LEGACY-INTEGRATION-001": "Closed",
+    "ANOX-LEGACY-INTEGRATION-003": "Closed", "ANOX-LEGACY-INTEGRATION-005": "Open",
+    "ANOX-LEGACY-CRYPTO-005": "Closed", "ANOX-LEGACY-B003-001": "Open",
+}
+
 METADATA_ALLOWLIST = {
     "PROJECT_STATE.md", "FORTSCHRITT.md", "DEVIN_PROMPT_OUTPUT_ARCHIV.md",
     "docs/continuity/CURRENT_STATE.json", "docs/continuity/CURRENT_GIT_STATE.md",
@@ -473,8 +647,8 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 8:
-        fail(f"audit_registry.jsonl must contain exactly 8 audits, found {len(audits)}", errors)
+    if len(audits) != 9:
+        fail(f"audit_registry.jsonl must contain exactly 9 audits, found {len(audits)}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -596,9 +770,12 @@ def validate_traceability(errors):
     if i5.get("relationship") != "NEW_ROOT_CAUSE_RELATED_TO_HISTORICAL_FINDING" or i5.get("canonical_status") != "Open":
         fail("historical relation ANOX-LEGACY-INTEGRATION-005 must be Open + NEW_ROOT_CAUSE_RELATED_TO_HISTORICAL_FINDING", errors)
 
-    ng = next((r for r in recs if r.get("record_type") == "next_gate"), None)
-    if not ng or ng.get("gate") != NEXT_GATE_ID or "NOT_EXECUTED" not in str(ng.get("status", "")):
+    ng = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == NEXT_GATE_ID), None)
+    if not ng or "NOT_EXECUTED" not in str(ng.get("status", "")):
         fail(f"next_gate record must be {NEXT_GATE_ID} CANDIDATE / NOT_EXECUTED", errors)
+    pg = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == PRIOR_GATE_ID), None)
+    if not pg or "EXECUTED_AND_PRESERVED" not in str(pg.get("status", "")):
+        fail(f"next_gate record for {PRIOR_GATE_ID} must be EXECUTED_AND_PRESERVED", errors)
 
 
 def validate_cryptojni(errors):
@@ -976,6 +1153,220 @@ def validate_androidstorage(errors):
         print("  OK   Android/Storage fix couplings + Attackchain handoff recorded")
 
 
+def validate_attackchain(errors):
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+
+    ac_raw = [r for r in recs if r.get("record_type") == "attackchain_candidate"
+              and r.get("source_audit_id") == ATTACKCHAIN_ID]
+    if len(ac_raw) != 15:
+        fail(f"Attackchain traceability must contain exactly 15 chain records (no missing/duplicates); got {len(ac_raw)}", errors)
+    cands = {r.get("chain_id"): r for r in recs if r.get("record_type") == "attackchain_candidate"}
+    if set(cands) != ATTACKCHAIN_IDS:
+        fail(f"Attackchain traceability must cover exactly 15 chains; got {sorted(cands)}", errors)
+    else:
+        print("  OK   Attackchain 15/15 chain candidates traced")
+    for cid, sev in ATTACKCHAIN_SEVERITY.items():
+        r = cands.get(cid) or {}
+        if r.get("severity") != sev:
+            fail(f"{cid} severity {r.get('severity')!r} != {sev!r}", errors)
+        if r.get("evidence_level") != ATTACKCHAIN_EVIDENCE.get(cid):
+            fail(f"{cid} evidence_level {r.get('evidence_level')!r} != {ATTACKCHAIN_EVIDENCE.get(cid)!r}", errors)
+        if r.get("source_audit_id") != ATTACKCHAIN_ID:
+            fail(f"{cid} source_audit_id wrong: {r.get('source_audit_id')!r}", errors)
+        if r.get("status") != "Open" or r.get("disposition") != "OPEN_PENDING_CONSOLIDATION":
+            fail(f"{cid} must remain Open/OPEN_PENDING_CONSOLIDATION", errors)
+        if not r.get("attacker_class"):
+            fail(f"{cid} missing attacker_class", errors)
+        if not r.get("activation_gate"):
+            fail(f"{cid} missing activation_gate", errors)
+        if not r.get("impact"):
+            fail(f"{cid} missing impact", errors)
+        if cid not in ("ANOX-ATTACKCHAIN-CANDIDATE-013", "ANOX-ATTACKCHAIN-CANDIDATE-015") \
+                and not r.get("state_transitions"):
+            fail(f"{cid} missing state_transitions", errors)
+        if not r.get("current_mitigations"):
+            fail(f"{cid} missing current_mitigations", errors)
+        if not r.get("required_test"):
+            fail(f"{cid} missing required_test", errors)
+        if not r.get("chain_breakers"):
+            fail(f"{cid} missing chain_breakers", errors)
+        if r.get("retest_required") != "YES" or not r.get("independent_retest_owner"):
+            fail(f"{cid} missing independent retest requirement", errors)
+        if not r.get("pre_b004_or_later"):
+            fail(f"{cid} missing pre_b004_or_later classification", errors)
+    sev_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "INFO": 0}
+    for r in cands.values():
+        sev_counts[r.get("severity", "")] = sev_counts.get(r.get("severity", ""), 0) + 1
+    if sev_counts != {"CRITICAL": 0, "HIGH": 4, "MEDIUM": 7, "LOW": 3, "INFO": 1}:
+        fail(f"Attackchain severity distribution must be 0C/4H/7M/3L/1I; got {sev_counts}", errors)
+    ev_counts = {"E0": 0, "E1": 0, "E2": 0}
+    for r in cands.values():
+        ev_counts[r.get("evidence_level", "")] = ev_counts.get(r.get("evidence_level", ""), 0) + 1
+    if ev_counts != {"E0": 1, "E1": 6, "E2": 8}:
+        fail(f"Attackchain evidence distribution must be E2=8/E1=6/E0=1; got {ev_counts}", errors)
+    ac3 = cands.get("ANOX-ATTACKCHAIN-CANDIDATE-003") or {}
+    if ac3.get("severity_overlay") != "CONDITIONAL_CRITICAL_AT_B004_IF_VERIFIER_DEFAULTS_PORTED":
+        fail("AC-003 must carry the CONDITIONAL_CRITICAL_AT_B004_IF_VERIFIER_DEFAULTS_PORTED overlay (canonical severity stays HIGH)", errors)
+    ac12 = cands.get("ANOX-ATTACKCHAIN-CANDIDATE-012") or {}
+    if "FALSE_CLOSURE" not in str(ac12.get("classification", "")):
+        fail("AC-012 must remain classified FALSE_CLOSURE_CHAIN", errors)
+    if "CURRENTLY_REACHABLE" not in str(ac12.get("reachability", "")):
+        fail("AC-012 reachability must be CURRENTLY_REACHABLE", errors)
+    print("  OK   severity 0C/4H/7M/3L/1I; evidence E2=8/E1=6/E0=1; AC-003 overlay; AC-012 FALSE_CLOSURE/CURRENTLY_REACHABLE")
+
+    part = next((r for r in recs if r.get("record_type") == "attackchain_participation"
+                 and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if part is None:
+        fail("attackchain_participation record missing", errors)
+    else:
+        for k, v in ATTACKCHAIN_PARTICIPATION.items():
+            if part.get(k) != v:
+                fail(f"attackchain_participation {k}={part.get(k)!r}, expected {v!r}", errors)
+        if part.get("unmapped") != 0 or part.get("total_security_items") != 68:
+            fail("attackchain_participation must record 68 items / UNMAPPED=0", errors)
+        else:
+            print("  OK   security-item coverage 68 total / 0 unmapped (29/6/3/14/9/7)")
+
+    roots = next((r for r in recs if r.get("record_type") == "attackchain_root_coverage"
+                  and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if roots is None or set((roots.get("roots") or {}).keys()) != ROOT_IDS:
+        fail("attackchain_root_coverage must record all 18 roots", errors)
+    else:
+        rr = roots.get("roots") or {}
+        for rid, disp in ATTACKCHAIN_ROOT_COVERAGE.items():
+            if (rr.get(rid) or {}).get("disposition") != disp:
+                fail(f"attackchain_root_coverage {rid} disposition {(rr.get(rid) or {}).get('disposition')!r} != {disp!r}", errors)
+        if "REJECTED" not in str((rr.get("ROOT-016") or {}).get("note", "")):
+            fail("attackchain_root_coverage ROOT-016 note must record it remains REJECTED/not revived", errors)
+        else:
+            print("  OK   root coverage 18/18; ROOT-016 remains REJECTED / not revived")
+
+    spec = next((r for r in recs if r.get("record_type") == "attackchain_specialist_coverage"
+                 and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if spec is None or set((spec.get("candidates") or {}).keys()) != set(ATTACKCHAIN_SPEC_COVERAGE):
+        fail("attackchain_specialist_coverage must record all 23 specialist candidates", errors)
+    else:
+        cc = spec.get("candidates") or {}
+        for cid, disp in ATTACKCHAIN_SPEC_COVERAGE.items():
+            if (cc.get(cid) or {}).get("disposition") != disp:
+                fail(f"attackchain_specialist_coverage {cid} {(cc.get(cid) or {}).get('disposition')!r} != {disp!r}", errors)
+        print("  OK   specialist candidate coverage 23/23")
+
+    gaps = next((r for r in recs if r.get("record_type") == "attackchain_gap_coverage"
+                 and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if gaps is None or set((gaps.get("gaps") or {}).keys()) != set(ATTACKCHAIN_GAP_COVERAGE):
+        fail("attackchain_gap_coverage must record all 6 architecture gaps", errors)
+    else:
+        gg = gaps.get("gaps") or {}
+        for gid, cls in ATTACKCHAIN_GAP_COVERAGE.items():
+            if cls not in str((gg.get(gid) or {}).get("classification", "")):
+                fail(f"attackchain_gap_coverage {gid} classification lacks {cls}", errors)
+        print("  OK   architecture gap coverage 6/6 (3 CHAIN_CRITICAL)")
+
+    sb = next((r for r in recs if r.get("record_type") == "attackchain_server_breakers"
+               and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if sb is None or {i.get("id") for i in (sb.get("items") or [])} != ATTACKCHAIN_SERVER_BREAKER_IDS:
+        fail("attackchain_server_breakers must record S1-S18", errors)
+    else:
+        print("  OK   server breakers S1-S18 complete")
+    cb = next((r for r in recs if r.get("record_type") == "attackchain_client_breakers"
+               and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if cb is None or {i.get("id") for i in (cb.get("items") or [])} != ATTACKCHAIN_CLIENT_BREAKER_IDS:
+        fail("attackchain_client_breakers must record C1-C14", errors)
+    else:
+        print("  OK   client breakers C1-C14 complete")
+
+    for rt, key in (("attackchain_cross_group_dependencies", "relations"),
+                    ("attackchain_must_not_fix_alone", "warnings"),
+                    ("attackchain_threat_actors", "actors"),
+                    ("attackchain_trust_boundaries", "boundaries"),
+                    ("attackchain_state_graph", "transitions")):
+        r = next((x for x in recs if x.get("record_type") == rt and x.get("source_audit_id") == ATTACKCHAIN_ID), None)
+        if r is None or not r.get(key):
+            fail(f"{rt} record missing or empty ({key})", errors)
+    ta = next((x for x in recs if x.get("record_type") == "attackchain_threat_actors"
+               and x.get("source_audit_id") == ATTACKCHAIN_ID), None) or {}
+    if set((ta.get("actors") or {}).keys()) != {f"A{i}" for i in range(10)}:
+        fail("attackchain_threat_actors must record A0-A9", errors)
+    tb = next((x for x in recs if x.get("record_type") == "attackchain_trust_boundaries"
+               and x.get("source_audit_id") == ATTACKCHAIN_ID), None) or {}
+    if len(tb.get("boundaries") or []) != 9:
+        fail("attackchain_trust_boundaries must record 9 boundaries", errors)
+    print("  OK   cross-group dependencies, must-not-fix-alone, actors A0-A9, 9 trust boundaries, state graph")
+
+    rej = next((r for r in recs if r.get("record_type") == "attackchain_rejected"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if rej is None or len(rej.get("hypotheses") or []) != 13:
+        fail("attackchain_rejected must record 13 rejected hypotheses", errors)
+    else:
+        print("  OK   13 rejected chain hypotheses preserved")
+
+    rea = next((r for r in recs if r.get("record_type") == "attackchain_reaudit_set"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if rea is None or sorted(rea.get("mandatory") or []) != sorted(ATTACKCHAIN_REAUDIT_MANDATORY):
+        fail("attackchain_reaudit_set mandatory must be AC-001/003/006/012", errors)
+    elif sorted(rea.get("mandatory_plus_trust_boundary") or []) != sorted(
+            ["ANOX-ATTACKCHAIN-CANDIDATE-005", "ANOX-ATTACKCHAIN-CANDIDATE-008",
+             "ANOX-ATTACKCHAIN-CANDIDATE-010"]):
+        fail("attackchain_reaudit_set mandatory_plus_trust_boundary must be AC-005/008/010", errors)
+    else:
+        print("  OK   final re-audit set recorded (mandatory + trust-boundary)")
+
+    gsets = {r.get("gate_set"): r for r in recs if r.get("record_type") == "gate_set" and r.get("gate_set")}
+    for name, members in (("PRE_B004_ATTACKCHAIN_CODE", PRE_B004_ATTACKCHAIN_CODE_GATE),
+                          ("PRE_B004_ATTACKCHAIN_CONTRACT", PRE_B004_ATTACKCHAIN_CONTRACT_GATE),
+                          ("B004_IMPLEMENTATION_REQUIREMENTS", B004_IMPLEMENTATION_GATE),
+                          ("LATER_GATE_ATTACKCHAINS", LATER_GATE_ATTACKCHAINS_GATE)):
+        g = gsets.get(name) or {}
+        if g.get("source_audit_id") != ATTACKCHAIN_ID or sorted(g.get("members") or []) != sorted(members):
+            fail(f"gate_set {name} members wrong: {g.get('members')}", errors)
+    print("  OK   Pre-B004 code/contract, B004 implementation and later-gate sets exact")
+
+    relmap = {r.get("finding_id"): r for r in recs
+              if r.get("record_type") == "historical_relation" and r.get("source_audit_id") == ATTACKCHAIN_ID}
+    if set(relmap) != set(ATTACKCHAIN_HIST_RELATIONS):
+        fail(f"Attackchain historical_relation records must cover {sorted(ATTACKCHAIN_HIST_RELATIONS)}; got {sorted(relmap)}", errors)
+    for fid, (rel, st) in ATTACKCHAIN_HIST_RELATIONS.items():
+        r = relmap.get(fid) or {}
+        if r.get("relationship") != rel or r.get("canonical_status") != st:
+            fail(f"historical_relation {fid}: {r.get('relationship')!r}/{r.get('canonical_status')!r} != {rel!r}/{st!r}", errors)
+    print("  OK   18 historical participation relations preserved (no status rewrites)")
+
+    tee = next((r for r in recs if r.get("record_type") == "test_execution_evidence"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if tee is None or "Harness.java" not in str(tee.get("result", "")):
+        fail("attackchain test_execution_evidence missing or lacks harness results", errors)
+    adv = next((r for r in recs if r.get("record_type") == "adversarial_evidence"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if adv is None or adv.get("cases") != 36 or not adv.get("failures"):
+        fail("attackchain adversarial_evidence must record 36 cases with failure rows", errors)
+    phys = next((r for r in recs if r.get("record_type") == "physical_evidence_requirements"
+                 and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if phys is None or "NOT_EXECUTED" not in str(phys.get("status", "")):
+        fail("attackchain physical_evidence_requirements must record NOT_EXECUTED", errors)
+    else:
+        print("  OK   test/adversarial/physical evidence records (36 harness cases; physical NOT_EXECUTED)")
+
+    mch = next((r for r in recs if r.get("record_type") == "master_consolidation_handoff"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if mch is None or "NOT_EXECUTED" not in str(mch.get("status", "")) or len(mch.get("chain_ids") or []) != 15:
+        fail("master_consolidation_handoff must record all 15 chains and NOT_EXECUTED status", errors)
+    rch = next((r for r in recs if r.get("record_type") == "remediation_coverage_handoff"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if rch is None or len(rch.get("chains") or {}) != 15:
+        fail("remediation_coverage_handoff must record all 15 chains", errors)
+    lim = next((r for r in recs if r.get("record_type") == "attackchain_evidence_limits"
+                and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if lim is None or not lim.get("limits"):
+        fail("attackchain_evidence_limits record missing", errors)
+    print("  OK   master consolidation + remediation coverage handoffs; evidence limits recorded")
+
+    v = next((r for r in recs if r.get("record_type") == "attackchain_verdict"
+              and r.get("source_audit_id") == ATTACKCHAIN_ID), None)
+    if v is None or v.get("architecture_verdict") != "CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED" or v.get("sec_c_required") != "NO":
+        fail("attackchain_verdict must record CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED / SEC-C=NO", errors)
+
+
 def validate_findings(errors):
     findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
     f5 = next((f for f in findings if f.get("finding_id") == "ANOX-LEGACY-CRYPTO-005"), None)
@@ -1028,6 +1419,13 @@ def validate_findings(errors):
             fail(f"EVENT-0048 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
         elif "ANOX-EVENT-0048" not in str(f.get("notes", "")):
             fail(f"{fid} lacks the preserved ANOX-EVENT-0048 relationship note", errors)
+    for fid, want in ATTACKCHAIN_EVENT0049_FINDINGS.items():
+        f = next((x for x in findings if x.get("finding_id") == fid), None)
+        if f is None or f.get("status") != want:
+            fail(f"EVENT-0049 finding {fid} must remain {want}, got {(f or {}).get('status')!r}", errors)
+        elif "ANOX-EVENT-0049" not in str(f.get("notes", "")):
+            fail(f"{fid} lacks the preserved ANOX-EVENT-0049 relationship note", errors)
+    print("  OK   EVENT-0049 participation notes preserved on 18 findings (no status rewrites)")
 
 
 def validate_lifecycle(errors):
@@ -1064,7 +1462,9 @@ def validate_lifecycle(errors):
         fail("completed_audit_ids must record AUDIT-SECURITY-AUTH-DPOP-001 as executed+preserved", errors)
     if "AUDIT-SECURITY-ANDROID-STORAGE-001" not in completed:
         fail("completed_audit_ids must record AUDIT-SECURITY-ANDROID-STORAGE-001 as executed+preserved", errors)
-    for gid in ("AUDIT-SECURITY-ATTACKCHAIN-001",):
+    if "AUDIT-SECURITY-ATTACKCHAIN-001" not in completed:
+        fail("completed_audit_ids must record AUDIT-SECURITY-ATTACKCHAIN-001 as executed+preserved", errors)
+    for gid in ("MASTER-SPECIALIST-CONSOLIDATION",):
         if gid in completed:
             fail(f"{gid} must NOT be in completed_audit_ids", errors)
 
@@ -1145,6 +1545,8 @@ def main():
     validate_authdpop(errors)
     print("\n[EVIDENCE-PRESERVATION] Android/Storage specialist evidence")
     validate_androidstorage(errors)
+    print("\n[EVIDENCE-PRESERVATION] Attackchain specialist evidence")
+    validate_attackchain(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

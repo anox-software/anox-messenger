@@ -52,6 +52,15 @@ From `AUDIT-SECURITY-ANDROID-STORAGE-001` (at SHA `b9abeb0850a476716403d224b87a8
 - **Test execution:** `./gradlew --offline --no-daemon :android:testDebugUnitTest --tests 'com.anox.messenger.account.*' --tests 'com.anox.messenger.security.deviceauth.*' --tests 'com.anox.crypto.*'` → 177 executed / 177 passed (account 104, deviceauth 69, crypto error-map 4). Instrumented (66) + physical: NOT_RUN.
 - **Harness:** `/tmp/anox_android_storage_audit/harness/` (`Harness.java`) compiled against `android/build/tmp/kotlin-classes/debug` + `kotlin-stdlib-2.2.21` + `androidx.core:core:1.12.0` `AtomicFile` source with stub `Context`/`Log`; `/tmp/anox_android_storage_audit/atomicfile/` held the extracted library source.
 
+From `AUDIT-SECURITY-ATTACKCHAIN-001` (at SHA `e54584903a353e98ad154d1e8f90f93ed9d7db14`; production classes compiled from unchanged source + repo JVM test doubles — no device/emulator authorized):
+
+- **Baseline continuity:** `git diff 869b99a..e545849` over `android/src`, `crypto/`, `.github`, `*.kts`, `gradle` is empty — product source byte-identical to the consensus-audited SHA; committed `.so` unchanged and stale since `7db20fa`.
+- **DPoP composition harness (Harness.java, 27 cases):** `/v1/a%2Fb` proof validated against `/v1/a/b` (decoded-path collision survives correct JKT binding — AC-002); attacker-generated proof + stolen token accepted when `jkt`/`ath` optional (AC-003; mandatory `ath` alone proven insufficient); same proof re-accepted across independent cache instances, after restart, and after −250 s wall-clock rollback (AC-004); marker loss + session loss ⇒ `canStartNew=true`, surviving alias re-binds same JKT to a new account, absent alias generates new key (AC-001 A/B); `CommitArmed` + `Rejected` persists `Failed` while marker ARMED, `canStartNew=false` (AC-014); registration wire carries `jwk` and `proof` independently (proof unbound) and `commitRegistration` has no PoP/DPoP/idempotency (AC-010).
+- **Marker harness (MarkerHarness.java, 9 cases):** valid bound marker bytes `414e58420203…` → `bound=true armed=true`; absent → first-run semantics; `clearBinding()` bytes `414e58420200` equivalent to absent; rollback to `0x02` ARMED blocks creation; rollback to zero flags and v1-garbage payload fail **open**; structural corruption fails **closed**; surviving alias + absent marker → resolver `Present` (fresh first-run input — AC-001 Variant A precondition).
+- **Native measurements:** preserved from `AUDIT-SECURITY-CRYPTO-JNI-001` (`TEMP_CURRENT_SOURCE_BUILD_EVIDENCE`) — session pickle 7196→29923 B over 8 chains; identity 500 OTK = 122391 B / 1000 = 244483 B / 5000 = 1228738 B; stored=5000 unpublished=5000.
+- **Instrumented + physical:** `NOT_RUN` (no device/emulator authorized; no results fabricated). `AC-013` physical evidence vacuum recorded as CLOSURE_RISK_ENABLING_CONDITION (P1–P14 campaign required on a provenance-verified binary).
+- **Harness:** `/tmp/anox_attackchain_001/` (`Harness.java`, `MarkerHarness.java`, `out.txt`, `marker_out.txt`, `METHOD.txt`, `traceability_extract.txt`) compiled against `android/build/tmp/kotlin-classes/{debug,debugUnitTest}` + `nimbus-jose-jwt-10.9.1` + `kotlin-stdlib-2.2.21` — 36 benign composition cases; **not authoritative**, results preserved in the report only.
+
 ## Authoritative locations
 
 The authoritative evidence is:
@@ -59,7 +68,7 @@ The authoritative evidence is:
 1. The preserved report bodies in `docs/reports/security/audits/` (hash-bound in `../evidence_hashes.json`).
 2. The structured mappings in `../audit_traceability.jsonl` and `../audit_registry.jsonl`.
 
-**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), `/tmp/anox_android_storage_audit/` (AtomicFile extracted source + adversarial harness), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
+**`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), `/tmp/anox_android_storage_audit/` (AtomicFile extracted source + adversarial harness), `/tmp/anox_attackchain_001/` (Attackchain composition + marker harnesses), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
 
 ## Boundary
 
