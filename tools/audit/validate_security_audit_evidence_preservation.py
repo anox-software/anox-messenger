@@ -15,7 +15,15 @@ cryptojni, authdpop, androidstorage and attackchain candidates/gaps,
 specialist relations, severity overlays, provenance limitation, temp-build
 evidence, the ABI revision record, coverage/test evidence, historical
 revalidation, remediation coverage, chain breakers, gate sets and
-specialist handoffs), and the lifecycle state that must remain unchanged.
+specialist handoffs), the preserved SECURITY-REMEDIATION-COVERAGE-GATE-001
+coverage-gate layer, the HUMAN-PRE-REMEDIATION-DECISIONS-001 human governance
+decision layer (H1/H2/H3/R1 decided by the Human Product & Security Owner with
+zero auto-acceptance, SECURITY_REMEDIATION_START_AUTHORIZATION granted for the
+first wave S0 ∥ S1 only — authorization is not execution, the ROOT-013 LOW→MEDIUM
+canonical severity transition (still OPEN), the ANOX-SECURITY-ARCH-010
+RETIRE_AT_B004_START trigger, and the validator_lifecycle registry retiring
+SHA/event-pinned one-shot validators while preserving their files, pins and
+historical evidence), and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
 (test fixtures); git-dependent checks are skipped when no .git exists.
@@ -39,16 +47,93 @@ ANDROIDSTORAGE_AUDIT_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
 ATTACKCHAIN_AUDIT_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
 CONSOLIDATION_BASE_SHA = "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
 GATE_BASE_SHA = "610ed08337536857db73259168498c49b786caa1"
-BASE_SHA = "610ed08337536857db73259168498c49b786caa1"
-DELIVERY_BRANCH = "governance/security-remediation-coverage-gate-preservation-001"
-TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"
-NEXT_GATE_ID = "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION"
-PRIOR_GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE"
-LEDGER_EVENT = "ANOX-EVENT-0051"
+BASE_SHA = "9e585468d081272398e022f12e76e7500d55cbee"
+DELIVERY_BRANCH = "governance/human-pre-remediation-decisions-001"
+TASK_ID = "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001"
+NEXT_GATE_ID = "SECURITY_REMEDIATION_WAVE_1"
+PRIOR_GATE_ID = "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION"
+LEDGER_EVENT = "ANOX-EVENT-0052"
 MSC_ID = "MASTER-SPECIALIST-CONSOLIDATION-001"
 MSC_LEDGER_EVENT = "ANOX-EVENT-0050"
 MSC_DELIVERY_BRANCH = "governance/master-specialist-consolidation-preservation-001"
 GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE-001"
+GATE_LEDGER_EVENT = "ANOX-EVENT-0051"
+GATE_DELIVERY_BRANCH = "governance/security-remediation-coverage-gate-preservation-001"
+GATE_TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"
+DECISION_ID = "HUMAN-PRE-REMEDIATION-DECISIONS-001"
+DECISION_REPORT_PATH = "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md"
+DECISION_REPORT_SHA256 = "d558471dee257b80540e0bc21d2204470402ab9f44234a7e8e0208dc96ef2b13"
+DECISION_REPORT_BYTES = 10128
+DECISION_REGISTRY_RECORD = "SEC-AUDIT-REG-0012"
+DECISION_FINDING_ID = "ANOX-DECISION-HUMANPREREMEDIATION001"
+LEDGER_MAX_LINE_BYTES = 4096
+
+# ---------------------------------------------------------------------------
+# HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
+# ---------------------------------------------------------------------------
+# Human Product & Security Owner decision layer recorded on top of the
+# preserved coverage gate (ANOX-EVENT-0052). The four packet decisions are
+# decided by the human authority only (zero auto-acceptance); the human
+# authorization grants the first wave S0 ∥ S1 and is not execution.
+HUMAN_DECISION_EXPECTED = {
+    "HUMAN_DECISION_H1": {
+        "decision": "ARCHIVE_AND_RETIRE_SHA_PINNED_VALIDATORS",
+    },
+    "HUMAN_DECISION_H2": {
+        "decision": "ACCEPT_MODEL_DEVIATION_WITH_PRESERVED_RATIONALE",
+    },
+    "HUMAN_DECISION_H3": {
+        "decision": "RETIRE_ARCH_010_AT_B004_START",
+    },
+    "HUMAN_DECISION_R1": {
+        "decision": "RATIFY_ROOT_013_AS_MEDIUM",
+    },
+}
+RETIRED_ONE_SHOT_VALIDATORS = {
+    "tools/audit/validate_security_architecture_findings_freeze.py": {
+        "integrity_marker": "c653a1d6a302758c0e006225987281643957f752",
+    },
+    "tools/audit/validate_legacy_retest01_ingest.py": {
+        "integrity_marker": "3adf56c17936fdf60c864e4a26f1863243478f44",
+    },
+    "tools/audit/validate_mainarch_fix03.py": {
+        "integrity_marker": "88ea18c9b7078c376ee027d0cacc4d4f147ebbf5",
+    },
+    "tools/audit/validate_mainarch_retest01_ingest.py": {
+        "integrity_marker": "fd1fbddbddcba7d8705f7a76318856ad56dafb19",
+    },
+    "tools/audit/validate_mainarch_retest02_ingest.py": {
+        "integrity_marker": "739ea1c36c3d6f8eedb9a315fc6fba5173a82289",
+    },
+    "tools/audit/validate_mainarch_retest03_ingest.py": {
+        "integrity_marker": "88ea18c9b7078c376ee027d0cacc4d4f147ebbf5",
+    },
+    "tools/audit/validate_workforce_fix01.py": {
+        "integrity_marker": "8385f4019184be9b568f65ec4748194595ef339c",
+    },
+    "tools/audit/validate_workforce_fix02.py": {
+        "integrity_marker": "81e091f3346a7c8653c100a334a1dbfe2c54d464",
+    },
+    "tools/audit/validate_workforce_retest_closure_ingest.py": {
+        "integrity_marker": "ANOX-TASK-WORKFORCE-RETEST-CLOSURE-INGEST",
+    },
+    "tools/audit/validate_workforce_continuity_sync_fix01.py": {
+        "integrity_marker": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+    },
+}
+ACTIVE_CURRENT_VALIDATORS = (
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/continuity/validate_continuity.py",
+    "tools/workforce/validate_b027a.py",
+    "tools/workforce/validate_b027b.py",
+    "tools/workforce/validate_b027_integrity.py",
+    "tools/security/b017_lite_policy_validator.py",
+    "tools/audit/validate_mainarch_fix01.py",
+    "tools/audit/validate_mainarch_fix02.py",
+    "tools/audit/validate_legacy_fix01.py",
+    "tools/audit/validate_legacy_audit_consolidation.py",
+    "tools/audit/validate_workforce_audit_findings_freeze.py",
+)
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -841,16 +926,19 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 11:
-        fail(f"audit_registry.jsonl must contain exactly 11 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact), found {len(audits)}", errors)
+    if len(audits) != 12:
+        fail(f"audit_registry.jsonl must contain exactly 12 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact + 1 human governance decision record), found {len(audits)}", errors)
     msc_rec = audits.get(MSC_ID) or {}
     if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
         fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
     gate_rec = audits.get(GATE_ID) or {}
     if gate_rec.get("artifact_type") != "SECURITY_REMEDIATION_COVERAGE_GATE":
         fail(f"{GATE_ID} registry record missing or artifact_type != SECURITY_REMEDIATION_COVERAGE_GATE", errors)
-    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID}):
-        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID})}", errors)
+    dec_rec = audits.get(DECISION_ID) or {}
+    if dec_rec.get("artifact_type") != "HUMAN_GOVERNANCE_DECISION_RECORD":
+        fail(f"{DECISION_ID} registry record missing or artifact_type != HUMAN_GOVERNANCE_DECISION_RECORD", errors)
+    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID}):
+        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID})}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -2040,8 +2128,8 @@ def validate_coverage_gate(errors):
             "repository_modified_by_audit": "NO",
             "remote_mutation_by_audit": "NONE",
             "status": "PRESERVED",
-            "preserved_at_event": LEDGER_EVENT,
-            "delivery_branch": DELIVERY_BRANCH,
+            "preserved_at_event": GATE_LEDGER_EVENT,
+            "delivery_branch": GATE_DELIVERY_BRANCH,
             "report_path": EXPECTED_REPORTS[GATE_ID]["path"],
             "report_sha256": EXPECTED_REPORTS[GATE_ID]["sha256"],
             "report_bytes": GATE_REPORT_BYTES,
@@ -2055,7 +2143,7 @@ def validate_coverage_gate(errors):
             "pre_b004_dod_unowned": 0, "silent_dropped": 0, "unresolved_ids": 0,
             "security_remediation_authorized": "NO",
             "security_remediation": "NOT_STARTED",
-            "task_id": TASK_ID,
+            "task_id": GATE_TASK_ID,
         }
         for key, expected in reg_expected.items():
             if reg.get(key) != expected:
@@ -2482,7 +2570,325 @@ def validate_coverage_gate(errors):
     hg = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == NEXT_GATE_ID), None)
     if not hg or "NOT_EXECUTED" not in str(hg.get("status", "")):
         fail(f"next_gate {NEXT_GATE_ID} must be PENDING / NOT_EXECUTED", errors)
-    print(f"  OK   {GATE_ID} lifecycle pointers verified (gate preserved; human-decision state pending)")
+    print(f"  OK   {GATE_ID} lifecycle pointers verified (gate preserved; human-decision gate executed; wave-1 next)")
+
+
+def validate_human_decision_layer(errors):
+    """Fail-closed verification of the HUMAN-PRE-REMEDIATION-DECISIONS-001
+    decision layer (artifact_type HUMAN_GOVERNANCE_DECISION_RECORD)."""
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+    dec = [r for r in recs if r.get("source_artifact_id") == DECISION_ID]
+    by_type = {}
+    for r in dec:
+        by_type.setdefault(r.get("record_type"), []).append(r)
+
+    def one(rt):
+        rows = by_type.get(rt) or []
+        if len(rows) != 1:
+            fail(f"expected exactly 1 {rt} record for {DECISION_ID}, found {len(rows)}", errors)
+            return {}
+        return rows[0]
+
+    # --- decision document identity ------------------------------------------
+    dp = REPO_ROOT / DECISION_REPORT_PATH
+    if not dp.exists():
+        fail(f"decision record missing: {DECISION_REPORT_PATH}", errors)
+    else:
+        body = dp.read_text(encoding="utf-8")
+        if sha256_file(dp) != DECISION_REPORT_SHA256:
+            fail(f"{DECISION_ID} decision record hash mismatch", errors)
+        if len(dp.read_bytes()) != DECISION_REPORT_BYTES:
+            fail(f"{DECISION_ID} decision record byte count must be {DECISION_REPORT_BYTES}", errors)
+        if not body.startswith("# HUMAN-PRE-REMEDIATION-DECISIONS-001 — HUMAN SECURITY DECISION + REMEDIATION AUTHORIZATION RECORD"):
+            fail(f"{DECISION_ID} report missing required opening marker", errors)
+        for marker in ("HUMAN_GOVERNANCE_DECISION_RECORD",
+                       "Human Product & Security Owner",
+                       "9e585468d081272398e022f12e76e7500d55cbee",
+                       "HUMAN_DECISION_H1", "HUMAN_DECISION_H2", "HUMAN_DECISION_H3", "HUMAN_DECISION_R1",
+                       "ARCHIVE_AND_RETIRE_SHA_PINNED_VALIDATORS",
+                       "ACCEPT_MODEL_DEVIATION_WITH_PRESERVED_RATIONALE",
+                       "RETIRE_ARCH_010_AT_B004_START",
+                       "RATIFY_ROOT_013_AS_MEDIUM",
+                       "SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER",
+                       "S0 ∥ S1",
+                       "BLOCKED_PENDING_FINAL_AUDIT",
+                       "NOT_STARTED",
+                       "SECURITY_REMEDIATION_WAVE_1_READY"):
+            if marker not in body:
+                fail(f"{DECISION_ID} report missing required marker {marker!r}", errors)
+        if "REMOTE MUTATION: NONE" not in body and "Remote mutation:** `NONE`" not in body:
+            fail(f"{DECISION_ID} report must record remote mutation NONE", errors)
+
+    # --- evidence_hashes entry -------------------------------------------------
+    hpath = EVIDENCE_DIR / "evidence_hashes.json"
+    if hpath.exists():
+        hentry = ((load_json(hpath).get("reports") or {}).get(DECISION_ID)) or {}
+        if hentry.get("sha256") != DECISION_REPORT_SHA256:
+            fail(f"evidence_hashes.json entry for {DECISION_ID} mismatched/missing", errors)
+        elif hentry.get("path") != DECISION_REPORT_PATH:
+            fail(f"evidence_hashes.json {DECISION_ID} path mismatch", errors)
+
+    # --- registry artifact record ----------------------------------------------
+    audits = {a.get("audit_id"): a for a in load_jsonl(EVIDENCE_DIR / "audit_registry.jsonl")}
+    reg = audits.get(DECISION_ID)
+    if not reg:
+        fail(f"{DECISION_ID} registry record missing", errors)
+    else:
+        reg_expected = {
+            "record_id": DECISION_REGISTRY_RECORD,
+            "artifact_type": "HUMAN_GOVERNANCE_DECISION_RECORD",
+            "task_id": TASK_ID,
+            "audit_type": "human_governance_decision",
+            "provider": "Human Product & Security Owner",
+            "model_requirement_status": "NOT_APPLICABLE",
+            "requested_start_sha": BASE_SHA,
+            "audited_sha": BASE_SHA,
+            "base_sha": BASE_SHA,
+            "mode": "GOVERNANCE_DECISION_RECORD",
+            "result": "DECIDED — REMEDIATION_WAVE_1_AUTHORIZED",
+            "decisions_decided": 4,
+            "decisions_auto_accepted": 0,
+            "security_remediation_start_authorization": "GRANTED_BY_HUMAN_OWNER",
+            "first_authorized_wave": "S0_AND_S1",
+            "security_remediation": "NOT_STARTED",
+            "b004": "NOT_STARTED",
+            "b005": "NOT_STARTED",
+            "product": "BLOCKED_PENDING_FINAL_AUDIT",
+            "open_msc_units": 42,
+            "fixed_msc_units": 0,
+            "physical_campaign": "NOT_EXECUTED",
+            "repository_modified_by_audit": "NO",
+            "remote_mutation_by_audit": "NONE",
+            "status": "PRESERVED",
+            "preserved_at_event": LEDGER_EVENT,
+            "delivery_branch": DELIVERY_BRANCH,
+            "report_path": DECISION_REPORT_PATH,
+            "report_sha256": DECISION_REPORT_SHA256,
+            "report_bytes": DECISION_REPORT_BYTES,
+        }
+        for key, expected in reg_expected.items():
+            if reg.get(key) != expected:
+                fail(f"{DECISION_ID} registry {key}={reg.get(key)!r}, expected {expected!r}", errors)
+        if not errors or all(DECISION_ID not in e for e in errors):
+            print(f"  OK   {DECISION_ID} registry artifact record verified")
+
+    # --- human_decision records -------------------------------------------------
+    hd = [r for r in dec if r.get("record_type") == "human_decision"]
+    ids = {r.get("decision_id") for r in hd}
+    if ids != set(HUMAN_DECISION_EXPECTED):
+        fail(f"human_decision records must be exactly H1/H2/H3/R1; got {sorted(ids)}", errors)
+    for r in hd:
+        did = r.get("decision_id")
+        exp = HUMAN_DECISION_EXPECTED.get(did) or {}
+        if exp.get("decision") and r.get("decision") != exp["decision"]:
+            fail(f"human_decision {did} decision={r.get('decision')!r}, expected {exp['decision']!r}", errors)
+        for key in ("authority_actor", "decided_by", "effective_state",
+                    "implementation_trigger", "affected_artifacts", "decision_record"):
+            if not r.get(key):
+                fail(f"human_decision {did} missing {key}", errors)
+        auth = str(r.get("authority_actor", "")) + str(r.get("decided_by", ""))
+        if "Human" not in auth:
+            fail(f"human_decision {did} must be decided by Human Product & Security Owner (authority/decided_by)", errors)
+        if r.get("auto_accepted") is not False:
+            fail(f"human_decision {did} auto_accepted must be false", errors)
+        if r.get("decision_record") != DECISION_ID:
+            fail(f"human_decision {did} decision_record must be {DECISION_ID}", errors)
+        if r.get("source_gate") != GATE_ID:
+            fail(f"human_decision {did} source_gate must be {GATE_ID}", errors)
+        if r.get("baseline_sha") != BASE_SHA:
+            fail(f"human_decision {did} baseline_sha must be {BASE_SHA}", errors)
+    h2 = next((r for r in hd if r.get("decision_id") == "HUMAN_DECISION_H2"), None)
+    if h2 is not None:
+        if h2.get("requested_model") != "Claude Fable 5.1 High" or h2.get("actual_model") != "Claude Opus 5 Medium":
+            fail("HUMAN_DECISION_H2 must preserve requested/actual model", errors)
+        if "arbiter" not in str(h2.get("rationale", "")):
+            fail("HUMAN_DECISION_H2 rationale must record arbiter-confirmed coverage", errors)
+    if hd:
+        print("  OK   H1/H2/H3/R1 decided by Human Product & Security Owner (0 auto-accepted)")
+
+    # --- human remediation authorization -----------------------------------------
+    auth = one("human_remediation_authorization")
+    if auth:
+        exp = {
+            "decision_record": DECISION_ID,
+            "authority_actor": "Human Product & Security Owner",
+            "decided_by": "HUMAN_PRODUCT_AND_SECURITY_OWNER",
+            "security_remediation_start_authorization": "GRANTED_BY_HUMAN_OWNER",
+            "first_authorized_wave": "S0_AND_S1",
+            "security_remediation": "NOT_STARTED",
+            "b004": "NOT_STARTED",
+            "b005": "NOT_STARTED",
+            "product": "BLOCKED_PENDING_FINAL_AUDIT",
+            "physical_campaign": "NOT_EXECUTED",
+            "findings_fixed": 0,
+            "open_msc_units": 42,
+            "baseline_sha": BASE_SHA,
+            "next_state": "SECURITY_REMEDIATION_WAVE_1_READY",
+        }
+        for key, expected in exp.items():
+            if auth.get(key) != expected:
+                fail(f"human_remediation_authorization {key}={auth.get(key)!r}, expected {expected!r}", errors)
+        if auth.get("auto_accepted") is not False:
+            fail("human_remediation_authorization auto_accepted must be false", errors)
+        if auth.get("first_authorized_sessions") != ["REMEDIATION_SESSION_S0", "REMEDIATION_SESSION_S1"]:
+            fail("human_remediation_authorization first_authorized_sessions must be [S0, S1]", errors)
+        if auth.get("authorization_is_not_execution") is not True:
+            fail("human_remediation_authorization must record authorization_is_not_execution", errors)
+        if not errors or all("human_remediation_authorization" not in e for e in errors):
+            print("  OK   SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER (wave S0 ∥ S1; NOT execution)")
+
+    # --- ROOT-013 canonical severity transition -----------------------------------
+    st = one("canonical_severity_transition")
+    if st:
+        exp = {
+            "finding_id": "ROOT-013",
+            "decision_record": DECISION_ID,
+            "ratified_by": "HUMAN_DECISION_R1",
+            "prior_canonical_severity": "LOW",
+            "current_canonical_severity": "MEDIUM",
+            "status": "OPEN",
+            "closed": "NO",
+            "fixed": "NO",
+            "affected_msc_unit": "MSC_UNIT_007",
+        }
+        for key, expected in exp.items():
+            if st.get(key) != expected:
+                fail(f"canonical_severity_transition {key}={st.get(key)!r}, expected {expected!r}", errors)
+        if "PENDING_SPECIALIST_CONSOLIDATION" not in str(st.get("overlay", "")):
+            fail("canonical_severity_transition must record the preserved overlay state", errors)
+        if not errors or all("canonical_severity_transition" not in e for e in errors):
+            print("  OK   ROOT-013 canonical MEDIUM ratified; remains OPEN (historical LOW preserved)")
+
+    # --- ARCH-010 retirement trigger -----------------------------------------------
+    rt = one("finding_retirement_trigger")
+    if rt:
+        exp = {
+            "finding_id": "ANOX-SECURITY-ARCH-010",
+            "decision_record": DECISION_ID,
+            "decided_by": "HUMAN_DECISION_H3",
+            "scheduled_trigger": "RETIRE_AT_B004_START",
+        }
+        for key, expected in exp.items():
+            if rt.get(key) != expected:
+                fail(f"finding_retirement_trigger {key}={rt.get(key)!r}, expected {expected!r}", errors)
+        if "FORBIDDEN" not in str(rt.get("premature_retirement", "")):
+            fail("finding_retirement_trigger must forbid premature retirement", errors)
+    findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
+    a10 = next((f for f in findings if f.get("finding_id") == "ANOX-SECURITY-ARCH-010"), None)
+    if a10 is None:
+        fail("ANOX-SECURITY-ARCH-010 missing from findings.jsonl", errors)
+    else:
+        if a10.get("status") != "Open":
+            fail(f"ANOX-SECURITY-ARCH-010 must remain Open until B004 start, got {a10.get('status')!r}", errors)
+        if a10.get("severity") != "INFO":
+            fail("ANOX-SECURITY-ARCH-010 severity must remain INFO", errors)
+        if "RETIRE_AT_B004_START" not in str(a10.get("notes", "")):
+            fail("ANOX-SECURITY-ARCH-010 findings record must carry the RETIRE_AT_B004_START trigger note", errors)
+        else:
+            print("  OK   ANOX-SECURITY-ARCH-010 Open/INFO with RETIRE_AT_B004_START trigger")
+
+    # --- validator lifecycle set ------------------------------------------------------
+    vl = {r.get("validator"): r for r in dec if r.get("record_type") == "validator_lifecycle"}
+    missing = set(RETIRED_ONE_SHOT_VALIDATORS) - set(vl)
+    if missing:
+        fail(f"validator_lifecycle records missing for retired validators: {sorted(missing)}", errors)
+    for path, spec in RETIRED_ONE_SHOT_VALIDATORS.items():
+        r = vl.get(path)
+        if r is None:
+            continue
+        if r.get("lifecycle") != "HISTORICAL_ONE_SHOT":
+            fail(f"{path} lifecycle must be HISTORICAL_ONE_SHOT", errors)
+        if r.get("current_active_acceptance") != "RETIRED":
+            fail(f"{path} current_active_acceptance must be RETIRED, got {r.get('current_active_acceptance')!r}", errors)
+        if r.get("historical_evidence") != "PRESERVED":
+            fail(f"{path} historical_evidence must be PRESERVED", errors)
+        if r.get("retired_by") != "HUMAN_DECISION_H1":
+            fail(f"{path} retired_by must be HUMAN_DECISION_H1", errors)
+        if r.get("not_rewritten_to_current_head") is not True or r.get("not_deleted_to_make_ci_green") is not True:
+            fail(f"{path} must record not_rewritten + not_deleted", errors)
+        if r.get("integrity_marker") != spec["integrity_marker"]:
+            fail(f"{path} integrity_marker mismatch vs registry", errors)
+        f = REPO_ROOT / path
+        if not f.exists():
+            fail(f"retired validator file deleted (must be preserved): {path}", errors)
+        elif spec["integrity_marker"] not in f.read_text(encoding="utf-8", errors="replace"):
+            fail(f"retired validator {path} integrity marker {spec['integrity_marker'][:12]}… no longer present (rewritten?)", errors)
+    act = {r.get("validator") for r in dec
+           if r.get("record_type") == "validator_lifecycle" and r.get("current_active_acceptance") == "ACTIVE"}
+    missing_act = set(ACTIVE_CURRENT_VALIDATORS) - act
+    if missing_act:
+        fail(f"validator_lifecycle ACTIVE records missing for: {sorted(missing_act)}", errors)
+    for path in ACTIVE_CURRENT_VALIDATORS:
+        if not (REPO_ROOT / path).exists():
+            fail(f"active validator missing: {path}", errors)
+    if not errors or all("validator" not in e for e in errors):
+        print(f"  OK   validator lifecycle: {len(RETIRED_ONE_SHOT_VALIDATORS)} retired (pins + evidence preserved), {len(ACTIVE_CURRENT_VALIDATORS)} active")
+
+    # --- decision_artifact record ------------------------------------------------------
+    da = one("decision_artifact")
+    if da:
+        for key, expected in (("decision_record", DECISION_ID), ("path", DECISION_REPORT_PATH),
+                              ("sha256", DECISION_REPORT_SHA256), ("bytes", DECISION_REPORT_BYTES),
+                              ("authorization", "GRANTED_BY_HUMAN_OWNER"), ("event", LEDGER_EVENT)):
+            if da.get(key) != expected:
+                fail(f"decision_artifact {key}={da.get(key)!r}, expected {expected!r}", errors)
+
+    # --- MSC unit count invariants -------------------------------------------------------
+    summary = next((r for r in recs if r.get("record_type") == "msc_status_summary"), None)
+    if summary is not None and summary.get("open_units") != 42:
+        fail(f"msc_status_summary open_units must remain 42, got {summary.get('open_units')!r}", errors)
+    units = [r for r in recs if r.get("record_type") == "msc_unit"]
+    bad_units = [u.get("msc_unit_id") for u in units
+                 if "OPEN" not in str(u.get("proposed_disposition", ""))
+                 and "REJECTED" not in str(u.get("proposed_disposition", ""))]
+    if bad_units:
+        fail(f"MSC units with non-OPEN/non-REJECTED disposition (remediation must remain NOT_STARTED): {bad_units}", errors)
+    open_units = [u for u in units if "OPEN" in str(u.get("proposed_disposition", ""))]
+    if len(units) != 44 or len(open_units) != 42:
+        fail(f"MSC unit counts must remain 44 total / 42 open, got {len(units)}/{len(open_units)}", errors)
+
+    # --- ROOT-013 preserved history --------------------------------------------------------
+    roots = {r.get("root_id"): r for r in recs if r.get("record_type") == "consensus_root"}
+    r13 = roots.get("ROOT-013") or {}
+    if r13.get("severity") != "LOW":
+        fail("consensus_root ROOT-013 historical severity must remain LOW", errors)
+    ov = next((r for r in recs if r.get("record_type") == "severity_overlay"
+               and r.get("overlay_id") == "ROOT-013-SEVERITY-OVERLAY-CRYPTOJNI"), None)
+    if ov is None or ov.get("status") != "PENDING_SPECIALIST_CONSOLIDATION":
+        fail("ROOT-013 severity overlay must remain PENDING_SPECIALIST_CONSOLIDATION (preserved)", errors)
+
+    # --- decision record in decisions.jsonl ----------------------------------------------------
+    decisions = load_jsonl(REGISTRY_DIR / "decisions.jsonl")
+    dd = next((d for d in decisions if d.get("decision_id") == DECISION_FINDING_ID), None)
+    if dd is None:
+        fail(f"{DECISION_FINDING_ID} missing from decisions.jsonl", errors)
+    else:
+        if "Human" not in str(dd.get("authority_actor", "")):
+            fail(f"{DECISION_FINDING_ID} authority_actor must be the Human Product & Security Owner", errors)
+        for key in ("decision", "rationale", "authority_refs", "evidence_refs", "timestamp"):
+            if not dd.get(key):
+                fail(f"{DECISION_FINDING_ID} missing {key}", errors)
+        for tok in ("ARCHIVE_AND_RETIRE_SHA_PINNED_VALIDATORS", "ACCEPT_MODEL_DEVIATION_WITH_PRESERVED_RATIONALE",
+                    "RETIRE_ARCH_010_AT_B004_START", "RATIFY_ROOT_013_AS_MEDIUM", "GRANTED_BY_HUMAN_OWNER"):
+            if tok not in str(dd.get("decision", "")):
+                fail(f"{DECISION_FINDING_ID} decision must record {tok}", errors)
+
+    # --- continuity surface consistency ----------------------------------------------------------
+    cs = REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json"
+    ch = REPO_ROOT / "docs" / "continuity" / "CURRENT_HANDOFF.md"
+    cg = REPO_ROOT / "docs" / "continuity" / "CURRENT_GIT_STATE.md"
+    if cs.exists() and ch.exists():
+        described = (load_json(cs).get("described_head") or "")
+        chtext = ch.read_text(encoding="utf-8")
+        if DECISION_ID not in chtext or "GRANTED_BY_HUMAN_OWNER" not in chtext:
+            fail("CURRENT_HANDOFF.md must record the decision record id + GRANTED_BY_HUMAN_OWNER", errors)
+        if described and f"Described HEAD: {described}" not in chtext:
+            fail("CURRENT_HANDOFF.md Described HEAD must match CURRENT_STATE.json described_head", errors)
+    if cs.exists() and cg.exists():
+        described = (load_json(cs).get("described_head") or "")
+        cgtext = cg.read_text(encoding="utf-8")
+        if described and described not in cgtext:
+            fail("CURRENT_GIT_STATE.md must record the described_head", errors)
 
 
 def validate_findings(errors):
@@ -2584,6 +2990,8 @@ def validate_lifecycle(errors):
         fail("completed_audit_ids must record AUDIT-SECURITY-ATTACKCHAIN-001 as executed+preserved", errors)
     if PRIOR_GATE_ID not in completed:
         fail(f"completed_audit_ids must record {PRIOR_GATE_ID} as executed+preserved", errors)
+    if "SECURITY-REMEDIATION-COVERAGE-GATE" not in completed:
+        fail("completed_audit_ids must record SECURITY-REMEDIATION-COVERAGE-GATE as executed+preserved", errors)
     if NEXT_GATE_ID in completed:
         fail(f"{NEXT_GATE_ID} must NOT be in completed_audit_ids", errors)
 
@@ -2646,6 +3054,10 @@ def validate_project_memory(errors):
         fail(f"last ledger event must be {LEDGER_EVENT}, got {latest.get('event_id')}", errors)
     else:
         print(f"  OK   Project Memory synced to {latest.get('event_id')}")
+    raw = ledger_path.read_bytes().splitlines()
+    overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
+    if overlong:
+        fail(f"ledger line-size violation (> {LEDGER_MAX_LINE_BYTES} bytes) at lines {overlong}", errors)
 
 
 def main():
@@ -2670,6 +3082,8 @@ def main():
     validate_master_consolidation(errors)
     print("\n[EVIDENCE-PRESERVATION] Security-Remediation Coverage Gate evidence")
     validate_coverage_gate(errors)
+    print("\n[EVIDENCE-PRESERVATION] Human pre-remediation decision layer")
+    validate_human_decision_layer(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

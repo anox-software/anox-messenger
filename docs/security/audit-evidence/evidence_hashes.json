@@ -1,7 +1,7 @@
 {
  "schema": "anox-security-audit-evidence-hashes-v1",
  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003, -004, -005, MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 and SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; the only normalization ever applied is a single trailing LF for session-emitted report bodies.",
- "preservation_task": "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001",
+ "preservation_task": "HUMAN-PRE-REMEDIATION-DECISIONS-001",
  "preservation_tasks": [
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
@@ -9,7 +9,8 @@
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-005",
   "MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001",
-  "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"
+  "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001",
+  "HUMAN-PRE-REMEDIATION-DECISIONS-001"
  ],
  "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
  "audit_base_sha_latest": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
@@ -126,6 +127,18 @@
    "source_type": "DEVIN_CLI_SESSION_TRANSCRIPT",
    "original_path": "Devin CLI session transcript store (session swanky-brace, message_id b6f5176c-33f9-4ed9-b8a1-5bc9130fd9c6, node 296; identical complete copies at nodes 204/205/283; truncated node 289 rejected)",
    "normalization": "single trailing LF appended — byte-exact session-emitted report body"
+  },
+  "HUMAN-PRE-REMEDIATION-DECISIONS-001": {
+   "audit_id": "HUMAN-PRE-REMEDIATION-DECISIONS-001",
+   "artifact_type": "HUMAN_GOVERNANCE_DECISION_RECORD",
+   "path": "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md",
+   "sha256": "d558471dee257b80540e0bc21d2204470402ab9f44234a7e8e0208dc96ef2b13",
+   "bytes": 10128,
+   "source_present": "YES",
+   "source_type": "HUMAN_GOVERNANCE_DECISION",
+   "original_path": "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md",
+   "normalization": "none — canonical repository-authored decision record",
+   "note": "Human Product & Security Owner decision record: H1/H2/H3/R1 decided (no auto-acceptance) + SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER (first wave S0 ∥ S1; remediation NOT_STARTED)."
   }
  },
  "native_artifact_evidence": {
@@ -162,5 +175,6 @@
   }
  ],
  "consolidation_base_sha": "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9",
- "coverage_gate_base_sha": "610ed08337536857db73259168498c49b786caa1"
+ "coverage_gate_base_sha": "610ed08337536857db73259168498c49b786caa1",
+ "human_pre_remediation_decisions_base_sha": "9e585468d081272398e022f12e76e7500d55cbee"
 }

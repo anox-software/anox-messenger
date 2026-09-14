@@ -72,6 +72,12 @@ From `SECURITY-REMEDIATION-COVERAGE-GATE-001` (at base SHA `610ed08337536857db73
 - The gate produced **no empirical evidence at all**: it mechanically verified that the preserved Master Consolidation's 42 open `MSC_UNIT_*` obligations each carry a complete remediation/verification path. Its `gate_*` records in `../audit_traceability.jsonl` are preserved evidence of that verification — not remediation evidence.
 - `GATE RESULT = PASS` is coverage proof only. It does not authorize security remediation, does not change any finding status, and does not execute any session (`REMEDIATION_SESSION_S0..S10` remain `NOT_EXECUTED`; `PHYSICAL_P1..P17` remain `NOT_EXECUTED`).
 
+From `HUMAN-PRE-REMEDIATION-DECISIONS-001` (at base SHA `9e585468d081272398e022f12e76e7500d55cbee`; human governance decision record — no build, test, harness, device run, or remediation executed):
+
+- The Human Product & Security Owner decided the gate's Human Decision Packet (`H1/H2/H3/R1`; zero auto-acceptance) and granted `SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER` for the first wave `REMEDIATION_SESSION_S0 ∥ S1` only.
+- This is a **decision record, not remediation evidence**: security remediation remains `NOT_STARTED`, `B-004`/`B-005` `NOT_STARTED`, product `BLOCKED_PENDING_FINAL_AUDIT`, `PHYSICAL_P1..P17` `NOT_EXECUTED`, 42 open `MSC_UNIT_*` unchanged (0 fixed), and no finding was closed or re-severitied by execution (the `ROOT-013` LOW→MEDIUM change is a canonical severity ratification; the finding remains OPEN).
+- `ANOX-SECURITY-ARCH-010` remains `Open`/`INFO` with scheduled trigger `RETIRE_AT_B004_START`.
+
 ## Authoritative locations
 
 The authoritative evidence is:
