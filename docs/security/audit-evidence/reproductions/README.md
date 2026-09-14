@@ -61,11 +61,17 @@ From `AUDIT-SECURITY-ATTACKCHAIN-001` (at SHA `e54584903a353e98ad154d1e8f90f93ed
 - **Instrumented + physical:** `NOT_RUN` (no device/emulator authorized; no results fabricated). `AC-013` physical evidence vacuum recorded as CLOSURE_RISK_ENABLING_CONDITION (P1–P14 campaign required on a provenance-verified binary).
 - **Harness:** `/tmp/anox_attackchain_001/` (`Harness.java`, `MarkerHarness.java`, `out.txt`, `marker_out.txt`, `METHOD.txt`, `traceability_extract.txt`) compiled against `android/build/tmp/kotlin-classes/{debug,debugUnitTest}` + `nimbus-jose-jwt-10.9.1` + `kotlin-stdlib-2.2.21` — 36 benign composition cases; **not authoritative**, results preserved in the report only.
 
+From `MASTER-SPECIALIST-CONSOLIDATION-001` (at base SHA `1eb773069d81ea3d12b76249c73f2f5fb0b6cae9`; analytical read-only consolidation — no build, test, harness or device run executed):
+
+- All runtime measurements and native observations carried by the consolidation are **transcribed** from the nine hash-verified preserved reports above; the consolidation produced no new empirical evidence.
+- `/tmp/anox_master_consolidation_001/` (the consolidation's analytical scratch builder) is **not authoritative** and not preserved; its outputs exist only inside the preserved report.
+- The consolidation's machine-readable layer (`msc_*` records in `../audit_traceability.jsonl`) is preserved evidence of the consolidation's conclusions — it is not itself remediation evidence.
+
 ## Authoritative locations
 
 The authoritative evidence is:
 
-1. The preserved report bodies in `docs/reports/security/audits/` (hash-bound in `../evidence_hashes.json`).
+1. The preserved report bodies in `docs/reports/security/audits/` and the Master Consolidation report in `docs/reports/security/consolidation/` (hash-bound in `../evidence_hashes.json`).
 2. The structured mappings in `../audit_traceability.jsonl` and `../audit_registry.jsonl`.
 
 **`/tmp` artifacts are NOT authoritative.** Paths such as `/tmp/anox_buildsc_out_1/`, `/tmp/anox_audit2/`, `/tmp/anox_crypto_jni_*/` (host target, repro crate, cargo-ndk output), `/tmp/anox_auth_dpop_harness/` (Auth/DPoP adversarial harness), `/tmp/anox_android_storage_audit/` (AtomicFile extracted source + adversarial harness), `/tmp/anox_attackchain_001/` (Attackchain composition + marker harnesses), and `/tmp` proof scripts were audit-run artifacts; they are transient, unowned by this repository, and are deliberately not copied in as evidence. Their *results* are preserved inside the reports themselves; only the recorded hash values are carried into `../evidence_hashes.json`.
