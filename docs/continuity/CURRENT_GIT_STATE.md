@@ -1,22 +1,22 @@
 # CURRENT_GIT_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0049`  
+**Event:** `ANOX-EVENT-0050`  
 **Branch (runtime):** `__HANDOFF_BRANCH__`  
 **HEAD (runtime):** `__HANDOFF_HEAD__`  
 **Working tree (runtime):** `__WORKING_TREE__`
 
 - **Canonical branch:** `main`
-- **Canonical baseline:** `e54584903a353e98ad154d1e8f90f93ed9d7db14`
-- **Substantive HEAD:** `e8be5df19cee24f22e0f1f9af6b4cc4c792351c5`
-- **Previous baseline:** `b9abeb0850a476716403d224b87a857c1147502e`
+- **Canonical baseline:** `1eb773069d81ea3d12b76249c73f2f5fb0b6cae9`
+- **Substantive HEAD:** `548b0ed512b456768ea881e034fb828f400a2f8d`
+- **Previous baseline:** `e54584903a353e98ad154d1e8f90f93ed9d7db14`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: e8be5df19cee24f22e0f1f9af6b4cc4c792351c5
+Described HEAD: 548b0ed512b456768ea881e034fb828f400a2f8d
 
 ## Pre-merge gate
 
-`SECURITY-AUDIT-EVIDENCE-PRESERVATION-005`
+`MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001`
 
 ## Post-merge gate
 
-`MASTER-SPECIALIST-CONSOLIDATION`
+`SECURITY-REMEDIATION-COVERAGE-GATE`

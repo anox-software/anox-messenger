@@ -32,6 +32,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
+    "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -205,7 +206,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 9 audits")
+        self.assert_fails(self.run_validator(), "exactly 10 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -303,7 +304,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 9 audits")
+        self.assert_fails(self.run_validator(), "exactly 10 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -408,7 +409,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
         recs = _load_jsonl(tp)
         for r in recs:
-            if r.get("task_id") == "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005":
+            if r.get("task_id") == "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001":
                 r["status"] = "Closed"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "Ready For Remote")
@@ -476,7 +477,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 9 audits")
+        self.assert_fails(self.run_validator(), "exactly 10 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -562,11 +563,11 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "153")
 
-    # 55. Mark the Master Specialist Consolidation gate executed in completed_audit_ids.
+    # 55. Mark the Security-Remediation Coverage Gate executed in completed_audit_ids.
     def test_55_consolidation_marked_completed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["final_pre_product_audit"]["completed_audit_ids"].append("MASTER-SPECIALIST-CONSOLIDATION")
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("SECURITY-REMEDIATION-COVERAGE-GATE")
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
 
@@ -589,10 +590,10 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "next_phase")
 
-    # 58. Drop the preservation-005 task record.
+    # 58. Drop the consolidation-preservation task record.
     def test_58_dropped_task_record_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
-        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005"]
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001"]
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
 
@@ -667,7 +668,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 9 audits")
+        self.assert_fails(self.run_validator(), "exactly 10 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -869,6 +870,368 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
                 r["repository_modified_by_audit"] = "YES"
         _write_jsonl(rp, recs)
         self.assert_fails(self.run_validator(), "repository_modified_by_audit")
+
+    # ------------------------------------------------------------------
+    # MASTER-SPECIALIST-CONSOLIDATION-001 adversarial cases (92..141)
+    # ------------------------------------------------------------------
+    MSC = "MASTER-SPECIALIST-CONSOLIDATION-001"
+    MSC_REPORT = "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md"
+
+    def _msc_recs(self):
+        tp = self.root / TRACE
+        return tp, _load_jsonl(tp)
+
+    def _msc_one(self, rt):
+        recs = _load_jsonl(self.root / TRACE)
+        return next((r for r in recs if r.get("record_type") == rt and r.get("source_artifact_id") == self.MSC), None)
+
+    def _msc_mutate_one(self, rt, mutator):
+        tp, recs = self._msc_recs()
+        for r in recs:
+            if r.get("record_type") == rt and r.get("source_artifact_id") == self.MSC:
+                mutator(r)
+        _write_jsonl(tp, recs)
+        return self.run_validator()
+
+    def _msc_mutate_unit(self, uid, mutator):
+        tp, recs = self._msc_recs()
+        for r in recs:
+            if r.get("record_type") == "msc_unit" and r.get("msc_unit_id") == uid:
+                mutator(r)
+        _write_jsonl(tp, recs)
+        return self.run_validator()
+
+    def _registry_mutate(self, mutator):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == self.MSC:
+                mutator(r)
+        _write_jsonl(rp, recs)
+        return self.run_validator()
+
+    # 92. Master consolidation report truncated (content mutation -> hash mismatch).
+    def test_92_msc_report_truncated_fails(self):
+        p = self.root / self.MSC_REPORT
+        p.write_bytes(p.read_bytes()[:-4096])
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 93. Master consolidation report deleted.
+    def test_93_msc_report_deleted_fails(self):
+        (self.root / self.MSC_REPORT).unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 94. evidence_hashes entry for the consolidation report altered.
+    def test_94_msc_hash_entry_altered_fails(self):
+        hp = self.root / "docs/security/audit-evidence/evidence_hashes.json"
+        h = json.loads(hp.read_text(encoding="utf-8"))
+        h["reports"][self.MSC]["sha256"] = "0" * 64
+        hp.write_text(json.dumps(h, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator())
+
+    # 95. Registry artifact_type changed away from MASTER_SECURITY_CONSOLIDATION.
+    def test_95_msc_registry_artifact_type_fails(self):
+        self.assert_fails(self._registry_mutate(lambda r: r.update(artifact_type="AUDIT")), "artifact_type")
+
+    # 96. Registry base/audited SHA wrong.
+    def test_96_msc_registry_base_sha_fails(self):
+        self.assert_fails(self._registry_mutate(lambda r: r.update(base_sha="e54584903a353e98ad154d1e8f90f93ed9d7db14")), "base_sha")
+        self.assert_fails(self._registry_mutate(lambda r: r.update(audited_sha="0" * 40)), "audited_sha")
+
+    # 97. Registry result mutated.
+    def test_97_msc_registry_result_fails(self):
+        self.assert_fails(self._registry_mutate(lambda r: r.update(result="PASS")), "result")
+
+    # 98. Registry model mutated.
+    def test_98_msc_registry_model_fails(self):
+        self.assert_fails(self._registry_mutate(lambda r: r.update(actual_model="Claude Opus 5 High")), "actual_model")
+
+    # 99. Registry unit/source counts mutated.
+    def test_99_msc_registry_counts_fails(self):
+        self.assert_fails(self._registry_mutate(lambda r: r.update(msc_units=43)), "msc_units")
+        self.assert_fails(self._registry_mutate(lambda r: r.update(msc_open=41)), "msc_open")
+        self.assert_fails(self._registry_mutate(lambda r: r.update(source_security_items=89)), "source_security_items")
+
+    # 100. One msc_source_item dropped (90 -> 89).
+    def test_100_msc_source_item_dropped_fails(self):
+        tp, recs = self._msc_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "msc_source_item" and r.get("source_id") == "ROOT-017")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "90")
+
+    # 101. A source item rendered unaccounted (empty msc_units).
+    def test_101_msc_source_item_unaccounted_fails(self):
+        def mut(r):
+            if r.get("record_type") == "msc_source_item" and r.get("source_id") == "ROOT-001":
+                r["msc_units"] = []
+        tp, recs = self._msc_recs()
+        for r in recs:
+            mut(r)
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "unaccounted")
+
+    # 102. A source item given an unknown disposition.
+    def test_102_msc_source_item_unknown_disposition_fails(self):
+        tp, recs = self._msc_recs()
+        for r in recs:
+            if r.get("record_type") == "msc_source_item" and r.get("source_id") == "ROOT-001":
+                r["consolidation_disposition"] = "INVENTED_DISPOSITION"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "disposition")
+
+    # 103. Duplicate source_id introduced.
+    def test_103_msc_duplicate_source_id_fails(self):
+        tp, recs = self._msc_recs()
+        dup = dict(next(r for r in recs if r.get("record_type") == "msc_source_item" and r.get("source_id") == "ROOT-001"))
+        recs.append(dup)
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator())
+
+    # 104. msc_source_summary totals mutated.
+    def test_104_msc_source_summary_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_source_summary", lambda r: r.update(unaccounted=1)), "unaccounted")
+        self.assert_fails(self._msc_mutate_one("msc_source_summary", lambda r: r.update(total_source_security_items=91)), "total_source_security_items")
+
+    # 105. One msc_unit dropped (44 -> 43).
+    def test_105_msc_unit_dropped_fails(self):
+        tp, recs = self._msc_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "msc_unit" and r.get("msc_unit_id") == "MSC_UNIT_001")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "MSC_UNIT")
+
+    # 106. msc_unit missing a required field.
+    def test_106_msc_unit_missing_field_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_005", lambda r: r.pop("primary_root_cause")), "primary_root_cause")
+
+    # 107. OPEN unit loses provisional_session.
+    def test_107_msc_unit_no_session_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_009", lambda r: r.update(provisional_session="")), "provisional_session")
+
+    # 108. OPEN unit loses independent_retest_owners.
+    def test_108_msc_unit_no_retest_owner_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_017", lambda r: r.update(independent_retest_owners=[])), "retest_owner")
+
+    # 109. OPEN unit loses all test plans.
+    def test_109_msc_unit_no_test_plan_fails(self):
+        def m(r):
+            r.update(required_automated_tests="", required_instrumented_tests="", required_physical_tests="")
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_021", m), "test plan")
+
+    # 110. OPEN unit loses closure_evidence / gate.
+    def test_110_msc_unit_no_closure_or_gate_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_028", lambda r: r.update(closure_evidence=[])), "closure_evidence")
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_028", lambda r: r.update(pre_b004_or_later="")), "gate")
+
+    # 111. Rejected unit MSC_UNIT_043 flipped to OPEN.
+    def test_111_msc_unit043_reopened_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_043", lambda r: r.update(proposed_disposition="OPEN_PENDING_REMEDIATION_COVERAGE_GATE")))
+
+    # 112. MSC_UNIT_043 loses its ROOT-016 binding.
+    def test_112_msc_unit043_binding_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_043", lambda r: r.update(source_ids=["CS-016"])), "ROOT-016")
+
+    # 113. MSC_UNIT_044 loses its BUILDSC-012 binding.
+    def test_113_msc_unit044_binding_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_044", lambda r: r.update(source_ids=["CS-019"])), "BUILDSC-CANDIDATE-012")
+
+    # 114. Rejected unit silently re-severitied to HIGH.
+    def test_114_msc_rejected_severity_fails(self):
+        self.assert_fails(self._msc_mutate_unit("MSC_UNIT_043", lambda r: r.update(proposed_consolidated_severity="HIGH")), "severity")
+
+    # 115. Severity distribution record mutated.
+    def test_115_msc_severity_distribution_fails(self):
+        def m(r):
+            d = dict(r["distribution"]); d["HIGH"] = 8; r["distribution"] = d
+        self.assert_fails(self._msc_mutate_one("msc_severity_distribution", m), "distribution")
+        self.assert_fails(self._msc_mutate_one("msc_severity_distribution", lambda r: r.update(open=41)), "open")
+
+    # 116. Severity overlays removed (MSC_UNIT_001 EI / AC-003 conditional).
+    def test_116_msc_overlays_removed_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_severity_distribution", lambda r: r["overlays"].pop("MSC_UNIT_001")), "EVIDENCE_INTEGRITY")
+        self.assert_fails(self._msc_mutate_one("msc_severity_distribution", lambda r: r["overlays"].pop("ATTACKCHAIN_AC_003")), "conditional-critical")
+
+    # 117. ROOT-013 proposal flipped to canonically mutated.
+    def test_117_msc_root013_fails(self):
+        def m(r):
+            r["roots"]["ROOT-013"]["status"] = "CANONICALLY_MUTATED"
+        self.assert_fails(self._msc_mutate_one("msc_root_arbitration", m), "ROOT-013")
+        def m2(r):
+            r["roots"]["ROOT-013"]["severity"] = "CONFIRMED_NO_CHANGE MEDIUM"
+        self.assert_fails(self._msc_mutate_one("msc_root_arbitration", m2), "ROOT-013")
+
+    # 118. ROOT-016 revived inside the arbitration record.
+    def test_118_msc_root016_revived_fails(self):
+        def m(r):
+            r["roots"]["ROOT-016"]["verdict"] = "KEEP_AS_DISTINCT_ROOT"
+            r["roots"]["ROOT-016"]["status"] = "OPEN"
+        self.assert_fails(self._msc_mutate_one("msc_root_arbitration", m), "ROOT-016")
+
+    # 119. ROOT-017 classification removed.
+    def test_119_msc_root017_fails(self):
+        def m(r):
+            r["roots"]["ROOT-017"]["classification"] = "UNKNOWN"
+        self.assert_fails(self._msc_mutate_one("msc_root_arbitration", m), "ROOT-017")
+
+    # 120. Split-root set mutated (ROOT-008 no longer SPLIT_REQUIRED).
+    def test_120_msc_split_roots_fails(self):
+        def m(r):
+            r["roots"]["ROOT-008"]["verdict"] = "KEEP_AS_DISTINCT_ROOT"
+        self.assert_fails(self._msc_mutate_one("msc_root_arbitration", m), "split")
+
+    # 121. Specialist candidate arbitration shrunk / permanent-root flag cleared.
+    def test_121_msc_spec_candidate_arb_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_specialist_candidate_arbitration", lambda r: r["candidates"].pop("ANOX-AUTHDPOP-CANDIDATE-002")), "candidates")
+        self.assert_fails(self._msc_mutate_one("msc_specialist_candidate_arbitration", lambda r: r.update(no_permanent_root_ids_allocated=False)), "permanent")
+
+    # 122. Gap arbitration shrunk / verdict changed.
+    def test_122_msc_gap_arb_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_gap_arbitration", lambda r: r["gaps"].pop("ANOX-ANDROIDSTORAGE-GAP-001")), "gaps")
+        def m(r):
+            r["gaps"]["ANOX-AUTHDPOP-GAP-002"]["verdict"] = "MERGED_AWAY"
+        self.assert_fails(self._msc_mutate_one("msc_gap_arbitration", m), "KEEP_DISTINCT_CONTRACT_UNIT")
+
+    # 123. Historical arbitration: original status rewritten.
+    def test_123_msc_historical_status_rewrite_fails(self):
+        def m(r):
+            for row in r["rows"]:
+                if row.get("finding_id") == "ANOX-LEGACY-CRYPTO-005":
+                    row["original_status"] = "Open"
+        self.assert_fails(self._msc_mutate_one("msc_historical_remediation_arbitration", m), "Closed")
+
+    # 124. Historical arbitration: FALSE_CLOSURE interpretation for MAINARCH-031 removed.
+    def test_124_msc_historical_false_closure_fails(self):
+        def m(r):
+            for row in r["rows"]:
+                if row.get("finding_id") == "ANOX-MAINARCH-031":
+                    row["interpretation"] = "EFFECTIVE"
+        self.assert_fails(self._msc_mutate_one("msc_historical_remediation_arbitration", m), "FALSE_CLOSURE")
+
+    # 125. FCP rule dropped (FCP_7 evidence separation).
+    def test_125_msc_fcp_dropped_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_false_closure_rules", lambda r: r["rules"].pop("FCP_7")), "FCP")
+
+    # 126. Attackchain mapping: chain dropped (AC-015).
+    def test_126_msc_chain_dropped_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_attackchain_mapping", lambda r: r["chains"].pop("ATTACKCHAIN_AC_015")), "15")
+
+    # 127. Attackchain mapping: a chain left without owning units.
+    def test_127_msc_chain_unmapped_fails(self):
+        def m(r):
+            r["chains"]["ATTACKCHAIN_AC_001"]["msc_units"] = []
+        self.assert_fails(self._msc_mutate_one("msc_attackchain_mapping", m), "ATTACKCHAIN_AC_001")
+
+    # 128. AC-003 conditional overlay promoted to canonical CRITICAL.
+    def test_128_msc_ac003_overlay_fails(self):
+        def m(r):
+            r["ac003_conditional_overlay"]["canonical_chain_severity"] = "CRITICAL"
+        self.assert_fails(self._msc_mutate_one("msc_attackchain_mapping", m), "AC-003")
+
+    # 129. High-chain challenge set mutated.
+    def test_129_msc_high_chain_challenge_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_attackchain_mapping", lambda r: r["high_chain_challenge"].pop("ATTACKCHAIN_AC_012")), "high-chain")
+
+    # 130. Server breaker dropped / left unassigned.
+    def test_130_msc_server_breaker_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_server_breakers", lambda r: r["items"].pop()), "S1")
+        def m(r):
+            for i in r["items"]:
+                if i["id"] == "SERVER_BREAKER_S1":
+                    i["msc_units"] = []
+        self.assert_fails(self._msc_mutate_one("msc_server_breakers", m), "SERVER_BREAKER_S1")
+        self.assert_fails(self._msc_mutate_one("msc_server_breakers", lambda r: r.update(unassigned=1)), "unassigned")
+
+    # 131. Client breaker dropped / left unassigned.
+    def test_131_msc_client_breaker_fails(self):
+        def m(r):
+            r["items"] = [i for i in r["items"] if i["id"] != "CLIENT_BREAKER_C14"]
+        self.assert_fails(self._msc_mutate_one("msc_client_breakers", m), "C14")
+        def m2(r):
+            for i in r["items"]:
+                if i["id"] == "CLIENT_BREAKER_C1":
+                    i["msc_units"] = []
+        self.assert_fails(self._msc_mutate_one("msc_client_breakers", m2), "CLIENT_BREAKER_C1")
+
+    # 132. Dependency DAG cycles / edges dropped.
+    def test_132_msc_dag_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_dependency_dag", lambda r: r.update(unresolved_dependency_cycles=1)), "cycles")
+        self.assert_fails(self._msc_mutate_one("msc_dependency_dag", lambda r: r.update(edges=[])), "edges")
+
+    # 133. Remediation session dropped (S2).
+    def test_133_msc_session_dropped_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_remediation_sessions", lambda r: r["sessions"].pop("REMEDIATION_SESSION_S2")), "S0..S10")
+
+    # 134. Pre-B004 categories shrunk / emptied.
+    def test_134_msc_preb004_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_pre_b004_set", lambda r: r["categories"].pop("A_ARCHITECTURE_CONTRACT")), "categories")
+        def m(r):
+            r["categories"]["D_VERIFICATION"] = []
+        self.assert_fails(self._msc_mutate_one("msc_pre_b004_set", m), "categories")
+
+    # 135. Pre-B004 Definition of Done marked EXECUTED.
+    def test_135_msc_dod_executed_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_pre_b004_dod", lambda r: r.update(status="EXECUTED")), "NOT_EXECUTED")
+
+    # 136. Later gate dropped / ownerless later item.
+    def test_136_msc_later_gates_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_later_gates", lambda r: r["gates"].pop("PHYSICAL_GRAPHENEOS_FINAL")), "PHYSICAL_GRAPHENEOS_FINAL")
+        self.assert_fails(self._msc_mutate_one("msc_later_gates", lambda r: r.update(later_items_without_named_gate=1)), "named_gate")
+
+    # 137. Closure standard rule removed / state machine stage dropped.
+    def test_137_msc_closure_fails(self):
+        self.assert_fails(self._msc_mutate_one("msc_closure_evidence_standard", lambda r: r.update(rule="code changed = closed")), "CODE_CHANGED_ONLY")
+        def m(r):
+            r["stages"] = [s for s in r["stages"] if s != "ATTACKCHAIN_RETESTED / NOT_APPLICABLE"]
+        self.assert_fails(self._msc_mutate_one("msc_closure_state_machine", m), "stages")
+
+    # 138. Whole-chain mandatory retest set shrunk.
+    def test_138_msc_whole_chain_fails(self):
+        def m(r):
+            r["mandatory"] = [c for c in r["mandatory"] if c != "ATTACKCHAIN_AC_012"]
+        self.assert_fails(self._msc_mutate_one("msc_whole_chain_retests", m), "mandatory")
+
+    # 139. Physical campaign shrunk / marked executed.
+    def test_139_msc_physical_fails(self):
+        def m(r):
+            r["items"] = [i for i in r["items"] if i["id"] != "PHYSICAL_P17"]
+            r["count"] = 16
+        self.assert_fails(self._msc_mutate_one("msc_physical_campaign", m), "P1..P17")
+        self.assert_fails(self._msc_mutate_one("msc_physical_campaign", lambda r: r.update(status="EXECUTED")), "NOT_EXECUTED")
+
+    # 140. Coverage losses: architecture unmapped / finding lost / legacy ownerless.
+    def test_140_msc_coverage_losses_fail(self):
+        def m(r):
+            r["android_storage"]["unmapped"] = 1
+        self.assert_fails(self._msc_mutate_one("msc_architecture_coverage", m), "42/42")
+        self.assert_fails(self._msc_mutate_one("msc_architecture_coverage", lambda r: r.update(architecture_finding_coverage_loss=1)), "coverage_loss")
+        self.assert_fails(self._msc_mutate_one("msc_legacy_coverage", lambda r: r.update(legacy_findings_without_current_owner=1)), "without_current_owner")
+
+    # 141. Contracts / precursor / quality gates / findings / verdict / source_status / next_gate mutations.
+    def test_141_msc_contracts_precursor_quality_verdict_fail(self):
+        self.assert_fails(self._msc_mutate_one("msc_server_contract", lambda r: r["rules"].pop()), "SC-1")
+        self.assert_fails(self._msc_mutate_one("msc_server_contract", lambda r: r.update(status="IMPLEMENTED")), "NOT_IMPLEMENTED")
+        def mcc(r):
+            r["rules"] = [x for x in r["rules"] if x["id"] != "CC-14"]
+        self.assert_fails(self._msc_mutate_one("msc_client_contract", mcc), "CC-14")
+        self.assert_fails(self._msc_mutate_one("msc_fix_coverage_precursor", lambda r: r.update(open_units=41)), "42")
+        self.assert_fails(self._msc_mutate_one("msc_fix_coverage_precursor", lambda r: r.update(unassigned_fix_session=1)), "unassigned_fix_session")
+        self.assert_fails(self._msc_mutate_one("msc_quality_gates", lambda r: r["gates"].update(silently_dropped=1)), "silently_dropped")
+        self.assert_fails(self._msc_mutate_one("msc_consolidation_findings", lambda r: r.update(result="PASS")), "PASS_WITH_CONSOLIDATION_FINDINGS")
+        self.assert_fails(self._msc_mutate_one("msc_consolidation_findings", lambda r: r["reasons"].pop()), "7")
+        self.assert_fails(self._msc_mutate_one("msc_verdict", lambda r: r.update(architecture_verdict="COMPONENT_INTERNAL_REDESIGN_ONLY")), "CROSS_COMPONENT")
+        self.assert_fails(self._msc_mutate_one("msc_verdict", lambda r: r.update(sec_c_required="YES")), "sec_c")
+        self.assert_fails(self._msc_mutate_one("msc_verdict", lambda r: r.update(sec_c_escalation="")), "escalation")
+        tp, recs = self._msc_recs()
+        for r in recs:
+            if r.get("record_type") == "source_status" and r.get("audit_id") == self.MSC:
+                r["source_present"] = "NO"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "source_status")
+        tp, recs = self._msc_recs()
+        for r in recs:
+            if r.get("record_type") == "next_gate" and r.get("gate") == "SECURITY-REMEDIATION-COVERAGE-GATE":
+                r["status"] = "EXECUTED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "NOT_EXECUTED")
 
 
 if __name__ == "__main__":

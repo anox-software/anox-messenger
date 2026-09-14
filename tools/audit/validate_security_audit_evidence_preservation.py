@@ -2,15 +2,20 @@
 """Security Hardening audit evidence-preservation validator.
 
 Fail-closed verification for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001,
--002, -003, -004 and -005: the nine preserved audit reports (including
-AUDIT-SECURITY-CRYPTO-JNI-001, AUDIT-SECURITY-AUTH-DPOP-001,
-AUDIT-SECURITY-ANDROID-STORAGE-001 and AUDIT-SECURITY-ATTACKCHAIN-001),
-the audit-evidence registry, the traceability layer (including cryptojni,
-authdpop, androidstorage and attackchain candidates/gaps, specialist
-relations, severity overlays, provenance limitation, temp-build evidence,
-the ABI revision record, coverage/test evidence, historical revalidation,
-remediation coverage, chain breakers, gate sets and specialist
-handoffs), and the lifecycle state that must remain unchanged.
+-002, -003, -004, -005 and MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001:
+the nine preserved audit reports (including AUDIT-SECURITY-CRYPTO-JNI-001,
+AUDIT-SECURITY-AUTH-DPOP-001, AUDIT-SECURITY-ANDROID-STORAGE-001 and
+AUDIT-SECURITY-ATTACKCHAIN-001), the preserved MASTER-SPECIALIST-CONSOLIDATION-001
+MASTER_SECURITY_CONSOLIDATION artifact (90 source items, 44 MSC units,
+arbitrations, attackchain/breaker mappings, dependency DAG, sessions,
+Pre-B004 set + DoD, gates, closure standard/state machine, retest matrix,
+physical campaign, consolidated contracts, fix coverage precursor, quality
+gates), the audit-evidence registry, the traceability layer (including
+cryptojni, authdpop, androidstorage and attackchain candidates/gaps,
+specialist relations, severity overlays, provenance limitation, temp-build
+evidence, the ABI revision record, coverage/test evidence, historical
+revalidation, remediation coverage, chain breakers, gate sets and
+specialist handoffs), and the lifecycle state that must remain unchanged.
 
 Set SECURITY_AUDIT_PRESERVATION_REPO to validate an alternate tree
 (test fixtures); git-dependent checks are skipped when no .git exists.
@@ -32,12 +37,14 @@ CRYPTOJNI_AUDIT_SHA = "a79166ab7e65db71ba70e3a427df2ad017dc9225"
 AUTHDPOP_AUDIT_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
 ANDROIDSTORAGE_AUDIT_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
 ATTACKCHAIN_AUDIT_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
-BASE_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
-DELIVERY_BRANCH = "governance/security-audit-evidence-preservation-005"
-TASK_ID = "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005"
-NEXT_GATE_ID = "MASTER-SPECIALIST-CONSOLIDATION"
-PRIOR_GATE_ID = "AUDIT-SECURITY-ATTACKCHAIN-001"
-LEDGER_EVENT = "ANOX-EVENT-0049"
+CONSOLIDATION_BASE_SHA = "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
+BASE_SHA = "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
+DELIVERY_BRANCH = "governance/master-specialist-consolidation-preservation-001"
+TASK_ID = "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001"
+NEXT_GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE"
+PRIOR_GATE_ID = "MASTER-SPECIALIST-CONSOLIDATION"
+LEDGER_EVENT = "ANOX-EVENT-0050"
+MSC_ID = "MASTER-SPECIALIST-CONSOLIDATION-001"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -76,7 +83,101 @@ EXPECTED_REPORTS = {
         "path": "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
         "sha256": "a4feac55f49066647ec0c1665c40deab581115da4b102e81eb6742e72b80ca9e",
     },
+    "MASTER-SPECIALIST-CONSOLIDATION-001": {
+        "path": "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
+        "sha256": "a22c779833e6334067405ebd158f1cbadeee5dc51d9b7795c31ef12758060b00",
+    },
 }
+
+# ---------------------------------------------------------------------------
+# MASTER-SPECIALIST-CONSOLIDATION-001 preserved expectations
+# ---------------------------------------------------------------------------
+# The consolidation is a read-only analytical artifact (result
+# PASS_WITH_CONSOLIDATION_FINDINGS) executed at CONSOLIDATION_BASE_SHA. Its
+# preserved machine-readable layer uses namespaced identities
+# (MSC_UNIT_*, ATTACKCHAIN_AC_*, SERVER_BREAKER_S*, CLIENT_BREAKER_C*,
+# REMEDIATION_SESSION_S*, PHYSICAL_P*, FCP_*). These constants pin the
+# fail-closed expectations; the content lives in audit_traceability.jsonl.
+MSC_SOURCE_ITEM_COUNT = 90
+MSC_SOURCE_CLASS_COUNTS = {
+    "CONSENSUS_ROOT": 18,
+    "SPECIALIST_CANDIDATE": 23,
+    "ATTACKCHAIN": 15,
+    "ARCHITECTURE_GAP": 6,
+    "ARCHITECTURE_FINDING": 10,
+    "HISTORICAL_FINDING": 16,
+    "GOVERNANCE_ITEM": 2,
+}
+MSC_SOURCE_DISPOSITIONS = {
+    "DISTINCT_ROOT_CAUSE", "DISTINCT_ROOT_CAUSE_SPLIT", "MERGE_INTO_EXISTING_ROOT",
+    "ATTACKCHAIN_ONLY", "SUPERSEDED_BUT_TRACEABLE", "ARCHITECTURE_CONTRACT_GAP",
+    "META_EVIDENCE_OR_BUILD_RISK", "REJECTED_NOT_A_FINDING",
+    "ENABLING_CONDITION", "STANDALONE_SECURITY_ITEM",
+}
+MSC_UNIT_IDS = {f"MSC_UNIT_{i:03d}" for i in range(1, 45)}
+MSC_REJECTED_UNITS = {"MSC_UNIT_043", "MSC_UNIT_044"}
+MSC_OPEN_STATUS = "OPEN_PENDING_REMEDIATION_COVERAGE_GATE"
+MSC_REJECTED_STATUS = "REJECTED_NOT_A_FINDING"
+MSC_SEVERITY_DISTRIBUTION = {
+    "CRITICAL": 0, "HIGH": 7, "MEDIUM": 16, "LOW": 6,
+    "INFO_META": 4, "CONTRACT_GAPS": 9, "REJECTED": 2,
+}
+MSC_SPLIT_ROOTS = {"ROOT-008", "ROOT-011", "ROOT-012", "ROOT-018"}
+MSC_ROOT_IDS = {f"ROOT-{i:03d}" for i in range(1, 19)}
+MSC_SPEC_CANDIDATE_IDS = (
+    {f"ANOX-CRYPTOJNI-CANDIDATE-{i:03d}" for i in range(1, 7)}
+    | {f"ANOX-AUTHDPOP-CANDIDATE-{i:03d}" for i in range(1, 4)}
+    | {f"ANOX-ANDROIDSTORAGE-CANDIDATE-{i:03d}" for i in range(1, 3)}
+)
+MSC_GAP_IDS = (
+    {f"ANOX-AUTHDPOP-GAP-{i:03d}" for i in range(1, 4)}
+    | {f"ANOX-ANDROIDSTORAGE-GAP-{i:03d}" for i in range(1, 4)}
+)
+MSC_CHAIN_IDS = {f"ATTACKCHAIN_AC_{i:03d}" for i in range(1, 16)}
+MSC_SERVER_BREAKER_IDS = {f"SERVER_BREAKER_S{i}" for i in range(1, 19)}
+MSC_CLIENT_BREAKER_IDS = {f"CLIENT_BREAKER_C{i}" for i in range(1, 15)}
+MSC_SESSION_IDS = {f"REMEDIATION_SESSION_S{i}" for i in range(0, 11)}
+MSC_PHYSICAL_IDS = {f"PHYSICAL_P{i}" for i in range(1, 18)}
+MSC_FCP_IDS = {f"FCP_{i}" for i in range(1, 9)}
+MSC_SERVER_CONTRACT_IDS = {f"SC-{i}" for i in range(1, 15)}
+MSC_CLIENT_CONTRACT_IDS = {f"CC-{i}" for i in range(1, 15)}
+MSC_CSM_STAGES = {
+    "FOUND", "CONSOLIDATED", "ASSIGNED", "IMPLEMENTED", "AUTOMATED_TESTED",
+    "RUNTIME_TESTED / NOT_APPLICABLE", "INDEPENDENTLY_RETESTED",
+    "ATTACKCHAIN_RETESTED / NOT_APPLICABLE", "PHYSICAL_VERIFIED / NOT_APPLICABLE",
+    "EVIDENCE_PRESERVED", "CLOSED",
+}
+MSC_UNIT_REQUIRED_FIELDS = (
+    "msc_unit_id", "title", "unit_type", "proposed_consolidated_severity",
+    "chain_severity_relation", "evidence_integrity_severity", "confidence",
+    "primary_root_cause", "source_ids", "consensus_root_relation",
+    "architecture_findings", "legacy_findings", "specialist_findings",
+    "attackchains", "affected_architecture", "affected_code",
+    "current_reachability", "activation_gate", "pre_b004_or_later",
+    "fix_groups", "provisional_session", "dependencies",
+    "architecture_prerequisites", "must_fix_together", "must_not_fix_alone",
+    "chain_breakers", "required_automated_tests", "required_instrumented_tests",
+    "required_physical_tests", "independent_retest_owners", "closure_evidence",
+    "proposed_disposition",
+)
+MSC_QUALITY_GATE_ZERO_FIELDS = (
+    "source_items_unaccounted", "msc_units_without_source",
+    "attackchains_without_msc_unit", "server_breakers_unassigned",
+    "client_breakers_unassigned", "architecture_gaps_lost",
+    "legacy_findings_without_owner", "pre_b004_items_without_gate",
+    "later_items_without_named_gate", "msc_units_without_test_plan",
+    "msc_units_without_retest_owner", "unknown_dispositions",
+    "silently_dropped", "unresolved_dependency_cycles",
+)
+MSC_PRE_B004_CATEGORIES = (
+    "A_ARCHITECTURE_CONTRACT", "B_BUILD_PROVENANCE", "C_CODE_REMEDIATION",
+    "C_RECOMMENDED_PULL_FORWARD", "D_VERIFICATION", "E_B004_IMPLEMENTATION_TIME",
+)
+MSC_LATER_GATES = (
+    "B006", "B008_B009", "B012", "B013", "RELEASE_CANDIDATE",
+    "PHYSICAL_GRAPHENEOS_FINAL", "FINAL_PRODUCT_GATE_OPERATIONAL_ACCEPTANCE",
+    "HUMAN_DECISION_PRE_REMEDIATION",
+)
 
 EXPECTED_AUDITS = {
     "ANOX-AUDIT-SECURITY-ARCH-001": {
@@ -647,8 +748,13 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 9:
-        fail(f"audit_registry.jsonl must contain exactly 9 audits, found {len(audits)}", errors)
+    if len(audits) != 10:
+        fail(f"audit_registry.jsonl must contain exactly 10 records (9 audits + 1 master consolidation artifact), found {len(audits)}", errors)
+    msc_rec = audits.get(MSC_ID) or {}
+    if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
+        fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
+    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID}):
+        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID})}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -1367,6 +1473,417 @@ def validate_attackchain(errors):
         fail("attackchain_verdict must record CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED / SEC-C=NO", errors)
 
 
+def validate_master_consolidation(errors):
+    """Fail-closed verification of the preserved MASTER-SPECIALIST-CONSOLIDATION-001
+    evidence layer (artifact_type MASTER_SECURITY_CONSOLIDATION)."""
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+    msc = [r for r in recs if r.get("source_artifact_id") == MSC_ID]
+    by_type = {}
+    for r in msc:
+        by_type.setdefault(r.get("record_type"), []).append(r)
+
+    def one(rt):
+        rows = by_type.get(rt) or []
+        if len(rows) != 1:
+            fail(f"expected exactly 1 {rt} record for {MSC_ID}, found {len(rows)}", errors)
+            return {}
+        return rows[0]
+
+    audits = {a.get("audit_id"): a for a in load_jsonl(EVIDENCE_DIR / "audit_registry.jsonl")}
+    reg = audits.get(MSC_ID) or {}
+    reg_expected = {
+        "artifact_type": "MASTER_SECURITY_CONSOLIDATION",
+        "base_sha": CONSOLIDATION_BASE_SHA,
+        "audited_sha": CONSOLIDATION_BASE_SHA,
+        "requested_start_sha": CONSOLIDATION_BASE_SHA,
+        "result": "PASS_WITH_CONSOLIDATION_FINDINGS",
+        "actual_model": "Claude Fable 5.1 High",
+        "requested_model": "Claude Fable 5.1 High",
+        "model_requirement_status": "SATISFIED",
+        "repository_modified_by_audit": "NO",
+        "remote_mutation_by_audit": "NONE",
+        "status": "PRESERVED",
+        "preserved_at_event": LEDGER_EVENT,
+        "report_path": EXPECTED_REPORTS[MSC_ID]["path"],
+        "report_sha256": EXPECTED_REPORTS[MSC_ID]["sha256"],
+        "report_bytes": 121113,
+        "source_reports": 9,
+        "source_reports_hash_verified": 9,
+        "source_security_items": 90,
+        "source_items_accounted": 90,
+        "source_items_unaccounted": 0,
+        "msc_units": 44,
+        "msc_open": 42,
+        "msc_rejected": 2,
+        "attackchains": 15,
+        "attackchains_without_msc_unit": 0,
+        "server_breakers": 18,
+        "server_breakers_unassigned": 0,
+        "client_breakers": 14,
+        "client_breakers_unassigned": 0,
+        "dependency_cycles": 0,
+        "silent_dropped": 0,
+        "architecture_finding_coverage_loss": 0,
+        "legacy_findings_without_owner": 0,
+        "architecture_verdict": "CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED",
+        "sec_c_required": "NO",
+    }
+    for key, expected in reg_expected.items():
+        if reg.get(key) != expected:
+            fail(f"{MSC_ID} registry {key}={reg.get(key)!r}, expected {expected!r}", errors)
+    if reg.get("delivery_branch") != DELIVERY_BRANCH:
+        fail(f"{MSC_ID} registry delivery_branch must be {DELIVERY_BRANCH}", errors)
+    if not reg:
+        fail(f"{MSC_ID} registry record missing", errors)
+    else:
+        print(f"  OK   {MSC_ID} registry artifact record verified")
+
+    # --- source accountability: 90 items -------------------------------------
+    src_items = by_type.get("msc_source_item") or []
+    if len(src_items) != MSC_SOURCE_ITEM_COUNT:
+        fail(f"msc_source_item must contain exactly {MSC_SOURCE_ITEM_COUNT} items, found {len(src_items)}", errors)
+    sids = [r.get("source_id") for r in src_items]
+    if len(set(sids)) != len(sids):
+        fail("duplicate msc_source_item source_id values", errors)
+    cls = {}
+    for r in src_items:
+        cls[r.get("item_type")] = cls.get(r.get("item_type"), 0) + 1
+        if r.get("consolidation_disposition") not in MSC_SOURCE_DISPOSITIONS:
+            fail(f"msc_source_item {r.get('source_id')} unknown disposition {r.get('consolidation_disposition')!r}", errors)
+        if not r.get("msc_units"):
+            fail(f"msc_source_item {r.get('source_id')} unaccounted (no msc_units)", errors)
+    if cls != MSC_SOURCE_CLASS_COUNTS:
+        fail(f"msc_source_item class counts {cls} != {MSC_SOURCE_CLASS_COUNTS}", errors)
+    summ = one("msc_source_summary")
+    if summ:
+        for k, v in (("total_source_security_items", 90), ("accounted_for", 90),
+                     ("unaccounted", 0), ("duplicate_source_ids", 0), ("unknown_disposition", 0)):
+            if summ.get(k) != v:
+                fail(f"msc_source_summary {k}={summ.get(k)!r}, expected {v}", errors)
+        if summ.get("by_class") != MSC_SOURCE_CLASS_COUNTS:
+            fail("msc_source_summary by_class mismatch", errors)
+    if src_items and cls == MSC_SOURCE_CLASS_COUNTS:
+        print("  OK   90/90 source items accounted (18 roots / 23 candidates / 15 chains / 6 gaps / 10 arch / 16 historical / 2 governance)")
+
+    # --- 44 MSC units ---------------------------------------------------------
+    units = {r.get("msc_unit_id"): r for r in by_type.get("msc_unit") or []}
+    if set(units) != MSC_UNIT_IDS:
+        fail(f"msc_unit set must be exactly MSC_UNIT_001..044; missing {sorted(MSC_UNIT_IDS - set(units))}, extra {sorted(set(units) - MSC_UNIT_IDS)}", errors)
+    else:
+        print("  OK   44 MSC units MSC_UNIT_001..044 present")
+    # Secondary-layer identifiers legitimately referenced by unit source_ids:
+    # audit-local candidate IDs (Audit-001 CS-*, Audit-002 C-*), folded
+    # sub-items (CS-102, CS-103), and the UNWIRED-001 reachability note.
+    a1_locals = {r.get("audit_local_id") for r in recs if r.get("record_type") == "audit001_candidate"}
+    a2_locals = {r.get("audit_local_id") for r in recs if r.get("record_type") == "audit002_candidate"}
+    a1_cand = {r.get("candidate_id") for r in recs if r.get("record_type") == "audit001_candidate"}
+    a2_cand = {r.get("candidate_id") for r in recs if r.get("record_type") == "audit002_candidate"}
+    secondary_ids = {x for x in (a1_locals | a2_locals | a1_cand | a2_cand) if x}
+    secondary_ids |= {"CS-102", "CS-103", "UNWIRED-001"}
+    sid_set = set(sids) | secondary_ids
+    open_units = [u for u in units.values() if u.get("proposed_disposition") == MSC_OPEN_STATUS]
+    rej_units = [u for u in units.values() if u.get("proposed_disposition") == MSC_REJECTED_STATUS]
+    if len(open_units) != 42:
+        fail(f"OPEN_PENDING_REMEDIATION_COVERAGE_GATE units must be 42, found {len(open_units)}", errors)
+    if {u.get("msc_unit_id") for u in rej_units} != MSC_REJECTED_UNITS:
+        fail(f"rejected units must be exactly {sorted(MSC_REJECTED_UNITS)}, found {sorted(u.get('msc_unit_id') for u in rej_units)}", errors)
+    if len(open_units) == 42 and {u.get("msc_unit_id") for u in rej_units} == MSC_REJECTED_UNITS:
+        print("  OK   42 OPEN + 2 REJECTED (MSC_UNIT_043/044) unit dispositions")
+    for u in units.values():
+        uid = u.get("msc_unit_id")
+        for f_ in MSC_UNIT_REQUIRED_FIELDS:
+            if f_ not in u:
+                fail(f"{uid} missing required field {f_}", errors)
+        for sid in u.get("source_ids") or []:
+            if sid not in sid_set:
+                fail(f"{uid} references unknown source_id {sid!r}", errors)
+        if u.get("proposed_disposition") == MSC_OPEN_STATUS:
+            if not u.get("provisional_session"):
+                fail(f"{uid} OPEN but missing provisional_session", errors)
+            if not u.get("independent_retest_owners"):
+                fail(f"{uid} OPEN but missing independent_retest_owners", errors)
+            if not (u.get("required_automated_tests") or u.get("required_instrumented_tests") or u.get("required_physical_tests")):
+                fail(f"{uid} OPEN but has no required test plan", errors)
+            if not u.get("closure_evidence"):
+                fail(f"{uid} OPEN but missing closure_evidence", errors)
+            if not u.get("activation_gate") or not u.get("pre_b004_or_later"):
+                fail(f"{uid} OPEN but missing gate assignment", errors)
+    for u in rej_units:
+        if u.get("proposed_consolidated_severity") not in ("NONE", "INFO"):
+            fail(f"{u.get('msc_unit_id')} rejected unit carries severity {u.get('proposed_consolidated_severity')!r}", errors)
+    # rejected unit bindings
+    u43 = units.get("MSC_UNIT_043") or {}
+    if set(u43.get("source_ids") or []) != {"ROOT-016", "CS-016"}:
+        fail("MSC_UNIT_043 must bind ROOT-016 + CS-016", errors)
+    if "DO_NOT_REVIVE" not in str(u43.get("closure_evidence")) and "REMAINS REJECTED" not in str(u43.get("closure_evidence")):
+        fail("MSC_UNIT_043 must carry the DO-NOT-REVIVE disposition note", errors)
+    u44 = units.get("MSC_UNIT_044") or {}
+    if set(u44.get("source_ids") or []) != {"ANOX-BUILDSC-CANDIDATE-012", "CS-019"}:
+        fail("MSC_UNIT_044 must bind ANOX-BUILDSC-CANDIDATE-012 + CS-019", errors)
+    # severity distribution
+    sev = one("msc_severity_distribution")
+    if sev:
+        if sev.get("distribution") != MSC_SEVERITY_DISTRIBUTION:
+            fail(f"msc_severity_distribution {sev.get('distribution')} != {MSC_SEVERITY_DISTRIBUTION}", errors)
+        if sev.get("total") != 44 or sev.get("open") != 42:
+            fail("msc_severity_distribution total/open wrong", errors)
+        ov = sev.get("overlays") or {}
+        if ov.get("MSC_UNIT_001") != "EVIDENCE_INTEGRITY CRITICAL":
+            fail("MSC_UNIT_001 EVIDENCE_INTEGRITY CRITICAL overlay missing", errors)
+        if "CONDITIONAL_CRITICAL" not in str(ov.get("ATTACKCHAIN_AC_003", "")):
+            fail("AC-003 conditional-critical overlay missing", errors)
+        print("  OK   severity distribution 0C/7H/16M/6L/4I-META/9CONTRACT/2R preserved")
+
+    # --- arbitrations ----------------------------------------------------------
+    rarb = one("msc_root_arbitration")
+    if rarb:
+        roots = rarb.get("roots") or {}
+        if set(roots) != MSC_ROOT_IDS:
+            fail(f"msc_root_arbitration must cover ROOT-001..018; got {sorted(roots)}", errors)
+        r13 = roots.get("ROOT-013") or {}
+        if "SEVERITY_CHANGE_PROPOSED" not in str(r13.get("severity")) or r13.get("status") != "PROPOSED_NOT_YET_CANONICALLY_MUTATED":
+            fail("ROOT-013 must record SEVERITY_CHANGE_PROPOSED LOW->MEDIUM, PROPOSED_NOT_YET_CANONICALLY_MUTATED", errors)
+        r16 = roots.get("ROOT-016") or {}
+        if r16.get("verdict") != "REJECTED_REMAINS_REJECTED" or r16.get("status") != "DO_NOT_REVIVE":
+            fail("ROOT-016 must remain REJECTED / DO_NOT_REVIVE", errors)
+        r17 = roots.get("ROOT-017") or {}
+        if r17.get("classification") != "SECURITY_EVIDENCE_GAP" or r17.get("gate") != "PRE_B004_PRECONDITION":
+            fail("ROOT-017 must be classified SECURITY_EVIDENCE_GAP / PRE_B004_PRECONDITION", errors)
+        splits = {rid for rid, rr in roots.items() if rr.get("verdict") == "SPLIT_REQUIRED"}
+        if splits != MSC_SPLIT_ROOTS:
+            fail(f"split roots must be {sorted(MSC_SPLIT_ROOTS)}; got {sorted(splits)}", errors)
+        else:
+            print("  OK   ROOT-001..018 arbitrations preserved (013 proposed, 016 rejected, 017 classified, 4 splits)")
+    sarb = one("msc_specialist_candidate_arbitration")
+    if sarb:
+        cands = sarb.get("candidates") or {}
+        if set(cands) != MSC_SPEC_CANDIDATE_IDS:
+            fail(f"specialist candidate arbitration must cover 11 candidates; got {sorted(cands)}", errors)
+        if not sarb.get("no_permanent_root_ids_allocated"):
+            fail("no_permanent_root_ids_allocated must be true", errors)
+    garb = one("msc_gap_arbitration")
+    if garb:
+        gaps = garb.get("gaps") or {}
+        if set(gaps) != MSC_GAP_IDS:
+            fail(f"gap arbitration must cover 6 gaps; got {sorted(gaps)}", errors)
+        for gid, g in gaps.items():
+            if g.get("verdict") != "KEEP_DISTINCT_CONTRACT_UNIT":
+                fail(f"{gid} must remain KEEP_DISTINCT_CONTRACT_UNIT", errors)
+        print("  OK   11 specialist candidates + 6 architecture gap arbitrations preserved")
+    har = one("msc_historical_remediation_arbitration")
+    if har:
+        rows = har.get("rows") or []
+        if len(rows) < 19:
+            fail(f"historical remediation arbitration must cover >=19 rows; got {len(rows)}", errors)
+        by_fid = {r.get("finding_id"): r for r in rows}
+        if (by_fid.get("ANOX-LEGACY-CRYPTO-005") or {}).get("original_status") != "Closed":
+            fail("historical arbitration must preserve ANOX-LEGACY-CRYPTO-005 original Closed status", errors)
+        if "INEFFECTIVE" not in str((by_fid.get("ANOX-LEGACY-CRYPTO-005") or {}).get("interpretation", "")):
+            fail("ANOX-LEGACY-CRYPTO-005 ineffective-remediation interpretation missing", errors)
+        if (by_fid.get("ANOX-MAINARCH-031") or {}).get("interpretation", "").find("FALSE_CLOSURE") < 0:
+            fail("ANOX-MAINARCH-031 FALSE_CLOSURE interpretation missing", errors)
+
+    # --- FCP / chains / breakers / DAG / sessions --------------------------------
+    fcp = one("msc_false_closure_rules")
+    if fcp:
+        if set((fcp.get("rules") or {}).keys()) != MSC_FCP_IDS:
+            fail(f"FCP rules must be exactly FCP_1..8; got {sorted((fcp.get('rules') or {}).keys())}", errors)
+        else:
+            print("  OK   FCP_1..FCP_8 false-closure rules preserved")
+    acm = one("msc_attackchain_mapping")
+    if acm:
+        chains = acm.get("chains") or {}
+        if set(chains) != MSC_CHAIN_IDS:
+            fail(f"attackchain mapping must cover 15 chains; got {sorted(chains)}", errors)
+        for cid, ch in chains.items():
+            if not ch.get("msc_units"):
+                fail(f"{cid} has no owning msc_units", errors)
+            for m in ch.get("msc_units") or []:
+                if m not in units:
+                    fail(f"{cid} references unknown unit {m}", errors)
+        ov = acm.get("ac003_conditional_overlay") or {}
+        if ov.get("canonical_chain_severity") != "HIGH" or "CONDITIONAL_CRITICAL" not in str(ov.get("overlay", "")):
+            fail("AC-003 overlay must keep canonical HIGH + conditional-critical overlay", errors)
+        hc = set((acm.get("high_chain_challenge") or {}).keys())
+        if hc != {"ATTACKCHAIN_AC_001", "ATTACKCHAIN_AC_003", "ATTACKCHAIN_AC_006", "ATTACKCHAIN_AC_012"}:
+            fail(f"high-chain challenge set wrong: {sorted(hc)}", errors)
+        else:
+            print("  OK   15/15 attackchains mapped; 4 high-chain challenges preserved; AC-003 overlay intact")
+    sb = one("msc_server_breakers")
+    if sb:
+        items = {i.get("id"): i for i in sb.get("items") or []}
+        if set(items) != MSC_SERVER_BREAKER_IDS or sb.get("total") != 18:
+            fail(f"server breakers must be S1..S18 (total 18); got {sorted(items)}", errors)
+        for bid, it in items.items():
+            if not it.get("msc_units"):
+                fail(f"{bid} unassigned (no msc_units)", errors)
+        if sb.get("unassigned") != 0:
+            fail("server_breakers unassigned must be 0", errors)
+        else:
+            print("  OK   SERVER_BREAKER_S1..S18 all assigned")
+    cb = one("msc_client_breakers")
+    if cb:
+        items = {i.get("id"): i for i in cb.get("items") or []}
+        if set(items) != MSC_CLIENT_BREAKER_IDS or cb.get("total") != 14:
+            fail(f"client breakers must be C1..C14 (total 14); got {sorted(items)}", errors)
+        for bid, it in items.items():
+            if not it.get("msc_units"):
+                fail(f"{bid} unassigned (no msc_units)", errors)
+        if cb.get("unassigned") != 0:
+            fail("client_breakers unassigned must be 0", errors)
+        else:
+            print("  OK   CLIENT_BREAKER_C1..C14 all assigned")
+    if not one("msc_cross_group_dependencies"):
+        pass
+    dag = one("msc_dependency_dag")
+    if dag:
+        if dag.get("unresolved_dependency_cycles") != 0:
+            fail("msc_dependency_dag unresolved_dependency_cycles must be 0", errors)
+        if not dag.get("edges"):
+            fail("msc_dependency_dag has no edges", errors)
+        else:
+            print("  OK   dependency DAG preserved; unresolved cycles = 0")
+    sess = one("msc_remediation_sessions")
+    if sess:
+        if set((sess.get("sessions") or {}).keys()) != MSC_SESSION_IDS:
+            fail(f"remediation sessions must be S0..S10; got {sorted((sess.get('sessions') or {}).keys())}", errors)
+        else:
+            print("  OK   REMEDIATION_SESSION_S0..S10 provisional sessions preserved")
+    if not one("msc_remediation_order"):
+        pass
+
+    # --- Pre-B004 set, DoD, later gates ------------------------------------------
+    pre = one("msc_pre_b004_set")
+    if pre:
+        cats = pre.get("categories") or {}
+        if set(cats.keys()) != set(MSC_PRE_B004_CATEGORIES):
+            fail(f"pre_b004_set categories wrong: {sorted(cats.keys())}", errors)
+        if not cats.get("A_ARCHITECTURE_CONTRACT") or not cats.get("D_VERIFICATION"):
+            fail("pre_b004_set categories must be non-empty", errors)
+        else:
+            print("  OK   Pre-B004 Master Set (6 categories incl. pull-forward + B004-impl) preserved")
+    dod = one("msc_pre_b004_dod")
+    if dod:
+        if "PROPOSED" not in str(dod.get("status")) or "NOT_EXECUTED" not in str(dod.get("status")):
+            fail("pre_b004_dod status must be PROPOSED / NOT_EXECUTED", errors)
+        if not dod.get("criteria"):
+            fail("pre_b004_dod missing criteria", errors)
+    lg = one("msc_later_gates")
+    if lg:
+        gates = lg.get("gates") or {}
+        for g in MSC_LATER_GATES:
+            if g not in gates:
+                fail(f"later gate {g} missing", errors)
+        if lg.get("later_items_without_named_gate") != 0:
+            fail("later_items_without_named_gate must be 0", errors)
+        else:
+            print("  OK   later named gates preserved; later_items_without_named_gate = 0")
+
+    # --- closure standard / state machine / retests ------------------------------
+    ce = one("msc_closure_evidence_standard")
+    if ce:
+        if "CODE_CHANGED_ONLY" not in str(ce.get("rule")):
+            fail("closure evidence standard must carry CODE_CHANGED_ONLY != CLOSURE rule", errors)
+        if not ce.get("allowed_classes") or not ce.get("minimums"):
+            fail("closure evidence standard missing classes/minimums", errors)
+    csm = one("msc_closure_state_machine")
+    if csm:
+        if set(csm.get("stages") or []) != MSC_CSM_STAGES:
+            fail(f"closure state machine stages wrong: {csm.get('stages')}", errors)
+        else:
+            print("  OK   closure evidence standard + 11-stage state machine preserved")
+    if not one("msc_independent_retest_matrix"):
+        pass
+    wcr = one("msc_whole_chain_retests")
+    if wcr:
+        if set(wcr.get("mandatory") or []) != {"ATTACKCHAIN_AC_001", "ATTACKCHAIN_AC_003", "ATTACKCHAIN_AC_006", "ATTACKCHAIN_AC_012", "ATTACKCHAIN_AC_005", "ATTACKCHAIN_AC_008", "ATTACKCHAIN_AC_010"}:
+            fail("whole-chain mandatory retest set wrong", errors)
+
+    # --- physical campaign ---------------------------------------------------------
+    phys = one("msc_physical_campaign")
+    if phys:
+        items = {i.get("id"): i for i in phys.get("items") or []}
+        if set(items) != MSC_PHYSICAL_IDS or phys.get("count") != 17:
+            fail(f"physical campaign must be PHYSICAL_P1..P17 (count 17); got {sorted(items)}", errors)
+        if "NOT_EXECUTED" not in str(phys.get("status", "")):
+            fail("physical campaign status must record NOT_EXECUTED", errors)
+        else:
+            print("  OK   PHYSICAL_P1..P17 campaign preserved, NOT_EXECUTED")
+
+    # --- coverage / contracts / precursor / quality / findings / verdict -----------
+    acov = one("msc_architecture_coverage")
+    if acov:
+        ad = acov.get("auth_deviceauth") or {}
+        ast = acov.get("android_storage") or {}
+        if ad.get("mapped") != 40 or ad.get("total") != 40 or ad.get("unmapped") != 0:
+            fail("architecture coverage auth/deviceauth must be 40/40 unmapped 0", errors)
+        if ast.get("mapped") != 42 or ast.get("total") != 42 or ast.get("unmapped") != 0:
+            fail("architecture coverage android/storage must be 42/42 unmapped 0", errors)
+        if acov.get("architecture_finding_coverage_loss") != 0:
+            fail("architecture_finding_coverage_loss must be 0", errors)
+    lcov = one("msc_legacy_coverage")
+    if lcov:
+        if lcov.get("legacy_findings_without_current_owner") != 0:
+            fail("legacy_findings_without_current_owner must be 0", errors)
+        if not lcov.get("areas"):
+            fail("legacy coverage areas missing", errors)
+    scc = one("msc_server_contract")
+    if scc:
+        if {r.get("id") for r in scc.get("rules") or []} != MSC_SERVER_CONTRACT_IDS:
+            fail("server contract must contain SC-1..SC-14", errors)
+        if "NOT_IMPLEMENTED" not in str(scc.get("status", "")):
+            fail("server contract status must record NOT_IMPLEMENTED", errors)
+        else:
+            print("  OK   consolidated server contract SC-1..14 preserved (NOT_IMPLEMENTED)")
+    ccc = one("msc_client_contract")
+    if ccc:
+        if {r.get("id") for r in ccc.get("rules") or []} != MSC_CLIENT_CONTRACT_IDS:
+            fail("client contract must contain CC-1..CC-14", errors)
+        else:
+            print("  OK   consolidated client contract CC-1..14 preserved")
+    pre_fcp = one("msc_fix_coverage_precursor")
+    if pre_fcp:
+        if pre_fcp.get("open_units") != 42:
+            fail("fix coverage precursor open_units must be 42", errors)
+        for k in ("unassigned_fix_session", "missing_affected_code", "missing_architecture_owner",
+                  "missing_required_test", "missing_retest_owner", "unknown_gate"):
+            if pre_fcp.get(k) != 0:
+                fail(f"fix coverage precursor {k} must be 0", errors)
+        else:
+            print("  OK   Master Fix Coverage Precursor: 42/42 open units assigned, all zero fields")
+    qg = one("msc_quality_gates")
+    if qg:
+        gates = qg.get("gates") or {}
+        for k in MSC_QUALITY_GATE_ZERO_FIELDS:
+            if gates.get(k) != 0:
+                fail(f"quality gate {k} must be 0, got {gates.get(k)!r}", errors)
+        else:
+            print("  OK   all 14 zero-valued quality gates preserved")
+    cf = one("msc_consolidation_findings")
+    if cf:
+        if cf.get("result") != "PASS_WITH_CONSOLIDATION_FINDINGS":
+            fail("consolidation result must be PASS_WITH_CONSOLIDATION_FINDINGS", errors)
+        if len(cf.get("reasons") or []) != 7:
+            fail("consolidation findings must record the 7 reasons", errors)
+    vd = one("msc_verdict")
+    if vd:
+        if vd.get("architecture_verdict") != "CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED":
+            fail("architecture verdict must be CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED", errors)
+        if vd.get("sec_c_required") != "NO":
+            fail("sec_c_required must be NO", errors)
+        if not vd.get("sec_c_escalation"):
+            fail("sec_c_escalation condition must be preserved", errors)
+
+    # --- source_status for the consolidation artifact -----------------------------
+    ss = next((r for r in recs if r.get("record_type") == "source_status" and r.get("audit_id") == MSC_ID), None)
+    if not ss or ss.get("source_present") != "YES":
+        fail(f"source_status record for {MSC_ID} missing or not YES", errors)
+    # next_gate for the coverage gate (checked again here for the master layer)
+    ng = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == NEXT_GATE_ID), None)
+    if not ng or "NOT_EXECUTED" not in str(ng.get("status", "")):
+        fail(f"next_gate {NEXT_GATE_ID} must be CANDIDATE / NOT_EXECUTED", errors)
+
+
 def validate_findings(errors):
     findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
     f5 = next((f for f in findings if f.get("finding_id") == "ANOX-LEGACY-CRYPTO-005"), None)
@@ -1464,7 +1981,9 @@ def validate_lifecycle(errors):
         fail("completed_audit_ids must record AUDIT-SECURITY-ANDROID-STORAGE-001 as executed+preserved", errors)
     if "AUDIT-SECURITY-ATTACKCHAIN-001" not in completed:
         fail("completed_audit_ids must record AUDIT-SECURITY-ATTACKCHAIN-001 as executed+preserved", errors)
-    for gid in ("MASTER-SPECIALIST-CONSOLIDATION",):
+    if PRIOR_GATE_ID not in completed:
+        fail(f"completed_audit_ids must record {PRIOR_GATE_ID} as executed+preserved", errors)
+    for gid in ("SECURITY-REMEDIATION-COVERAGE-GATE",):
         if gid in completed:
             fail(f"{gid} must NOT be in completed_audit_ids", errors)
 
@@ -1547,6 +2066,8 @@ def main():
     validate_androidstorage(errors)
     print("\n[EVIDENCE-PRESERVATION] Attackchain specialist evidence")
     validate_attackchain(errors)
+    print("\n[EVIDENCE-PRESERVATION] Master Specialist Consolidation evidence")
+    validate_master_consolidation(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

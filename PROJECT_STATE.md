@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
-**Date:** 2026-09-13
-**Latest material event:** `ANOX-EVENT-0049` — SECURITY-AUDIT-EVIDENCE-PRESERVATION-005: AUDIT-SECURITY-ATTACKCHAIN-001 executed (PASS_WITH_FINDINGS, 15 attack-chain candidates 0C/4H/7M/3L/1I, 68 items UNMAPPED=0, CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED) and preserved byte-exact; MASTER-SPECIALIST-CONSOLIDATION recorded as Candidate.
+**Date:** 2026-09-14
+**Latest material event:** `ANOX-EVENT-0050` — MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001: MASTER-SPECIALIST-CONSOLIDATION-001 executed (PASS_WITH_CONSOLIDATION_FINDINGS, 90/90 source items accounted, 44 MSC units = 42 OPEN + 2 REJECTED, CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED) and preserved byte-exact; SECURITY-REMEDIATION-COVERAGE-GATE recorded as Candidate.
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -33,24 +33,25 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0047 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0048 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0049 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0050 -->
 
 ## Repository truth
 
-- Branch: `governance/security-audit-evidence-preservation-005`
-- **Current HEAD:** `e8be5df19cee24f22e0f1f9af6b4cc4c792351c5` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 SUBSTANTIVE)
+- Branch: `governance/master-specialist-consolidation-preservation-001`
+- **Current HEAD:** `548b0ed512b456768ea881e034fb828f400a2f8d` (MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 SUBSTANTIVE)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `e54584903a353e98ad154d1e8f90f93ed9d7db14` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 merge)
-- **Previous baseline HEAD:** `b9abeb0850a476716403d224b87a857c1147502e`
+- **Latest merge to baseline:** `1eb773069d81ea3d12b76249c73f2f5fb0b6cae9` (SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 merge)
+- **Previous baseline HEAD:** `e54584903a353e98ad154d1e8f90f93ed9d7db14`
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `SECURITY-AUDIT-EVIDENCE-PRESERVATION-005` — PRESERVE AUDIT-SECURITY-ATTACKCHAIN-001 EVIDENCE (Ready For Remote; awaiting human merge)
-- **Current authorized task:** `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005` (Ready For Remote; awaits human merge)
+- **Current effective gate:** `MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001` — PRESERVE MASTER-SPECIALIST-CONSOLIDATION-001 EVIDENCE (Ready For Remote; awaiting human merge)
+- **Current authorized task:** `ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001` (Ready For Remote; awaits human merge)
 - **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance. Workforce findings 001/002/005 are Closed; 10 ANOX-SECURITY-ARCH-* findings frozen; B-004 blocking set = 001..004. Security Hardening wave evidence preserved: 18 consensus roots (12 Pre-B004), `ANOX-BUILDSC-CANDIDATE-001` EVIDENCE_INTEGRITY=CRITICAL, `ANOX-CRYPTOJNI-CANDIDATE-001..006` + `PRE_B004_CRYPTOJNI` (8 members), `ANOX-AUTHDPOP-CANDIDATE-001..003` + `ANOX-AUTHDPOP-GAP-001..003` + `PRE_B004_AUTHDPOP` (8 members), `ANOX-ANDROIDSTORAGE-CANDIDATE-001..002` + `ANOX-ANDROIDSTORAGE-GAP-001..003` + `PRE_B004_ANDROIDSTORAGE` (9 members), `ANOX-ATTACKCHAIN-CANDIDATE-001..015` + `PRE_B004_ATTACKCHAIN_CODE`/`CONTRACT` + `B004_IMPLEMENTATION_REQUIREMENTS` + `LATER_GATE_ATTACKCHAINS` gate sets.
-- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-AUTH-DPOP-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ANDROID-STORAGE-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ATTACKCHAIN-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS).
-- **Next candidate task:** `MASTER-SPECIALIST-CONSOLIDATION` (NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA).
+- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-AUTH-DPOP-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ANDROID-STORAGE-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ATTACKCHAIN-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `MASTER-SPECIALIST-CONSOLIDATION-001` EXECUTED + PRESERVED (PASS_WITH_CONSOLIDATION_FINDINGS; 90/90 source items, 44 MSC units = 42 OPEN + 2 REJECTED).
+- **Next candidate task:** `SECURITY-REMEDIATION-COVERAGE-GATE` (NOT AUTHORIZED — start only with explicit human authorization and a fresh post-merge `main` SHA).
 - **Product status:** `BLOCKED_PENDING_FINAL_AUDIT`; no product/CI changes until all final/legacy/retest conditions are complete and the human final gate is recorded.
 
 ## Architecture / governance
@@ -136,3 +137,17 @@ Closed by `LEGACY-FIX-01` + `LEGACY-RETEST-01` (verified PASS — REMEDIATED):
 - Product remains `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; next gate `MASTER-SPECIALIST-CONSOLIDATION` Candidate / NOT_EXECUTED.
 - No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no finding fixed; no audit re-run; Master Specialist Consolidation NOT executed.
 - Next: human merge to `main`, then `MASTER-SPECIALIST-CONSOLIDATION` on a fresh post-merge `main` SHA.
+
+## ANOX-EVENT-0050 — MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 (2026-09-14)
+
+- Branch: `governance/master-specialist-consolidation-preservation-001`
+- Substantive commit: `548b0ed512b456768ea881e034fb828f400a2f8d`
+- Canonical base SHA: `1eb773069d81ea3d12b76249c73f2f5fb0b6cae9`
+- Task ID: `ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001`
+- Result: `Ready For Remote`
+- `MASTER-SPECIALIST-CONSOLIDATION-001` preserved byte-exact under `docs/reports/security/consolidation/` (SHA-256 `a22c7798…`, 121,113 bytes; recovered from the Devin CLI session transcript store, normalization = single trailing LF): PASS_WITH_CONSOLIDATION_FINDINGS at base SHA `1eb773069d81`; 90/90 source security items accounted (0 unaccounted, 0 silently dropped); 44 `MSC_UNIT_001..044` (42 `OPEN_PENDING_REMEDIATION_COVERAGE_GATE` + 2 `REJECTED_NOT_A_FINDING`; severity 0C/7H/16M/6L/4I-META/9 CONTRACT).
+- Preserved layer: root arbitrations (`ROOT-013` LOW→MEDIUM proposal non-canonical; `ROOT-016` remains REJECTED/DO_NOT_REVIVE; `ROOT-017` classified SECURITY_EVIDENCE_GAP; splits `ROOT-008/011/012/018`), 11 specialist candidate + 6 gap arbitrations, historical-remediation interpretations, `FCP_1..8`, 15/15 attackchain mappings, `SERVER_BREAKER_S1..S18` + `CLIENT_BREAKER_C1..C14`, dependency DAG (cycles 0), `REMEDIATION_SESSION_S0..S10`, Pre-B004 Master Set + proposed DoD, later gates, closure standard + 11-stage state machine, independent retest matrix, `PHYSICAL_P1..P17` (NOT_EXECUTED), contracts `SC-1..14`/`CC-1..14`, Master Fix Coverage Precursor (42/42 assigned), 14 zero-valued quality gates.
+- Registry extended to 10 records (9 audits + `MASTER_SECURITY_CONSOLIDATION` artifact `SEC-AUDIT-REG-0010`); validator extended; adversarial tests now 142.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; security remediation `NOT_STARTED`; next gate `SECURITY-REMEDIATION-COVERAGE-GATE` Candidate / `NOT_EXECUTED`.
+- No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no finding fixed, closed, re-severitied, merged, or reinterpreted; no audit re-run.
+- Next: human merge to `main`, then `SECURITY-REMEDIATION-COVERAGE-GATE` on a fresh post-merge `main` SHA.
