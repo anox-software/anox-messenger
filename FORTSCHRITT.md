@@ -172,3 +172,19 @@
 - Validator extended (9 reports; attackchain candidates/coverage/breakers/gates/handoffs); adversarial tests now 92.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed; no audit re-run; Master Specialist Consolidation NOT executed.
 - Next: human merge to `main`, then `MASTER-SPECIALIST-CONSOLIDATION` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0050 -->
+## MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 — 2026-09-14 (ANOX-EVENT-0050)
+
+- Branch: `governance/master-specialist-consolidation-preservation-001`
+- Substantive commit: `548b0ed512b456768ea881e034fb828f400a2f8d`
+- Canonical base SHA: `1eb773069d81ea3d12b76249c73f2f5fb0b6cae9`
+- Task ID: `ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `MASTER-SPECIALIST-CONSOLIDATION-001` (MASTER_SECURITY_CONSOLIDATION artifact) inside the canonical evidence system — byte-exact final report, registry record, full `msc_*` traceability layer, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `MASTER-SPECIALIST-CONSOLIDATION-001` PASS_WITH_CONSOLIDATION_FINDINGS at base `1eb773069d81` (model Claude Fable 5.1 High, requirement SATISFIED) — 90/90 source items accounted (unaccounted 0, silently dropped 0); 44 `MSC_UNIT_001..044` = 42 `OPEN_PENDING_REMEDIATION_COVERAGE_GATE` + 2 `REJECTED_NOT_A_FINDING`; severity 0C/7H/16M/6L/4I-META/9 CONTRACT/2R; verdict `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C not required.
+- Arbitrations preserved without canonical rewrite: `ROOT-013` severity proposal LOW→MEDIUM (`PROPOSED_NOT_YET_CANONICALLY_MUTATED`); `ROOT-016` remains REJECTED / DO_NOT_REVIVE; `ROOT-017` classified `SECURITY_EVIDENCE_GAP` (EI HIGH, Pre-B004 precondition); split roots `ROOT-008/011/012/018`; 11 specialist candidates + 6 architecture gaps arbitrated; 19 historical-remediation rows preserved (LEGACY-CRYPTO-005 `INEFFECTIVE`, MAINARCH-031 `FALSE_CLOSURE`, no closure rewrite).
+- Structure preserved: `FCP_1..8`; 15/15 attackchain→MSC mappings (AC-003 conditional overlay intact); `SERVER_BREAKER_S1..S18` / `CLIENT_BREAKER_C1..C14` (0 unassigned); dependency DAG (cycles 0); `REMEDIATION_SESSION_S0..S10`; Pre-B004 Master Set (5 categories) + DoD (`PROPOSED / NOT_EXECUTED`); later gates; closure standard + 11-stage state machine; retest matrix; `PHYSICAL_P1..P17` (NOT_EXECUTED); contracts `SC-1..14`/`CC-1..14`; Master Fix Coverage Precursor (42/42 assigned); all quality-gate counts = 0.
+- Validator extended (10 records incl. MASTER_SECURITY_CONSOLIDATION artifact; 166 msc_* records); adversarial tests now 142.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed, closed, re-severitied, merged, or reinterpreted; no audit re-run; Security-Remediation Coverage Gate NOT executed.
+- Next: human merge to `main`, then `SECURITY-REMEDIATION-COVERAGE-GATE` on a fresh post-merge `main` SHA.
