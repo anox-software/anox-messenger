@@ -188,3 +188,17 @@
 - Validator extended (10 records incl. MASTER_SECURITY_CONSOLIDATION artifact; 166 msc_* records); adversarial tests now 142.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed, closed, re-severitied, merged, or reinterpreted; no audit re-run; Security-Remediation Coverage Gate NOT executed.
 - Next: human merge to `main`, then `SECURITY-REMEDIATION-COVERAGE-GATE` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0051 -->
+## SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 — 2026-09-14 (ANOX-EVENT-0051)
+
+- Branch: `governance/security-remediation-coverage-gate-preservation-001`
+- Substantive commit: `b35f78051f3dc2d3dc2531f87ae4ed5ed352d851`
+- Canonical base SHA: `610ed08337536857db73259168498c49b786caa1`
+- Task ID: `ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001`
+- Result: `Ready For Remote`
+- Purpose: preserve the executed `SECURITY-REMEDIATION-COVERAGE-GATE-001` (final coverage gate before security remediation) inside the canonical evidence system — byte-exact final report, registry record, full `gate_*` traceability layer, fail-closed validator extension + adversarial tests, continuity/Project Memory sync, validated handoff archive.
+- Preserved: `SECURITY-REMEDIATION-COVERAGE-GATE-001` PASS at base `610ed0833753` (model Claude Fable 5.1 High, requirement SATISFIED) — 42/42 open `MSC_UNIT_*` covered; 0 uncovered/unknown; dependency cycles 0; parallel-writer collisions 0; `FCP_1..8` enforced; false-closure A–F blocked; `SC/CC 14/14`; `PHYSICAL_P1..P17` assigned 17/17, executed 0; retest owners 42/42; DoD unowned 0; `HUMAN_DECISION_H1/H2/H3/R1` pending. PASS = coverage proof only — NOT remediation authorization.
+- Validator extended (11 records incl. SECURITY_REMEDIATION_COVERAGE_GATE artifact; +64 `gate_*` records); adversarial tests now 202.
+- No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed, closed, re-severitied, merged, or reinterpreted; no remediation session executed; physical campaign NOT_EXECUTED; no audit re-run.
+- Next: human merge to `main`, then `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` on a fresh post-merge `main` SHA.

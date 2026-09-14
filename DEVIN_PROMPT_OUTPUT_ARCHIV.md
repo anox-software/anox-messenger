@@ -80,3 +80,12 @@
 - Result: `Ready For Remote`; `MASTER-SPECIALIST-CONSOLIDATION-001` evidence preserved byte-exact (SHA-256 `a22c7798…`, 121,113 bytes).
 - Key files: `docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl` + 166 `msc_*` records, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
 - Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged (`ROOT-013` proposal non-canonical); `ROOT-016` NOT_A_FINDING not revived; all 42 MSC units `OPEN_PENDING_REMEDIATION_COVERAGE_GATE`; physical campaign NOT_EXECUTED; coverage gate `SECURITY-REMEDIATION-COVERAGE-GATE` Candidate/NOT_EXECUTED; no remote mutation.
+
+## ANOX-EVENT-0051 — SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 (2026-09-14)
+
+- Task: `ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001`
+- Substantive commit: `b35f78051f3dc2d3dc2531f87ae4ed5ed352d851`
+- Canonical base: `610ed08337536857db73259168498c49b786caa1`
+- Result: `Ready For Remote`; `SECURITY-REMEDIATION-COVERAGE-GATE-001` evidence preserved byte-exact (SHA-256 `175aa756…`, 33,527 bytes). Gate PASS = coverage proof only, not remediation authorization.
+- Key files: `docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl` 11 records, `audit_traceability.jsonl` + 64 `gate_*` records, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; security remediation `NOT_STARTED`; consensus severities unchanged (`ROOT-013` proposal non-canonical); `ROOT-016` NOT_A_FINDING not revived; all 42 MSC units covered not remediated; physical campaign NOT_EXECUTED; `HUMAN_DECISION_H1/H2/H3/R1` pending (0 auto-accepted); next gate `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` Candidate/NOT_EXECUTED; no remote mutation.

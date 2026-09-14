@@ -67,6 +67,11 @@ From `MASTER-SPECIALIST-CONSOLIDATION-001` (at base SHA `1eb773069d81ea3d12b7624
 - `/tmp/anox_master_consolidation_001/` (the consolidation's analytical scratch builder) is **not authoritative** and not preserved; its outputs exist only inside the preserved report.
 - The consolidation's machine-readable layer (`msc_*` records in `../audit_traceability.jsonl`) is preserved evidence of the consolidation's conclusions — it is not itself remediation evidence.
 
+From `SECURITY-REMEDIATION-COVERAGE-GATE-001` (at base SHA `610ed08337536857db73259168498c49b786caa1`; read-only coverage verification — no build, test, harness, device run, or remediation executed):
+
+- The gate produced **no empirical evidence at all**: it mechanically verified that the preserved Master Consolidation's 42 open `MSC_UNIT_*` obligations each carry a complete remediation/verification path. Its `gate_*` records in `../audit_traceability.jsonl` are preserved evidence of that verification — not remediation evidence.
+- `GATE RESULT = PASS` is coverage proof only. It does not authorize security remediation, does not change any finding status, and does not execute any session (`REMEDIATION_SESSION_S0..S10` remain `NOT_EXECUTED`; `PHYSICAL_P1..P17` remain `NOT_EXECUTED`).
+
 ## Authoritative locations
 
 The authoritative evidence is:
