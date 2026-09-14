@@ -34,12 +34,39 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
     "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
     "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md",
+    "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
+    "docs/workforce/registries/decisions.jsonl",
     "docs/workforce/registries/implementation_readiness.json",
     "docs/continuity/CURRENT_STATE.json",
+    "docs/continuity/CURRENT_HANDOFF.md",
+    "docs/continuity/CURRENT_GIT_STATE.md",
     "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl",
+    # retired one-shot validators (must exist + keep their integrity pins)
+    "tools/audit/validate_security_architecture_findings_freeze.py",
+    "tools/audit/validate_legacy_retest01_ingest.py",
+    "tools/audit/validate_mainarch_fix03.py",
+    "tools/audit/validate_mainarch_retest01_ingest.py",
+    "tools/audit/validate_mainarch_retest02_ingest.py",
+    "tools/audit/validate_mainarch_retest03_ingest.py",
+    "tools/audit/validate_workforce_fix01.py",
+    "tools/audit/validate_workforce_fix02.py",
+    "tools/audit/validate_workforce_retest_closure_ingest.py",
+    "tools/audit/validate_workforce_continuity_sync_fix01.py",
+    # active current-state validators (must exist)
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/continuity/validate_continuity.py",
+    "tools/workforce/validate_b027a.py",
+    "tools/workforce/validate_b027b.py",
+    "tools/workforce/validate_b027_integrity.py",
+    "tools/security/b017_lite_policy_validator.py",
+    "tools/audit/validate_mainarch_fix01.py",
+    "tools/audit/validate_mainarch_fix02.py",
+    "tools/audit/validate_legacy_fix01.py",
+    "tools/audit/validate_legacy_audit_consolidation.py",
+    "tools/audit/validate_workforce_audit_findings_freeze.py",
 ]
 
 TRACE = "docs/security/audit-evidence/audit_traceability.jsonl"
@@ -207,7 +234,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 11 records")
+        self.assert_fails(self.run_validator(), "exactly 12 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -305,7 +332,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 11 records")
+        self.assert_fails(self.run_validator(), "exactly 12 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -410,7 +437,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
         recs = _load_jsonl(tp)
         for r in recs:
-            if r.get("task_id") == "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001":
+            if r.get("task_id") == "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001":
                 r["status"] = "Closed"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "Ready For Remote")
@@ -478,7 +505,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 11 records")
+        self.assert_fails(self.run_validator(), "exactly 12 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -568,7 +595,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
     def test_55_consolidation_marked_completed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["final_pre_product_audit"]["completed_audit_ids"].append("HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION")
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("SECURITY_REMEDIATION_WAVE_1")
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
 
@@ -594,7 +621,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
     # 58. Drop the coverage-gate preservation task record.
     def test_58_dropped_task_record_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
-        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"]
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001"]
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
 
@@ -669,7 +696,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 11 records")
+        self.assert_fails(self.run_validator(), "exactly 12 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -1624,7 +1651,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         self.assert_fails(self.run_validator(), "EXECUTED_AND_PRESERVED")
         tp, recs = self._gate_recs()
         for r in recs:
-            if r.get("record_type") == "next_gate" and r.get("gate") == "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION":
+            if r.get("record_type") == "next_gate" and r.get("gate") == "SECURITY_REMEDIATION_WAVE_1":
                 r["status"] = "EXECUTED_AND_PRESERVED"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "NOT_EXECUTED")
@@ -1645,6 +1672,360 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
                 r["source_present"] = "NO"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "source_status")
+
+    # ------------------------------------------------------------------
+    # HUMAN-PRE-REMEDIATION-DECISIONS-001 adversarial cases (202..234)
+    # ------------------------------------------------------------------
+    DEC = "HUMAN-PRE-REMEDIATION-DECISIONS-001"
+    DEC_REPORT = "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md"
+    FINDINGS = "docs/workforce/registries/findings.jsonl"
+    DECISIONS = "docs/workforce/registries/decisions.jsonl"
+    TASKS = "docs/workforce/registries/tasks.jsonl"
+    WS = "docs/workforce/WORKFORCE_STATE.json"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    CH = "docs/continuity/CURRENT_HANDOFF.md"
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+
+    def _dec_recs(self):
+        tp = self.root / TRACE
+        return tp, _load_jsonl(tp)
+
+    def _dec_mutate_one(self, rt, mutator, decision_id=None):
+        tp, recs = self._dec_recs()
+        for r in recs:
+            if r.get("record_type") == rt and r.get("source_artifact_id") == self.DEC:
+                if decision_id is not None and r.get("decision_id") != decision_id:
+                    continue
+                mutator(r)
+        _write_jsonl(tp, recs)
+        return self.run_validator()
+
+    def _dec_registry_mutate(self, mutator):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == self.DEC:
+                mutator(r)
+        _write_jsonl(rp, recs)
+        return self.run_validator()
+
+    def _findings_mutate_a10(self, mutator):
+        fp = self.root / self.FINDINGS
+        recs = _load_jsonl(fp)
+        for r in recs:
+            if r.get("finding_id") == "ANOX-SECURITY-ARCH-010":
+                mutator(r)
+        _write_jsonl(fp, recs)
+        return self.run_validator()
+
+    def _ws_mutate(self, mutator):
+        wp = self.root / self.WS
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        mutator(ws)
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        return self.run_validator()
+
+    # 202. H1 human_decision record missing.
+    def test_202_h1_record_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "human_decision" and r.get("decision_id") == "HUMAN_DECISION_H1")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "H1")
+
+    # 203. H2 human_decision record missing.
+    def test_203_h2_record_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "human_decision" and r.get("decision_id") == "HUMAN_DECISION_H2")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "H2")
+
+    # 204. H3 human_decision record missing.
+    def test_204_h3_record_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "human_decision" and r.get("decision_id") == "HUMAN_DECISION_H3")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "H3")
+
+    # 205. R1 human_decision record missing.
+    def test_205_r1_record_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "human_decision" and r.get("decision_id") == "HUMAN_DECISION_R1")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "R1")
+
+    # 206. Wrong decision id substituted for H1.
+    def test_206_wrong_decision_id_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_decision", lambda r: r.update(decision_id="HUMAN_DECISION_H9"),
+                                 decision_id="HUMAN_DECISION_H1"), "H1")
+
+    # 207. Decision recorded as auto-accepted / decided by AI.
+    def test_207_auto_accepted_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_decision", lambda r: r.update(auto_accepted=True),
+                                 decision_id="HUMAN_DECISION_H1"), "auto_accepted")
+        self.assert_fails(
+            self._dec_mutate_one("human_decision",
+                                 lambda r: r.update(decided_by="AI_AGENT", authority_actor="Devin CLI"),
+                                 decision_id="HUMAN_DECISION_H2"), "Human")
+
+    # 208. Authorization recorded with non-human authority.
+    def test_208_authorization_nonhuman_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization",
+                                 lambda r: r.update(authority_actor="Devin CLI", decided_by="AI_AGENT")), "Human")
+
+    # 209. Authorization accidentally starts remediation.
+    def test_209_authorization_starts_remediation_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization",
+                                 lambda r: r.update(security_remediation="STARTED")), "NOT_STARTED")
+
+    # 210. ROOT-013 transition not canonical MEDIUM.
+    def test_210_root013_not_medium_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("canonical_severity_transition",
+                                 lambda r: r.update(current_canonical_severity="LOW")), "MEDIUM")
+        self.assert_fails(
+            self._dec_mutate_one("canonical_severity_transition",
+                                 lambda r: r.update(prior_canonical_severity="MEDIUM")), "LOW")
+
+    # 211. ROOT-013 incorrectly closed / fixed.
+    def test_211_root013_closed_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("canonical_severity_transition", lambda r: r.update(status="CLOSED")), "OPEN")
+        self.assert_fails(
+            self._dec_mutate_one("canonical_severity_transition", lambda r: r.update(fixed="YES")), "fixed")
+
+    # 212. ARCH-010 retired too early in findings.jsonl.
+    def test_212_arch010_retired_early_fails(self):
+        self.assert_fails(self._findings_mutate_a10(lambda f: f.update(status="Closed")), "Open")
+
+    # 213. ARCH-010 B004-start trigger missing.
+    def test_213_arch010_trigger_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if r.get("record_type") != "finding_retirement_trigger"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "RETIRE_AT_B004_START")
+        self.assert_fails(self._findings_mutate_a10(lambda f: f.update(notes="positive scope only")), "RETIRE_AT_B004_START")
+
+    # 214. Retired validator deleted.
+    def test_214_retired_validator_deleted_fails(self):
+        (self.root / "tools/audit/validate_security_architecture_findings_freeze.py").unlink()
+        self.assert_fails(self.run_validator(), "deleted")
+
+    # 215. Retired validator rewritten to current HEAD (pin removed).
+    def test_215_retired_validator_rewritten_fails(self):
+        p = self.root / "tools/audit/validate_security_architecture_findings_freeze.py"
+        p.write_text(p.read_text(encoding="utf-8").replace(
+            "c653a1d6a302758c0e006225987281643957f752", "9e585468d081272398e022f12e76e7500d55cbee"),
+            encoding="utf-8")
+        self.assert_fails(self.run_validator(), "integrity marker")
+
+    # 216. Retired validator treated as active acceptance.
+    def test_216_retired_validator_marked_active_fails(self):
+        tp, recs = self._dec_recs()
+        for r in recs:
+            if (r.get("record_type") == "validator_lifecycle"
+                    and r.get("validator") == "tools/audit/validate_security_architecture_findings_freeze.py"):
+                r["current_active_acceptance"] = "ACTIVE"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "RETIRED")
+
+    # 217. All validator_lifecycle records dropped.
+    def test_217_validator_lifecycle_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if r.get("record_type") != "validator_lifecycle"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "validator_lifecycle")
+
+    # 218. B-004/B-005 started by the authorization.
+    def test_218_b004_b005_started_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization", lambda r: r.update(b004="STARTED")), "b004")
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization", lambda r: r.update(b005="STARTED")), "b005")
+
+    # 219. Product unblocked prematurely.
+    def test_219_product_unblocked_fails(self):
+        self.assert_fails(
+            self._ws_mutate(lambda ws: ws.update(product_development_state="UNBLOCKED")),
+            "BLOCKED_PENDING_FINAL_AUDIT")
+
+    # 220. Open MSC unit count changed (an open unit flipped to rejected).
+    def test_220_open_msc_count_changed_fails(self):
+        tp, recs = self._dec_recs()
+        for r in recs:
+            if r.get("record_type") == "msc_unit" and r.get("msc_unit_id") == "MSC_UNIT_001":
+                r["proposed_disposition"] = "REJECTED_NOT_A_FINDING"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "42 open")
+
+    # 221. MSC unit marked remediated / fixed.
+    def test_221_fixed_msc_nonzero_fails(self):
+        tp, recs = self._dec_recs()
+        for r in recs:
+            if r.get("record_type") == "msc_unit" and r.get("msc_unit_id") == "MSC_UNIT_001":
+                r["proposed_disposition"] = "REMEDIATED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "disposition")
+
+    # 222. Coverage gate no longer PASS.
+    def test_222_coverage_gate_not_pass_fails(self):
+        self.assert_fails(
+            self._gate_registry_mutate(lambda r: r.update(result="FAIL")), "result")
+        self.assert_fails(
+            self._gate_mutate_one("gate_verdict", lambda r: r.update(result="FAIL")), "result")
+
+    # 223. First authorized wave incorrect.
+    def test_223_first_wave_incorrect_fails(self):
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization",
+                                 lambda r: r.update(first_authorized_wave="S0")), "S0_AND_S1")
+        self.assert_fails(
+            self._dec_mutate_one("human_remediation_authorization",
+                                 lambda r: r.update(first_authorized_sessions=["REMEDIATION_SESSION_S2"])), "S0")
+
+    # 224. Event id collision / wrong latest event.
+    def test_224_event_id_collision_fails(self):
+        lp = self.root / self.LEDGER
+        recs = _load_jsonl(lp)
+        recs[-1]["event_id"] = "ANOX-EVENT-0051"
+        _write_jsonl(lp, recs)
+        self.assert_fails(self.run_validator(), "stale")
+        lp = self.root / self.LEDGER
+        recs = _load_jsonl(lp)
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0053"))
+        _write_jsonl(lp, recs)
+        cs = self.root / self.CS
+        state = json.loads(cs.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = "ANOX-EVENT-0053"
+        cs.write_text(json.dumps(state, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "ANOX-EVENT-0052")
+
+    # 225. Ledger line-size violation.
+    def test_225_ledger_line_size_fails(self):
+        lp = self.root / self.LEDGER
+        with open(lp, "a", encoding="utf-8") as f:
+            f.write(json.dumps({"event_id": "ANOX-EVENT-0052", "pad": "x" * 5000}) + "\n")
+        self.assert_fails(self.run_validator(), "line-size")
+
+    # 226. Task registry entry missing / wrong status or start_sha.
+    def test_226_task_registry_schema_fails(self):
+        tp = self.root / self.TASKS
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("task_id") == "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001":
+                r["status"] = "In Progress"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "Ready For Remote")
+        tp = self.root / self.TASKS
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("task_id") == "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001":
+                r["start_sha"] = "0" * 40
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "start_sha")
+
+    # 227. Handoff missing decision/authorization metadata.
+    def test_227_handoff_missing_decision_metadata_fails(self):
+        ch = self.root / self.CH
+        ch.write_text(ch.read_text(encoding="utf-8").replace("GRANTED_BY_HUMAN_OWNER", "NOT_GRANTED"),
+                      encoding="utf-8")
+        self.assert_fails(self.run_validator(), "GRANTED_BY_HUMAN_OWNER")
+        ch = self.root / self.CH
+        ch.write_text(ch.read_text(encoding="utf-8").replace("HUMAN-PRE-REMEDIATION-DECISIONS-001", "X-OLD-001"),
+                      encoding="utf-8")
+        self.assert_fails(self.run_validator(), "HUMAN-PRE-REMEDIATION-DECISIONS-001")
+
+    # 228. Handoff described-head mismatch vs CURRENT_STATE.
+    def test_228_handoff_described_head_mismatch_fails(self):
+        cs = self.root / self.CS
+        state = json.loads(cs.read_text(encoding="utf-8"))
+        state["described_head"] = "1" * 40
+        cs.write_text(json.dumps(state, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "Described HEAD")
+
+    # 231. Decision record mutated (hash mismatch).
+    def test_231_decision_doc_mutated_fails(self):
+        p = self.root / self.DEC_REPORT
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 232. Decision record deleted.
+    def test_232_decision_doc_deleted_fails(self):
+        (self.root / self.DEC_REPORT).unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 233. human_remediation_authorization record dropped.
+    def test_233_authorization_record_missing_fails(self):
+        tp, recs = self._dec_recs()
+        recs = [r for r in recs if r.get("record_type") != "human_remediation_authorization"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "human_remediation_authorization")
+
+    # 234. decisions.jsonl record missing / non-human authority.
+    def test_234_decisions_registry_fails(self):
+        dp = self.root / self.DECISIONS
+        recs = [r for r in _load_jsonl(dp) if r.get("decision_id") != "ANOX-DECISION-HUMANPREREMEDIATION001"]
+        _write_jsonl(dp, recs)
+        self.assert_fails(self.run_validator(), "ANOX-DECISION-HUMANPREREMEDIATION001")
+        dp = self.root / self.DECISIONS
+        recs = _load_jsonl(dp)
+        for r in recs:
+            if r.get("decision_id") == "ANOX-DECISION-HUMANPREREMEDIATION001":
+                r["authority_actor"] = "Devin CLI"
+        _write_jsonl(dp, recs)
+        self.assert_fails(self.run_validator(), "Human")
+
+
+class DeliveryTopologyAdversarialTests(unittest.TestCase):
+    """Adversarial checks on the canonical two-commit delivery rule itself,
+    exercised against throwaway git repositories."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=self.root, check=True)
+        subprocess.run(["git", "config", "user.name", "test"], cwd=self.root, check=True)
+        sys.path.insert(0, str(REPO_ROOT / "tools" / "audit"))
+        import lifecycle_legality as ll  # noqa: E402
+        self.ll = ll
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _commit(self, name, content):
+        p = self.root / name
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(content, encoding="utf-8")
+        subprocess.run(["git", "add", name], cwd=self.root, check=True)
+        subprocess.run(["git", "commit", "-qm", name], cwd=self.root, check=True)
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=self.root, text=True).strip()
+
+    # 229. Third task-authored commit above base is rejected.
+    def test_229_third_task_authored_commit_fails(self):
+        base = self._commit("base.txt", "base")
+        c1 = self._commit("substantive.txt", "sub")
+        c2 = self._commit("docs/continuity/CURRENT_STATE.json", "{}")
+        c3 = self._commit("docs/continuity/CURRENT_GIT_STATE.md", "x")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c2, c3, cwd=self.root, metadata_allowlist=set())
+        self.assertFalse(ok, "a third task-authored commit must be rejected")
+        self.assertIn("expected exactly 2", reason)
+
+    # 230. Metadata commit touching a substantive (non-allowlisted) file is rejected.
+    def test_230_metadata_commit_substantive_file_fails(self):
+        base = self._commit("base.txt", "base")
+        c1 = self._commit("substantive.txt", "sub")
+        c2 = self._commit("android/Fake.kt", "product change")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c1, c2, cwd=self.root,
+            metadata_allowlist={"docs/continuity/CURRENT_STATE.json"})
+        self.assertFalse(ok, "metadata commit touching a substantive file must be rejected")
+        self.assertIn("metadata commit touches non-metadata files", reason)
 
 
 if __name__ == "__main__":

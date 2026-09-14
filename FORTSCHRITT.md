@@ -202,3 +202,19 @@
 - Validator extended (11 records incl. SECURITY_REMEDIATION_COVERAGE_GATE artifact; +64 `gate_*` records); adversarial tests now 202.
 - No product, backend, SQL, CI, or secret changes; remote mutation NONE; no finding fixed, closed, re-severitied, merged, or reinterpreted; no remediation session executed; physical campaign NOT_EXECUTED; no audit re-run.
 - Next: human merge to `main`, then `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0052 -->
+## HUMAN-PRE-REMEDIATION-DECISIONS-001 — 2026-09-14 (ANOX-EVENT-0052)
+
+- Branch: `governance/human-pre-remediation-decisions-001`
+- Substantive commit: `30fe6e9afa7033ee94c31f79d8cc1774716ee386`
+- Canonical base SHA: `9e585468d081272398e022f12e76e7500d55cbee`
+- Task ID: `ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001`
+- Result: `Ready For Remote`
+- Purpose: record the canonical human governance decisions for the preserved `SECURITY-REMEDIATION-COVERAGE-GATE-001` Human Decision Packet and grant the security-remediation start authorization for the first wave — governance only, no product code, no remediation execution.
+- Decisions (Human Product & Security Owner, 0 auto-accepted): `H1=ARCHIVE_AND_RETIRE_SHA_PINNED_VALIDATORS` — 10 SHA/event-pinned one-shot validators retired from active current-state acceptance (files, pins and historical evidence preserved; not rewritten to current HEAD; not deleted); `H2=ACCEPT_MODEL_DEVIATION_WITH_PRESERVED_RATIONALE` — `AUDIT-SECURITY-CODEBASE-001` requested Claude Fable 5.1 High / actual Claude Opus 5 Medium accepted as disclosed; `H3=RETIRE_ARCH_010_AT_B004_START` — `ANOX-SECURITY-ARCH-010` stays `Open`/`INFO` until B004 start; `R1=RATIFY_ROOT_013_AS_MEDIUM` — `ROOT-013` canonical `LOW→MEDIUM`, stays `OPEN` (consensus `LOW` + overlay `PENDING` preserved).
+- Authorization: `SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER` for `REMEDIATION_SESSION_S0 ∥ S1` only — authorization is not execution; security remediation `NOT_STARTED`; `B-004`/`B-005` `NOT_STARTED`; product `BLOCKED_PENDING_FINAL_AUDIT`; `PHYSICAL_P1..P17` `NOT_EXECUTED`; 42 open `MSC_UNIT_*` unchanged (0 fixed).
+- Canonical record: `docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md` (SHA-256 `d558471d…`, 10,128 bytes); registry `SEC-AUDIT-REG-0012` (12 records); +30 decision-layer traceability records; `decisions.jsonl` `ANOX-DECISION-HUMANPREREMEDIATION001`; task `ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001`.
+- Validator extended fail-closed for the decision layer; adversarial tests now 235 (incl. real-git delivery-topology cases).
+- No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no remediation session executed; no finding closed or re-severitied except the canonical ROOT-013 severity ratification (still OPEN); no audit re-run.
+- Next: human merge to `main`, then `SECURITY_REMEDIATION_WAVE_1` (`REMEDIATION_SESSION_S0 ∥ S1`) on a fresh post-merge `main` SHA.
