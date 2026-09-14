@@ -1,128 +1,140 @@
 {
-  "schema": "anox-security-audit-evidence-hashes-v1",
-  "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003 and -004. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; no normalization was applied.",
-  "preservation_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-  "preservation_tasks": [
-    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
-    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
-    "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
-  ],
-  "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
-  "audit_base_sha_latest": "b9abeb0850a476716403d224b87a857c1147502e",
-  "reports": {
-    "AUDIT-SECURITY-ARCHITECTURE": {
-      "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-ARCHITECTURE.md",
-      "sha256": "da230ac1a3f623eba559c31641e52ffd2fc5487502d4c6ad2ccbbc1f9eb6dfe6",
-      "bytes": 7440,
-      "source_present": "YES",
-      "source_type": "EXISTING_CANONICAL_REPOSITORY_FILE",
-      "original_path": "docs/reports/FINAL_PRE_PRODUCT_SECURITY_ARCHITECTURE_AUDIT.md",
-      "normalization": "NONE — byte-exact copy of the canonical repository report"
-    },
-    "AUDIT-SECURITY-CODEBASE-001": {
-      "audit_id": "AUDIT-SECURITY-CODEBASE-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-CODEBASE-001.md",
-      "sha256": "122d0aae9c1b64d060010092bea77f4d9c3466c5df2d10ccf56955bc4987f153",
-      "bytes": 108370,
-      "source_present": "YES",
-      "source_type": "HUMAN_SUPPLIED_FILE",
-      "original_path": "/Users/3xpress/Downloads/markdown(20260910-163151).md eingefügt",
-      "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
-    },
-    "AUDIT-SECURITY-CODEBASE-002": {
-      "audit_id": "AUDIT-SECURITY-CODEBASE-002",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-CODEBASE-002.md",
-      "sha256": "2ce279637bea62c79ced6614318c1fe79fcdc1b30b33519aeb7b2d426d4c09d5",
-      "bytes": 34949,
-      "source_present": "YES",
-      "source_type": "HUMAN_SUPPLIED_FILE",
-      "original_path": "/Users/3xpress/Downloads/markdown(20260910-171640).md eingefügt",
-      "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
-    },
-    "CODEBASE-SECURITY-CONSENSUS-001": {
-      "audit_id": "CODEBASE-SECURITY-CONSENSUS-001",
-      "path": "docs/reports/security/audits/CODEBASE-SECURITY-CONSENSUS-001.md",
-      "sha256": "66ea13d75982e83fdb9b316f3b95c0aef4b1fae9604d5e6457abb33e40898f8c",
-      "bytes": 10313,
-      "source_present": "YES",
-      "source_type": "HUMAN_SUPPLIED_FILE",
-      "original_path": "/Users/3xpress/Downloads/markdown(20260910-175547).md eingefügt",
-      "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
-    },
-    "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001": {
-      "audit_id": "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
-      "sha256": "6afdd091d64ec9a30d40f8ba4e0fbe73bfb4812f105993bdbb42b49895acda1a",
-      "bytes": 42207,
-      "source_present": "YES",
-      "source_type": "HUMAN_SUPPLIED_FILE",
-      "original_path": "/Users/3xpress/Downloads/markdown(20260910-204639).md eingefügt",
-      "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
-    },
-    "AUDIT-SECURITY-CRYPTO-JNI-001": {
-      "audit_id": "AUDIT-SECURITY-CRYPTO-JNI-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
-      "sha256": "c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b",
-      "bytes": 46268,
-      "source_present": "YES",
-      "source_type": "AUDIT_SESSION_FINAL_REPORT",
-      "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
-      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
-    },
-    "AUDIT-SECURITY-AUTH-DPOP-001": {
-      "audit_id": "AUDIT-SECURITY-AUTH-DPOP-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
-      "sha256": "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e",
-      "bytes": 71565,
-      "source_present": "YES",
-      "source_type": "AUDIT_SESSION_FINAL_REPORT",
-      "audited_sha": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
-      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
-    },
-    "AUDIT-SECURITY-ANDROID-STORAGE-001": {
-      "audit_id": "AUDIT-SECURITY-ANDROID-STORAGE-001",
-      "path": "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
-      "sha256": "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720",
-      "bytes": 90991,
-      "source_present": "YES",
-      "source_type": "AUDIT_SESSION_FINAL_REPORT",
-      "audited_sha": "b9abeb0850a476716403d224b87a857c1147502e",
-      "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session (UTF-8, LF, single trailing newline)"
-    }
+ "schema": "anox-security-audit-evidence-hashes-v1",
+ "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003, -004 and -005. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; the only normalization ever applied is a single trailing LF for session-emitted report bodies.",
+ "preservation_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+ "preservation_tasks": [
+  "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+  "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
+  "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+  "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
+  "SECURITY-AUDIT-EVIDENCE-PRESERVATION-005"
+ ],
+ "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
+ "audit_base_sha_latest": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
+ "reports": {
+  "AUDIT-SECURITY-ARCHITECTURE": {
+   "audit_id": "ANOX-AUDIT-SECURITY-ARCH-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-ARCHITECTURE.md",
+   "sha256": "da230ac1a3f623eba559c31641e52ffd2fc5487502d4c6ad2ccbbc1f9eb6dfe6",
+   "bytes": 7440,
+   "source_present": "YES",
+   "source_type": "EXISTING_CANONICAL_REPOSITORY_FILE",
+   "original_path": "docs/reports/FINAL_PRE_PRODUCT_SECURITY_ARCHITECTURE_AUDIT.md",
+   "normalization": "NONE — byte-exact copy of the canonical repository report"
   },
-  "native_artifact_evidence": {
-    "note": "Evidence values reproduced and recorded inside AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001 at audited SHA 869b99acac040412a29bbaadc76342070fb2085c. These are audit-reported hashes, preserved here for hash-bound reference; the underlying binaries are not re-hashed by this preservation task.",
-    "committed_so_arm64_v8a_sha256": "11a958a5f8b653692fdbf189dd42fa373cff729fdfef0cc5748afc5bfd3ea6c3",
-    "committed_so_x86_64_sha256": "ecf9fdc1e83e419f1e1b9da6e83e184f5b3dfe694ee5de13529d68fc60653c88",
-    "committed_so_origin": {
-      "source_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
-      "rustc": "1.97.1",
-      "ndk": "r26c",
-      "cargo_ndk": "4.1.2",
-      "profile": "release",
-      "proof": "old-source rebuild byte-identical to committed/APK binaries"
-    },
-    "current_source_rebuild_arm64_v8a_sha256": "05f3f40cd4122ddd4286c513470f8bb6cdf54ca69b4c1879e53cb6a8ba22d7a2",
-    "current_source_rebuild_x86_64_sha256": "c002cc420813f3b8473be7aa82eb0af334bd73e6847cd1c893ce500845dfe798",
-    "current_source_rebuild_location": "/tmp/anox_buildsc_out_1 (audit artifact only — NOT authoritative, NOT preserved)",
-    "debug_apk_sha256": "f202c5e17a24b68bf3c741de0a7d5b5f88cbede2fb0ec7a6744ff2daa357379d",
-    "release_unsigned_apk_sha256": "7207548704d74e6b3e36438993cf08443fa828e39960d2cf5e8e75b5d1182dad",
-    "behavioral_delta": "committed/APK binaries return -2 (InvalidCiphertext) where current source returns -11 (BufferTooSmall) on 8 JNI functions",
-    "cryptojni_independent_recheck": {
-      "audit": "AUDIT-SECURITY-CRYPTO-JNI-001",
-      "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
-      "result": "Independent temporary cargo-ndk rebuild reproduced IDENTICAL current-source hashes (arm64 05f3f40c..., x86_64 c002cc42...); committed .so confirmed stale since 7db20fa via disassembly (-0x2 vs -0xb at offset 0x3724c).",
-      "evidence_method_correction": "String-presence heuristic ('Output buffer too small') is NOT discriminating — absent in both committed and current-source builds (LTO); use disassembly or runtime.",
-      "canonicality": "TEMPORARY EVIDENCE ONLY — /tmp/anox_crypto_jni_ndk_out — NOT committed, NOT APK evidence"
-    }
+  "AUDIT-SECURITY-CODEBASE-001": {
+   "audit_id": "AUDIT-SECURITY-CODEBASE-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-CODEBASE-001.md",
+   "sha256": "122d0aae9c1b64d060010092bea77f4d9c3466c5df2d10ccf56955bc4987f153",
+   "bytes": 108370,
+   "source_present": "YES",
+   "source_type": "HUMAN_SUPPLIED_FILE",
+   "original_path": "/Users/3xpress/Downloads/markdown(20260910-163151).md eingefügt",
+   "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
   },
-  "supporting_evidence": [
-    {
-      "path": "/tmp/anox_audit2/BLIND_CHECKPOINT_CODESEC2.md",
-      "status": "SUPPORTING_CHECKPOINT_ONLY — not the complete AUDIT-SECURITY-CODEBASE-002 report; not preserved as authoritative evidence",
-      "note": "Blind checkpoint recorded SHA 869b99ac..., 17 findings, severity distribution 0C/3H/6M/6L/2I — consistent with the preserved complete report."
-    }
-  ]
+  "AUDIT-SECURITY-CODEBASE-002": {
+   "audit_id": "AUDIT-SECURITY-CODEBASE-002",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-CODEBASE-002.md",
+   "sha256": "2ce279637bea62c79ced6614318c1fe79fcdc1b30b33519aeb7b2d426d4c09d5",
+   "bytes": 34949,
+   "source_present": "YES",
+   "source_type": "HUMAN_SUPPLIED_FILE",
+   "original_path": "/Users/3xpress/Downloads/markdown(20260910-171640).md eingefügt",
+   "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
+  },
+  "CODEBASE-SECURITY-CONSENSUS-001": {
+   "audit_id": "CODEBASE-SECURITY-CONSENSUS-001",
+   "path": "docs/reports/security/audits/CODEBASE-SECURITY-CONSENSUS-001.md",
+   "sha256": "66ea13d75982e83fdb9b316f3b95c0aef4b1fae9604d5e6457abb33e40898f8c",
+   "bytes": 10313,
+   "source_present": "YES",
+   "source_type": "HUMAN_SUPPLIED_FILE",
+   "original_path": "/Users/3xpress/Downloads/markdown(20260910-175547).md eingefügt",
+   "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
+  },
+  "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001": {
+   "audit_id": "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001.md",
+   "sha256": "6afdd091d64ec9a30d40f8ba4e0fbe73bfb4812f105993bdbb42b49895acda1a",
+   "bytes": 42207,
+   "source_present": "YES",
+   "source_type": "HUMAN_SUPPLIED_FILE",
+   "original_path": "/Users/3xpress/Downloads/markdown(20260910-204639).md eingefügt",
+   "normalization": "NONE — byte-exact copy of the supplied original (UTF-8, no BOM, LF, no trailing newline)"
+  },
+  "AUDIT-SECURITY-CRYPTO-JNI-001": {
+   "audit_id": "AUDIT-SECURITY-CRYPTO-JNI-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
+   "sha256": "c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b",
+   "bytes": 46268,
+   "source_present": "YES",
+   "source_type": "AUDIT_SESSION_FINAL_REPORT",
+   "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+   "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
+  },
+  "AUDIT-SECURITY-AUTH-DPOP-001": {
+   "audit_id": "AUDIT-SECURITY-AUTH-DPOP-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
+   "sha256": "57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e",
+   "bytes": 71565,
+   "source_present": "YES",
+   "source_type": "AUDIT_SESSION_FINAL_REPORT",
+   "audited_sha": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
+   "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session"
+  },
+  "AUDIT-SECURITY-ANDROID-STORAGE-001": {
+   "audit_id": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
+   "sha256": "7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720",
+   "bytes": 90991,
+   "source_present": "YES",
+   "source_type": "AUDIT_SESSION_FINAL_REPORT",
+   "audited_sha": "b9abeb0850a476716403d224b87a857c1147502e",
+   "normalization": "NONE — byte-exact preservation of the final report body emitted by the authorized specialist audit session (UTF-8, LF, single trailing newline)"
+  },
+  "AUDIT-SECURITY-ATTACKCHAIN-001": {
+   "audit_id": "AUDIT-SECURITY-ATTACKCHAIN-001",
+   "path": "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
+   "sha256": "a4feac55f49066647ec0c1665c40deab581115da4b102e81eb6742e72b80ca9e",
+   "bytes": 88819,
+   "source_present": "YES",
+   "source_type": "AUDIT_SESSION_FINAL_REPORT",
+   "audited_sha": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
+   "original_source": "Devin CLI session transcript store (sessions.db message node), single complete report instance after discarding a truncated duplicated prefix",
+   "normalization": "single trailing LF appended (UTF-8, LF) - repository convention for session-emitted report bodies"
+  }
+ },
+ "native_artifact_evidence": {
+  "note": "Evidence values reproduced and recorded inside AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001 at audited SHA 869b99acac040412a29bbaadc76342070fb2085c. These are audit-reported hashes, preserved here for hash-bound reference; the underlying binaries are not re-hashed by this preservation task.",
+  "committed_so_arm64_v8a_sha256": "11a958a5f8b653692fdbf189dd42fa373cff729fdfef0cc5748afc5bfd3ea6c3",
+  "committed_so_x86_64_sha256": "ecf9fdc1e83e419f1e1b9da6e83e184f5b3dfe694ee5de13529d68fc60653c88",
+  "committed_so_origin": {
+   "source_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
+   "rustc": "1.97.1",
+   "ndk": "r26c",
+   "cargo_ndk": "4.1.2",
+   "profile": "release",
+   "proof": "old-source rebuild byte-identical to committed/APK binaries"
+  },
+  "current_source_rebuild_arm64_v8a_sha256": "05f3f40cd4122ddd4286c513470f8bb6cdf54ca69b4c1879e53cb6a8ba22d7a2",
+  "current_source_rebuild_x86_64_sha256": "c002cc420813f3b8473be7aa82eb0af334bd73e6847cd1c893ce500845dfe798",
+  "current_source_rebuild_location": "/tmp/anox_buildsc_out_1 (audit artifact only — NOT authoritative, NOT preserved)",
+  "debug_apk_sha256": "f202c5e17a24b68bf3c741de0a7d5b5f88cbede2fb0ec7a6744ff2daa357379d",
+  "release_unsigned_apk_sha256": "7207548704d74e6b3e36438993cf08443fa828e39960d2cf5e8e75b5d1182dad",
+  "behavioral_delta": "committed/APK binaries return -2 (InvalidCiphertext) where current source returns -11 (BufferTooSmall) on 8 JNI functions",
+  "cryptojni_independent_recheck": {
+   "audit": "AUDIT-SECURITY-CRYPTO-JNI-001",
+   "audited_sha": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+   "result": "Independent temporary cargo-ndk rebuild reproduced IDENTICAL current-source hashes (arm64 05f3f40c..., x86_64 c002cc42...); committed .so confirmed stale since 7db20fa via disassembly (-0x2 vs -0xb at offset 0x3724c).",
+   "evidence_method_correction": "String-presence heuristic ('Output buffer too small') is NOT discriminating — absent in both committed and current-source builds (LTO); use disassembly or runtime.",
+   "canonicality": "TEMPORARY EVIDENCE ONLY — /tmp/anox_crypto_jni_ndk_out — NOT committed, NOT APK evidence"
+  }
+ },
+ "supporting_evidence": [
+  {
+   "path": "/tmp/anox_audit2/BLIND_CHECKPOINT_CODESEC2.md",
+   "status": "SUPPORTING_CHECKPOINT_ONLY — not the complete AUDIT-SECURITY-CODEBASE-002 report; not preserved as authoritative evidence",
+   "note": "Blind checkpoint recorded SHA 869b99ac..., 17 findings, severity distribution 0C/3H/6M/6L/2I — consistent with the preserved complete report."
+  }
+ ]
 }

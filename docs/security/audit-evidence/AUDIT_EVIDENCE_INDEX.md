@@ -1,7 +1,7 @@
 # AUDIT EVIDENCE INDEX — Security Hardening Audit Preservation
 
-**Preservation tasks:** `SECURITY-AUDIT-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0045`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-002` (`ANOX-EVENT-0046`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-003` (`ANOX-EVENT-0047`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-004` (`ANOX-EVENT-0048`)
-**Audit base SHA:** `869b99acac040412a29bbaadc76342070fb2085c` (Security Hardening wave audits); `a79166ab7e65db71ba70e3a427df2ad017dc9225` (`AUDIT-SECURITY-CRYPTO-JNI-001`); `638e63a22c91ca81365bf55c8a59ec47878dd7fd` (`AUDIT-SECURITY-AUTH-DPOP-001`); `b9abeb0850a476716403d224b87a857c1147502e` (`AUDIT-SECURITY-ANDROID-STORAGE-001`)
+**Preservation tasks:** `SECURITY-AUDIT-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0045`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-002` (`ANOX-EVENT-0046`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-003` (`ANOX-EVENT-0047`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-004` (`ANOX-EVENT-0048`), `SECURITY-AUDIT-EVIDENCE-PRESERVATION-005` (`ANOX-EVENT-0049`)
+**Audit base SHA:** `869b99acac040412a29bbaadc76342070fb2085c` (Security Hardening wave audits); `a79166ab7e65db71ba70e3a427df2ad017dc9225` (`AUDIT-SECURITY-CRYPTO-JNI-001`); `638e63a22c91ca81365bf55c8a59ec47878dd7fd` (`AUDIT-SECURITY-AUTH-DPOP-001`); `b9abeb0850a476716403d224b87a857c1147502e` (`AUDIT-SECURITY-ANDROID-STORAGE-001`); `e54584903a353e98ad154d1e8f90f93ed9d7db14` (`AUDIT-SECURITY-ATTACKCHAIN-001`)
 **Purpose:** repository-contained, hash-verifiable preservation of completed audit evidence. **No security finding is fixed, closed, re-severitied, merged, or reinterpreted by this task.** Nothing here is a re-run of a completed audit.
 
 ## Preserved original reports (immutable evidence)
@@ -16,13 +16,14 @@
 | `AUDIT-SECURITY-CRYPTO-JNI-001` (specialist) | `docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md` | `c7367e3419b709d9675b16ddcf1fee23fd114283482523ee036be99e4ecc836b` | PASS_WITH_FINDINGS | Claude Fable 5.1 High (requirement SATISFIED; first-reply mislabel retracted before analysis) | 6 (`ANOX-CRYPTOJNI-CANDIDATE-001..006`; 0C/1H/3M/1L/1I) + 6 consensus roots confirmed/expanded |
 | `AUDIT-SECURITY-AUTH-DPOP-001` (specialist) | `docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md` | `57516d7d47e56447b7ab7a91aadaa2b7c3acdeda71e572b2b4366d2a6526b18e` | PASS_WITH_FINDINGS | Claude Fable 5.1 High (requirement SATISFIED) via Devin CLI (Cognition) session runtime | 3 (`ANOX-AUTHDPOP-CANDIDATE-001..003`; 0C/0H/1M/2L/0I) + 3 architecture gaps (`ANOX-AUTHDPOP-GAP-001..003`) + 4 consensus roots confirmed (008/009 expanded) |
 | `AUDIT-SECURITY-ANDROID-STORAGE-001` (specialist) | `docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md` | `7532877dd14b97011d19f0b07a79bb50e529e4130feb0226c242b60d3e995720` | PASS_WITH_FINDINGS | Claude Fable 5.1 High (requirement SATISFIED) via Devin CLI (Cognition) session runtime | 2 (`ANOX-ANDROIDSTORAGE-CANDIDATE-001..002`; 0C/0H/0M/2L/0I) + 3 architecture gaps (`ANOX-ANDROIDSTORAGE-GAP-001..003`) + 7 consensus roots confirmed (006/007/011/012 expanded) |
+| `AUDIT-SECURITY-ATTACKCHAIN-001` (specialist) | `docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md` | `a4feac55f49066647ec0c1665c40deab581115da4b102e81eb6742e72b80ca9e` | PASS_WITH_FINDINGS | Claude Fable 5.1 High (requirement SATISFIED) via Devin CLI (Cognition) session runtime | 15 (`ANOX-ATTACKCHAIN-CANDIDATE-001..015`; 0C/4H/7M/3L/1I; AC-003 conditional-critical overlay only) |
 
-`SOURCE_PRESENT = YES` for all eight. Sources: the architecture report is the already-canonical repository file (identical bytes also remain at `docs/reports/FINAL_PRE_PRODUCT_SECURITY_ARCHITECTURE_AUDIT.md`); the codebase/consensus/build-supply reports are human-supplied files preserved byte-exact; the Crypto/JNI, Auth/DPoP and Android/Storage reports are byte-exact final report bodies emitted by the authorized specialist audit sessions (no normalization; see `evidence_hashes.json`).
+`SOURCE_PRESENT = YES` for all nine. Sources: the architecture report is the already-canonical repository file (identical bytes also remain at `docs/reports/FINAL_PRE_PRODUCT_SECURITY_ARCHITECTURE_AUDIT.md`); the codebase/consensus/build-supply reports are human-supplied files preserved byte-exact; the Crypto/JNI, Auth/DPoP, Android/Storage and Attackchain reports are byte-exact final report bodies emitted by the authorized specialist audit sessions (see `evidence_hashes.json`; the Attackchain body was recovered byte-exact from the Devin CLI session transcript store, the single complete instance after discarding a truncated duplicated prefix, normalization = one trailing LF).
 
 ## Registry layer (structured interpretation — NOT the reports)
 
 - `audit_registry.jsonl` — one record per audit (model attribution, SHA, result, candidate counts, blindness, lifecycle state).
-- `audit_traceability.jsonl` — per-candidate consensus mappings (21/21 + 17/17), 18 consensus roots, 12 Build/Supply candidates, 6 Crypto/JNI + 3 Auth/DPoP + 2 Android/Storage specialist candidates, 3 Auth/DPoP + 3 Android/Storage architecture gaps, gate sets, historical relations/revalidation, governance items.
+- `audit_traceability.jsonl` — per-candidate consensus mappings (21/21 + 17/17), 18 consensus roots, 12 Build/Supply candidates, 6 Crypto/JNI + 3 Auth/DPoP + 2 Android/Storage specialist candidates, 3 Auth/DPoP + 3 Android/Storage architecture gaps, 15 Attackchain candidates with coverage/breaker/matrix records, gate sets, historical relations/revalidation, governance items.
 - `evidence_hashes.json` — report SHA-256s + preserved reproduced native-artifact/APK hash evidence.
 - `reproductions/README.md` — reproduced-evidence provenance and boundaries.
 
@@ -82,6 +83,18 @@ This directory is the **single canonical audit-evidence registry** for the Secur
 - Historical revalidation preserved: `ANOX-MAINARCH-023` PARTIALLY_EFFECTIVE (Closed, not reopened); `ANOX-SECURITY-ARCH-007` INEFFECTIVE_REMEDIATION_SCOPE; `ANOX-LEGACY-INTEGRATION-003` PARTIALLY_EFFECTIVE (→ CANDIDATE-001); `ANOX-SECURITY-ARCH-009` STILL_EFFECTIVE + RELATED_NEW_ROOT_CAUSE (→ ROOT-012/GAP-002); `ANOX-LEGACY-B003-001` SUPERSEDED_BY/SAME ROOT `ROOT-015`; Auth `GAP-003` REAFFIRMED as server half of ROOT-007.
 - Handoff recorded: `ATTACKCHAIN` (7 chained combinations) — remains CANDIDATE / NOT_EXECUTED.
 
+## Attackchain specialist audit outcome (AUDIT-SECURITY-ATTACKCHAIN-001)
+
+- Result: `PASS_WITH_FINDINGS` at audited SHA `e54584903a353e98ad154d1e8f90f93ed9d7db14` (product source byte-identical to consensus base `869b99a`; committed `.so` unchanged and stale since `7db20fa`).
+- 15 audit-local attack-chain candidates `ANOX-ATTACKCHAIN-CANDIDATE-001..015` (0C/4H/7M/3L/1I). HIGH: `AC-001` (local state loss → second registration / key-account ambiguity), `AC-003` (stolen bearer + optional ath/jkt — carries `CONDITIONAL_CRITICAL_AT_B004_IF_VERIFIER_DEFAULTS_PORTED` overlay; canonical severity remains HIGH), `AC-006` (JNI false state), `AC-012` (build false closure — `CURRENTLY_REACHABLE`, `FALSE_CLOSURE_CHAIN`/`META_EVIDENCE_ISSUE`). `AC-013` is INFO `CLOSURE_RISK_ENABLING_CONDITION` (physical evidence vacuum), not an exploit chain.
+- Evidence levels: 8 E2 / 6 E1 / 1 E0 — no chain exceeds E2; `/tmp` harnesses non-authoritative (results transcribed in the report).
+- Security-item coverage: **68 items, UNMAPPED = 0** (29 confirmed / 6 potential / 3 standalone / 14 enabling / 9 meta / 7 not-chain-relevant). Every `ROOT-001..018` disposition recorded; `ROOT-016` remains `REJECTED_NOT_A_FINDING` (not revived). All 23 specialist candidates + all 6 architecture gaps mapped; `ANOX-AUTHDPOP-GAP-002`, `ANOX-AUTHDPOP-GAP-003`, `ANOX-ANDROIDSTORAGE-GAP-001` classified CHAIN_CRITICAL.
+- Chain breakers: server `S1–S18` + client `C1–C14` recorded; single points of security failure: `S7` mandatory JKT binding (AC-003 — mandatory ATH alone proven insufficient), `S12` canonical raw-path htu (AC-002 route confusion).
+- AC-001 variants preserved: Variant A (alias survives → same JKT → new account; broken by server `public_key` uniqueness) and Variant B (alias absent → new key → new account, old device orphaned ACTIVE; server uniqueness alone does NOT terminate it).
+- Gate sets: `PRE_B004_ATTACKCHAIN_CODE` (6), `PRE_B004_ATTACKCHAIN_CONTRACT` (7), `B004_IMPLEMENTATION_REQUIREMENTS` (6), `LATER_GATE_ATTACKCHAINS` (5). Final re-audit mandatory set: AC-001/003/005/006/008/010/012.
+- Architecture verdict: `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C **not** required. Rejected chain hypotheses: 13 (recorded with reasons).
+- Handoffs: `READY_FOR_MASTER_SPECIALIST_CONSOLIDATION` (consolidation itself NOT_EXECUTED) + remediation-coverage handoff (all 15 chains `OPEN_PENDING_CONSOLIDATION`).
+
 ## Historical relations preserved (no rewrites)
 
 - `ANOX-LEGACY-CRYPTO-005` — remains **Closed**; relationship `LATER_AUDIT_PROVES_INEFFECTIVE_REMEDIATION` (Kotlin `cryptoLock` inert via CS-001/C-004; native concurrency never exercised on a current-source binary; `EVIDENCE_REVALIDATION_REQUIRED_AFTER_PROVENANCE_FIX`). **Not reopened.**
@@ -90,11 +103,16 @@ This directory is the **single canonical audit-evidence registry** for the Secur
 - `ANOX-MAINARCH-013` — remains **Open**, expanded; its "byte-identical rebuild" note is superseded.
 - `ANOX-MAINARCH-018` — **PHYSICAL_VERIFICATION_REQUIRED** unchanged; pre-rebuild physical evidence must be re-collected.
 - `ANOX-SECURITY-ARCH-001/008` — Open, expanded by this wave; retest requires provenance-verified binary.
-- `ANOX-LEGACY-B003-001` — Open; same root-cause family as `ROOT-015`.
-- `ANOX-MAINARCH-023` — remains **Closed**; `PARTIALLY_EFFECTIVE` per `AUDIT-SECURITY-ANDROID-STORAGE-001` (wrapped-key read paths fixed; wrapping-alias creation per `getInstance()` persists → `ROOT-006`). **Not reopened.**
+- `ANOX-LEGACY-B003-001` — Open; same root-cause family as `ROOT-015`; standalone — no attack chain found.
+- `ANOX-MAINARCH-023` — remains **Closed**; `PARTIALLY_EFFECTIVE` per `AUDIT-SECURITY-ANDROID-STORAGE-001` (wrapped-key read paths fixed; wrapping-alias creation per `getInstance()` persists → `ROOT-006`); participates in `AC-008`/`AC-006`. **Not reopened.**
+- `ANOX-LEGACY-INTEGRATION-001` — remains **Closed**; `PARTIALLY_EFFECTIVE` per `AUDIT-SECURITY-ATTACKCHAIN-001` (commit PoP absence persists → `AC-010`). **Not reopened.**
 - `ANOX-LEGACY-INTEGRATION-002` — remains **Closed**; `STILL_EFFECTIVE` (ordering) per the Android/Storage revalidation.
+- `ANOX-LEGACY-INTEGRATION-003` — remains **Closed**; `PARTIALLY_EFFECTIVE` per `AUDIT-SECURITY-ATTACKCHAIN-001` (Rejected-after-arm persistence → `AC-014`). **Not reopened.**
+- `ANOX-LEGACY-INTEGRATION-005` — remains **Open**; participates in `AC-006` (handle leak/reuse in false-state chain).
 - `ANOX-LEGACY-ANDROIDSEC-001` — remains **Closed**; `STILL_EFFECTIVE` per the Android/Storage revalidation.
-- `ANOX-SECURITY-ARCH-009` — remains **Open**; `STILL_EFFECTIVE` + `RELATED_NEW_ROOT_CAUSE` per the Android/Storage revalidation (→ `ROOT-012` / `GAP-002`).
+- `ANOX-LEGACY-CRYPTO-005` — remains **Closed**; `LATER_AUDIT_PROVES_INEFFECTIVE_REMEDIATION`; recorded as an `AC-012` false-closure example. **Not reopened.**
+- `ANOX-MAINARCH-031` — remains **Closed**; recorded as the fired historical instance of `AC-012`. **Not reopened.**
+- `ANOX-SECURITY-ARCH-009` — remains **Open**; `STILL_EFFECTIVE` + `RELATED_NEW_ROOT_CAUSE` per the Android/Storage revalidation (→ `ROOT-012` / `GAP-002`); participates in `AC-008`.
 - Historical validator lifecycle mismatches (`CS-021` / `ANOX-CODESEC2-CANDIDATE-017`) are `GOVERNANCE_ONLY` / `HISTORICAL_SHA_PINNED_VALIDATOR`, not product-security failures; pending human decision.
 
 ## Lifecycle state (unchanged by this task)
@@ -104,8 +122,9 @@ This directory is the **single canonical audit-evidence registry** for the Secur
 - `AUDIT-SECURITY-CRYPTO-JNI-001`: **EXECUTED + PRESERVED** (`ANOX-EVENT-0046`) — PASS does NOT unblock product development.
 - `AUDIT-SECURITY-AUTH-DPOP-001`: **EXECUTED + PRESERVED** (`ANOX-EVENT-0047`) — PASS does NOT unblock product development.
 - `AUDIT-SECURITY-ANDROID-STORAGE-001`: **EXECUTED + PRESERVED** (`ANOX-EVENT-0048`) — PASS does NOT unblock product development.
-- Next gate: `AUDIT-SECURITY-ATTACKCHAIN-001` — **CANDIDATE / NOT_EXECUTED** (then MASTER SPECIALIST CONSOLIDATION, remediation sessions, independent retests; only then B-004)
+- `AUDIT-SECURITY-ATTACKCHAIN-001`: **EXECUTED + PRESERVED** (`ANOX-EVENT-0049`) — PASS_WITH_FINDINGS does NOT unblock product development.
+- Next gate: `MASTER-SPECIALIST-CONSOLIDATION` — **CANDIDATE / NOT_EXECUTED** (then remediation-coverage gate, dependency-safe remediation sessions, independent retests, cross-domain attackchain retest, legacy/architecture revalidation, fresh full-system re-audit, physical GrapheneOS evidence, final operational acceptance; only then B-004)
 
 ## Validator
 
-`tools/audit/validate_security_audit_evidence_preservation.py` — fail-closed on altered/deleted/incomplete evidence or invalid lifecycle state; extended under PRESERVATION-002 to cover the Crypto/JNI report, candidates, provenance limitation, temp-build evidence, ABI-revision record, under PRESERVATION-003 to cover the Auth/DPoP report, candidates/gaps, consensus relations, coverage/test evidence, remediation coverage, handoffs, and under PRESERVATION-004 to cover the Android/Storage report, candidates/gaps, consensus relations, coverage/test evidence, remediation coverage, historical revalidation, Attackchain handoff, and the Attackchain not-executed gate. Adversarial tests: `tools/audit/test_security_audit_evidence_preservation.py`.
+`tools/audit/validate_security_audit_evidence_preservation.py` — fail-closed on altered/deleted/incomplete evidence or invalid lifecycle state; extended under PRESERVATION-002 to cover the Crypto/JNI report, candidates, provenance limitation, temp-build evidence, ABI-revision record, under PRESERVATION-003 to cover the Auth/DPoP report, candidates/gaps, consensus relations, coverage/test evidence, remediation coverage, handoffs, under PRESERVATION-004 to cover the Android/Storage report, candidates/gaps, consensus relations, coverage/test evidence, remediation coverage, historical revalidation, Attackchain handoff, and the Attackchain not-executed gate, and under PRESERVATION-005 to cover the Attackchain report, 15 chain candidates, coverage maps (68 items / 0 unmapped), S1–S18 + C1–C14 breakers, cross-group fix dependencies, Pre-B004 code/contract/implementation gate sets, later-gate set, rejected hypotheses, reaudit set, and the Master Specialist Consolidation not-executed gate. Adversarial tests: `tools/audit/test_security_audit_evidence_preservation.py`.

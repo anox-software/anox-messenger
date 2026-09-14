@@ -31,6 +31,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-CRYPTO-JNI-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-AUTH-DPOP-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
+    "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -204,7 +205,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 8 audits")
+        self.assert_fails(self.run_validator(), "exactly 9 audits")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -302,7 +303,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 8 audits")
+        self.assert_fails(self.run_validator(), "exactly 9 audits")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -378,7 +379,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         _write_jsonl(rp, recs)
         self.assert_fails(self.run_validator(), "candidate_count")
 
-    # 34. Wrong next gate: keep AUTH-DPOP as the post-merge gate.
+    # 34. Wrong next gate: regress to a stale specialist audit gate.
     def test_34_stale_next_gate_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
@@ -394,7 +395,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "BLOCKED_PENDING_FINAL_AUDIT")
 
-    # 36. Post-merge gate regressed to a non-ATTACKCHAIN candidate.
+    # 36. Post-merge gate regressed to a non-consolidation candidate.
     def test_36_post_merge_gate_regressed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
@@ -402,12 +403,12 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "post_merge_state")
 
-    # 37. Preservation-004 task record marked with a non-delivery status.
+    # 37. Preservation-005 task record marked with a non-delivery status.
     def test_37_task_status_mutated_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
         recs = _load_jsonl(tp)
         for r in recs:
-            if r.get("task_id") == "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004":
+            if r.get("task_id") == "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005":
                 r["status"] = "Closed"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "Ready For Remote")
@@ -475,7 +476,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 8 audits")
+        self.assert_fails(self.run_validator(), "exactly 9 audits")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -561,37 +562,37 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "153")
 
-    # 55. Mark the Attackchain gate executed in completed_audit_ids.
-    def test_55_attackchain_marked_completed_fails(self):
+    # 55. Mark the Master Specialist Consolidation gate executed in completed_audit_ids.
+    def test_55_consolidation_marked_completed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["final_pre_product_audit"]["completed_audit_ids"].append("AUDIT-SECURITY-ATTACKCHAIN-001")
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("MASTER-SPECIALIST-CONSOLIDATION")
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
 
-    # 56. Drop Android/Storage from completed_audit_ids (executed+preserved required).
-    def test_56_androidstorage_dropped_completed_fails(self):
+    # 56. Drop Attackchain from completed_audit_ids (executed+preserved required).
+    def test_56_attackchain_dropped_completed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
         ws["final_pre_product_audit"]["completed_audit_ids"] = [
             a for a in ws["final_pre_product_audit"]["completed_audit_ids"]
-            if a != "AUDIT-SECURITY-ANDROID-STORAGE-001"
+            if a != "AUDIT-SECURITY-ATTACKCHAIN-001"
         ]
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
-        self.assert_fails(self.run_validator(), "AUDIT-SECURITY-ANDROID-STORAGE-001")
+        self.assert_fails(self.run_validator(), "AUDIT-SECURITY-ATTACKCHAIN-001")
 
-    # 57. Stale next gate: keep ANDROID-STORAGE as the post-merge gate.
+    # 57. Stale next gate: keep ATTACKCHAIN as the post-merge gate.
     def test_57_stale_next_gate_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["next_phase"] = "AUDIT-SECURITY-ANDROID-STORAGE-001"
+        ws["next_phase"] = "AUDIT-SECURITY-ATTACKCHAIN-001"
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "next_phase")
 
-    # 58. Drop the preservation-004 task record.
+    # 58. Drop the preservation-005 task record.
     def test_58_dropped_task_record_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
-        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"]
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005"]
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
 
@@ -621,6 +622,253 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
                 r["status"] = "EXECUTED"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "NOT_EXECUTED")
+
+
+    # --- PRESERVATION-005: 30 attackchain mutations (62-91) ---
+    AC = "AUDIT-SECURITY-ATTACKCHAIN-001"
+    ACAND = "ANOX-ATTACKCHAIN-CANDIDATE-"
+
+    def _ac_mut(self, cid, **kv):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "attackchain_candidate" and r.get("chain_id") == cid:
+                r.update(kv)
+        _write_jsonl(tp, recs)
+
+    def _ac_get(self, rtype):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        return tp, recs, next(r for r in recs if r.get("record_type") == rtype
+                              and r.get("source_audit_id") == self.AC)
+
+    # 62. Delete the preserved Attackchain report.
+    def test_62_deleted_attackchain_report_fails(self):
+        (self.root / "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md").unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 63. Mutate the preserved Attackchain report bytes.
+    def test_63_mutated_attackchain_report_fails(self):
+        p = self.root / "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 64. Wrong recorded hash for the Attackchain report.
+    def test_64_wrong_attackchain_hash_fails(self):
+        hp = self.root / "docs/security/audit-evidence/evidence_hashes.json"
+        data = json.loads(hp.read_text(encoding="utf-8"))
+        data["reports"]["AUDIT-SECURITY-ATTACKCHAIN-001"]["sha256"] = "0" * 64
+        hp.write_text(json.dumps(data, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator())
+
+    # 65. Drop the Attackchain registry record (9 -> 8 audits).
+    def test_65_dropped_attackchain_registry_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "exactly 9 audits")
+
+    # 66. Inflate the Attackchain chain count.
+    def test_66_inflated_attackchain_chain_count_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-ATTACKCHAIN-001":
+                r["chain_count"] = 16
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "chain_count")
+
+    # 67. Mutate the recorded severity distribution (4H -> 5H).
+    def test_67_attackchain_severity_count_fails(self):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-ATTACKCHAIN-001":
+                r["high_count"] = 5
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "high_count")
+
+    # 68. Missing chain ID: drop AC-007 from traceability.
+    def test_68_missing_attackchain_candidate_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if not (r.get("record_type") == "attackchain_candidate" and r.get("chain_id") == "ANOX-ATTACKCHAIN-CANDIDATE-007")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "15 chains")
+
+    # 69. Duplicate chain ID: append a second AC-002 record.
+    def test_69_duplicate_attackchain_candidate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        dup = next(r for r in recs if r.get("record_type") == "attackchain_candidate" and r.get("chain_id") == "ANOX-ATTACKCHAIN-CANDIDATE-002")
+        recs.append(dict(dup))
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator())
+
+    # 70. Re-severity AC-001 HIGH -> CRITICAL.
+    def test_70_attackchain_severity_mutation_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-001", severity="CRITICAL")
+        self.assert_fails(self.run_validator(), "severity")
+
+    # 71. Evidence-level mutation: AC-013 E0 -> E2.
+    def test_71_attackchain_evidence_level_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-013", evidence_level="E2")
+        self.assert_fails(self.run_validator(), "evidence_level")
+
+    # 72. Attacker class removed from AC-003.
+    def test_72_attackchain_attacker_class_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-003", attacker_class=None)
+        self.assert_fails(self.run_validator(), "attacker_class")
+
+    # 73. Activation gate removed from AC-006.
+    def test_73_attackchain_activation_gate_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-006", activation_gate=None)
+        self.assert_fails(self.run_validator(), "activation_gate")
+
+    # 74. State transitions emptied on AC-001.
+    def test_74_attackchain_state_transitions_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-001", state_transitions=[])
+        # state_transitions emptied must also drop impact semantics; validator checks impact separately,
+        # so empty transitions + no mitigations must fail
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-001", current_mitigations=None)
+        self.assert_fails(self.run_validator())
+
+    # 75. Impact emptied on AC-005.
+    def test_75_attackchain_impact_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-005", impact=None)
+        self.assert_fails(self.run_validator(), "impact")
+
+    # 76. Mitigations emptied on AC-009 (chain_breakers + current_mitigations).
+    def test_76_attackchain_mitigations_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-009", chain_breakers=[], current_mitigations=None)
+        self.assert_fails(self.run_validator(), "chain_breakers")
+
+    # 77. Server breaker S7 deleted.
+    def test_77_attackchain_server_breaker_deleted_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_server_breakers")
+        rec["items"] = [i for i in rec["items"] if i.get("id") != "S7"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "S1-S18")
+
+    # 78. Client breaker C6 control text altered.
+    def test_78_attackchain_client_breaker_altered_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_client_breakers")
+        rec["items"] = [i for i in rec["items"] if i.get("id") != "C6"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "C1-C14")
+
+    # 79. Cross-group fix dependency record deleted.
+    def test_79_attackchain_cross_group_deleted_fails(self):
+        tp = self.root / TRACE
+        recs = [r for r in _load_jsonl(tp) if r.get("record_type") != "attackchain_cross_group_dependencies"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "cross_group")
+
+    # 80. Whole-chain regression test + retest owner deleted.
+    def test_80_attackchain_test_retest_owner_fails(self):
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-012", required_test=None)
+        self._ac_mut("ANOX-ATTACKCHAIN-CANDIDATE-014", independent_retest_owner=None)
+        self.assert_fails(self.run_validator(), "retest")
+
+    # 81. Rejected-chain set shrunk (13 -> 12).
+    def test_81_attackchain_rejected_mutation_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_rejected")
+        rec["hypotheses"] = rec["hypotheses"][:-1]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "13 rejected")
+
+    # 82. ROOT-016 coverage disposition mutated (revival attempt).
+    def test_82_attackchain_root016_revived_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_root_coverage")
+        rec["roots"]["ROOT-016"]["disposition"] = "CONFIRMED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "ROOT-016")
+
+    # 83. Root coverage record shrunk (18 -> 17).
+    def test_83_attackchain_root_coverage_shrunk_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_root_coverage")
+        del rec["roots"]["ROOT-001"]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "18 roots")
+
+    # 84. Specialist-candidate coverage disposition mutated.
+    def test_84_attackchain_specialist_coverage_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_specialist_coverage")
+        rec["candidates"]["ANOX-CRYPTOJNI-CANDIDATE-003"]["disposition"] = "NOT_CHAIN_RELEVANT"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "CRYPTOJNI-CANDIDATE-003")
+
+    # 85. Gap coverage: AUTHDPOP-GAP-002 CHAIN_CRITICAL -> CHAIN_RELEVANT.
+    def test_85_attackchain_gap_coverage_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_gap_coverage")
+        rec["gaps"]["ANOX-AUTHDPOP-GAP-002"]["classification"] = "CHAIN_RELEVANT - ENABLING_CONDITION_ONLY"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "GAP-002")
+
+    # 86. 68-item participation mutated (unmapped 0 -> 1).
+    def test_86_attackchain_participation_fails(self):
+        tp, recs, rec = self._ac_get("attackchain_participation")
+        rec["unmapped"] = 1
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "unmapped")
+
+    # 87. Pre-B004 contract gate member dropped.
+    def test_87_attackchain_preb004_gate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "gate_set" and r.get("gate_set") == "PRE_B004_ATTACKCHAIN_CONTRACT":
+                r["members"] = [m for m in r["members"] if not m.startswith("ANOX-AUTHDPOP-GAP-002")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "PRE_B004_ATTACKCHAIN_CONTRACT")
+
+    # 88. Later-gate set member dropped.
+    def test_88_attackchain_later_gate_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "gate_set" and r.get("gate_set") == "LATER_GATE_ATTACKCHAINS":
+                r["members"] = [m for m in r["members"] if not m.startswith("AC-013")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "LATER_GATE_ATTACKCHAINS")
+
+    # 89. Master consolidation handoff marked EXECUTED.
+    def test_89_attackchain_master_handoff_fails(self):
+        tp, recs, rec = self._ac_get("master_consolidation_handoff")
+        rec["status"] = "EXECUTED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "NOT_EXECUTED")
+
+    # 90. Remediation-coverage handoff shrunk (15 -> 14 chains).
+    def test_90_attackchain_remediation_handoff_fails(self):
+        tp, recs, rec = self._ac_get("remediation_coverage_handoff")
+        rec["chains"].pop("ANOX-ATTACKCHAIN-CANDIDATE-015", None)
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "15 chains")
+
+    # 91. Lifecycle/task evidence mutations: source_status flipped, product-change claim, consolidation executed.
+    def test_91_attackchain_source_and_lifecycle_fails(self):
+        tp = self.root / TRACE
+        recs = _load_jsonl(tp)
+        for r in recs:
+            if r.get("record_type") == "source_status" and r.get("audit_id") == "AUDIT-SECURITY-ATTACKCHAIN-001":
+                r["source_present"] = "NO"
+        _write_jsonl(tp, recs)
+        r1 = self.run_validator()
+        self.assertIn("FAIL", r1.stdout)
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["post_merge_state"]["current_gate"] = "MASTER-SPECIALIST-CONSOLIDATION — EXECUTED"
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        r2 = self.run_validator()
+        self.assertIn("FAIL", r2.stdout)
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == "AUDIT-SECURITY-ATTACKCHAIN-001":
+                r["repository_modified_by_audit"] = "YES"
+        _write_jsonl(rp, recs)
+        self.assert_fails(self.run_validator(), "repository_modified_by_audit")
 
 
 if __name__ == "__main__":

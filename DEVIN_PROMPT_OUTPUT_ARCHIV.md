@@ -62,3 +62,12 @@
 - Result: `Ready For Remote`; `AUDIT-SECURITY-ANDROID-STORAGE-001` evidence preserved byte-exact (SHA-256 `7532877d…`).
 - Key files: `docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
 - Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged; `ROOT-016` NOT_A_FINDING; `ANOX-MAINARCH-023` remains Closed (PARTIALLY_EFFECTIVE preserved); physical verification requirements NOT_EXECUTED; next gate `AUDIT-SECURITY-ATTACKCHAIN-001` Candidate/NOT_EXECUTED; no remote mutation.
+
+## ANOX-EVENT-0049 — SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 (2026-09-13)
+
+- Task: `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005`
+- Substantive commit: `e8be5df19cee24f22e0f1f9af6b4cc4c792351c5`
+- Canonical base: `e54584903a353e98ad154d1e8f90f93ed9d7db14`
+- Result: `Ready For Remote`; `AUDIT-SECURITY-ATTACKCHAIN-001` evidence preserved byte-exact (SHA-256 `a4feac55…`, 88,819 bytes).
+- Key files: `docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md`, `docs/security/audit-evidence/` (index, `audit_registry.jsonl`, `audit_traceability.jsonl`, `evidence_hashes.json`, `reproductions/README.md`), `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `docs/workforce/registries/tasks.jsonl`, `docs/workforce/registries/findings.jsonl`, `docs/workforce/WORKFORCE_STATE.json`, `docs/continuity/*`.
+- Invariants preserved: product `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; consensus severities unchanged; `ROOT-016` NOT_A_FINDING; no canonical chain IDs allocated; `ANOX-LEGACY-INTEGRATION-001/003` remain Closed (PARTIALLY_EFFECTIVE preserved); `ANOX-MAINARCH-031` remains Closed (false-closure instance); physical verification requirements NOT_EXECUTED; next gate `MASTER-SPECIALIST-CONSOLIDATION` Candidate/NOT_EXECUTED; no remote mutation.
