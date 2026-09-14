@@ -1,10 +1,10 @@
 # CURRENT_OPEN_WORK — anoX V1
 
-**Event:** `ANOX-EVENT-0050`
+**Event:** `ANOX-EVENT-0051`
 
-1. `MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001` (`ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001`) — Ready For Remote; awaiting human merge to `main`.
-2. `SECURITY-REMEDIATION-COVERAGE-GATE` — Candidate, NOT_EXECUTED; start only on explicit human authorization and a fresh post-merge `main` SHA (verify 100% assignment of all 42 OPEN `MSC_UNIT_*` to provisional sessions `REMEDIATION_SESSION_S0..S10` + gates). Then dependency-safe remediation sessions, independent retests, cross-domain attackchain retest, legacy/architecture revalidation, fresh full-system re-audit, physical evidence, operational acceptance.
-3. Pending human dispositions (unit `MSC-039`): Audit-001 model deviation (Opus 5 Medium vs requested Fable 5.1 High); `CS-021`/`ANOX-CODESEC2-CANDIDATE-017` historical SHA-pinned validator lifecycle decision; `ANOX-SECURITY-ARCH-010` positive INFO retirement at B-004 start.
+1. `SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001` (`ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001`) — Ready For Remote; awaiting human merge to `main`.
+2. `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` — Candidate, NOT_EXECUTED; the human must decide `H1` (historical sha-pinned validator lifecycle), `H2` (Audit-001 Opus 5 Medium model deviation), `H3` (`ANOX-SECURITY-ARCH-010` positive-INFO retirement timing), `R1` (ROOT-013 LOW→MEDIUM severity ratification) and then explicitly authorize security remediation — only then may the dependency-safe remediation sessions `REMEDIATION_SESSION_S0..S10` start on a fresh post-merge `main` SHA, followed by independent retests, cross-domain attackchain retest, legacy/architecture revalidation, fresh full-system re-audit, physical evidence, operational acceptance.
+3. `SECURITY-REMEDIATION-COVERAGE-GATE` — EXECUTED_AND_PRESERVED at `610ed0833753` (PASS; 42/42 open `MSC_UNIT_*` covered). PASS = complete remediation/verification coverage proof only; it does NOT authorize remediation by itself.
 4. Physical GrapheneOS/StrongBox/TEE verification campaign `PHYSICAL_P1..P17` (NOT_EXECUTED) for `ANOX-MAINARCH-018` et al. (any pre-rebuild physical evidence must be re-collected — `ROOT-001`/`ANOX-BUILDSC-CANDIDATE-001`; independently re-verified stale by `AUDIT-SECURITY-CRYPTO-JNI-001`; Android/Storage revalidation unchanged).
 5. Milestone Security Architecture reviews for `ANOX-MAINARCH-003`, `ANOX-MAINARCH-007`, `ANOX-MAINARCH-024`.
 6. Final operational handoff / bootstrap / employee cold-boot acceptance.
