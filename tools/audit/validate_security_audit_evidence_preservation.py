@@ -38,13 +38,17 @@ AUTHDPOP_AUDIT_SHA = "638e63a22c91ca81365bf55c8a59ec47878dd7fd"
 ANDROIDSTORAGE_AUDIT_SHA = "b9abeb0850a476716403d224b87a857c1147502e"
 ATTACKCHAIN_AUDIT_SHA = "e54584903a353e98ad154d1e8f90f93ed9d7db14"
 CONSOLIDATION_BASE_SHA = "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
-BASE_SHA = "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
-DELIVERY_BRANCH = "governance/master-specialist-consolidation-preservation-001"
-TASK_ID = "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001"
-NEXT_GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE"
-PRIOR_GATE_ID = "MASTER-SPECIALIST-CONSOLIDATION"
-LEDGER_EVENT = "ANOX-EVENT-0050"
+GATE_BASE_SHA = "610ed08337536857db73259168498c49b786caa1"
+BASE_SHA = "610ed08337536857db73259168498c49b786caa1"
+DELIVERY_BRANCH = "governance/security-remediation-coverage-gate-preservation-001"
+TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"
+NEXT_GATE_ID = "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION"
+PRIOR_GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE"
+LEDGER_EVENT = "ANOX-EVENT-0051"
 MSC_ID = "MASTER-SPECIALIST-CONSOLIDATION-001"
+MSC_LEDGER_EVENT = "ANOX-EVENT-0050"
+MSC_DELIVERY_BRANCH = "governance/master-specialist-consolidation-preservation-001"
+GATE_ID = "SECURITY-REMEDIATION-COVERAGE-GATE-001"
 
 EXPECTED_REPORTS = {
     "AUDIT-SECURITY-ARCHITECTURE": {
@@ -86,6 +90,10 @@ EXPECTED_REPORTS = {
     "MASTER-SPECIALIST-CONSOLIDATION-001": {
         "path": "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
         "sha256": "a22c779833e6334067405ebd158f1cbadeee5dc51d9b7795c31ef12758060b00",
+    },
+    "SECURITY-REMEDIATION-COVERAGE-GATE-001": {
+        "path": "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md",
+        "sha256": "175aa756fa1a260311c3d8b3c3680aa26de38d58bd2d8ebb782320cc27e2b27e",
     },
 }
 
@@ -178,6 +186,91 @@ MSC_LATER_GATES = (
     "PHYSICAL_GRAPHENEOS_FINAL", "FINAL_PRODUCT_GATE_OPERATIONAL_ACCEPTANCE",
     "HUMAN_DECISION_PRE_REMEDIATION",
 )
+
+# ---------------------------------------------------------------------------
+# SECURITY-REMEDIATION-COVERAGE-GATE-001 preserved expectations
+# ---------------------------------------------------------------------------
+# The gate is a read-only verification artifact (result PASS) executed at
+# GATE_BASE_SHA. Its preserved machine-readable layer uses namespaced
+# identities only (MSC_UNIT_*, ATTACKCHAIN_AC_*, SERVER_BREAKER_S*,
+# CLIENT_BREAKER_C*, REMEDIATION_SESSION_S*, SERVER_CONTRACT_SC_*,
+# CLIENT_CONTRACT_CC_*, PHYSICAL_P*, FCP_*, FALSE_CLOSURE_*,
+# HUMAN_DECISION_*). PASS proves coverage; it never authorizes remediation.
+GATE_REPORT_BYTES = 33527
+GATE_OPEN_UNIT_IDS = {f"MSC_UNIT_{i:03d}" for i in range(1, 43)}
+GATE_REJECTED_UNITS = {"MSC_UNIT_043", "MSC_UNIT_044"}
+GATE_SESSION_IDS = {f"REMEDIATION_SESSION_S{i}" for i in range(0, 11)}
+GATE_FCP_IDS = {f"FCP_{i}" for i in range(1, 9)}
+GATE_SC_IDS = {f"SERVER_CONTRACT_SC_{i}" for i in range(1, 15)}
+GATE_CC_IDS = {f"CLIENT_CONTRACT_CC_{i}" for i in range(1, 15)}
+GATE_PHYSICAL_IDS = {f"PHYSICAL_P{i}" for i in range(1, 18)}
+GATE_CHAIN_IDS = {f"ATTACKCHAIN_AC_{i:03d}" for i in range(1, 16)}
+GATE_FALSE_CLOSURE_IDS = {f"FALSE_CLOSURE_{c}" for c in "ABCDEF"}
+GATE_HUMAN_DECISION_IDS = {
+    "HUMAN_DECISION_H1", "HUMAN_DECISION_H2", "HUMAN_DECISION_H3", "HUMAN_DECISION_R1",
+}
+GATE_MANDATORY_CHAIN_RETESTS = {
+    "ATTACKCHAIN_AC_001", "ATTACKCHAIN_AC_003", "ATTACKCHAIN_AC_005",
+    "ATTACKCHAIN_AC_006", "ATTACKCHAIN_AC_008", "ATTACKCHAIN_AC_010",
+    "ATTACKCHAIN_AC_012",
+}
+GATE_ALLOWED_GATES = {
+    "PRE_B004", "B004", "B004_B005", "B005", "B006", "B008_B009", "B012",
+    "B012_GATE", "B013", "RELEASE_CANDIDATE", "PHYSICAL_FINAL",
+    "FINAL_PRODUCT_OPERATIONAL", "HUMAN_DECISION_PRE_REMEDIATION",
+    "HUMAN_GOVERNANCE",
+}
+GATE_ALLOWED_OWNERS = GATE_SESSION_IDS | {
+    "HUMAN_GOVERNANCE_DECISION", "B012_GATE",
+}
+GATE_ZERO_METRIC_FIELDS = (
+    "source_items_unaccounted", "duplicate_source_ids", "dangling_unit_references",
+    "attackchains_without_msc_unit", "unassigned_server_breakers",
+    "unassigned_client_breakers", "architecture_coverage_loss",
+    "legacy_findings_without_current_owner", "unresolved_dependency_cycles",
+    "unknown_obligations", "uncovered_open_msc_units",
+    "parallel_writer_collisions", "unowned_pre_b004_dod_items",
+    "unmapped_contract_items", "fcp_escapes", "unresolved_ids",
+)
+GATE_PRIMARY = {
+    "MSC_UNIT_001": "REMEDIATION_SESSION_S1", "MSC_UNIT_002": "REMEDIATION_SESSION_S1",
+    "MSC_UNIT_003": "REMEDIATION_SESSION_S1", "MSC_UNIT_004": "REMEDIATION_SESSION_S9",
+    "MSC_UNIT_005": "REMEDIATION_SESSION_S2", "MSC_UNIT_006": "REMEDIATION_SESSION_S2",
+    "MSC_UNIT_007": "REMEDIATION_SESSION_S2", "MSC_UNIT_008": "REMEDIATION_SESSION_S2",
+    "MSC_UNIT_009": "REMEDIATION_SESSION_S2", "MSC_UNIT_010": "REMEDIATION_SESSION_S2",
+    "MSC_UNIT_011": "REMEDIATION_SESSION_S2", "MSC_UNIT_012": "REMEDIATION_SESSION_S7",
+    "MSC_UNIT_013": "REMEDIATION_SESSION_S6", "MSC_UNIT_014": "REMEDIATION_SESSION_S3",
+    "MSC_UNIT_015": "REMEDIATION_SESSION_S3", "MSC_UNIT_016": "REMEDIATION_SESSION_S3",
+    "MSC_UNIT_017": "REMEDIATION_SESSION_S3", "MSC_UNIT_018": "REMEDIATION_SESSION_S3",
+    "MSC_UNIT_019": "REMEDIATION_SESSION_S3", "MSC_UNIT_020": "REMEDIATION_SESSION_S6",
+    "MSC_UNIT_021": "REMEDIATION_SESSION_S4", "MSC_UNIT_022": "REMEDIATION_SESSION_S4",
+    "MSC_UNIT_023": "REMEDIATION_SESSION_S4", "MSC_UNIT_024": "REMEDIATION_SESSION_S4",
+    "MSC_UNIT_025": "REMEDIATION_SESSION_S0", "MSC_UNIT_026": "REMEDIATION_SESSION_S0",
+    "MSC_UNIT_027": "REMEDIATION_SESSION_S4", "MSC_UNIT_028": "REMEDIATION_SESSION_S0",
+    "MSC_UNIT_029": "REMEDIATION_SESSION_S3", "MSC_UNIT_030": "REMEDIATION_SESSION_S7",
+    "MSC_UNIT_031": "REMEDIATION_SESSION_S8", "MSC_UNIT_032": "REMEDIATION_SESSION_S0",
+    "MSC_UNIT_033": "REMEDIATION_SESSION_S0", "MSC_UNIT_034": "REMEDIATION_SESSION_S0",
+    "MSC_UNIT_035": "REMEDIATION_SESSION_S3", "MSC_UNIT_036": "REMEDIATION_SESSION_S10",
+    "MSC_UNIT_037": "REMEDIATION_SESSION_S10", "MSC_UNIT_038": "REMEDIATION_SESSION_S1",
+    "MSC_UNIT_039": "HUMAN_GOVERNANCE_DECISION", "MSC_UNIT_040": "REMEDIATION_SESSION_S0",
+    "MSC_UNIT_041": "B012_GATE", "MSC_UNIT_042": "REMEDIATION_SESSION_S0",
+}
+GATE_ROW_REQUIRED_FIELDS = (
+    "msc_unit", "title", "unit_type", "severity", "attackchains", "gate",
+    "primary_execution_owner", "secondary_execution_owner", "session_order",
+    "session_role", "architecture_prerequisites", "independent_retest_owner",
+    "instrumented_requirement", "synthetic_backend_requirement",
+    "physical_requirement", "provenance_requirement", "attackchain_retest",
+    "closure_runtime_stage", "closure_chain_stage", "closure_physical_stage",
+    "coverage_status",
+)
+# Bare/short-form machine ids that collide between namespaces (SERVER_BREAKER_S1
+# vs REMEDIATION_SESSION_S1 vs SERVER_CONTRACT_SC_1...). Canonical namespaced
+# forms (MSC_UNIT_001, ATTACKCHAIN_AC_001, REMEDIATION_SESSION_S1,
+# SERVER_CONTRACT_SC_1, CLIENT_CONTRACT_CC_1, PHYSICAL_P1, FCP_1, ...) do NOT
+# match this pattern.
+GATE_AMBIGUOUS_KEY_RE = re.compile(
+    r"^(?:(?:S|C|P)[-_]?\d+|(?:SC|CC|AC|MSC)[-_]\d+|FCP\d+)$")
 
 EXPECTED_AUDITS = {
     "ANOX-AUDIT-SECURITY-ARCH-001": {
@@ -748,13 +841,16 @@ def validate_registry(errors):
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 10:
-        fail(f"audit_registry.jsonl must contain exactly 10 records (9 audits + 1 master consolidation artifact), found {len(audits)}", errors)
+    if len(audits) != 11:
+        fail(f"audit_registry.jsonl must contain exactly 11 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact), found {len(audits)}", errors)
     msc_rec = audits.get(MSC_ID) or {}
     if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
         fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
-    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID}):
-        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID})}", errors)
+    gate_rec = audits.get(GATE_ID) or {}
+    if gate_rec.get("artifact_type") != "SECURITY_REMEDIATION_COVERAGE_GATE":
+        fail(f"{GATE_ID} registry record missing or artifact_type != SECURITY_REMEDIATION_COVERAGE_GATE", errors)
+    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID}):
+        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID})}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -1503,7 +1599,7 @@ def validate_master_consolidation(errors):
         "repository_modified_by_audit": "NO",
         "remote_mutation_by_audit": "NONE",
         "status": "PRESERVED",
-        "preserved_at_event": LEDGER_EVENT,
+        "preserved_at_event": MSC_LEDGER_EVENT,
         "report_path": EXPECTED_REPORTS[MSC_ID]["path"],
         "report_sha256": EXPECTED_REPORTS[MSC_ID]["sha256"],
         "report_bytes": 121113,
@@ -1531,8 +1627,8 @@ def validate_master_consolidation(errors):
     for key, expected in reg_expected.items():
         if reg.get(key) != expected:
             fail(f"{MSC_ID} registry {key}={reg.get(key)!r}, expected {expected!r}", errors)
-    if reg.get("delivery_branch") != DELIVERY_BRANCH:
-        fail(f"{MSC_ID} registry delivery_branch must be {DELIVERY_BRANCH}", errors)
+    if reg.get("delivery_branch") != MSC_DELIVERY_BRANCH:
+        fail(f"{MSC_ID} registry delivery_branch must be {MSC_DELIVERY_BRANCH}", errors)
     if not reg:
         fail(f"{MSC_ID} registry record missing", errors)
     else:
@@ -1884,6 +1980,511 @@ def validate_master_consolidation(errors):
         fail(f"next_gate {NEXT_GATE_ID} must be CANDIDATE / NOT_EXECUTED", errors)
 
 
+def _dag_has_cycle(edges):
+    """Return True if the edge list [(a, b), ...] contains a directed cycle."""
+    adj = {}
+    nodes = set()
+    for a, b in edges:
+        adj.setdefault(a, []).append(b)
+        nodes.add(a)
+        nodes.add(b)
+    WHITE, GRAY, BLACK = 0, 1, 2
+    color = {n: WHITE for n in nodes}
+
+    def visit(n):
+        color[n] = GRAY
+        for m in adj.get(n, []):
+            if color.get(m, WHITE) == GRAY:
+                return True
+            if color.get(m, WHITE) == WHITE and visit(m):
+                return True
+        color[n] = BLACK
+        return False
+
+    return any(visit(n) for n in nodes if color[n] == WHITE)
+
+
+def validate_coverage_gate(errors):
+    """Fail-closed verification of the preserved SECURITY-REMEDIATION-COVERAGE-GATE-001
+    evidence layer (artifact_type SECURITY_REMEDIATION_COVERAGE_GATE)."""
+    recs = load_jsonl(EVIDENCE_DIR / "audit_traceability.jsonl")
+    gate = [r for r in recs if r.get("source_artifact_id") == GATE_ID]
+    by_type = {}
+    for r in gate:
+        by_type.setdefault(r.get("record_type"), []).append(r)
+
+    def one(rt):
+        rows = by_type.get(rt) or []
+        if len(rows) != 1:
+            fail(f"expected exactly 1 {rt} record for {GATE_ID}, found {len(rows)}", errors)
+            return {}
+        return rows[0]
+
+    # --- registry artifact record --------------------------------------------
+    audits = {a.get("audit_id"): a for a in load_jsonl(EVIDENCE_DIR / "audit_registry.jsonl")}
+    reg = audits.get(GATE_ID)
+    if not reg:
+        fail(f"{GATE_ID} registry record missing", errors)
+    else:
+        reg_expected = {
+            "artifact_type": "SECURITY_REMEDIATION_COVERAGE_GATE",
+            "base_sha": GATE_BASE_SHA,
+            "audited_sha": GATE_BASE_SHA,
+            "requested_start_sha": GATE_BASE_SHA,
+            "mode": "READ_ONLY_SECURITY_REMEDIATION_COVERAGE_GATE",
+            "result": "PASS",
+            "coverage_verdict": "COVERAGE_PROVEN_100_PERCENT",
+            "actual_model": "Claude Fable 5.1 High",
+            "requested_model": "Claude Fable 5.1 High",
+            "model_requirement_status": "SATISFIED",
+            "repository_modified_by_audit": "NO",
+            "remote_mutation_by_audit": "NONE",
+            "status": "PRESERVED",
+            "preserved_at_event": LEDGER_EVENT,
+            "delivery_branch": DELIVERY_BRANCH,
+            "report_path": EXPECTED_REPORTS[GATE_ID]["path"],
+            "report_sha256": EXPECTED_REPORTS[GATE_ID]["sha256"],
+            "report_bytes": GATE_REPORT_BYTES,
+            "master_units": 44, "open_units": 42, "rejected_units": 2,
+            "open_units_covered": 42, "open_units_uncovered": 0, "open_units_unknown": 0,
+            "coverage_percent": 100, "source_items": 90, "source_items_accounted": 90,
+            "attackchains": 15, "attackchains_without_msc_unit": 0,
+            "server_breakers": 18, "server_breakers_unassigned": 0,
+            "client_breakers": 14, "client_breakers_unassigned": 0,
+            "parallel_writer_collisions": 0, "dependency_cycles": 0,
+            "pre_b004_dod_unowned": 0, "silent_dropped": 0, "unresolved_ids": 0,
+            "security_remediation_authorized": "NO",
+            "security_remediation": "NOT_STARTED",
+            "task_id": TASK_ID,
+        }
+        for key, expected in reg_expected.items():
+            if reg.get(key) != expected:
+                fail(f"{GATE_ID} registry {key}={reg.get(key)!r}, expected {expected!r}", errors)
+        if "does NOT authorize" not in str(reg.get("notes", "")):
+            fail(f"{GATE_ID} registry must record that PASS grants no remediation authorization", errors)
+        if not errors or all(GATE_ID not in e for e in errors):
+            print(f"  OK   {GATE_ID} registry artifact record verified")
+
+    # --- report file identity --------------------------------------------------
+    rp = REPO_ROOT / EXPECTED_REPORTS[GATE_ID]["path"]
+    if rp.exists():
+        body = rp.read_text(encoding="utf-8")
+        if not body.startswith("# SECURITY-REMEDIATION-COVERAGE-GATE-001 — FINAL REPORT"):
+            fail(f"{GATE_ID} report missing required opening marker", errors)
+        if not body.rstrip().endswith("`SECURITY-REMEDIATION-COVERAGE-GATE-001` — **PASS**. STOP."):
+            fail(f"{GATE_ID} report missing required closing marker", errors)
+        for marker in ("## GATE RESULT", "**PASS**",
+                       "READ_ONLY_SECURITY_REMEDIATION_COVERAGE_GATE",
+                       "610ed08337536857db73259168498c49b786caa1",
+                       "REPOSITORY MODIFIED: NO", "REMOTE MUTATION: NONE",
+                       "WORKING TREE CLEAN",
+                       "Claude Fable 5.1 High", "MODEL REQUIREMENT SATISFIED: YES"):
+            if marker not in body:
+                fail(f"{GATE_ID} report missing required identity marker {marker!r}", errors)
+        if len(rp.read_bytes()) != GATE_REPORT_BYTES:
+            fail(f"{GATE_ID} report byte count must be {GATE_REPORT_BYTES}", errors)
+
+    # --- ambiguous machine-id hygiene ------------------------------------------
+    def _scan_ambiguous(obj, where):
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(k, str) and GATE_AMBIGUOUS_KEY_RE.match(k):
+                    fail(f"{GATE_ID} {where}: ambiguous machine id key {k!r}", errors)
+                _scan_ambiguous(v, where)
+        elif isinstance(obj, list):
+            for v in obj:
+                _scan_ambiguous(v, where)
+
+    for r in gate:
+        _scan_ambiguous(r, r.get("record_type"))
+
+    # --- 42-row coverage matrix --------------------------------------------------
+    rows = by_type.get("gate_coverage_unit") or []
+    by_id = {r.get("msc_unit"): r for r in rows}
+    if set(by_id) != GATE_OPEN_UNIT_IDS:
+        fail(f"gate_coverage_unit set must be exactly MSC_UNIT_001..042; missing {sorted(GATE_OPEN_UNIT_IDS - set(by_id))}, extra {sorted(set(by_id) - GATE_OPEN_UNIT_IDS)}", errors)
+    elif len(rows) != 42:
+        fail(f"gate_coverage_unit must contain exactly 42 unique rows, found {len(rows)}", errors)
+    else:
+        print("  OK   42/42 gate coverage rows present (MSC_UNIT_001..042)")
+    rejected_rows = [r for r in rows if r.get("msc_unit") in GATE_REJECTED_UNITS]
+    if rejected_rows:
+        fail(f"rejected units must not carry gate coverage rows: {[r.get('msc_unit') for r in rejected_rows]}", errors)
+    for uid, r in by_id.items():
+        for f_ in GATE_ROW_REQUIRED_FIELDS:
+            if f_ not in r:
+                fail(f"gate_coverage_unit {uid} missing field {f_}", errors)
+        if r.get("coverage_status") != "COVERED":
+            fail(f"gate_coverage_unit {uid} coverage_status {r.get('coverage_status')!r} != COVERED", errors)
+        if r.get("primary_execution_owner") != GATE_PRIMARY.get(uid):
+            fail(f"gate_coverage_unit {uid} primary_execution_owner {r.get('primary_execution_owner')!r} != {GATE_PRIMARY.get(uid)!r}", errors)
+        if r.get("primary_execution_owner") not in GATE_ALLOWED_OWNERS:
+            fail(f"gate_coverage_unit {uid} primary owner {r.get('primary_execution_owner')!r} outside allowed owner namespace", errors)
+        if r.get("gate") not in GATE_ALLOWED_GATES:
+            fail(f"gate_coverage_unit {uid} gate {r.get('gate')!r} is not a named gate", errors)
+        if r.get("gate") in ("LATER", "UNKNOWN", ""):
+            fail(f"gate_coverage_unit {uid} carries a generic/unknown gate", errors)
+        if not r.get("independent_retest_owner"):
+            fail(f"gate_coverage_unit {uid} missing independent retest owner", errors)
+        for tf in ("instrumented_requirement", "synthetic_backend_requirement",
+                   "physical_requirement", "provenance_requirement", "attackchain_retest"):
+            if not r.get(tf):
+                fail(f"gate_coverage_unit {uid} missing {tf}", errors)
+        for st in ("closure_runtime_stage", "closure_chain_stage", "closure_physical_stage"):
+            if r.get(st) not in ("REQUIRED", "NOT_APPLICABLE"):
+                fail(f"gate_coverage_unit {uid} {st}={r.get(st)!r} not in REQUIRED/NOT_APPLICABLE", errors)
+
+    # --- verdict + zero metrics ---------------------------------------------------
+    v = one("gate_verdict")
+    if v:
+        for k, exp in (("result", "PASS"), ("coverage_verdict", "COVERAGE_PROVEN_100_PERCENT"),
+                       ("base_sha", GATE_BASE_SHA), ("head_at_end", GATE_BASE_SHA),
+                       ("origin_main", GATE_BASE_SHA), ("working_tree", "CLEAN"),
+                       ("repository_modified", "NO"), ("remote_mutation", "NONE"),
+                       ("model", "Claude Fable 5.1 High"), ("model_requirement_satisfied", "YES"),
+                       ("mode", "READ_ONLY_SECURITY_REMEDIATION_COVERAGE_GATE"),
+                       ("total_master_units", 44), ("open_msc_units", 42),
+                       ("rejected_units", 2), ("open_msc_covered", 42),
+                       ("open_msc_uncovered", 0), ("unknown", 0),
+                       ("coverage_percent", 100), ("counting_ambiguity", "NONE"),
+                       ("dependency_cycles", 0), ("rejected_with_remediation_session", 0),
+                       ("rejected_with_traceability", 2),
+                       ("security_remediation_authorized", "NO")):
+            if v.get(k) != exp:
+                fail(f"gate_verdict {k}={v.get(k)!r}, expected {exp!r}", errors)
+        rr = v.get("rejected_records") or {}
+        if set(rr) != GATE_REJECTED_UNITS:
+            fail(f"gate_verdict rejected_records must be exactly {sorted(GATE_REJECTED_UNITS)}", errors)
+        else:
+            for uid, e in rr.items():
+                if e.get("disposition") != "REJECTED_NOT_A_FINDING":
+                    fail(f"gate_verdict {uid} disposition {e.get('disposition')!r} != REJECTED_NOT_A_FINDING", errors)
+                if e.get("remediation_required") != "NO" or e.get("closure_work") != "NO" or e.get("traceability") != "YES":
+                    fail(f"gate_verdict {uid} must record remediation NO / closure NO / traceability YES", errors)
+            if rr.get("MSC_UNIT_043", {}).get("source") != "ROOT-016":
+                fail("gate_verdict MSC_UNIT_043 must be bound to ROOT-016", errors)
+            if "BUILDSC-012" not in str(rr.get("MSC_UNIT_044", {}).get("source", "")):
+                fail("gate_verdict MSC_UNIT_044 must be bound to BUILDSC-012", errors)
+    zm = one("gate_zero_metrics")
+    if zm:
+        for f_ in GATE_ZERO_METRIC_FIELDS:
+            if zm.get(f_) != 0:
+                fail(f"gate_zero_metrics {f_}={zm.get(f_)!r}, expected 0", errors)
+        print("  OK   gate zero metrics all 0")
+
+    # --- severity + category + later-gate coverage --------------------------------
+    sev = one("gate_severity_coverage")
+    if sev:
+        exp = {"HIGH": 7, "MEDIUM": 16, "LOW": 6, "INFO_META": 4, "CONTRACT": 9}
+        cov = sev.get("coverage") or {}
+        for bucket, n in exp.items():
+            c = cov.get(bucket) or {}
+            if c.get("count") != n or c.get("covered") != n or c.get("uncovered") != 0:
+                fail(f"gate_severity_coverage {bucket}={c}, expected {n}/{n}/0", errors)
+        if sev.get("rejected") != 2 or sev.get("uncovered_by_severity") != 0:
+            fail("gate_severity_coverage rejected/uncovered mutated", errors)
+    cat = one("gate_pre_b004_category_coverage")
+    if cat:
+        exp = {"A_ARCHITECTURE_CONTRACT": 11, "B_BUILD_PROVENANCE": 4, "C_CODE_REMEDIATION": 17,
+               "C_RECOMMENDED_PULL_FORWARD": 4, "D_VERIFICATION": 5, "E_B004_IMPLEMENTATION_TIME": 9}
+        cats = cat.get("categories") or {}
+        if set(cats) != set(exp):
+            fail(f"gate_pre_b004_category_coverage categories {sorted(cats)} != {sorted(exp)}", errors)
+        for k, n in exp.items():
+            c = cats.get(k) or {}
+            if c.get("count") != n or c.get("covered") != n or len(c.get("units") or []) != n:
+                fail(f"gate_pre_b004_category_coverage {k}={c.get('count')}/{c.get('covered')}, expected {n}/{n}", errors)
+        if cat.get("items_without_category") != 0:
+            fail("gate_pre_b004_category_coverage items_without_category != 0", errors)
+        if "NOT_EXECUTED" not in str(cat.get("dod_status", "")):
+            fail("gate_pre_b004_category_coverage DoD must remain PROPOSED / NOT_EXECUTED", errors)
+    lg = one("gate_later_gate_coverage")
+    if lg:
+        exp = {"B006": 4, "B008_B009": 3, "B012": 1, "B013": 4, "RELEASE_CANDIDATE": 2,
+               "PHYSICAL_GRAPHENEOS_FINAL": 4, "FINAL_PRODUCT_GATE_OPERATIONAL_ACCEPTANCE": 6,
+               "HUMAN_DECISION_PRE_REMEDIATION": 1}
+        gates = lg.get("gates") or {}
+        if set(gates) != set(exp):
+            fail(f"gate_later_gate_coverage gates {sorted(gates)} != {sorted(exp)}", errors)
+        for k, n in exp.items():
+            c = gates.get(k) or {}
+            if c.get("count") != n or c.get("covered") != n or len(c.get("units") or []) != n:
+                fail(f"gate_later_gate_coverage {k}={c.get('count')}/{c.get('covered')}, expected {n}/{n}", errors)
+        for k in ("unnamed_later_items", "unknown_gates", "generic_later_gates"):
+            if lg.get(k) != 0:
+                fail(f"gate_later_gate_coverage {k} != 0", errors)
+
+    # --- execution sessions S0..S10 -------------------------------------------------
+    sess = one("gate_execution_sessions")
+    if sess:
+        s = sess.get("sessions") or {}
+        if set(s) != GATE_SESSION_IDS:
+            fail(f"gate_execution_sessions keys must be exactly S0..S10; got {sorted(s)}", errors)
+        else:
+            print("  OK   REMEDIATION_SESSION_S0..S10 boundaries preserved (11/11)")
+        for sid, spec in s.items():
+            for f_ in ("role", "in_scope", "out_of_scope", "base_sha_requirement",
+                       "prerequisite_events", "files_owned", "files_forbidden",
+                       "tests_in_session", "independent_retest"):
+                if f_ not in spec:
+                    fail(f"{sid} missing session field {f_}", errors)
+            if not spec.get("role") or spec.get("in_scope") is None:
+                fail(f"{sid} role/in_scope empty", errors)
+        s2 = s.get("REMEDIATION_SESSION_S2") or {}
+        order = s2.get("execution_order") or []
+        if order:
+            if not any("MSC_UNIT_008" in str(x) for x in order[-1:]):
+                fail("REMEDIATION_SESSION_S2 must execute MSC_UNIT_008 LAST", errors)
+            idx5 = [i for i, x in enumerate(order) if "MSC_UNIT_005" in str(x)]
+            idx8 = [i for i, x in enumerate(order) if "MSC_UNIT_008" in str(x)]
+            if idx5 and idx8 and idx5[0] > idx8[0]:
+                fail("REMEDIATION_SESSION_S2 must order MSC_UNIT_005 before MSC_UNIT_008", errors)
+        else:
+            fail("REMEDIATION_SESSION_S2 missing execution_order", errors)
+        s3 = s.get("REMEDIATION_SESSION_S3") or {}
+        if not any("CryptoBridge" in str(x) for x in (s3.get("files_forbidden") or [])):
+            fail("REMEDIATION_SESSION_S3 files_forbidden must exclude CryptoBridge.kt (S2-owned)", errors)
+
+    # --- file ownership + parallel execution -----------------------------------------
+    fo = one("gate_file_ownership")
+    if fo:
+        if fo.get("unresolved_parallel_writer_collisions") != 0:
+            fail("gate_file_ownership unresolved_parallel_writer_collisions != 0", errors)
+        entries = {e.get("file"): e for e in fo.get("entries") or []}
+        expected_res = {
+            "CryptoBridge.kt": "S2",
+            "RegistrationOrchestrator.kt": "S3",
+            "FileRegistrationSessionStore.kt": "S3",
+            ".github/workflows/ci.yml / build.gradle.kts": "S1",
+        }
+        for f_, token in expected_res.items():
+            e = entries.get(f_)
+            if not e or token not in str(e.get("resolution", "")):
+                fail(f"file ownership for {f_} missing or resolution lacks {token}", errors)
+            elif e and not str(e.get("collision", "")).startswith("RESOLVED"):
+                fail(f"file ownership for {f_} collision not RESOLVED_*", errors)
+        if len(entries) < 10:
+            fail("gate_file_ownership matrix incomplete (<10 entries)", errors)
+    px = one("gate_parallel_execution")
+    if px:
+        safe = {tuple(p) for p in px.get("safe_pairs") or []}
+        if ("REMEDIATION_SESSION_S0", "REMEDIATION_SESSION_S1") not in safe:
+            fail("parallel execution must record S0||S1 as safe", errors)
+        if ("REMEDIATION_SESSION_S2", "REMEDIATION_SESSION_S3") not in safe:
+            fail("parallel execution must record S2||S3 as safe", errors)
+        unsafe = {tuple(p) for p in px.get("unsafe_pairs") or []}
+        if not any(p[0] == "REMEDIATION_SESSION_S3" and "S4" in str(p[1]) for p in unsafe):
+            fail("parallel execution must record S3||S4 as unsafe", errors)
+
+    # --- architecture prerequisites + dependency DAG ----------------------------------
+    ap = one("gate_architecture_prerequisites")
+    if ap:
+        if ap.get("prerequisites_without_owner") != 0 or ap.get("count") != 10:
+            fail("gate_architecture_prerequisites count/without_owner mutated", errors)
+        if not (ap.get("entries") or []):
+            fail("gate_architecture_prerequisites entries missing", errors)
+    dag = one("gate_dependency_dag")
+    if dag:
+        if dag.get("unresolved_dependency_cycles") != 0:
+            fail("gate_dependency_dag unresolved_dependency_cycles != 0", errors)
+        if dag.get("normalized_edge_count") != 81 or dag.get("normalized_node_count") != 53:
+            fail("gate_dependency_dag normalized edge/node counts mutated", errors)
+        all_edges = [tuple(e) for e in (dag.get("master_edges") or []) + (dag.get("minimum_edges") or [])]
+        if len(all_edges) < 70:
+            fail("gate_dependency_dag edges missing/truncated", errors)
+        if _dag_has_cycle(all_edges):
+            fail("gate_dependency_dag contains a directed cycle", errors)
+        blob = json.dumps(all_edges)
+        for token in ("MSC_UNIT_001", "MSC_UNIT_008", "MSC_UNIT_038", "MSC_UNIT_040", "PHYSICAL"):
+            if token not in blob:
+                fail(f"gate_dependency_dag edges missing required token {token}", errors)
+
+    # --- FCP enforcement + false-closure scenarios -------------------------------------
+    fcp = one("gate_fcp_enforcement")
+    if fcp:
+        rules = fcp.get("rules") or {}
+        if set(rules) != GATE_FCP_IDS:
+            fail(f"gate_fcp_enforcement rules must be exactly FCP_1..FCP_8; got {sorted(rules)}", errors)
+        for fid, spec in rules.items():
+            if not spec.get("enforcing_units") or not spec.get("enforcing_sessions"):
+                fail(f"gate_fcp_enforcement {fid} has no enforcing units/sessions", errors)
+        if fcp.get("fcp_count") != 8 or fcp.get("fcp_escapes") != 0:
+            fail("gate_fcp_enforcement count/escapes mutated", errors)
+    fc = one("gate_false_closure_tests")
+    if fc:
+        sc = fc.get("scenarios") or {}
+        if set(sc) != GATE_FALSE_CLOSURE_IDS:
+            fail(f"gate_false_closure_tests scenarios must be exactly A..F; got {sorted(sc)}", errors)
+        exp_v = {"FALSE_CLOSURE_A": "BLOCKED", "FALSE_CLOSURE_B": "BLOCKED", "FALSE_CLOSURE_C": "BLOCKED",
+                 "FALSE_CLOSURE_D": "REMAINS_OPEN", "FALSE_CLOSURE_E": "REMAINS_OPEN", "FALSE_CLOSURE_F": "REMAINS_OPEN"}
+        for sid, verdict in exp_v.items():
+            if (sc.get(sid) or {}).get("verdict") != verdict:
+                fail(f"gate_false_closure_tests {sid} verdict must be {verdict}", errors)
+        if fc.get("escapes") != 0:
+            fail("gate_false_closure_tests escapes != 0", errors)
+
+    # --- contract coverage --------------------------------------------------------------
+    scc = one("gate_server_contract_coverage")
+    if scc:
+        rules = scc.get("rules") or {}
+        if set(rules) != GATE_SC_IDS:
+            fail(f"gate_server_contract_coverage rules must be exactly SERVER_CONTRACT_SC_1..SC_14; got {sorted(rules)}", errors)
+        for rid, spec in rules.items():
+            if not spec.get("covered_units") or not spec.get("conformance_test") or not spec.get("independent_retest"):
+                fail(f"gate_server_contract_coverage {rid} incomplete coverage", errors)
+        if scc.get("covered") != 14 or scc.get("uncovered") != 0:
+            fail("gate_server_contract_coverage must be 14/14 with uncovered=0", errors)
+    ccc = one("gate_client_contract_coverage")
+    if ccc:
+        rules = ccc.get("rules") or {}
+        if set(rules) != GATE_CC_IDS:
+            fail(f"gate_client_contract_coverage rules must be exactly CLIENT_CONTRACT_CC_1..CC_14; got {sorted(rules)}", errors)
+        for rid, spec in rules.items():
+            if not spec.get("covered_units") or not spec.get("conformance_test") or not spec.get("independent_retest"):
+                fail(f"gate_client_contract_coverage {rid} incomplete coverage", errors)
+        if ccc.get("covered") != 14 or ccc.get("uncovered") != 0:
+            fail("gate_client_contract_coverage must be 14/14 with uncovered=0", errors)
+
+    # --- attackchain coverage -------------------------------------------------------------
+    ac = one("gate_attackchain_coverage")
+    if ac:
+        chains = ac.get("chains") or {}
+        if set(chains) != GATE_CHAIN_IDS:
+            fail(f"gate_attackchain_coverage chains must be exactly ATTACKCHAIN_AC_001..015; got {sorted(chains)}", errors)
+        for cid, spec in chains.items():
+            if not spec.get("mapped_to_msc") or not spec.get("breakpoints") or not spec.get("retest_owner") or not spec.get("gate"):
+                fail(f"gate_attackchain_coverage {cid} incomplete mapping", errors)
+        if ac.get("mapped_to_msc") != 15 or ac.get("chains_without_msc_unit") != []:
+            fail("gate_attackchain_coverage must map 15/15 chains with none unmapped", errors)
+        if set(ac.get("mandatory_whole_chain_retests") or []) != GATE_MANDATORY_CHAIN_RETESTS:
+            fail("gate_attackchain_coverage mandatory whole-chain retest set mutated", errors)
+        ov = ac.get("ac003_conditional_overlay") or {}
+        if ov.get("canonical_chain_severity") != "HIGH":
+            fail("gate_attackchain_coverage AC-003 canonical severity must remain HIGH", errors)
+        if "CONDITIONAL_CRITICAL" not in str(ov.get("overlay", "")):
+            fail("gate_attackchain_coverage AC-003 conditional-critical overlay must be preserved", errors)
+        if ov.get("mandatory_ath_alone_does_not_close") is not True:
+            fail("gate_attackchain_coverage must preserve that mandatory ath alone does not close AC-003", errors)
+
+    # --- physical coverage -------------------------------------------------------------------
+    pc = one("gate_physical_coverage")
+    if pc:
+        items = {i.get("id"): i for i in pc.get("items") or []}
+        if set(items) != GATE_PHYSICAL_IDS:
+            fail(f"gate_physical_coverage items must be exactly PHYSICAL_P1..P17; got {sorted(items)}", errors)
+        for pid, it in items.items():
+            if not it.get("mapped_units"):
+                fail(f"gate_physical_coverage {pid} unmapped", errors)
+            if "NOT_EXECUTED" in str(it.get("coverage_status", "")):
+                pass
+            if "COVERED" not in str(it.get("coverage_status", "")):
+                fail(f"gate_physical_coverage {pid} coverage_status must record COVERED (mapped)", errors)
+        if pc.get("count") != 17 or pc.get("assigned") != 17 or pc.get("unassigned") != 0:
+            fail("gate_physical_coverage must be 17/17 assigned, 0 unassigned", errors)
+        if pc.get("executed") != 0 or "NOT_EXECUTED" not in str(pc.get("status", "")):
+            fail("gate_physical_coverage must record NOT_EXECUTED with executed=0", errors)
+        if "PROVENANCE_VERIFIED_BINARY" not in str(pc.get("prerequisite", "")):
+            fail("gate_physical_coverage prerequisite must require a provenance-verified binary", errors)
+
+    # --- retest coverage + DoD -------------------------------------------------------------------
+    rc = one("gate_retest_coverage")
+    if rc:
+        if rc.get("open_units") != 42 or rc.get("units_with_independent_retest_owner") != 42 or rc.get("missing_retest_owner") != 0:
+            fail("gate_retest_coverage must be 42/42 with missing=0", errors)
+        if "never" not in str(rc.get("rule", "")):
+            fail("gate_retest_coverage must preserve implementer-not-sole-retest-authority rule", errors)
+    dod = one("gate_pre_b004_dod_coverage")
+    if dod:
+        if "NOT_EXECUTED" not in str(dod.get("status", "")):
+            fail("gate_pre_b004_dod_coverage status must remain PROPOSED / NOT_EXECUTED", errors)
+        if dod.get("unowned_items") != 0 or dod.get("dod_execution") != "NOT_EXECUTED":
+            fail("gate_pre_b004_dod_coverage unowned/execution mutated", errors)
+        crit = dod.get("criteria") or []
+        if len(crit) != 12 or any(not c.get("criterion") or not c.get("owner") for c in crit):
+            fail("gate_pre_b004_dod_coverage must carry all 12 owned criteria", errors)
+
+    # --- human decision packet ----------------------------------------------------------------------
+    hd = one("gate_human_decision_packet")
+    if hd:
+        dec = hd.get("decisions") or {}
+        if set(dec) != GATE_HUMAN_DECISION_IDS:
+            fail(f"gate_human_decision_packet decisions must be exactly H1/H2/H3/R1; got {sorted(dec)}", errors)
+        exp_status = {
+            "HUMAN_DECISION_H1": "Pending", "HUMAN_DECISION_H2": "Pending",
+            "HUMAN_DECISION_H3": "Pending timing decision", "HUMAN_DECISION_R1": "Pending optional ratification",
+        }
+        for did, st in exp_status.items():
+            d = dec.get(did) or {}
+            if d.get("status") != st:
+                fail(f"gate_human_decision_packet {did} status {d.get('status')!r}, expected {st!r}", errors)
+            for f_ in ("impact", "options", "recommendation", "blocking_effect"):
+                if not d.get(f_):
+                    fail(f"gate_human_decision_packet {did} missing {f_}", errors)
+        for did in ("HUMAN_DECISION_H1", "HUMAN_DECISION_H2"):
+            if "block" not in str((dec.get(did) or {}).get("blocking_effect", "")).lower():
+                fail(f"{did} must record a blocking effect on remediation start", errors)
+        for did in ("HUMAN_DECISION_H3", "HUMAN_DECISION_R1"):
+            if "NOT block" not in str((dec.get(did) or {}).get("blocking_effect", "")) and "does NOT block" not in str((dec.get(did) or {}).get("blocking_effect", "")):
+                fail(f"{did} must record that it does not block remediation start", errors)
+        if hd.get("decided") != 0 or hd.get("auto_accepted") != 0:
+            fail("gate_human_decision_packet must record decided=0, auto_accepted=0", errors)
+
+    # --- primary-execution resolutions -----------------------------------------------------------------
+    pr = one("gate_primary_execution_resolutions")
+    if pr:
+        res = pr.get("resolutions") or {}
+        exp = {
+            "MSC_UNIT_018": ("REMEDIATION_SESSION_S3", "REMEDIATION_SESSION_S5"),
+            "MSC_UNIT_029": ("REMEDIATION_SESSION_S3", "REMEDIATION_SESSION_S5"),
+            "MSC_UNIT_014": ("REMEDIATION_SESSION_S3", "REMEDIATION_SESSION_S2"),
+            "MSC_UNIT_019": ("REMEDIATION_SESSION_S3", "REMEDIATION_SESSION_S2"),
+            "MSC_UNIT_027": ("REMEDIATION_SESSION_S4", "REMEDIATION_SESSION_S0"),
+            "MSC_UNIT_039": ("HUMAN_GOVERNANCE_DECISION", None),
+            "MSC_UNIT_041": ("B012_GATE", None),
+        }
+        for uid, (prim, alt) in exp.items():
+            r = res.get(uid) or {}
+            if r.get("primary") != prim:
+                fail(f"primary execution resolution {uid} primary={r.get('primary')!r}, expected {prim!r}", errors)
+            if alt and alt not in str(json.dumps(r)):
+                fail(f"primary execution resolution {uid} must record contingency/secondary {alt}", errors)
+        if pr.get("ambiguous_owners") != 0:
+            fail("gate_primary_execution_resolutions ambiguous_owners != 0", errors)
+
+    # --- readiness / authorization separation -------------------------------------------------------------
+    rd = one("gate_readiness")
+    if rd:
+        for k, exp in (("coverage_readiness", "READY"),
+                       ("security_remediation_start_authorization", "NOT_GRANTED"),
+                       ("security_remediation", "NOT_STARTED"),
+                       ("b004", "NOT_STARTED"), ("b005", "NOT_STARTED"),
+                       ("product", "BLOCKED_PENDING_FINAL_AUDIT"),
+                       ("human_final_product_gate", "NOT_EXECUTED")):
+            if rd.get(k) != exp:
+                fail(f"gate_readiness {k}={rd.get(k)!r}, expected {exp!r}", errors)
+        if "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION" not in str(rd.get("next_state", "")):
+            fail("gate_readiness next_state must be HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION — PENDING", errors)
+        if "READY_AFTER_PRESERVATION_AND_HUMAN_AUTHORIZATION" not in str(rd.get("remediation_start_readiness", "")):
+            fail("gate_readiness remediation_start_readiness mutated", errors)
+
+    # --- source status + gate lifecycle pointers ------------------------------------------------------
+    ss = next((r for r in recs if r.get("record_type") == "source_status" and r.get("audit_id") == GATE_ID), None)
+    if not ss or ss.get("source_present") != "YES":
+        fail(f"source_status record for {GATE_ID} missing or not YES", errors)
+    elif ss.get("artifact_type") != "SECURITY_REMEDIATION_COVERAGE_GATE":
+        fail(f"source_status for {GATE_ID} artifact_type must be SECURITY_REMEDIATION_COVERAGE_GATE", errors)
+    elif ss.get("preserved_path") != EXPECTED_REPORTS[GATE_ID]["path"]:
+        fail(f"source_status for {GATE_ID} preserved_path mismatch", errors)
+    # the gate record's own next_gate pointer
+    pg = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == "SECURITY-REMEDIATION-COVERAGE-GATE"), None)
+    if not pg or "EXECUTED_AND_PRESERVED" not in str(pg.get("status", "")):
+        fail("next_gate record for SECURITY-REMEDIATION-COVERAGE-GATE must be EXECUTED_AND_PRESERVED", errors)
+    hg = next((r for r in recs if r.get("record_type") == "next_gate" and r.get("gate") == NEXT_GATE_ID), None)
+    if not hg or "NOT_EXECUTED" not in str(hg.get("status", "")):
+        fail(f"next_gate {NEXT_GATE_ID} must be PENDING / NOT_EXECUTED", errors)
+    print(f"  OK   {GATE_ID} lifecycle pointers verified (gate preserved; human-decision state pending)")
+
+
 def validate_findings(errors):
     findings = load_jsonl(REGISTRY_DIR / "findings.jsonl")
     f5 = next((f for f in findings if f.get("finding_id") == "ANOX-LEGACY-CRYPTO-005"), None)
@@ -1983,9 +2584,8 @@ def validate_lifecycle(errors):
         fail("completed_audit_ids must record AUDIT-SECURITY-ATTACKCHAIN-001 as executed+preserved", errors)
     if PRIOR_GATE_ID not in completed:
         fail(f"completed_audit_ids must record {PRIOR_GATE_ID} as executed+preserved", errors)
-    for gid in ("SECURITY-REMEDIATION-COVERAGE-GATE",):
-        if gid in completed:
-            fail(f"{gid} must NOT be in completed_audit_ids", errors)
+    if NEXT_GATE_ID in completed:
+        fail(f"{NEXT_GATE_ID} must NOT be in completed_audit_ids", errors)
 
 
 def validate_tasks(errors):
@@ -2068,6 +2668,8 @@ def main():
     validate_attackchain(errors)
     print("\n[EVIDENCE-PRESERVATION] Master Specialist Consolidation evidence")
     validate_master_consolidation(errors)
+    print("\n[EVIDENCE-PRESERVATION] Security-Remediation Coverage Gate evidence")
+    validate_coverage_gate(errors)
     print("\n[EVIDENCE-PRESERVATION] Canonical findings / historical relations")
     validate_findings(errors)
     print("\n[EVIDENCE-PRESERVATION] Lifecycle state")

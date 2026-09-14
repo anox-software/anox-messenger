@@ -1,14 +1,15 @@
 {
  "schema": "anox-security-audit-evidence-hashes-v1",
- "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003, -004, -005 and MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; the only normalization ever applied is a single trailing LF for session-emitted report bodies.",
- "preservation_task": "MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001",
+ "purpose": "Hash-bound evidence manifest for SECURITY-AUDIT-EVIDENCE-PRESERVATION-001, -002, -003, -004, -005, MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 and SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001. Preserved report files are byte-exact copies of the human-supplied, already-canonical, or audit-session-emitted originals; the only normalization ever applied is a single trailing LF for session-emitted report bodies.",
+ "preservation_task": "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001",
  "preservation_tasks": [
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-005",
-  "MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001"
+  "MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001",
+  "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"
  ],
  "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
  "audit_base_sha_latest": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
@@ -114,6 +115,17 @@
    "source_type": "DEVIN_CLI_SESSION_TRANSCRIPT",
    "original_path": "Devin CLI session transcript store (session diamond-knuckle, message_id 6f136e46-ed91-474b-9a3f-51305f2795e9, content 120599 bytes)",
    "normalization": "single trailing LF appended — byte-exact session-emitted report body"
+  },
+  "SECURITY-REMEDIATION-COVERAGE-GATE-001": {
+   "audit_id": "SECURITY-REMEDIATION-COVERAGE-GATE-001",
+   "artifact_type": "SECURITY_REMEDIATION_COVERAGE_GATE",
+   "path": "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md",
+   "sha256": "175aa756fa1a260311c3d8b3c3680aa26de38d58bd2d8ebb782320cc27e2b27e",
+   "bytes": 33527,
+   "source_present": "YES",
+   "source_type": "DEVIN_CLI_SESSION_TRANSCRIPT",
+   "original_path": "Devin CLI session transcript store (session swanky-brace, message_id b6f5176c-33f9-4ed9-b8a1-5bc9130fd9c6, node 296; identical complete copies at nodes 204/205/283; truncated node 289 rejected)",
+   "normalization": "single trailing LF appended — byte-exact session-emitted report body"
   }
  },
  "native_artifact_evidence": {
@@ -149,5 +161,6 @@
    "note": "Blind checkpoint recorded SHA 869b99ac..., 17 findings, severity distribution 0C/3H/6M/6L/2I — consistent with the preserved complete report."
   }
  ],
- "consolidation_base_sha": "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9"
+ "consolidation_base_sha": "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9",
+ "coverage_gate_base_sha": "610ed08337536857db73259168498c49b786caa1"
 }

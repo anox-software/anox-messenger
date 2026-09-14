@@ -33,6 +33,7 @@ FIXTURE_FILES = [
     "docs/reports/security/audits/AUDIT-SECURITY-ANDROID-STORAGE-001.md",
     "docs/reports/security/audits/AUDIT-SECURITY-ATTACKCHAIN-001.md",
     "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
+    "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -206,7 +207,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 10 records")
+        self.assert_fails(self.run_validator(), "exactly 11 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -304,7 +305,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 10 records")
+        self.assert_fails(self.run_validator(), "exactly 11 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -404,12 +405,12 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "post_merge_state")
 
-    # 37. Preservation-005 task record marked with a non-delivery status.
+    # 37. Coverage-gate preservation task record marked with a non-delivery status.
     def test_37_task_status_mutated_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
         recs = _load_jsonl(tp)
         for r in recs:
-            if r.get("task_id") == "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001":
+            if r.get("task_id") == "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001":
                 r["status"] = "Closed"
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "Ready For Remote")
@@ -477,7 +478,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 10 records")
+        self.assert_fails(self.run_validator(), "exactly 11 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -563,11 +564,11 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "153")
 
-    # 55. Mark the Security-Remediation Coverage Gate executed in completed_audit_ids.
+    # 55. Mark the human pre-remediation decision gate executed in completed_audit_ids.
     def test_55_consolidation_marked_completed_fails(self):
         wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
         ws = json.loads(wp.read_text(encoding="utf-8"))
-        ws["final_pre_product_audit"]["completed_audit_ids"].append("SECURITY-REMEDIATION-COVERAGE-GATE")
+        ws["final_pre_product_audit"]["completed_audit_ids"].append("HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION")
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "must NOT be in completed_audit_ids")
 
@@ -590,10 +591,10 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
         self.assert_fails(self.run_validator(), "next_phase")
 
-    # 58. Drop the consolidation-preservation task record.
+    # 58. Drop the coverage-gate preservation task record.
     def test_58_dropped_task_record_fails(self):
         tp = self.root / "docs/workforce/registries/tasks.jsonl"
-        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001"]
+        recs = [r for r in _load_jsonl(tp) if r.get("task_id") != "ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001"]
         _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "missing from tasks.jsonl")
 
@@ -668,7 +669,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 10 records")
+        self.assert_fails(self.run_validator(), "exactly 11 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -1229,9 +1230,421 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         tp, recs = self._msc_recs()
         for r in recs:
             if r.get("record_type") == "next_gate" and r.get("gate") == "SECURITY-REMEDIATION-COVERAGE-GATE":
+                r["status"] = "CANDIDATE / NOT_EXECUTED"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "EXECUTED_AND_PRESERVED")
+
+    # ------------------------------------------------------------------
+    # SECURITY-REMEDIATION-COVERAGE-GATE-001 adversarial cases (142..201)
+    # ------------------------------------------------------------------
+    GATE = "SECURITY-REMEDIATION-COVERAGE-GATE-001"
+    GATE_REPORT = "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md"
+
+    def _gate_recs(self):
+        tp = self.root / TRACE
+        return tp, _load_jsonl(tp)
+
+    def _gate_one(self, rt):
+        recs = _load_jsonl(self.root / TRACE)
+        return next((r for r in recs if r.get("record_type") == rt and r.get("source_artifact_id") == self.GATE), None)
+
+    def _gate_mutate_one(self, rt, mutator):
+        tp, recs = self._gate_recs()
+        for r in recs:
+            if r.get("record_type") == rt and r.get("source_artifact_id") == self.GATE:
+                mutator(r)
+        _write_jsonl(tp, recs)
+        return self.run_validator()
+
+    def _gate_mutate_unit(self, uid, mutator):
+        tp, recs = self._gate_recs()
+        for r in recs:
+            if r.get("record_type") == "gate_coverage_unit" and r.get("msc_unit") == uid:
+                mutator(r)
+        _write_jsonl(tp, recs)
+        return self.run_validator()
+
+    def _gate_registry_mutate(self, mutator):
+        rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+        recs = _load_jsonl(rp)
+        for r in recs:
+            if r.get("audit_id") == self.GATE:
+                mutator(r)
+        _write_jsonl(rp, recs)
+        return self.run_validator()
+
+    # 142. Gate report truncated (hash mismatch).
+    def test_142_gate_report_truncated_fails(self):
+        p = self.root / self.GATE_REPORT
+        p.write_bytes(p.read_bytes()[:-2048])
+        self.assert_fails(self.run_validator(), "hash mismatch")
+
+    # 143. Gate report deleted.
+    def test_143_gate_report_deleted_fails(self):
+        (self.root / self.GATE_REPORT).unlink()
+        self.assert_fails(self.run_validator(), "missing")
+
+    # 144. evidence_hashes entry for the gate report altered.
+    def test_144_gate_hash_entry_altered_fails(self):
+        hp = self.root / "docs/security/audit-evidence/evidence_hashes.json"
+        h = json.loads(hp.read_text(encoding="utf-8"))
+        h["reports"][self.GATE]["sha256"] = "0" * 64
+        hp.write_text(json.dumps(h, indent=1), encoding="utf-8")
+        self.assert_fails(self.run_validator())
+
+    # 145. Registry artifact_type changed away from SECURITY_REMEDIATION_COVERAGE_GATE.
+    def test_145_gate_registry_artifact_type_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(artifact_type="AUDIT")), "artifact_type")
+
+    # 146. Registry base/audited SHA wrong.
+    def test_146_gate_registry_base_sha_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(base_sha="1eb773069d81ea3d12b76249c73f2f5fb0b6cae9")), "base_sha")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(audited_sha="0" * 40)), "audited_sha")
+
+    # 147. Registry result mutated away from PASS.
+    def test_147_gate_registry_result_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(result="FAIL")), "result")
+
+    # 148. Registry model mutated.
+    def test_148_gate_registry_model_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(actual_model="Claude Opus 5 High")), "actual_model")
+
+    # 149. Registry coverage counts mutated.
+    def test_149_gate_registry_counts_fail(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(master_units=43)), "master_units")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(open_units=41)), "open_units")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(open_units_covered=41)), "open_units_covered")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(open_units_uncovered=1)), "open_units_uncovered")
+
+    # 150. Registry marked as remediation authorization.
+    def test_150_gate_registry_authorization_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(security_remediation_authorized="YES")), "security_remediation_authorized")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(security_remediation="STARTED")), "security_remediation")
+
+    # 151. Registry preservation event / branch mutated.
+    def test_151_gate_registry_event_branch_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(preserved_at_event="ANOX-EVENT-0050")), "preserved_at_event")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(delivery_branch="governance/master-specialist-consolidation-preservation-001")), "delivery_branch")
+
+    # 152. Registry report binding mutated.
+    def test_152_gate_registry_report_binding_fails(self):
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(report_sha256="0" * 64)), "report_sha256")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(report_bytes=33526)), "report_bytes")
+        self.assert_fails(self._gate_registry_mutate(lambda r: r.update(report_path="docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md")), "report_path")
+
+    # 153. One gate_coverage_unit dropped (42 -> 41).
+    def test_153_gate_unit_dropped_fails(self):
+        tp, recs = self._gate_recs()
+        recs = [r for r in recs if not (r.get("record_type") == "gate_coverage_unit" and r.get("msc_unit") == "MSC_UNIT_007")]
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "MSC_UNIT")
+
+    # 154. Duplicate coverage row introduced.
+    def test_154_gate_unit_duplicated_fails(self):
+        tp, recs = self._gate_recs()
+        dup = dict(next(r for r in recs if r.get("record_type") == "gate_coverage_unit" and r.get("msc_unit") == "MSC_UNIT_001"))
+        recs.append(dup)
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator())
+
+    # 155. Row coverage_status flipped away from COVERED.
+    def test_155_gate_unit_status_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_005", lambda r: r.update(coverage_status="EXECUTED")), "coverage_status")
+
+    # 156. Conflicting primary execution owner (session split re-arbitrated).
+    def test_156_gate_unit_primary_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_005", lambda r: r.update(primary_execution_owner="REMEDIATION_SESSION_S3")), "primary_execution_owner")
+
+    # 157. Ambiguous bare `S3` machine id introduced as an owner.
+    def test_157_gate_unit_ambiguous_owner_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_014", lambda r: r.update(primary_execution_owner="S3")))
+
+    # 158. Generic `LATER` gate assigned to a row.
+    def test_158_gate_unit_generic_gate_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_030", lambda r: r.update(gate="LATER")), "gate")
+
+    # 159. Unknown gate assigned to a row.
+    def test_159_gate_unit_unknown_gate_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_031", lambda r: r.update(gate="B099")), "gate")
+
+    # 160. Row loses its independent retest owner.
+    def test_160_gate_unit_no_retest_owner_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_017", lambda r: r.update(independent_retest_owner=[])), "retest")
+
+    # 161. Row loses a required test-plan field.
+    def test_161_gate_unit_no_test_plan_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_005", lambda r: r.pop("instrumented_requirement")), "instrumented_requirement")
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_014", lambda r: r.update(physical_requirement="")), "physical_requirement")
+
+    # 162. Row closure stage carries an invalid value.
+    def test_162_gate_unit_closure_stage_fails(self):
+        self.assert_fails(self._gate_mutate_unit("MSC_UNIT_001", lambda r: r.update(closure_runtime_stage="EXECUTED")), "closure_runtime_stage")
+
+    # 163. Rejected unit gains a remediation/coverage row.
+    def test_163_gate_rejected_unit_row_fails(self):
+        tp, recs = self._gate_recs()
+        row = dict(next(r for r in recs if r.get("record_type") == "gate_coverage_unit" and r.get("msc_unit") == "MSC_UNIT_001"))
+        row["msc_unit"] = "MSC_UNIT_043"
+        recs.append(row)
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "rejected")
+
+    # 164. Gate verdict flipped / counts mutated.
+    def test_164_gate_verdict_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_verdict", lambda r: r.update(result="FAIL")), "result")
+        self.assert_fails(self._gate_mutate_one("gate_verdict", lambda r: r.update(open_msc_covered=41)), "open_msc_covered")
+        self.assert_fails(self._gate_mutate_one("gate_verdict", lambda r: r.update(unknown=1)), "unknown")
+
+    # 165. Gate verdict dependency cycle / rejected-session counters mutated.
+    def test_165_gate_verdict_counters_fail(self):
+        self.assert_fails(self._gate_mutate_one("gate_verdict", lambda r: r.update(dependency_cycles=1)), "dependency_cycles")
+        self.assert_fails(self._gate_mutate_one("gate_verdict", lambda r: r.update(rejected_with_remediation_session=1)), "rejected_with_remediation_session")
+
+    # 166. Rejected-record disposition mutated (043 revived as finding work).
+    def test_166_gate_rejected_disposition_fails(self):
+        def m(r):
+            r["rejected_records"]["MSC_UNIT_043"]["disposition"] = "OPEN"
+        self.assert_fails(self._gate_mutate_one("gate_verdict", m), "disposition")
+        def m2(r):
+            r["rejected_records"]["MSC_UNIT_043"]["remediation_required"] = "YES"
+        self.assert_fails(self._gate_mutate_one("gate_verdict", m2), "remediation")
+
+    # 167. Rejected-record source bindings lost (ROOT-016 / BUILDSC-012).
+    def test_167_gate_rejected_binding_fails(self):
+        def m(r):
+            r["rejected_records"]["MSC_UNIT_043"]["source"] = "CS-016"
+        self.assert_fails(self._gate_mutate_one("gate_verdict", m), "ROOT-016")
+        def m2(r):
+            r["rejected_records"]["MSC_UNIT_044"]["source"] = "CS-019"
+        self.assert_fails(self._gate_mutate_one("gate_verdict", m2), "BUILDSC-012")
+
+    # 168. Zero-metric fields mutated.
+    def test_168_gate_zero_metrics_fail(self):
+        self.assert_fails(self._gate_mutate_one("gate_zero_metrics", lambda r: r.update(uncovered_open_msc_units=1)), "uncovered_open_msc_units")
+        self.assert_fails(self._gate_mutate_one("gate_zero_metrics", lambda r: r.update(parallel_writer_collisions=1)), "parallel_writer_collisions")
+        self.assert_fails(self._gate_mutate_one("gate_zero_metrics", lambda r: r.update(unmapped_contract_items=1)), "unmapped_contract_items")
+        self.assert_fails(self._gate_mutate_one("gate_zero_metrics", lambda r: r.update(fcp_escapes=1)), "fcp_escapes")
+
+    # 169. Severity coverage shrunk.
+    def test_169_gate_severity_coverage_fails(self):
+        def m(r):
+            r["coverage"]["HIGH"]["covered"] = 6
+        self.assert_fails(self._gate_mutate_one("gate_severity_coverage", m), "HIGH")
+
+    # 170. Pre-B004 category coverage shrunk / DoD marked executed.
+    def test_170_gate_category_coverage_fails(self):
+        def m(r):
+            r["categories"]["A_ARCHITECTURE_CONTRACT"]["covered"] = 10
+        self.assert_fails(self._gate_mutate_one("gate_pre_b004_category_coverage", m), "A_ARCHITECTURE_CONTRACT")
+        self.assert_fails(self._gate_mutate_one("gate_pre_b004_category_coverage", lambda r: r.update(dod_status="EXECUTED")), "NOT_EXECUTED")
+
+    # 171. Later-gate coverage shrunk / unnamed later item introduced.
+    def test_171_gate_later_coverage_fails(self):
+        def m(r):
+            r["gates"]["B013"]["covered"] = 3
+        self.assert_fails(self._gate_mutate_one("gate_later_gate_coverage", m), "B013")
+        self.assert_fails(self._gate_mutate_one("gate_later_gate_coverage", lambda r: r.update(unnamed_later_items=1)), "unnamed_later_items")
+
+    # 172. Execution session dropped (S2).
+    def test_172_gate_session_dropped_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_execution_sessions", lambda r: r["sessions"].pop("REMEDIATION_SESSION_S2")), "S0")
+
+    # 173. S2 ordering violated (MSC_UNIT_008 no longer last).
+    def test_173_gate_s2_order_fails(self):
+        def m(r):
+            o = r["sessions"]["REMEDIATION_SESSION_S2"]["execution_order"]
+            o.append("MSC_UNIT_009 late re-run")
+        self.assert_fails(self._gate_mutate_one("gate_execution_sessions", m), "LAST")
+
+    # 174. S3 writes to CryptoBridge.kt (S2-owned file).
+    def test_174_gate_s3_forbidden_file_fails(self):
+        def m(r):
+            r["sessions"]["REMEDIATION_SESSION_S3"]["files_forbidden"] = []
+        self.assert_fails(self._gate_mutate_one("gate_execution_sessions", m), "CryptoBridge")
+
+    # 175. Session record loses a boundary field.
+    def test_175_gate_session_field_fails(self):
+        def m(r):
+            r["sessions"]["REMEDIATION_SESSION_S5"].pop("files_owned")
+        self.assert_fails(self._gate_mutate_one("gate_execution_sessions", m), "files_owned")
+
+    # 176. File ownership collision recorded as unresolved.
+    def test_176_gate_file_collision_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_file_ownership", lambda r: r.update(unresolved_parallel_writer_collisions=1)), "collisions")
+
+    # 177. CryptoBridge.kt exclusive-S2 resolution removed.
+    def test_177_gate_file_resolution_fails(self):
+        def m(r):
+            for e in r["entries"]:
+                if e.get("file") == "CryptoBridge.kt":
+                    e["resolution"] = "S3 exclusive"
+        self.assert_fails(self._gate_mutate_one("gate_file_ownership", m), "CryptoBridge")
+
+    # 178. Parallel-execution matrix mutated.
+    def test_178_gate_parallel_fails(self):
+        def m(r):
+            r["unsafe_pairs"] = [p for p in r["unsafe_pairs"] if not (p[0] == "REMEDIATION_SESSION_S3" and "S4" in str(p[1]))]
+        self.assert_fails(self._gate_mutate_one("gate_parallel_execution", m), "S3")
+        def m2(r):
+            r["safe_pairs"] = [p for p in r["safe_pairs"] if p != ["REMEDIATION_SESSION_S0", "REMEDIATION_SESSION_S1"]]
+        self.assert_fails(self._gate_mutate_one("gate_parallel_execution", m2), "safe")
+
+    # 179. Architecture-prerequisite owner lost.
+    def test_179_gate_arch_prereq_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_architecture_prerequisites", lambda r: r.update(prerequisites_without_owner=1)), "without_owner")
+        self.assert_fails(self._gate_mutate_one("gate_architecture_prerequisites", lambda r: r.update(count=9)), "count")
+
+    # 180. Dependency DAG: cycle counter mutated.
+    def test_180_gate_dag_cycles_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_dependency_dag", lambda r: r.update(unresolved_dependency_cycles=1)), "cycles")
+        self.assert_fails(self._gate_mutate_one("gate_dependency_dag", lambda r: r.update(normalized_edge_count=80)), "normalized")
+
+    # 181. Dependency DAG: actual cycle injected into the edge list.
+    def test_181_gate_dag_cycle_injected_fails(self):
+        def m(r):
+            r["minimum_edges"].append(["REMEDIATION_SESSION_S2", "REMEDIATION_SESSION_S1 (MSC_UNIT_001)"])
+        self.assert_fails(self._gate_mutate_one("gate_dependency_dag", m), "cycle")
+
+    # 182. Dependency DAG edges truncated.
+    def test_182_gate_dag_edges_dropped_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_dependency_dag", lambda r: r.update(master_edges=[])), "edges")
+
+    # 183. FCP rule dropped (FCP_7 evidence separation).
+    def test_183_gate_fcp_dropped_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_fcp_enforcement", lambda r: r["rules"].pop("FCP_7")), "FCP")
+
+    # 184. FCP escape recorded.
+    def test_184_gate_fcp_escape_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_fcp_enforcement", lambda r: r.update(fcp_escapes=1)), "escapes")
+
+    # 185. False-closure scenario A incorrectly accepted (server half skipped).
+    def test_185_gate_false_closure_accepted_fails(self):
+        def m(r):
+            r["scenarios"]["FALSE_CLOSURE_A"]["verdict"] = "CLOSED"
+        self.assert_fails(self._gate_mutate_one("gate_false_closure_tests", m), "FALSE_CLOSURE_A")
+
+    # 186. False-closure scenario dropped (F).
+    def test_186_gate_false_closure_dropped_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_false_closure_tests", lambda r: r["scenarios"].pop("FALSE_CLOSURE_F")), "A..F")
+
+    # 187. Server contract coverage shrunk.
+    def test_187_gate_server_contract_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_server_contract_coverage", lambda r: r["rules"].pop("SERVER_CONTRACT_SC_6")), "SC")
+        self.assert_fails(self._gate_mutate_one("gate_server_contract_coverage", lambda r: r.update(covered=13)), "14/14")
+
+    # 188. Client contract coverage shrunk.
+    def test_188_gate_client_contract_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_client_contract_coverage", lambda r: r["rules"].pop("CLIENT_CONTRACT_CC_14")), "CC")
+        def m(r):
+            r["rules"]["CLIENT_CONTRACT_CC_1"]["covered_units"] = []
+        self.assert_fails(self._gate_mutate_one("gate_client_contract_coverage", m), "CC_1")
+
+    # 189. Attackchain mapping shrunk / chain left unmapped.
+    def test_189_gate_chain_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_attackchain_coverage", lambda r: r["chains"].pop("ATTACKCHAIN_AC_015")), "AC")
+        def m(r):
+            r["chains"]["ATTACKCHAIN_AC_001"]["mapped_to_msc"] = []
+        self.assert_fails(self._gate_mutate_one("gate_attackchain_coverage", m), "ATTACKCHAIN_AC_001")
+
+    # 190. AC-003 overlay promoted to canonical CRITICAL / ath-alone flag cleared.
+    def test_190_gate_ac003_fails(self):
+        def m(r):
+            r["ac003_conditional_overlay"]["canonical_chain_severity"] = "CRITICAL"
+        self.assert_fails(self._gate_mutate_one("gate_attackchain_coverage", m), "HIGH")
+        self.assert_fails(self._gate_mutate_one("gate_attackchain_coverage", lambda r: r["ac003_conditional_overlay"].update(mandatory_ath_alone_does_not_close=False)), "ath")
+
+    # 191. Mandatory whole-chain retest set shrunk.
+    def test_191_gate_mandatory_chains_fail(self):
+        def m(r):
+            r["mandatory_whole_chain_retests"] = [c for c in r["mandatory_whole_chain_retests"] if c != "ATTACKCHAIN_AC_012"]
+        self.assert_fails(self._gate_mutate_one("gate_attackchain_coverage", m), "mandatory")
+
+    # 192. Physical item dropped / campaign marked executed.
+    def test_192_gate_physical_fails(self):
+        def m(r):
+            r["items"] = [i for i in r["items"] if i["id"] != "PHYSICAL_P17"]
+            r["count"] = 16
+            r["assigned"] = 16
+        self.assert_fails(self._gate_mutate_one("gate_physical_coverage", m), "P1..P17")
+        self.assert_fails(self._gate_mutate_one("gate_physical_coverage", lambda r: r.update(status="EXECUTED")), "NOT_EXECUTED")
+
+    # 193. Physical item left unmapped / executed counter mutated.
+    def test_193_gate_physical_mapping_fails(self):
+        def m(r):
+            for i in r["items"]:
+                if i["id"] == "PHYSICAL_P4":
+                    i["mapped_units"] = []
+        self.assert_fails(self._gate_mutate_one("gate_physical_coverage", m), "PHYSICAL_P4")
+        self.assert_fails(self._gate_mutate_one("gate_physical_coverage", lambda r: r.update(executed=1)), "executed")
+
+    # 194. Retest coverage mutated (42 -> 41 / missing owner).
+    def test_194_gate_retest_coverage_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_retest_coverage", lambda r: r.update(units_with_independent_retest_owner=41)), "42/42")
+        self.assert_fails(self._gate_mutate_one("gate_retest_coverage", lambda r: r.update(missing_retest_owner=1)), "missing")
+
+    # 195. Pre-B004 DoD ownership mutated / marked executed.
+    def test_195_gate_dod_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_pre_b004_dod_coverage", lambda r: r.update(unowned_items=1)), "unowned")
+        self.assert_fails(self._gate_mutate_one("gate_pre_b004_dod_coverage", lambda r: r.update(dod_execution="EXECUTED")), "EXECUTED")
+        def m(r):
+            r["criteria"][0]["owner"] = ""
+        self.assert_fails(self._gate_mutate_one("gate_pre_b004_dod_coverage", m), "owned")
+
+    # 196. Human decision auto-accepted / status mutated.
+    def test_196_gate_human_decision_fails(self):
+        def m(r):
+            r["decisions"]["HUMAN_DECISION_H1"]["status"] = "Decided"
+        self.assert_fails(self._gate_mutate_one("gate_human_decision_packet", m), "HUMAN_DECISION_H1")
+        self.assert_fails(self._gate_mutate_one("gate_human_decision_packet", lambda r: r.update(auto_accepted=1)), "auto_accepted")
+
+    # 197. Human decision dropped (R1).
+    def test_197_gate_human_decision_dropped_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_human_decision_packet", lambda r: r["decisions"].pop("HUMAN_DECISION_R1")), "H1")
+
+    # 198. Primary-execution resolution mutated (018 -> S5 primary).
+    def test_198_gate_primary_resolution_fails(self):
+        def m(r):
+            r["resolutions"]["MSC_UNIT_018"]["primary"] = "REMEDIATION_SESSION_S5"
+        self.assert_fails(self._gate_mutate_one("gate_primary_execution_resolutions", m), "MSC_UNIT_018")
+        self.assert_fails(self._gate_mutate_one("gate_primary_execution_resolutions", lambda r: r.update(ambiguous_owners=1)), "ambiguous")
+
+    # 199. Readiness: remediation authorization granted / readiness flipped.
+    def test_199_gate_readiness_fails(self):
+        self.assert_fails(self._gate_mutate_one("gate_readiness", lambda r: r.update(security_remediation_start_authorization="GRANTED")), "NOT_GRANTED")
+        self.assert_fails(self._gate_mutate_one("gate_readiness", lambda r: r.update(coverage_readiness="NOT_READY")), "READY")
+        self.assert_fails(self._gate_mutate_one("gate_readiness", lambda r: r.update(b004="IN_PROGRESS")), "b004")
+
+    # 200. Lifecycle pointers: gate record reverted to candidate / human gate executed.
+    def test_200_gate_lifecycle_pointers_fail(self):
+        tp, recs = self._gate_recs()
+        for r in recs:
+            if r.get("record_type") == "next_gate" and r.get("gate") == "SECURITY-REMEDIATION-COVERAGE-GATE":
                 r["status"] = "EXECUTED"
         _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "EXECUTED_AND_PRESERVED")
+        tp, recs = self._gate_recs()
+        for r in recs:
+            if r.get("record_type") == "next_gate" and r.get("gate") == "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION":
+                r["status"] = "EXECUTED_AND_PRESERVED"
+        _write_jsonl(tp, recs)
         self.assert_fails(self.run_validator(), "NOT_EXECUTED")
+
+    # 201. Completed set drops the executed coverage gate / source_status flipped.
+    def test_201_gate_completed_source_fails(self):
+        wp = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        ws = json.loads(wp.read_text(encoding="utf-8"))
+        ws["final_pre_product_audit"]["completed_audit_ids"] = [
+            a for a in ws["final_pre_product_audit"]["completed_audit_ids"]
+            if a != "SECURITY-REMEDIATION-COVERAGE-GATE"
+        ]
+        wp.write_text(json.dumps(ws, indent=2), encoding="utf-8")
+        self.assert_fails(self.run_validator(), "SECURITY-REMEDIATION-COVERAGE-GATE")
+        tp, recs = self._gate_recs()
+        for r in recs:
+            if r.get("record_type") == "source_status" and r.get("audit_id") == self.GATE:
+                r["source_present"] = "NO"
+        _write_jsonl(tp, recs)
+        self.assert_fails(self.run_validator(), "source_status")
 
 
 if __name__ == "__main__":
