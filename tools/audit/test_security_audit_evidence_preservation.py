@@ -2027,6 +2027,202 @@ class DeliveryTopologyAdversarialTests(unittest.TestCase):
         self.assertFalse(ok, "metadata commit touching a substantive file must be rejected")
         self.assertIn("metadata commit touches non-metadata files", reason)
 
+    # 236. REMEDIATION_SESSION_S0: a third task-authored commit above the S0 base is rejected.
+    def test_236_s0_third_task_authored_commit_fails(self):
+        base = self._commit("base.txt", "base")
+        self._commit("docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md", "contract")
+        c2 = self._commit("docs/continuity/CURRENT_STATE.json", "{}")
+        c3 = self._commit("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", "{}")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c2, c3, cwd=self.root,
+            metadata_allowlist={"docs/continuity/CURRENT_STATE.json",
+                                "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"})
+        self.assertFalse(ok, "S0 must deliver exactly two task-authored commits")
+        self.assertIn("expected exactly 2", reason)
+
+    # 237. REMEDIATION_SESSION_S0: an authority file smuggled into the metadata commit is rejected.
+    def test_237_s0_authority_file_smuggled_into_metadata_commit_fails(self):
+        base = self._commit("base.txt", "base")
+        c1 = self._commit("docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md", "contract")
+        c2 = self._commit("docs/authority/SNEAK.md", "extra normative surface")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c1, c2, cwd=self.root,
+            metadata_allowlist={"docs/continuity/CURRENT_STATE.json"})
+        self.assertFalse(ok, "an authority document may not ride in the metadata commit")
+        self.assertIn("metadata commit touches non-metadata files", reason)
+
+
+class S0SuccessorEventAdversarialTests(unittest.TestCase):
+    """F-06 — adversarial coverage of the REMEDIATION_SESSION_S0 successor-event
+    acceptance path added to the evidence-preservation validator.
+
+    Exactly one recorded successor (`ANOX-EVENT-0053`) may follow `LEDGER_EVENT`
+    (`ANOX-EVENT-0052`); every identifying field is verified and any other appended
+    event must fail closed.
+    """
+
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    SUCCESSOR = "ANOX-EVENT-0053"
+    PRIOR = "ANOX-EVENT-0052"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        for rel in FIXTURE_FILES:
+            src = REPO_ROOT / rel
+            dst = self.root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_validator(self):
+        env = dict(os.environ)
+        env["SECURITY_AUDIT_PRESERVATION_REPO"] = str(self.root)
+        return subprocess.run([sys.executable, str(VALIDATOR)],
+                              cwd=self.root, env=env, capture_output=True, text=True)
+
+    def assert_fails(self, needle=None):
+        r = self.run_validator()
+        self.assertNotEqual(r.returncode, 0, f"validator must FAIL; stdout:\n{r.stdout}\n{r.stderr}")
+        self.assertIn("FAIL", r.stdout)
+        if needle:
+            self.assertIn(needle, r.stdout, f"missing expected failure detail {needle!r}:\n{r.stdout}")
+        return r
+
+    # -- helpers -----------------------------------------------------------
+    def _ledger(self):
+        return _load_jsonl(self.root / self.LEDGER)
+
+    def _write(self, recs):
+        _write_jsonl(self.root / self.LEDGER, recs)
+
+    def _sync_latest(self, event_id):
+        p = self.root / self.CS
+        state = json.loads(p.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = event_id
+        p.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+    def _mutate_successor(self, **fields):
+        recs = self._ledger()
+        self.assertEqual(recs[-1].get("event_id"), self.SUCCESSOR,
+                         "fixture must end with the recorded S0 successor event")
+        recs[-1].update(fields)
+        self._write(recs)
+
+    # -- control ------------------------------------------------------------
+    # 238. The recorded, unmutated S0 successor event is accepted.
+    def test_238_valid_s0_successor_accepted(self):
+        r = self.run_validator()
+        self.assertEqual(r.returncode, 0, f"recorded S0 successor must be accepted:\n{r.stdout}")
+        self.assertIn(f"Project Memory synced to {self.SUCCESSOR}", r.stdout)
+        self.assertIn("REMEDIATION_SESSION_S0 successor", r.stdout)
+
+    # -- identifying fields -------------------------------------------------
+    # 239. Successor with a foreign task is rejected.
+    def test_239_successor_altered_task_rejected(self):
+        self._mutate_successor(task="ANOX-TASK-SOMETHING-ELSE-001")
+        self.assert_fails(self.PRIOR)
+
+    # 240. Successor with a wrong start_head is rejected.
+    def test_240_successor_altered_start_head_rejected(self):
+        self._mutate_successor(start_head="0" * 40)
+        self.assert_fails(self.PRIOR)
+
+    # 241. Successor with a foreign event type is rejected.
+    def test_241_successor_altered_type_rejected(self):
+        self._mutate_successor(type="governance_decision_record")
+        self.assert_fails(self.PRIOR)
+
+    # 242. Successor that drops the V1.4 authority reference is rejected.
+    def test_242_successor_authority_reference_removed_rejected(self):
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "B025_MANDATORY_AMENDMENTS_V1_4" not in x]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 243. Successor with empty/malformed refs is rejected.
+    def test_243_successor_malformed_refs_rejected(self):
+        self._mutate_successor(refs=[])
+        self.assert_fails(self.PRIOR)
+        recs = self._ledger()
+        recs[-1]["refs"] = "not-a-list"
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # -- arbitrary / colliding events ---------------------------------------
+    # 244. An arbitrary future event id is never accepted as the successor.
+    def test_244_arbitrary_future_event_rejected(self):
+        self._mutate_successor(event_id="ANOX-EVENT-0054")
+        self.assert_fails("stale")            # CURRENT_STATE still names 0053
+        self._sync_latest("ANOX-EVENT-0054")
+        self.assert_fails(self.PRIOR)          # and the successor rule still refuses it
+
+    # 245. An event interposed between 0052 and 0053 breaks the direct-successor rule.
+    def test_245_interposed_event_rejected(self):
+        recs = self._ledger()
+        recs.insert(-1, dict(recs[-1], event_id="ANOX-EVENT-0052B"))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 246. A duplicated successor (0053 at [-1] and [-2]) is rejected.
+    def test_246_duplicate_successor_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1]))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 247. Removing the prior EVENT-0052 evidence event is rejected.
+    def test_247_missing_prior_event_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.PRIOR]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 248. A second successor appended after 0053 is rejected.
+    def test_248_second_successor_after_s0_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0054", task="ANOX-TASK-SOMETHING-ELSE-001"))
+        self._write(recs)
+        self._sync_latest("ANOX-EVENT-0054")
+        self.assert_fails(self.PRIOR)
+
+    # -- previous evidence still enforced under the successor path -----------
+    # 249. Tampering with the EVENT-0052 decision record still fails.
+    def test_249_prior_decision_record_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 250. Tampering with the preserved Master consolidation still fails.
+    def test_250_prior_consolidation_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 251. Tampering with the preserved coverage gate still fails.
+    def test_251_prior_coverage_gate_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 252. Retired one-shot validator pins remain enforced under the successor path.
+    def test_252_retired_validator_pin_still_enforced(self):
+        (self.root / "tools/audit/validate_workforce_fix02.py").write_text("# pin removed\n", encoding="utf-8")
+        self.assert_fails("integrity marker")
+
+    # 253. The product gate cannot be unblocked while the successor event is current.
+    def test_253_product_gate_still_enforced(self):
+        p = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        p.write_text(p.read_text(encoding="utf-8").replace(
+            "BLOCKED_PENDING_FINAL_AUDIT", "UNBLOCKED"), encoding="utf-8")
+        self.assert_fails("BLOCKED_PENDING_FINAL_AUDIT")
+
 
 if __name__ == "__main__":
     unittest.main()

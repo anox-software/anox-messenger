@@ -67,6 +67,37 @@ DECISION_REPORT_BYTES = 10128
 DECISION_REGISTRY_RECORD = "SEC-AUDIT-REG-0012"
 DECISION_FINDING_ID = "ANOX-DECISION-HUMANPREREMEDIATION001"
 LEDGER_MAX_LINE_BYTES = 4096
+# REMEDIATION_SESSION_S0 (contract freeze) is the first authorized remediation
+# delivery after LEDGER_EVENT. Its Project Memory event is accepted as the sole
+# admissible successor of LEDGER_EVENT only when every identifying field below
+# matches; any other appended event still fails closed. The S0 contract itself
+# is validated by the S0-owned tools/audit/validate_s0_contract_freeze.py.
+S0_SUCCESSOR_EVENT = {
+    "event_id": "ANOX-EVENT-0053",
+    "type": "remediation_session_contract_freeze",
+    "task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+    "start_head": "0f932520393feee6d479cc099f179f5766323125",
+    "ref": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md",
+    "delivery_branch": "security/remediation-s0-contract-freeze-001",
+}
+
+
+def _s0_delivery_active(state):
+    """True when CURRENT_STATE declares the S0 contract-freeze delivery as current."""
+    return (
+        state.get("current_task") == S0_SUCCESSOR_EVENT["task"]
+        and state.get("delivery_branch") == S0_SUCCESSOR_EVENT["delivery_branch"]
+    )
+
+
+def _is_s0_successor_event(ev):
+    return (
+        ev.get("event_id") == S0_SUCCESSOR_EVENT["event_id"]
+        and ev.get("type") == S0_SUCCESSOR_EVENT["type"]
+        and ev.get("task") == S0_SUCCESSOR_EVENT["task"]
+        and ev.get("start_head") == S0_SUCCESSOR_EVENT["start_head"]
+        and S0_SUCCESSOR_EVENT["ref"] in (ev.get("refs") or [])
+    )
 
 # ---------------------------------------------------------------------------
 # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
@@ -871,15 +902,26 @@ def validate_base(errors):
     if not re.fullmatch(r"[0-9a-f]{40}", described):
         fail(f"CURRENT_STATE described_head is not a valid SHA: {described}", errors)
         return
+    base_sha, delivery_branch, label = BASE_SHA, DELIVERY_BRANCH, "base"
+    if _s0_delivery_active(state):
+        # The S0 contract-freeze delivery sits on top of the merged decision
+        # delivery; its two-commit proof is evaluated against the S0 base,
+        # which must itself descend from BASE_SHA (chain continuity).
+        base_sha = S0_SUCCESSOR_EVENT["start_head"]
+        delivery_branch = S0_SUCCESSOR_EVENT["delivery_branch"]
+        label = "S0 base"
+        if not ll._git_is_ancestor(BASE_SHA, base_sha, cwd=REPO_ROOT):
+            fail(f"S0 base {base_sha[:12]} does not descend from {BASE_SHA[:12]}", errors)
+            return
     ok, _, _, reason = ll.canonical_two_commit_delivery(
-        BASE_SHA, described, head,
-        canonical_branch="main", delivery_branch=DELIVERY_BRANCH,
+        base_sha, described, head,
+        canonical_branch="main", delivery_branch=delivery_branch,
         cwd=REPO_ROOT, metadata_allowlist=METADATA_ALLOWLIST,
     )
     if not ok:
         fail(f"canonical two-commit delivery failed: {reason}", errors)
         return
-    print("  OK   exactly 2 task-authored commits above base (merge-aware)")
+    print(f"  OK   exactly 2 task-authored commits above {label} (merge-aware)")
 
 
 def validate_reports(errors):
@@ -3050,10 +3092,13 @@ def validate_project_memory(errors):
     latest = ledger[-1]
     if state.get("latest_material_event_id") != latest.get("event_id"):
         fail("Project Memory stale: latest_material_event_id != last ledger event", errors)
-    elif latest.get("event_id") != LEDGER_EVENT:
-        fail(f"last ledger event must be {LEDGER_EVENT}, got {latest.get('event_id')}", errors)
-    else:
+    elif latest.get("event_id") == LEDGER_EVENT:
         print(f"  OK   Project Memory synced to {latest.get('event_id')}")
+    elif _is_s0_successor_event(latest) and len(ledger) >= 2 and ledger[-2].get("event_id") == LEDGER_EVENT:
+        print(f"  OK   Project Memory synced to {latest.get('event_id')} (REMEDIATION_SESSION_S0 successor of {LEDGER_EVENT})")
+    else:
+        fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
+             f"{S0_SUCCESSOR_EVENT['event_id']}), got {latest.get('event_id')}", errors)
     raw = ledger_path.read_bytes().splitlines()
     overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
     if overlong:
