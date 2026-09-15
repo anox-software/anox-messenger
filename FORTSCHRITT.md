@@ -218,3 +218,18 @@
 - Validator extended fail-closed for the decision layer; adversarial tests now 235 (incl. real-git delivery-topology cases).
 - No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no remediation session executed; no finding closed or re-severitied except the canonical ROOT-013 severity ratification (still OPEN); no audit re-run.
 - Next: human merge to `main`, then `SECURITY_REMEDIATION_WAVE_1` (`REMEDIATION_SESSION_S0 ∥ S1`) on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0054 -->
+## REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001 — 2026-09-15 (ANOX-EVENT-0054)
+
+- Branch: `security/remediation-s1-build-provenance-001`
+- Substantive commit: `fc58414b6790c07f65d1dc9f72c019abd42efc86`
+- Canonical base SHA: `0f932520393feee6d479cc099f179f5766323125`
+- Task ID: `ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001`
+- Result: `Ready For Remote`
+- Scope delivered: trusted native build/provenance chain — `crypto/rust/rust-toolchain.toml` (Rust 1.97.1 + aarch64/x86_64-linux-android); `tools/security/native_build.py` authoritative driver (NDK r26c, cargo-ndk 4.1.2, `build/native/native-manifest.json` binding source SHA + Cargo.lock + per-ABI SHA-256 + JNI fingerprint); two-clean-build reproducibility PASS; committed `.so` bypass removed (`android/src/main/jniLibs/` git-ignored); Gradle consumes produced artifacts byte-identically (`keepDebugSymbols`, `verifyNativeArtifacts`, pinned ABI filters); `tools/security/validate_apk_contents.py` v2 binds packaged `.so` hashes to the manifest (debug + release PASS); CI `instrumented-arm64`/`instrumented-x86_64` run `connectedDebugAndroidTest` on the manifest-bound artifact; B-017-Lite gates (cargo audit 0/110, secret scan, lint abortOnError, wrapper validation); `tools/audit/validate_b021_verification_matrix.py` + `docs/security/remediation/msc_state.jsonl` (MSC-038 fail-closed); `tools/audit/validate_s1_build_provenance.py` umbrella gate; `tools/audit/test_s1_build_provenance.py` 66 adversarial tests PASS.
+- Runtime evidence: `connectedDebugAndroidTest` on `anox_api34_arm64` (API 34, arm64-v8a) — 66/66 instrumented tests PASS on the produced artifact (PROVENANCE_VERIFIED_NATIVE_RUNTIME). x86_64 `RUNTIME_ENVIRONMENT_UNAVAILABLE` locally; CI path present.
+- MSC stage outcomes: `MSC-UNIT-001` IMPLEMENTED + AUTOMATED_TESTED + RUNTIME_TESTED(arm64, provenance-bound); `MSC-UNIT-002` same; `MSC-UNIT-003`/`MSC-UNIT-038` IMPLEMENTED + AUTOMATED_TESTED. `INDEPENDENTLY_RETESTED`+ stages pending; **0 units CLOSED**; 42 open MSC units.
+- `S1_SHARED_VALIDATOR_FOLLOWUP_REQUIRED` recorded: `tools/audit/validate_security_audit_evidence_preservation.py` is era-pinned to `ANOX-EVENT-0052` and read-only for S1; S1-era extension required post-integration (S0 `_s0_delivery_active` pattern).
+- No `crypto/rust/src` behavior diff; no B-004/B-005 work; no S0 merge/rebase/fetch; remote mutation NONE.
+- Next: human merge to `main`, then `INDEPENDENT BUILD/SUPPLY RETEST OF S1` on a fresh post-merge `main` SHA.

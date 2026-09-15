@@ -1,4 +1,13 @@
 
+## 2026-09-15 REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001 native build provenance + evidence gates
+
+- Task: `ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001`
+- Substantive commit: `fc58414b6790c07f65d1dc9f72c019abd42efc86`
+- Canonical base: `0f932520393feee6d479cc099f179f5766323125`
+- Result: `Ready For Remote`; MSC-UNIT-001/002/003/038 `IMPLEMENTED+AUTOMATED_TESTED` (MSC-001/002 additionally `RUNTIME_TESTED` arm64, provenance-bound); `INDEPENDENTLY_RETESTED` pending; 0 units closed.
+- Key files: `crypto/rust/rust-toolchain.toml`, `tools/security/native_build.py`, `tools/security/validate_apk_contents.py`, `tools/security/secret_scan.py`, `tools/security/validate_ci_pipeline.py`, `tools/audit/validate_b021_verification_matrix.py`, `tools/audit/validate_s1_build_provenance.py`, `tools/audit/test_s1_build_provenance.py`, `docs/security/remediation/msc_state.jsonl`, `docs/security/remediation/S1_TASK_REPORT.md`, `docs/security/remediation/S1_PROVENANCE_VERIFIED_NATIVE_RUNTIME.md`, `android/build.gradle.kts`, `.github/workflows/ci.yml`, `.gitignore`, `docs/current/REPOSITORY_SECURITY_POLICY.md`.
+- Invariants preserved: no `crypto/rust/src` diff; committed `.so` bypass removed and blocked; no MSC unit closed; 42 open MSC units; B-004/B-005 `NOT_STARTED`; product `BLOCKED_PENDING_FINAL_AUDIT`; shared preservation validator untouched (`S1_SHARED_VALIDATOR_FOLLOWUP_REQUIRED`); no remote mutation.
+
 ## 2026-09-07 WORKFORCE-FIX-02 archive effective-state rendering
 
 - Task: `ANOX-TASK-WORKFORCEFIX02`
