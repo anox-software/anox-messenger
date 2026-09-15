@@ -1,8 +1,9 @@
 # CURRENT_IMPLEMENTATION_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0052`
+**Event:** `ANOX-EVENT-0053`
 
-- `ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001` — Ready For Remote (substantive `30fe6e9afa70`).
+- `ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` — Ready For Remote (corrected substantive `8756a94824ba`; `REMEDIATION_SESSION_S0` contract freeze; `CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST` — F-01 `HUMAN_RATIFIED`, F-02…F-10 `FIXED_PENDING_TARGETED_RETEST` after `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` = `PASS_WITH_FINDINGS`).
+- `ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001` — Merged (prior event).
 - `ANOX-TASK-SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001` — Merged (prior event).
 - `ANOX-TASK-MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001` — Merged (prior event).
 - `ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-005` — Merged (prior event).
@@ -15,5 +16,6 @@
 - `B-005 DB/RLS` — `NOT_STARTED`.
 - `ANOX-AUDIT-SECURITY-ARCH-001` — `COMPLETE_WITH_FINDINGS` (10 canonical findings Open; 001..004 B-004 blockers).
 - Security Hardening wave preserved: `AUDIT-SECURITY-CODEBASE-001`/`002` PASS_WITH_FINDINGS; `CODEBASE-SECURITY-CONSENSUS-001` PASS (18 roots; Pre-B004 = 12); `AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001` PASS_WITH_FINDINGS (BUILDSC-001 EVIDENCE_INTEGRITY=CRITICAL); `AUDIT-SECURITY-CRYPTO-JNI-001` PASS_WITH_FINDINGS (6 candidates; JNI ABI revision required; `PRE_B004_CRYPTOJNI` = 8 members); `AUDIT-SECURITY-AUTH-DPOP-001` PASS_WITH_FINDINGS (3 candidates + 3 gaps; `PRE_B004_AUTHDPOP` = 8 members; `COMPONENT_INTERNAL_REDESIGN_ONLY`; SEC-C not required); `AUDIT-SECURITY-ANDROID-STORAGE-001` PASS_WITH_FINDINGS (2 candidates + 3 gaps; `PRE_B004_ANDROIDSTORAGE` = 9 members; `COMPONENT_INTERNAL_REDESIGN_ONLY`; SEC-C not required); `AUDIT-SECURITY-ATTACKCHAIN-001` PASS_WITH_FINDINGS (15 `ANOX-ATTACKCHAIN-CANDIDATE-001..015`, 0C/4H/7M/3L/1I — AC-003 conditional-critical overlay only; 68 items, UNMAPPED=0; `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C not required); `MASTER-SPECIALIST-CONSOLIDATION-001` PASS_WITH_CONSOLIDATION_FINDINGS (90/90 source items; 44 `MSC_UNIT_001..044` = 42 OPEN + 2 REJECTED; `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C not required; `REMEDIATION_SESSION_S0..S10` provisional); `SECURITY-REMEDIATION-COVERAGE-GATE-001` PASS (42/42 open units covered; 0 uncovered/unknown; cycles 0; collisions 0; FCP 8/8; false-closure A–F blocked; SC/CC 14/14; `PHYSICAL_P1..P17` assigned/NOT_EXECUTED; retest 42/42; DoD unowned 0; `HUMAN_DECISION_H1/H2/H3/R1` pending in the preserved gate record — coverage proof only); `HUMAN-PRE-REMEDIATION-DECISIONS-001` DECIDED — REMEDIATION_WAVE_1_AUTHORIZED (H1/H2/H3/R1 decided by Human Product & Security Owner, 0 auto-accepted; `SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER` for first wave `S0 ∥ S1`; `ROOT-013` canonical `MEDIUM` OPEN; `ANOX-SECURITY-ARCH-010` Open/INFO `RETIRE_AT_B004_START`; 10 SHA/event-pinned one-shot validators retired from active acceptance with evidence preserved).
-- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; security remediation `NOT_STARTED`.
-- Next gate `SECURITY_REMEDIATION_WAVE_1` (`REMEDIATION_SESSION_S0 ∥ REMEDIATION_SESSION_S1`) — Candidate / NOT_EXECUTED.
+- `REMEDIATION_SESSION_S0` contract freeze: `B025_MANDATORY_AMENDMENTS_V1_4.md` (`S0-CONTRACT-FREEZE v1`, 124 clauses; 11 primary units MSC-018c/020c/025/026/027c/028/032/033/034/040/042 + one supporting MSC-022 contract entry; SC 14/14, CC 14/14, S1–S18; ambiguities 0; dangling internal references 0); `validate_s0_contract_freeze.py` PASS; 98 adversarial tests; central evidence suite 253 tests; 0 MSC units closed (42 open); targeted independent retest of F-01…F-10 pending.
+- Product remains `BLOCKED_PENDING_FINAL_AUDIT`; security remediation `IN_PROGRESS` (S0 corrected pending targeted independent retest; S1 authorized/not executed; B-004/B-005 `NOT_STARTED`).
+- Next gate: targeted independent retest of F-01…F-10 on corrected S0 head → preserve S0 evidence → merge; `SECURITY_REMEDIATION_WAVE_1` wave completion remains Candidate.

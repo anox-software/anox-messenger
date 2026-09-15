@@ -1,7 +1,7 @@
 # PROJECT_STATE — anoX Messenger V1
 
 **Date:** 2026-09-14
-**Latest material event:** `ANOX-EVENT-0052` — HUMAN-PRE-REMEDIATION-DECISIONS-001: Human Product & Security Owner decided H1/H2/H3/R1 (0 auto-accepted) and granted SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER for first wave REMEDIATION_SESSION_S0 ∥ S1; security remediation NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; next state SECURITY_REMEDIATION_WAVE_1.
+**Latest material event:** `ANOX-EVENT-0053` — REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001: REMEDIATION_SESSION_S0 executed — all Pre-B004 cross-component security contracts frozen in `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0-CONTRACT-FREEZE v1); S0-owned validator PASS + 98 adversarial tests; unmerged delivery corrected in place after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS (F-01 HUMAN_RATIFIED via ANOX-DECISION-S0-F01-RATIFICATION-001; F-02…F-10 FIXED_PENDING_TARGETED_RETEST); security remediation IN_PROGRESS; S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 authorized/not executed; 0 MSC units closed (42 open); B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT.
 **Memory schema:** M2B-v1
 
 <!-- ANOX_EVENT: ANOX-EVENT-0021 -->
@@ -36,30 +36,33 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0050 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0051 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0052 -->
+<!-- ANOX_EVENT: ANOX-EVENT-0053 -->
 
 ## Repository truth
 
-- Branch: `governance/human-pre-remediation-decisions-001`
-- **Current HEAD:** `30fe6e9afa7033ee94c31f79d8cc1774716ee386` (HUMAN-PRE-REMEDIATION-DECISIONS-001 SUBSTANTIVE)
+- Branch: `security/remediation-s0-contract-freeze-001`
+- **Current HEAD:** `8756a94824ba9baef678176ef2ee24a2c302f1d0` (REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 SUBSTANTIVE — corrected; supersedes `d9c7872d0c89…`)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
 - **Merged baseline branch:** `main`
-- **Latest merge to baseline:** `9e585468d081272398e022f12e76e7500d55cbee` (SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 merge)
-- **Previous baseline HEAD:** `610ed08337536857db73259168498c49b786caa1`
+- **Latest merge to baseline:** `0f932520393feee6d479cc099f179f5766323125` (HUMAN-PRE-REMEDIATION-DECISIONS-001 merge)
+- **Previous baseline HEAD:** `9e585468d081272398e022f12e76e7500d55cbee`
 - **Foundation baseline tag:** `v1-foundation-baseline` → `7db20fa4df8dc70392afd803fabaaf20c0b50d7d`
 - **CONTINUITY-001:** ACCEPTED
-- **Current effective gate:** `HUMAN-PRE-REMEDIATION-DECISIONS-001 — RECORD HUMAN PRE-REMEDIATION DECISIONS AND REMEDIATION AUTHORIZATION (Ready For Remote; awaiting human merge)`
-- **Current authorized task:** `ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001` (Ready For Remote; awaits human merge)
+- **Current effective gate:** `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 — FREEZE PRE-B004 SECURITY CONTRACTS (Ready For Remote; corrected after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS; awaiting targeted independent retest of F-01…F-10, S0 evidence preservation and human merge)`
+- **Current authorized task:** `ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (Ready For Remote; REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST)
 - **Open blockers:** 5 canonical Product findings remain (013, 018, 030, INTEGRATION-005, B003-001) + `ANOX-MAINARCH-018` physical verification + milestone Security Architecture review (003, 007, 024) + Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance. Workforce findings 001/002/005 are Closed; 10 ANOX-SECURITY-ARCH-* findings frozen; B-004 blocking set = 001..004. Security Hardening wave evidence preserved: 18 consensus roots (12 Pre-B004), `ANOX-BUILDSC-CANDIDATE-001` EVIDENCE_INTEGRITY=CRITICAL, `ANOX-CRYPTOJNI-CANDIDATE-001..006` + `PRE_B004_CRYPTOJNI` (8 members), `ANOX-AUTHDPOP-CANDIDATE-001..003` + `ANOX-AUTHDPOP-GAP-001..003` + `PRE_B004_AUTHDPOP` (8 members), `ANOX-ANDROIDSTORAGE-CANDIDATE-001..002` + `ANOX-ANDROIDSTORAGE-GAP-001..003` + `PRE_B004_ANDROIDSTORAGE` (9 members), `ANOX-ATTACKCHAIN-CANDIDATE-001..015` + `PRE_B004_ATTACKCHAIN_CODE`/`CONTRACT` + `B004_IMPLEMENTATION_REQUIREMENTS` + `LATER_GATE_ATTACKCHAINS` gate sets.
-- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-AUTH-DPOP-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ANDROID-STORAGE-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ATTACKCHAIN-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `MASTER-SPECIALIST-CONSOLIDATION-001` EXECUTED + PRESERVED (PASS_WITH_CONSOLIDATION_FINDINGS; 90/90 source items, 44 MSC units = 42 OPEN + 2 REJECTED); `SECURITY-REMEDIATION-COVERAGE-GATE-001` EXECUTED + PRESERVED (PASS — 42/42 open units covered; coverage proof only, NOT remediation authorization); `HUMAN-PRE-REMEDIATION-DECISIONS-001` EXECUTED + PRESERVED (H1/H2/H3/R1 decided by Human Product & Security Owner; remediation authorized for first wave S0 ∥ S1 — NOT_STARTED).
-- **Next candidate task:** `SECURITY_REMEDIATION_WAVE_1` (`REMEDIATION_SESSION_S0 ∥ REMEDIATION_SESSION_S1` — authorized by HUMAN-PRE-REMEDIATION-DECISIONS-001; start only with its own authorized task on a fresh post-merge `main` SHA).
+- **Previously completed:** `MAINARCH-FIX-01` + `MAINARCH-RETEST-01` (17 findings Closed); `MAINARCH-FIX-02` + `MAINARCH-RETEST-02` (8 findings Closed); `MAINARCH-FIX-03` + `MAINARCH-RETEST-03` (5 findings Closed); **MAIN ARCHITECTURE AUDIT + REMEDIATION PHASE COMPLETE**; **LEGACY AUDIT SET 6/6 COMPLETE**; `LEGACY-FIX-01` + `LEGACY-RETEST-01` COMPLETE (8 findings Closed); `AUDIT-WORKFORCE-ARCHITECTURE` COMPLETE WITH FINDINGS; `WORKFORCE-FIX-01` merged to `main` at `8385f401...`; `WORKFORCE-RETEST-01` FAIL recorded; `WORKFORCE-FIX-02` remediated to Ready For Retest; `WORKFORCE-TEST-HARNESS-FIX-01` test fixture repair complete; `WORKFORCE-HARNESS-RECHECK-01` FAIL recorded; `AUDIT-SECURITY-CRYPTO-JNI-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-AUTH-DPOP-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ANDROID-STORAGE-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `AUDIT-SECURITY-ATTACKCHAIN-001` specialist audit EXECUTED + PRESERVED (PASS_WITH_FINDINGS); `MASTER-SPECIALIST-CONSOLIDATION-001` EXECUTED + PRESERVED (PASS_WITH_CONSOLIDATION_FINDINGS; 90/90 source items, 44 MSC units = 42 OPEN + 2 REJECTED); `SECURITY-REMEDIATION-COVERAGE-GATE-001` EXECUTED + PRESERVED (PASS — 42/42 open units covered; coverage proof only, NOT remediation authorization); `HUMAN-PRE-REMEDIATION-DECISIONS-001` EXECUTED + PRESERVED (H1/H2/H3/R1 decided by Human Product & Security Owner; remediation authorized for first wave S0 ∥ S1); **`REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (REMEDIATION_SESSION_S0) IMPLEMENTED — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`, validator PASS, 98 adversarial tests; unmerged delivery corrected in place by `REMEDIATION-SESSION-S0-CORRECTION-001` after `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` = `PASS_WITH_FINDINGS` (F-01 `HUMAN_RATIFIED`; F-02…F-10 `FIXED_PENDING_TARGETED_RETEST`); pending targeted independent retest + evidence preservation (0 MSC units closed).**
+- **Security remediation:** `IN_PROGRESS` — `REMEDIATION_SESSION_S0 = CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST` (substantive `8756a94824ba`); `REMEDIATION_SESSION_S1` authorized / `NOT_EXECUTED`; `S2`/`S3`/`S4` `NOT_STARTED`.
+- **Next candidate task:** `TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE/FREEZE S0 REMEDIATION EVIDENCE → MERGE` (targeted retest of the corrected contracts + governance in `B025_MANDATORY_AMENDMENTS_V1_4.md`; implementer ≠ retester); `REMEDIATION_SESSION_S1` may run in parallel on its own authorized task. Dependent S3/S4 blocked until the S0 retest/evidence gate passes.
 - **Product status:** `BLOCKED_PENDING_FINAL_AUDIT`; no product/CI changes until all final/legacy/retest conditions are complete and the human final gate is recorded.
 
 ## Architecture / governance
 
 - B-001…B-023: frozen/defined.
 - B-025 V1.3: FROZEN (traceability / test-matrix / release-governance / implementation-readiness).
+- B-025 V1.4: FROZEN — Pre-B004 Security Contract Freeze (`S0-CONTRACT-FREEZE v1`; REMEDIATION_SESSION_S0; B-002 v1.2-f04, B-003 v1.6, B-004 v1.2-f04, B-005 v1.12-f04 = DB-SCHEMA-V1-FROZEN single authority home, B-006 v1.4-f04, B-007 v2.1-f04, B-009 v1.5-f04, B-013 v1.4-f04); machine index `docs/authority/contracts/S0_CONTRACT_FREEZE_MANIFEST.json`; validator `tools/audit/validate_s0_contract_freeze.py`. Architecture frozen ≠ implemented: B-004/B-005 remain NOT_STARTED.
 - B-024 Final MAIN Consistency Audit: PASS.
 - B-025 New-Chat Handoff: COMPLETE.
 - B-026 Continuous Development Governance: FROZEN.
@@ -166,3 +169,15 @@ Closed by `LEGACY-FIX-01` + `LEGACY-RETEST-01` (verified PASS — REMEDIATED):
 - Product remains `BLOCKED_PENDING_FINAL_AUDIT`; B-004/B-005 `NOT_STARTED`; security remediation `NOT_STARTED` (PASS does NOT authorize remediation); next gate `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` Candidate / `NOT_EXECUTED`.
 - No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no finding or MSC unit remediated, closed, re-severitied, merged, or reinterpreted; no remediation session executed; physical campaign NOT_EXECUTED; no human decision accepted; no audit re-run.
 - Next: human merge to `main`, then `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION` (H1/H2/H3/R1 + explicit authorization) on a fresh post-merge `main` SHA.
+
+---
+
+## ANOX-EVENT-0053 — REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 (2026-09-14)
+
+- Branch: `security/remediation-s0-contract-freeze-001`
+- Substantive commit: `8756a94824ba9baef678176ef2ee24a2c302f1d0` (corrected; supersedes unmerged `d9c7872d0c895573e220a4c9e0572d10f847bf04`)
+- Canonical base SHA: `0f932520393feee6d479cc099f179f5766323125`
+- Task: `ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`, role `ARCHITECTURE_FREEZE`); correction pass `REMEDIATION-SESSION-S0-CORRECTION-001` (in-place rewrite of the unmerged delivery)
+- Result: `Ready For Remote` — `CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST` (`INDEPENDENT-ARCHITECTURE-RETEST-S0-001` = `PASS_WITH_FINDINGS`; F-01 `HUMAN_RATIFIED` — `ANOX-DECISION-S0-F01-RATIFICATION-001`; F-02…F-10 `FIXED_PENDING_TARGETED_RETEST`)
+- Summary: first authorized security remediation session executed. `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` freezes MSC-040 (schema authority single source of truth; `docs/current` schema docs defer — ARCH-004), MSC-028 (S1/S2/S3/S16 device/JKT/account binding), MSC-026 (S4/S7/S8/S10/S11/S12/S17 verifier), HTU raw-path rule, MSC-025 (S9 nonce required), MSC-027 (S5 typed `RegistrationPoP v1`), MSC-033 (marker/first-run fail-closed), MSC-018 (`RejectedAfterArm` + reset order), MSC-032 (wipe matrix, S18), MSC-034 (backup/restore/reinstall; S15 carrier), MSC-020 (publication epoch, S15), MSC-042 (no remote attestation in V1; self-report informational). SC 14/14 one home each (ambiguous 0, contradictory 0); CC 14/14 authority-indexed owner; SERVER_BREAKER 18/18; `CANONICAL CONTRACT AMBIGUITIES = 0`; `DANGLING_INTERNAL_REFERENCES = 0`. `validate_s0_contract_freeze.py` PASS; `test_s0_contract_freeze` 98 tests (53 original + 45 correction mutations, all fail-closed). Evidence-preservation validator (`PROTECTED_SHARED_GOVERNANCE_FILE`, Human-ratified S0 exception) additively accepts this successor event (253 tests). `CLOSED_BY_S0 = 0`; 42 MSC units open. `ROOT-013` MEDIUM/OPEN, `ROOT-016` REJECTED, `ARCH-010` OPEN/INFO `RETIRE_AT_B004_START` unchanged. B-004/B-005 `NOT_STARTED`; backend `NOT_IMPLEMENTED`; S1 authorized/not executed; remote mutation `NONE`.
+- Next: targeted independent retest of F-01…F-10 on corrected S0 head → preserve/freeze S0 remediation evidence (audit-evidence registry, MSC stage records) → human merge; S1 in parallel; S3/S4 only after the S0 gate.

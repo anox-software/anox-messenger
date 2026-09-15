@@ -2,24 +2,24 @@
   "schema_version": "B027C-v1.1",
   "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
   "canonical_branch": "main",
-  "delivery_branch": "governance/human-pre-remediation-decisions-001",
-  "described_head": "30fe6e9afa7033ee94c31f79d8cc1774716ee386",
-  "current_gate": "HUMAN-PRE-REMEDIATION-DECISIONS-001 — RECORD HUMAN PRE-REMEDIATION DECISIONS AND REMEDIATION AUTHORIZATION (Ready For Remote; awaiting human merge)",
+  "delivery_branch": "security/remediation-s0-contract-freeze-001",
+  "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
+  "current_gate": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 — FREEZE PRE-B004 SECURITY CONTRACTS (Ready For Remote; corrected after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS; awaiting targeted independent retest of F-01…F-10, S0 evidence preservation and human merge)",
   "active_roles": [
     "ROLE-003",
     "ROLE-009"
   ],
   "blocked_tasks": [],
   "authorized_tasks": [
-    "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001"
+    "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
   ],
   "current_writer": {
-    "task_id": "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001",
+    "task_id": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
     "role_id": "ROLE-009",
-    "branch": "governance/human-pre-remediation-decisions-001"
+    "branch": "security/remediation-s0-contract-freeze-001"
   },
   "pending_human_remote_actions": [],
-  "latest_decision_id": "ANOX-DECISION-HUMANPREREMEDIATION001",
+  "latest_decision_id": "ANOX-DECISION-S0-F01-RATIFICATION-001",
   "latest_finding_id": "ANOX-SECURITY-ARCH-010",
   "latest_run_id": "ANOX-RUN-SECARCHFREEZE0001",
   "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
@@ -70,26 +70,27 @@
     "legacy_audit_set_status": "6/6 COMPLETE",
     "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
     "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
-    "class_a_foundation_blockers": "CLOSED"
+    "class_a_foundation_blockers": "CLOSED",
+    "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST (F-01 HUMAN_RATIFIED; F-02…F-10 FIXED_PENDING_TARGETED_RETEST); S1 authorized/NOT_EXECUTED"
   },
   "pre_merge_state": {
-    "described_head": "30fe6e9afa7033ee94c31f79d8cc1774716ee386",
-    "current_gate": "HUMAN-PRE-REMEDIATION-DECISIONS-001 — RECORD HUMAN PRE-REMEDIATION DECISIONS AND REMEDIATION AUTHORIZATION (Ready For Remote; awaiting human merge)",
+    "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
+    "current_gate": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 — FREEZE PRE-B004 SECURITY CONTRACTS (Ready For Remote; corrected after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS; awaiting targeted independent retest of F-01…F-10, S0 evidence preservation and human merge)",
     "current_writer": {
-      "task_id": "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001",
+      "task_id": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
       "role_id": "ROLE-009",
-      "branch": "governance/human-pre-remediation-decisions-001"
+      "branch": "security/remediation-s0-contract-freeze-001"
     },
     "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-    "current_task": "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001",
-    "active_task": "ANOX-TASK-HUMAN-PRE-REMEDIATION-DECISIONS-001"
+    "current_task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+    "active_task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
   },
   "post_merge_state": {
-    "described_head": "30fe6e9afa7033ee94c31f79d8cc1774716ee386",
-    "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 ∥ REMEDIATION_SESSION_S1 (Candidate; authorized by HUMAN-PRE-REMEDIATION-DECISIONS-001 — remediation NOT_STARTED)",
+    "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
+    "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST ∥ REMEDIATION_SESSION_S1 authorized / NOT_EXECUTED (wave-completion Candidate; security remediation IN_PROGRESS; next: TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE/FREEZE S0 REMEDIATION EVIDENCE → MERGE)",
     "current_writer": null,
     "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-    "current_task": "HUMAN-PRE-REMEDIATION-DECISIONS-001 sealed — remediation authorized for first wave REMEDIATION_SESSION_S0 ∥ S1 (NOT_STARTED; requires fresh post-merge main SHA)",
+    "current_task": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 sealed — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; next TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE S0 EVIDENCE → MERGE; S1 authorized/not executed",
     "active_task": null
   },
   "previous_merges": [
@@ -325,7 +326,8 @@
     "2026-09-13: ANOX-EVENT-0049 SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 at base e54584903a35. AUDIT-SECURITY-ATTACKCHAIN-001 executed PASS_WITH_FINDINGS (15 ANOX-ATTACKCHAIN candidates 0C/4H/7M/3L/1I — AC-003 conditional-critical overlay only; E2=8/E1=6/E0=1; 68 items UNMAPPED=0; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a4feac55); registry 9/9 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate MASTER-SPECIALIST-CONSOLIDATION = Candidate/NOT_EXECUTED; remote mutation NONE.",
     "2026-09-14: ANOX-EVENT-0050 MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 at base 1eb773069d81. MASTER-SPECIALIST-CONSOLIDATION-001 executed PASS_WITH_CONSOLIDATION_FINDINGS (90/90 source items accounted; 44 MSC units = 42 OPEN + 2 REJECTED; severity 0C/7H/16M/6L/4I-META/9CONTRACT; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a22c7798); registry 10/10 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED; next gate SECURITY-REMEDIATION-COVERAGE-GATE = Candidate/NOT_EXECUTED; remote mutation NONE.",
     "2026-09-14: ANOX-EVENT-0051 SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 at base 610ed0833753. SECURITY-REMEDIATION-COVERAGE-GATE-001 executed PASS (42/42 OPEN MSC units covered, 0 uncovered, 0 unknown, dependency cycles 0, parallel-writer collisions 0; FCP_1..8 enforced; false-closure A-F blocked; SC/CC 14/14; PHYSICAL_P1..P17 assigned 17/17 executed 0; retest owners 42/42; DoD unowned 0; H1/H2/H3/R1 pending) and preserved byte-exact (SHA-256 175aa756, 33527 bytes); registry 11/11 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED (PASS does NOT authorize remediation); next state HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION PENDING; remote mutation NONE.",
-    "2026-09-14: ANOX-EVENT-0052 HUMAN-PRE-REMEDIATION-DECISIONS-001 at base 9e585468d081. H1/H2/H3/R1 decided by Human Product & Security Owner (0 auto-accepted); SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER for wave S0 ∥ S1 only; security remediation NOT_STARTED; B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; 42 open MSC units unchanged (0 fixed); remote mutation NONE."
+    "2026-09-14: ANOX-EVENT-0052 HUMAN-PRE-REMEDIATION-DECISIONS-001 at base 9e585468d081. H1/H2/H3/R1 decided by Human Product & Security Owner (0 auto-accepted); SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER for wave S0 ∥ S1 only; security remediation NOT_STARTED; B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; 42 open MSC units unchanged (0 fixed); remote mutation NONE.",
+    "2026-09-14: ANOX-EVENT-0053 REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 at base 0f932520393f. REMEDIATION_SESSION_S0 contract freeze implemented in B025_MANDATORY_AMENDMENTS_V1_4.md (11 primary contract units FROZEN_IN_AUTHORITY / CONTRACT_VALIDATOR_PASS + 1 supporting MSC-022 entry; SC 14/14, CC 14/14, S1-S18; ambiguities 0; 98 adversarial tests); corrected in place by REMEDIATION-SESSION-S0-CORRECTION-001 after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS (F-01 HUMAN_RATIFIED via ANOX-DECISION-S0-F01-RATIFICATION-001; F-02..F-10 FIXED_PENDING_TARGETED_RETEST; old substantive d9c7872d0c89 superseded by 8756a94824ba); security remediation IN_PROGRESS; S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 authorized/not executed; 0 MSC units closed (42 open); B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE."
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
@@ -334,5 +336,5 @@
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
   "legacy_audit_set_status": "6/6 COMPLETE",
   "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
-  "last_sync": "ANOX-EVENT-0052"
+  "last_sync": "ANOX-EVENT-0053"
 }
