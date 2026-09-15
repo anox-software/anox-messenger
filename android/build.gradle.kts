@@ -15,6 +15,10 @@ android {
         versionCode = 1
         versionName = "1.0.0"
         ndkVersion = "26.2.11394342"
+        ndk {
+            // Exactly the frozen ABI set — no accidental extra unreviewed ABI.
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
+        }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -45,8 +49,19 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            // MSC-UNIT-001: the packaged .so must be byte-identical to the
+            // artifact produced by the authoritative build path, so AGP must
+            // not re-strip at package time (hash binding is verified against
+            // build/native/native-manifest.json).
+            keepDebugSymbols += "**/*.so"
+        }
     }
-    
+
+    lint {
+        abortOnError = true
+    }
+
     sourceSets {
         getByName("main") {
             java {
@@ -54,7 +69,8 @@ android {
                 srcDir("../crypto/android/src/main/java")
             }
             jniLibs {
-                srcDir("src/main/jniLibs")
+                // Authoritative build output only — see tools/security/native_build.py.
+                srcDir("$rootDir/build/native/jniLibs")
             }
         }
         getByName("test") {
@@ -68,10 +84,48 @@ android {
                 srcDir("../crypto/android/src/androidTest/java")
             }
             jniLibs {
-                srcDir("src/main/jniLibs")
+                srcDir("$rootDir/build/native/jniLibs")
             }
         }
     }
+}
+
+// MSC-UNIT-001 (REMEDIATION_SESSION_S1): fail-closed gate. The APK may only
+// consume the native library produced by the authoritative build path
+// (tools/security/native_build.py). Committed or hand-built .so files under
+// android/src/main/jniLibs are a prohibited bypass.
+val nativeArtifactsDir = rootDir.resolve("build/native/jniLibs")
+val committedJniLibsDir = file("src/main/jniLibs")
+
+val verifyNativeArtifacts by tasks.registering {
+    description =
+        "Fail-closed gate: packaged native artifacts must come from the authoritative build path."
+    group = "verification"
+    doLast {
+        val committed = committedJniLibsDir.walkTopDown()
+            .filter { it.isFile && it.extension == "so" }
+            .toList()
+        if (committed.isNotEmpty()) {
+            throw GradleException(
+                "Committed native binaries are prohibited (MSC-UNIT-001): " +
+                    committed.joinToString(", ") { it.path } +
+                    " — build via tools/security/native_build.py instead."
+            )
+        }
+        for (abi in listOf("arm64-v8a", "x86_64")) {
+            val so = nativeArtifactsDir.resolve("$abi/libanox_crypto.so")
+            if (!so.isFile) {
+                throw GradleException(
+                    "Missing authoritative native artifact: $so — " +
+                        "run: python3 tools/security/native_build.py build"
+                )
+            }
+        }
+    }
+}
+
+tasks.matching { it.name.startsWith("package") }.configureEach {
+    dependsOn(verifyNativeArtifacts)
 }
 
 dependencies {

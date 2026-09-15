@@ -1,0 +1,15 @@
+# Pinned Rust toolchain for the anox_crypto native library.
+#
+# This file is the repository-controlled toolchain authority for the
+# authoritative native build path (MSC-UNIT-001 / REMEDIATION_SESSION_S1).
+# CI asserts that the active toolchain is exactly this channel before any
+# Android cross-build is allowed to produce artifacts; see
+# tools/security/native_build.py (check-toolchain) and
+# tools/audit/validate_s1_build_provenance.py.
+#
+# Do not change without an authorized task: the channel, targets and
+# components below are part of the frozen build-provenance contract.
+
+[toolchain]
+channel = "1.97.1"
+targets = ["aarch64-linux-android", "x86_64-linux-android"]
