@@ -1,0 +1,1120 @@
+{
+  "schema_version": "S0-CONTRACT-FREEZE-1",
+  "contract_version": "S0-CONTRACT-FREEZE v1",
+  "task_id": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+  "session": "REMEDIATION_SESSION_S0",
+  "base_sha": "0f932520393feee6d479cc099f179f5766323125",
+  "authority_document": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md",
+  "authority_index": "docs/authority/AUTHORITY_INDEX.md",
+  "freeze_registry": "docs/authority/B_FREEZE_REGISTRY.md",
+  "schema_authority_home_marker": "SCHEMA-AUTHORITY-HOME: DB-SCHEMA-V1-FROZEN",
+  "schema_deference_marker": "DEFERS-TO: DB-SCHEMA-V1-FROZEN",
+  "schema_deferring_documents": [
+    "docs/current/DATABASE_ARCHITECTURE.md",
+    "docs/current/BACKEND_ARCHITECTURE.md"
+  ],
+  "freeze_registry_rows_referencing_v1_4": [
+    "B-002",
+    "B-003",
+    "B-004",
+    "B-005",
+    "B-006",
+    "B-007",
+    "B-009",
+    "B-013"
+  ],
+  "framework_clauses": [
+    "S0-000-01",
+    "S0-000-02",
+    "S0-000-03",
+    "S0-000-04",
+    "S0-000-05",
+    "S0-000-06",
+    "S0-000-07",
+    "S0-000-08",
+    "S0-000-09",
+    "S0-000-10",
+    "S0-000-11",
+    "S0-000-12",
+    "S0-000-13",
+    "S0-000-14",
+    "S0-000-15"
+  ],
+  "contracts": [
+    {
+      "contract_id": "S0-040",
+      "msc_unit": "MSC_UNIT_040",
+      "title": "Schema authority single source of truth",
+      "heading": "## 1. B-005 — Schema authority single source of truth",
+      "clauses": [
+        "S0-040-01",
+        "S0-040-02",
+        "S0-040-03",
+        "S0-040-04",
+        "S0-040-05",
+        "S0-040-06"
+      ],
+      "server_breakers": [],
+      "chains": [
+        "AC-001"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-028",
+      "msc_unit": "MSC_UNIT_028",
+      "title": "Device / JKT / account binding invariants",
+      "heading": "## 2. Device / JKT / account binding invariants",
+      "clauses": [
+        "S0-028-01",
+        "S0-028-02",
+        "S0-028-03",
+        "S0-028-04",
+        "S0-028-05",
+        "S0-028-06",
+        "S0-028-07",
+        "S0-028-08",
+        "S0-028-09",
+        "S0-028-10",
+        "S0-028-11",
+        "S0-028-12"
+      ],
+      "server_breakers": [
+        "S1",
+        "S2",
+        "S3",
+        "S16"
+      ],
+      "chains": [
+        "AC-001",
+        "AC-008",
+        "AC-010",
+        "AC-014"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-026",
+      "msc_unit": "MSC_UNIT_026",
+      "title": "Server DPoP / registration verifier contract",
+      "heading": "## 3. Server DPoP / registration verifier contract",
+      "clauses": [
+        "S0-026-01",
+        "S0-026-02",
+        "S0-026-03",
+        "S0-026-04",
+        "S0-026-05",
+        "S0-026-06",
+        "S0-026-07",
+        "S0-026-08",
+        "S0-026-09",
+        "S0-026-10",
+        "S0-026-11",
+        "S0-026-12",
+        "S0-026-13",
+        "S0-026-14",
+        "S0-026-15",
+        "S0-026-16",
+        "S0-026-17",
+        "S0-026-18"
+      ],
+      "server_breakers": [
+        "S4",
+        "S7",
+        "S8",
+        "S10",
+        "S11",
+        "S12",
+        "S17"
+      ],
+      "chains": [
+        "AC-002",
+        "AC-003",
+        "AC-004",
+        "AC-009",
+        "AC-010",
+        "AC-014"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-022",
+      "msc_unit": "MSC_UNIT_022",
+      "title": "HTU / HTM canonicalization",
+      "heading": "## 4. HTU / HTM canonicalization",
+      "clauses": [
+        "S0-022-01",
+        "S0-022-02",
+        "S0-022-03",
+        "S0-022-04",
+        "S0-022-05",
+        "S0-022-06"
+      ],
+      "server_breakers": [
+        "S12"
+      ],
+      "chains": [
+        "AC-002"
+      ],
+      "s0_role": "SUPPORTING_CONTRACT_ENTRY",
+      "supports": [
+        "MSC_UNIT_026"
+      ],
+      "supporting_reason": "HTU/HTM canonicalization is required by MSC-026 / SERVER_BREAKER_S12; primary remediation ownership of MSC-UNIT-022 (code) stays with session S4 and is not advanced by S0."
+    },
+    {
+      "contract_id": "S0-025",
+      "msc_unit": "MSC_UNIT_025",
+      "title": "DPoP nonce lifecycle",
+      "heading": "## 5. DPoP nonce lifecycle",
+      "clauses": [
+        "S0-025-01",
+        "S0-025-02",
+        "S0-025-03",
+        "S0-025-04",
+        "S0-025-05",
+        "S0-025-06",
+        "S0-025-07",
+        "S0-025-08"
+      ],
+      "server_breakers": [
+        "S9"
+      ],
+      "chains": [
+        "AC-003",
+        "AC-004",
+        "AC-010"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-027",
+      "msc_unit": "MSC_UNIT_027",
+      "title": "Registration proof-of-possession",
+      "heading": "## 6. Registration proof-of-possession",
+      "clauses": [
+        "S0-027-01",
+        "S0-027-02",
+        "S0-027-03",
+        "S0-027-04",
+        "S0-027-05",
+        "S0-027-06",
+        "S0-027-07",
+        "S0-027-08"
+      ],
+      "server_breakers": [
+        "S5"
+      ],
+      "chains": [
+        "AC-010",
+        "AC-009"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-033",
+      "msc_unit": "MSC_UNIT_033",
+      "title": "Registration store / binding marker / first-run contract",
+      "heading": "## 7. Registration store / binding marker / first-run contract",
+      "clauses": [
+        "S0-033-01",
+        "S0-033-02",
+        "S0-033-03",
+        "S0-033-04",
+        "S0-033-05",
+        "S0-033-06",
+        "S0-033-07",
+        "S0-033-08",
+        "S0-033-09",
+        "S0-033-10",
+        "S0-033-11"
+      ],
+      "server_breakers": [],
+      "chains": [
+        "AC-001",
+        "AC-014"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-018",
+      "msc_unit": "MSC_UNIT_018",
+      "title": "Armed-latch lifecycle: RejectedAfterArm",
+      "heading": "## 8. Armed-latch lifecycle: `RejectedAfterArm`",
+      "clauses": [
+        "S0-018-01",
+        "S0-018-02",
+        "S0-018-03",
+        "S0-018-04",
+        "S0-018-05",
+        "S0-018-06"
+      ],
+      "server_breakers": [
+        "S17"
+      ],
+      "chains": [
+        "AC-014"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-032",
+      "msc_unit": "MSC_UNIT_032",
+      "title": "Wipe / logout / account-delete / reset / revocation domain matrix",
+      "heading": "## 9. Wipe / logout / account-delete / reset / revocation domain matrix",
+      "clauses": [
+        "S0-032-01",
+        "S0-032-02",
+        "S0-032-03",
+        "S0-032-04",
+        "S0-032-05",
+        "S0-032-06",
+        "S0-032-07",
+        "S0-032-08"
+      ],
+      "server_breakers": [
+        "S18"
+      ],
+      "chains": [
+        "AC-008",
+        "AC-014"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-034",
+      "msc_unit": "MSC_UNIT_034",
+      "title": "Backup / restore / reinstall / profile / rollback expected-state contract",
+      "heading": "## 10. Backup / restore / reinstall / profile / rollback expected-state contract",
+      "clauses": [
+        "S0-034-01",
+        "S0-034-02",
+        "S0-034-03",
+        "S0-034-04",
+        "S0-034-05",
+        "S0-034-06",
+        "S0-034-07",
+        "S0-034-08",
+        "S0-034-09",
+        "S0-034-10"
+      ],
+      "server_breakers": [
+        "S15"
+      ],
+      "chains": [
+        "AC-001",
+        "AC-005",
+        "AC-013"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-020",
+      "msc_unit": "MSC_UNIT_020",
+      "title": "Server publication / identity revision epoch",
+      "heading": "## 11. Server publication / identity revision epoch",
+      "clauses": [
+        "S0-020-01",
+        "S0-020-02",
+        "S0-020-03",
+        "S0-020-04",
+        "S0-020-05",
+        "S0-020-06",
+        "S0-020-07"
+      ],
+      "server_breakers": [
+        "S15"
+      ],
+      "chains": [
+        "AC-005"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-042",
+      "msc_unit": "MSC_UNIT_042",
+      "title": "Hardware-level trust / attestation decision",
+      "heading": "## 12. Hardware-level trust / attestation decision",
+      "clauses": [
+        "S0-042-01",
+        "S0-042-02",
+        "S0-042-03",
+        "S0-042-04",
+        "S0-042-05"
+      ],
+      "server_breakers": [],
+      "chains": [
+        "AC-003",
+        "AC-013"
+      ],
+      "s0_role": "PRIMARY_CONTRACT_UNIT"
+    },
+    {
+      "contract_id": "S0-017",
+      "msc_unit": "MSC_UNIT_039",
+      "title": "Preserved governance decisions",
+      "heading": "## 17. Preserved governance decisions",
+      "clauses": [
+        "S0-017-01",
+        "S0-017-02",
+        "S0-017-03",
+        "S0-017-04"
+      ],
+      "server_breakers": [],
+      "chains": [],
+      "s0_role": "CONSUMED_DECISION_RECORD"
+    }
+  ],
+  "server_contract_authority": {
+    "SC-1": {
+      "clauses": [
+        "S0-027-01",
+        "S0-027-02",
+        "S0-027-03",
+        "S0-027-04",
+        "S0-027-05",
+        "S0-027-06",
+        "S0-027-07",
+        "S0-027-08"
+      ]
+    },
+    "SC-2": {
+      "clauses": [
+        "S0-026-01",
+        "S0-026-02",
+        "S0-026-03"
+      ]
+    },
+    "SC-3": {
+      "clauses": [
+        "S0-028-01",
+        "S0-028-02",
+        "S0-028-03",
+        "S0-028-04",
+        "S0-028-08",
+        "S0-028-09",
+        "S0-028-10"
+      ]
+    },
+    "SC-4": {
+      "clauses": [
+        "S0-028-05",
+        "S0-028-06",
+        "S0-028-07"
+      ]
+    },
+    "SC-5": {
+      "clauses": [
+        "S0-028-11"
+      ]
+    },
+    "SC-6": {
+      "clauses": [
+        "S0-026-04",
+        "S0-026-05",
+        "S0-026-06",
+        "S0-026-07",
+        "S0-026-11",
+        "S0-026-18"
+      ]
+    },
+    "SC-7": {
+      "clauses": [
+        "S0-025-01",
+        "S0-025-02",
+        "S0-025-03",
+        "S0-025-04",
+        "S0-025-05",
+        "S0-025-06",
+        "S0-025-07",
+        "S0-025-08"
+      ]
+    },
+    "SC-8": {
+      "clauses": [
+        "S0-026-08",
+        "S0-026-09",
+        "S0-026-10",
+        "S0-026-11",
+        "S0-026-12",
+        "S0-026-13"
+      ]
+    },
+    "SC-9": {
+      "clauses": [
+        "S0-022-01",
+        "S0-022-02",
+        "S0-022-03",
+        "S0-022-04",
+        "S0-022-05",
+        "S0-022-06",
+        "S0-026-14"
+      ]
+    },
+    "SC-10": {
+      "clauses": [
+        "S0-020-02"
+      ],
+      "retained_base": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-006"
+    },
+    "SC-11": {
+      "clauses": [
+        "S0-020-01",
+        "S0-020-02",
+        "S0-020-03",
+        "S0-020-04",
+        "S0-020-05",
+        "S0-020-06",
+        "S0-020-07",
+        "S0-034-09"
+      ]
+    },
+    "SC-12": {
+      "clauses": [
+        "S0-026-15",
+        "S0-026-16",
+        "S0-026-17",
+        "S0-018-02",
+        "S0-018-03"
+      ]
+    },
+    "SC-13": {
+      "clauses": [
+        "S0-032-01",
+        "S0-032-02",
+        "S0-032-03",
+        "S0-032-04",
+        "S0-032-05",
+        "S0-032-06",
+        "S0-032-07"
+      ]
+    },
+    "SC-14": {
+      "clauses": [
+        "S0-042-01",
+        "S0-042-02",
+        "S0-042-03",
+        "S0-042-04",
+        "S0-042-05"
+      ]
+    }
+  },
+  "client_contract_authority": {
+    "CC-1": {
+      "owner": "[S0-033-06] + Security Invariant 23",
+      "clauses": [
+        "S0-033-06"
+      ],
+      "sessions": [
+        "S2",
+        "S3"
+      ],
+      "authority_home": "[S0-033-06] + Security Invariant 23",
+      "authority_home_indexed": true,
+      "traceability": [
+        "docs/current/LOCAL_KEY_STATE_LIFECYCLE_V1_FROZEN.md §C/§G (informative)"
+      ]
+    },
+    "CC-2": {
+      "owner": "Security Invariant 23 + Security Invariant 24 + B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md (narrow Kotlin->JNI->Rust interface boundary)",
+      "clauses": [],
+      "sessions": [
+        "S2"
+      ],
+      "authority_home": "Security Invariant 23 + Security Invariant 24 + B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md (narrow Kotlin->JNI->Rust interface boundary)",
+      "authority_home_indexed": true,
+      "traceability": [
+        "MASTER-SPECIALIST-CONSOLIDATION-001 CC-2 (evidence only)",
+        "concrete handle representation is a code requirement of MSC_UNIT_005/006/007/008, fixed at S2 implementation time; not frozen by S0"
+      ]
+    },
+    "CC-3": {
+      "owner": "[S0-020-04] + Security Invariant 24 + B-009 v1.4",
+      "clauses": [
+        "S0-020-04"
+      ],
+      "sessions": [
+        "S2",
+        "S3"
+      ],
+      "authority_home": "[S0-020-04] + Security Invariant 24 + B-009 v1.4",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-4": {
+      "owner": "V1.2 §B-006.3",
+      "clauses": [],
+      "sessions": [
+        "S2"
+      ],
+      "authority_home": "V1.2 §B-006.3",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-5": {
+      "owner": "[S0-042-04] + [S0-033-03] + [S0-032-08] + B-002 v1.1",
+      "clauses": [
+        "S0-042-04",
+        "S0-033-03",
+        "S0-032-08"
+      ],
+      "sessions": [
+        "S3"
+      ],
+      "authority_home": "[S0-042-04] + [S0-033-03] + [S0-032-08] + B-002 v1.1",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-6": {
+      "owner": "[S0-026-05] + [S0-026-09] + §4 [S0-022-01]..[S0-022-06]",
+      "clauses": [
+        "S0-026-05",
+        "S0-026-09",
+        "S0-022-01",
+        "S0-022-02",
+        "S0-022-03",
+        "S0-022-04",
+        "S0-022-05",
+        "S0-022-06"
+      ],
+      "sessions": [
+        "S4"
+      ],
+      "authority_home": "[S0-026-05] + [S0-026-09] + §4 [S0-022-01]..[S0-022-06]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-7": {
+      "owner": "[S0-033-01]..[S0-033-06]",
+      "clauses": [
+        "S0-033-01",
+        "S0-033-02",
+        "S0-033-03",
+        "S0-033-04",
+        "S0-033-05",
+        "S0-033-06"
+      ],
+      "sessions": [
+        "S3"
+      ],
+      "authority_home": "[S0-033-01]..[S0-033-06]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-8": {
+      "owner": "[S0-033-07]..[S0-033-08] + [S0-018-01]..[S0-018-06]",
+      "clauses": [
+        "S0-033-07",
+        "S0-033-08",
+        "S0-018-01",
+        "S0-018-02",
+        "S0-018-03",
+        "S0-018-04",
+        "S0-018-05",
+        "S0-018-06"
+      ],
+      "sessions": [
+        "S3"
+      ],
+      "authority_home": "[S0-033-07]..[S0-033-08] + [S0-018-01]..[S0-018-06]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-9": {
+      "owner": "[S0-033-08] + [S0-033-09]",
+      "clauses": [
+        "S0-033-08",
+        "S0-033-09"
+      ],
+      "sessions": [
+        "S3",
+        "S2"
+      ],
+      "authority_home": "[S0-033-08] + [S0-033-09]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-10": {
+      "owner": "[S0-020-04]..[S0-020-06] + [S0-034-08]",
+      "clauses": [
+        "S0-020-04",
+        "S0-020-05",
+        "S0-020-06",
+        "S0-034-08"
+      ],
+      "sessions": [
+        "S3",
+        "S6",
+        "S7"
+      ],
+      "authority_home": "[S0-020-04]..[S0-020-06] + [S0-034-08]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-11": {
+      "owner": "§9 [S0-032-01]..[S0-032-08]",
+      "clauses": [
+        "S0-032-01",
+        "S0-032-02",
+        "S0-032-03",
+        "S0-032-04",
+        "S0-032-05",
+        "S0-032-06",
+        "S0-032-07",
+        "S0-032-08"
+      ],
+      "sessions": [
+        "S8"
+      ],
+      "authority_home": "§9 [S0-032-01]..[S0-032-08]",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-12": {
+      "owner": "[S0-033-07] + Security Invariant 23",
+      "clauses": [
+        "S0-033-07"
+      ],
+      "sessions": [
+        "S2",
+        "S3"
+      ],
+      "authority_home": "[S0-033-07] + Security Invariant 23",
+      "authority_home_indexed": true,
+      "traceability": [
+        "MASTER-SPECIALIST-CONSOLIDATION-001 CC-12 (evidence only)",
+        "native HANDLE_*/error-code table is a code requirement of MSC_UNIT_007 (S2); not frozen by S0"
+      ]
+    },
+    "CC-13": {
+      "owner": "Security Invariant 26 + B-009 v1.4",
+      "clauses": [],
+      "sessions": [
+        "S7"
+      ],
+      "authority_home": "Security Invariant 26 + B-009 v1.4",
+      "authority_home_indexed": true,
+      "traceability": []
+    },
+    "CC-14": {
+      "owner": "B-003 v1.5 §2 + B-007 v1.9",
+      "clauses": [],
+      "sessions": [
+        "S3"
+      ],
+      "authority_home": "B-003 v1.5 §2 + B-007 v1.9",
+      "authority_home_indexed": true,
+      "traceability": []
+    }
+  },
+  "server_breaker_authority": {
+    "S1": {
+      "clauses": [
+        "S0-028-01",
+        "S0-028-02",
+        "S0-028-03",
+        "S0-028-04"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S2": {
+      "clauses": [
+        "S0-028-05",
+        "S0-028-06",
+        "S0-028-07"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S3": {
+      "clauses": [
+        "S0-028-08",
+        "S0-028-09",
+        "S0-028-10"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S4": {
+      "clauses": [
+        "S0-026-01",
+        "S0-026-02",
+        "S0-026-03"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S5": {
+      "clauses": [
+        "S0-027-01",
+        "S0-027-02",
+        "S0-027-03",
+        "S0-027-04",
+        "S0-027-05",
+        "S0-027-06",
+        "S0-027-07",
+        "S0-027-08"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S6": {
+      "clauses": [
+        "S0-026-18"
+      ],
+      "status": "RETAINED_V1_2"
+    },
+    "S7": {
+      "clauses": [
+        "S0-026-04",
+        "S0-026-05",
+        "S0-026-06"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S8": {
+      "clauses": [
+        "S0-026-07"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S9": {
+      "clauses": [
+        "S0-025-01",
+        "S0-025-02",
+        "S0-025-03",
+        "S0-025-04",
+        "S0-025-05",
+        "S0-025-06",
+        "S0-025-07",
+        "S0-025-08"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S10": {
+      "clauses": [
+        "S0-026-08",
+        "S0-026-09",
+        "S0-026-10"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S11": {
+      "clauses": [
+        "S0-026-11",
+        "S0-026-12",
+        "S0-026-13"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S12": {
+      "clauses": [
+        "S0-022-01",
+        "S0-022-02",
+        "S0-022-03",
+        "S0-022-04",
+        "S0-022-05",
+        "S0-022-06",
+        "S0-026-14"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S13": {
+      "clauses": [],
+      "retained_base": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-006",
+      "status": "RETAINED_V1_2"
+    },
+    "S14": {
+      "clauses": [],
+      "retained_base": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-006",
+      "status": "RETAINED_V1_2"
+    },
+    "S15": {
+      "clauses": [
+        "S0-020-01",
+        "S0-020-02",
+        "S0-020-03",
+        "S0-020-04",
+        "S0-020-05",
+        "S0-020-06",
+        "S0-020-07",
+        "S0-034-09"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S16": {
+      "clauses": [
+        "S0-028-11"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S17": {
+      "clauses": [
+        "S0-026-15",
+        "S0-026-16",
+        "S0-026-17"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    },
+    "S18": {
+      "clauses": [
+        "S0-032-03",
+        "S0-032-04",
+        "S0-032-07"
+      ],
+      "status": "FROZEN_IN_AUTHORITY"
+    }
+  },
+  "attackchain_contract_coverage": {
+    "AC-001": {
+      "breakers": [
+        "C1",
+        "S1",
+        "S2"
+      ],
+      "clauses": [
+        "S0-033-04",
+        "S0-028-01",
+        "S0-028-05"
+      ],
+      "rule": "uniqueness_alone_not_accepted"
+    },
+    "AC-002": {
+      "breakers": [
+        "S12",
+        "C9"
+      ],
+      "clauses": [
+        "S0-022-01",
+        "S0-022-03"
+      ]
+    },
+    "AC-003": {
+      "breakers": [
+        "S7",
+        "C9"
+      ],
+      "clauses": [
+        "S0-026-04",
+        "S0-026-06"
+      ],
+      "rule": "ath_alone_insufficient"
+    },
+    "AC-004": {
+      "breakers": [
+        "S10",
+        "S11"
+      ],
+      "clauses": [
+        "S0-026-08",
+        "S0-026-12"
+      ]
+    },
+    "AC-005": {
+      "breakers": [
+        "S15",
+        "C12"
+      ],
+      "clauses": [
+        "S0-020-05",
+        "S0-020-06"
+      ]
+    },
+    "AC-008": {
+      "breakers": [
+        "C11",
+        "S16",
+        "S18"
+      ],
+      "clauses": [
+        "S0-032-07",
+        "S0-028-11",
+        "S0-032-03"
+      ]
+    },
+    "AC-009": {
+      "breakers": [
+        "S4",
+        "C4"
+      ],
+      "clauses": [
+        "S0-026-01",
+        "S0-033-09"
+      ]
+    },
+    "AC-010": {
+      "breakers": [
+        "S5",
+        "C10"
+      ],
+      "clauses": [
+        "S0-027-08",
+        "S0-027-05"
+      ],
+      "rule": "pop_tied_to_deviceauth_identity"
+    },
+    "AC-014": {
+      "breakers": [
+        "C13",
+        "S17"
+      ],
+      "clauses": [
+        "S0-018-01",
+        "S0-026-15"
+      ]
+    }
+  },
+  "preserved_decisions": {
+    "ROOT-013": {
+      "severity": "MEDIUM",
+      "status": "OPEN",
+      "clause": "S0-017-01"
+    },
+    "ROOT-016": {
+      "status": "REJECTED_NOT_A_FINDING",
+      "clause": "S0-017-02"
+    },
+    "ANOX-SECURITY-ARCH-010": {
+      "status": "Open",
+      "severity": "INFO",
+      "trigger": "RETIRE_AT_B004_START",
+      "clause": "S0-017-03"
+    },
+    "MSC_UNIT_039": {
+      "status": "NOT_REOPENED",
+      "clause": "S0-017-04"
+    }
+  },
+  "msc_stage_proposals": {
+    "allowed_stages": [
+      "ASSIGNED",
+      "IMPLEMENTED",
+      "AUTOMATED_TESTED"
+    ],
+    "forbidden_stages": [
+      "INDEPENDENTLY_RETESTED",
+      "EVIDENCE_PRESERVED",
+      "CLOSED"
+    ],
+    "units": {
+      "MSC_UNIT_018": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_020": {
+        "portion": "contract_entry",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_025": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_026": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_027": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_028": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_032": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_033": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_034": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_040": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      },
+      "MSC_UNIT_042": {
+        "portion": "contract",
+        "stage": "AUTOMATED_TESTED"
+      }
+    },
+    "closed_by_s0": 0,
+    "open_msc_units": 42
+  },
+  "lifecycle": {
+    "security_remediation": "IN_PROGRESS",
+    "remediation_session_s0": "IMPLEMENTED_PENDING_INDEPENDENT_RETEST",
+    "remediation_session_s1": "AUTHORIZED_NOT_EXECUTED_BY_THIS_TASK",
+    "b004": "NOT_STARTED",
+    "b005": "NOT_STARTED",
+    "backend": "NOT_IMPLEMENTED",
+    "product_development": "BLOCKED_PENDING_FINAL_AUDIT",
+    "next_required_action": "INDEPENDENT ARCHITECTURE RETEST OF S0 → PRESERVE/FREEZE S0 REMEDIATION EVIDENCE → MERGE"
+  },
+  "s0_unit_roles": {
+    "primary_contract_units": [
+      "MSC_UNIT_018",
+      "MSC_UNIT_020",
+      "MSC_UNIT_025",
+      "MSC_UNIT_026",
+      "MSC_UNIT_027",
+      "MSC_UNIT_028",
+      "MSC_UNIT_032",
+      "MSC_UNIT_033",
+      "MSC_UNIT_034",
+      "MSC_UNIT_040",
+      "MSC_UNIT_042"
+    ],
+    "supporting_contract_entries": [
+      "MSC_UNIT_022"
+    ],
+    "consumed_decision_records": [
+      "MSC_UNIT_039"
+    ],
+    "rule": "Only primary contract units appear in msc_stage_proposals. Supporting entries and consumed decision records never advance in the closure state machine and are never claimed closed."
+  },
+  "evidence_not_authority": {
+    "rule": "MASTER-SPECIALIST-CONSOLIDATION-001 and SECURITY-REMEDIATION-COVERAGE-GATE-001 are hash-preserved traceability/evidence artefacts and are never a normative authority home (see [S0-000-15]).",
+    "non_authority_sources": [
+      "MASTER-SPECIALIST-CONSOLIDATION-001",
+      "SECURITY-REMEDIATION-COVERAGE-GATE-001"
+    ]
+  },
+  "freeze_registry_base_pointers": {
+    "B-002": "B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md",
+    "B-003": "B025_MANDATORY_AMENDMENTS_V1_1.md#B-003",
+    "B-004": "B025_MANDATORY_AMENDMENTS_V1_2.md#B-004",
+    "B-005": "B025_MANDATORY_AMENDMENTS_V1_2.md#B-005",
+    "B-006": "B025_MANDATORY_AMENDMENTS_V1_2.md#B-006",
+    "B-007": "B025_MANDATORY_AMENDMENTS_V1_2.md#B-007",
+    "B-009": "B025/TRACK_B/B009_LOCAL_DATABASE.md",
+    "B-013": "B025_MANDATORY_AMENDMENTS_V1_1.md#B-013"
+  },
+  "protected_shared_governance_files": {
+    "tools/audit/validate_security_audit_evidence_preservation.py": {
+      "classification": "PROTECTED_SHARED_GOVERNANCE_FILE",
+      "owner": "SHARED_GOVERNANCE (not S0, not S1)",
+      "ratification_decision_id": "ANOX-DECISION-S0-F01-RATIFICATION-001",
+      "ratification_record": "docs/reports/security/decisions/S0-F01-FILE-OWNERSHIP-RATIFICATION-001.md",
+      "ratified_change": "S0_SUCCESSOR_EVENT_SUPPORT",
+      "authorized_sha256": "756141b378a19e3e30c225e1e158bbcd61d6d0b7dc921a3f4fe591c81e497b80",
+      "s1_must_not_modify_before_integration": true
+    }
+  },
+  "retest_correction": {
+    "source_retest": "INDEPENDENT-ARCHITECTURE-RETEST-S0-001",
+    "correction_task": "ANOX-TASK-REMEDIATION-SESSION-S0-CORRECTION-001",
+    "findings": {
+      "F-01": "HUMAN_RATIFIED",
+      "F-02": "FIXED_PENDING_TARGETED_RETEST",
+      "F-03": "FIXED_PENDING_TARGETED_RETEST",
+      "F-04": "FIXED_PENDING_TARGETED_RETEST",
+      "F-05": "FIXED_PENDING_TARGETED_RETEST",
+      "F-06": "FIXED_PENDING_TARGETED_RETEST",
+      "F-07": "FIXED_PENDING_TARGETED_RETEST",
+      "F-08": "FIXED_PENDING_TARGETED_RETEST",
+      "F-09": "FIXED_PENDING_TARGETED_RETEST",
+      "F-10": "FIXED_PENDING_TARGETED_RETEST"
+    }
+  }
+}

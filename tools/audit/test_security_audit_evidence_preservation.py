@@ -35,6 +35,11 @@ FIXTURE_FILES = [
     "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md",
     "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md",
     "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md",
+    "docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md",
+    "docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md",
+    "docs/reports/security/retests/INDEPENDENT-ARCHITECTURE-RETEST-S0-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
+    "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -234,7 +239,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 12 records")
+        self.assert_fails(self.run_validator(), "exactly 13 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -332,7 +337,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 12 records")
+        self.assert_fails(self.run_validator(), "exactly 13 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -505,7 +510,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 12 records")
+        self.assert_fails(self.run_validator(), "exactly 13 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -696,7 +701,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 12 records")
+        self.assert_fails(self.run_validator(), "exactly 13 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -2026,6 +2031,464 @@ class DeliveryTopologyAdversarialTests(unittest.TestCase):
             metadata_allowlist={"docs/continuity/CURRENT_STATE.json"})
         self.assertFalse(ok, "metadata commit touching a substantive file must be rejected")
         self.assertIn("metadata commit touches non-metadata files", reason)
+
+    # 236. REMEDIATION_SESSION_S0: a third task-authored commit above the S0 base is rejected.
+    def test_236_s0_third_task_authored_commit_fails(self):
+        base = self._commit("base.txt", "base")
+        self._commit("docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md", "contract")
+        c2 = self._commit("docs/continuity/CURRENT_STATE.json", "{}")
+        c3 = self._commit("docs/continuity/PROJECT_HISTORY_LEDGER.jsonl", "{}")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c2, c3, cwd=self.root,
+            metadata_allowlist={"docs/continuity/CURRENT_STATE.json",
+                                "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"})
+        self.assertFalse(ok, "S0 must deliver exactly two task-authored commits")
+        self.assertIn("expected exactly 2", reason)
+
+    # 237. REMEDIATION_SESSION_S0: an authority file smuggled into the metadata commit is rejected.
+    def test_237_s0_authority_file_smuggled_into_metadata_commit_fails(self):
+        base = self._commit("base.txt", "base")
+        c1 = self._commit("docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md", "contract")
+        c2 = self._commit("docs/authority/SNEAK.md", "extra normative surface")
+        ok, _, _, reason = self.ll.canonical_two_commit_delivery(
+            base, c1, c2, cwd=self.root,
+            metadata_allowlist={"docs/continuity/CURRENT_STATE.json"})
+        self.assertFalse(ok, "an authority document may not ride in the metadata commit")
+        self.assertIn("metadata commit touches non-metadata files", reason)
+
+
+class S0SuccessorEventAdversarialTests(unittest.TestCase):
+    """F-06 — adversarial coverage of the REMEDIATION_SESSION_S0 successor-event
+    acceptance path added to the evidence-preservation validator.
+
+    Exactly one recorded successor (`ANOX-EVENT-0053`) may follow `LEDGER_EVENT`
+    (`ANOX-EVENT-0052`); every identifying field is verified and any other appended
+    event must fail closed.
+    """
+
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    SUCCESSOR = "ANOX-EVENT-0053"
+    PRIOR = "ANOX-EVENT-0052"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        for rel in FIXTURE_FILES:
+            src = REPO_ROOT / rel
+            dst = self.root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+        # These tests exercise the pre-preservation acceptance path in which the
+        # ledger ends at the S0 successor event; drop the later preservation
+        # event and resync the state pointer so the fixture is that state.
+        recs = _load_jsonl(self.root / self.LEDGER)
+        while recs and recs[-1].get("event_id") != self.SUCCESSOR:
+            recs.pop()
+        _write_jsonl(self.root / self.LEDGER, recs)
+        self._sync_latest(self.SUCCESSOR)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_validator(self):
+        env = dict(os.environ)
+        env["SECURITY_AUDIT_PRESERVATION_REPO"] = str(self.root)
+        return subprocess.run([sys.executable, str(VALIDATOR)],
+                              cwd=self.root, env=env, capture_output=True, text=True)
+
+    def assert_fails(self, needle=None):
+        r = self.run_validator()
+        self.assertNotEqual(r.returncode, 0, f"validator must FAIL; stdout:\n{r.stdout}\n{r.stderr}")
+        self.assertIn("FAIL", r.stdout)
+        if needle:
+            self.assertIn(needle, r.stdout, f"missing expected failure detail {needle!r}:\n{r.stdout}")
+        return r
+
+    # -- helpers -----------------------------------------------------------
+    def _ledger(self):
+        return _load_jsonl(self.root / self.LEDGER)
+
+    def _write(self, recs):
+        _write_jsonl(self.root / self.LEDGER, recs)
+
+    def _sync_latest(self, event_id):
+        p = self.root / self.CS
+        state = json.loads(p.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = event_id
+        p.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+    def _mutate_successor(self, **fields):
+        recs = self._ledger()
+        self.assertEqual(recs[-1].get("event_id"), self.SUCCESSOR,
+                         "fixture must end with the recorded S0 successor event")
+        recs[-1].update(fields)
+        self._write(recs)
+
+    # -- control ------------------------------------------------------------
+    # 238. The recorded, unmutated S0 successor event is accepted.
+    def test_238_valid_s0_successor_accepted(self):
+        r = self.run_validator()
+        self.assertEqual(r.returncode, 0, f"recorded S0 successor must be accepted:\n{r.stdout}")
+        self.assertIn(f"Project Memory synced to {self.SUCCESSOR}", r.stdout)
+        self.assertIn("REMEDIATION_SESSION_S0 successor", r.stdout)
+
+    # -- identifying fields -------------------------------------------------
+    # 239. Successor with a foreign task is rejected.
+    def test_239_successor_altered_task_rejected(self):
+        self._mutate_successor(task="ANOX-TASK-SOMETHING-ELSE-001")
+        self.assert_fails(self.PRIOR)
+
+    # 240. Successor with a wrong start_head is rejected.
+    def test_240_successor_altered_start_head_rejected(self):
+        self._mutate_successor(start_head="0" * 40)
+        self.assert_fails(self.PRIOR)
+
+    # 241. Successor with a foreign event type is rejected.
+    def test_241_successor_altered_type_rejected(self):
+        self._mutate_successor(type="governance_decision_record")
+        self.assert_fails(self.PRIOR)
+
+    # 242. Successor that drops the V1.4 authority reference is rejected.
+    def test_242_successor_authority_reference_removed_rejected(self):
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "B025_MANDATORY_AMENDMENTS_V1_4" not in x]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 243. Successor with empty/malformed refs is rejected.
+    def test_243_successor_malformed_refs_rejected(self):
+        self._mutate_successor(refs=[])
+        self.assert_fails(self.PRIOR)
+        recs = self._ledger()
+        recs[-1]["refs"] = "not-a-list"
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # -- arbitrary / colliding events ---------------------------------------
+    # 244. An arbitrary future event id is never accepted as the successor.
+    def test_244_arbitrary_future_event_rejected(self):
+        self._mutate_successor(event_id="ANOX-EVENT-0054")
+        self.assert_fails("stale")            # CURRENT_STATE still names 0053
+        self._sync_latest("ANOX-EVENT-0054")
+        self.assert_fails(self.PRIOR)          # and the successor rule still refuses it
+
+    # 245. An event interposed between 0052 and 0053 breaks the direct-successor rule.
+    def test_245_interposed_event_rejected(self):
+        recs = self._ledger()
+        recs.insert(-1, dict(recs[-1], event_id="ANOX-EVENT-0052B"))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 246. A duplicated successor (0053 at [-1] and [-2]) is rejected.
+    def test_246_duplicate_successor_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1]))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 247. Removing the prior EVENT-0052 evidence event is rejected.
+    def test_247_missing_prior_event_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.PRIOR]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 248. A second successor appended after 0053 is rejected.
+    def test_248_second_successor_after_s0_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0054", task="ANOX-TASK-SOMETHING-ELSE-001"))
+        self._write(recs)
+        self._sync_latest("ANOX-EVENT-0054")
+        self.assert_fails(self.PRIOR)
+
+    # -- previous evidence still enforced under the successor path -----------
+    # 249. Tampering with the EVENT-0052 decision record still fails.
+    def test_249_prior_decision_record_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 250. Tampering with the preserved Master consolidation still fails.
+    def test_250_prior_consolidation_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/consolidation/MASTER-SPECIALIST-CONSOLIDATION-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 251. Tampering with the preserved coverage gate still fails.
+    def test_251_prior_coverage_gate_tamper_still_fails(self):
+        p = self.root / "docs/reports/security/gates/SECURITY-REMEDIATION-COVERAGE-GATE-001.md"
+        with open(p, "ab") as f:
+            f.write(b"\n tampered")
+        self.assert_fails("hash mismatch")
+
+    # 252. Retired one-shot validator pins remain enforced under the successor path.
+    def test_252_retired_validator_pin_still_enforced(self):
+        (self.root / "tools/audit/validate_workforce_fix02.py").write_text("# pin removed\n", encoding="utf-8")
+        self.assert_fails("integrity marker")
+
+    # 253. The product gate cannot be unblocked while the successor event is current.
+    def test_253_product_gate_still_enforced(self):
+        p = self.root / "docs/workforce/WORKFORCE_STATE.json"
+        p.write_text(p.read_text(encoding="utf-8").replace(
+            "BLOCKED_PENDING_FINAL_AUDIT", "UNBLOCKED"), encoding="utf-8")
+        self.assert_fails("BLOCKED_PENDING_FINAL_AUDIT")
+
+
+class S0PreservationEventAdversarialTests(unittest.TestCase):
+    """Adversarial coverage of the S0 evidence-preservation lifecycle extension
+    ratified by ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001
+    (ONE_TIME_CHANGE_SPECIFIC).
+
+    Exactly one recorded preservation event (`ANOX-EVENT-0054`, pinned fields)
+    may follow the S0 successor `ANOX-EVENT-0053`, and the registry may hold
+    exactly one additional `SEC-AUDIT-REG-0013` record (13 total).  Any other
+    event, any other record, and any altered pinned field fails closed.
+    """
+
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    REGISTRY = "docs/security/audit-evidence/audit_registry.jsonl"
+    EVENT = "ANOX-EVENT-0054"
+    PRIOR = "ANOX-EVENT-0053"
+    BASE = "ANOX-EVENT-0052"
+    PRES_ID = "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        for rel in FIXTURE_FILES:
+            src = REPO_ROOT / rel
+            dst = self.root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_validator(self):
+        env = dict(os.environ)
+        env["SECURITY_AUDIT_PRESERVATION_REPO"] = str(self.root)
+        return subprocess.run([sys.executable, str(VALIDATOR)],
+                              cwd=self.root, env=env, capture_output=True, text=True)
+
+    def assert_fails(self, needle=None):
+        r = self.run_validator()
+        self.assertNotEqual(r.returncode, 0, f"validator must FAIL; stdout:\n{r.stdout}\n{r.stderr}")
+        self.assertIn("FAIL", r.stdout)
+        if needle:
+            self.assertIn(needle, r.stdout, f"missing expected failure detail {needle!r}:\n{r.stdout}")
+        return r
+
+    # -- helpers -----------------------------------------------------------
+    def _ledger(self):
+        return _load_jsonl(self.root / self.LEDGER)
+
+    def _write(self, recs):
+        _write_jsonl(self.root / self.LEDGER, recs)
+
+    def _registry(self):
+        return _load_jsonl(self.root / self.REGISTRY)
+
+    def _write_registry(self, recs):
+        _write_jsonl(self.root / self.REGISTRY, recs)
+
+    def _sync_latest(self, event_id):
+        p = self.root / self.CS
+        state = json.loads(p.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = event_id
+        p.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+    def _mutate_event(self, **fields):
+        recs = self._ledger()
+        self.assertEqual(recs[-1].get("event_id"), self.EVENT,
+                         "fixture must end with the recorded preservation event")
+        recs[-1].update(fields)
+        self._write(recs)
+
+    def _pres_record(self):
+        recs = self._registry()
+        rec = next(r for r in recs if r.get("audit_id") == self.PRES_ID)
+        return recs, rec
+
+    # -- control ------------------------------------------------------------
+    # 254. The recorded, unmutated preservation event and 13-record registry pass.
+    def test_254_valid_preservation_accepted(self):
+        r = self.run_validator()
+        self.assertEqual(r.returncode, 0, f"recorded preservation state must be accepted:\n{r.stdout}")
+        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
+        self.assertIn("S0 evidence-preservation successor", r.stdout)
+
+    # 255. Removing EVENT-0054 while state claims preservation fails (stale).
+    def test_255_missing_preservation_event_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.EVENT]
+        self._write(recs)
+        self.assert_fails("stale")
+
+    # 256. A duplicated preservation event is rejected.
+    def test_256_duplicate_preservation_event_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1]))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 257. An arbitrary later event id is never accepted.
+    def test_257_arbitrary_future_event_rejected(self):
+        self._mutate_event(event_id="ANOX-EVENT-0055")
+        self.assert_fails("stale")
+        self._sync_latest("ANOX-EVENT-0055")
+        self.assert_fails(self.EVENT)
+
+    # 258. Preservation event with a foreign task is rejected.
+    def test_258_preservation_altered_task_rejected(self):
+        self._mutate_event(task="ANOX-TASK-SOMETHING-ELSE-001")
+        self.assert_fails(self.PRIOR)
+
+    # 259. Preservation event with a wrong start_head is rejected.
+    def test_259_preservation_altered_start_head_rejected(self):
+        self._mutate_event(start_head="0" * 40)
+        self.assert_fails(self.PRIOR)
+
+    # 260. Preservation event with a foreign type is rejected.
+    def test_260_preservation_altered_type_rejected(self):
+        self._mutate_event(type="remediation_session_contract_freeze")
+        self.assert_fails(self.PRIOR)
+
+    # 261. Preservation event before EVENT-0053 is rejected (wrong predecessor).
+    def test_261_preservation_before_prior_rejected(self):
+        recs = self._ledger()
+        ev = recs.pop()
+        recs.insert(len(recs) - 1, ev)  # 0054 before 0053
+        self._write(recs)
+        # Point Project Memory at the actual last ledger event so the ordering
+        # violation — 0053 no longer directly preceded by 0052 — is what fails.
+        self._sync_latest(self.PRIOR)
+        self.assert_fails(self.PRIOR)
+
+    # 262. An unrecognized event interposed between 0053 and 0054 is rejected.
+    def test_262_interposed_event_rejected(self):
+        recs = self._ledger()
+        recs.insert(-1, dict(recs[-2], event_id="ANOX-EVENT-0053B"))
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 263. Preservation event without the preservation-record ref is rejected.
+    def test_263_missing_preservation_ref_rejected(self):
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "EVIDENCE-PRESERVATION-001" not in x]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 264. Preservation event with malformed refs is rejected.
+    def test_264_malformed_refs_rejected(self):
+        self._mutate_event(refs=[])
+        self.assert_fails(self.PRIOR)
+        recs = self._ledger()
+        recs[-1]["refs"] = "not-a-list"
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 265. Mutating historical EVENT-0052 (predecessor chain broken) is rejected.
+    def test_265_historical_0052_mutation_rejected(self):
+        recs = self._ledger()
+        for r in recs:
+            if r.get("event_id") == self.BASE:
+                r["event_id"] = "ANOX-EVENT-0052X"
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 266. Mutating historical EVENT-0053 is rejected.
+    def test_266_historical_0053_mutation_rejected(self):
+        recs = self._ledger()
+        for r in recs:
+            if r.get("event_id") == self.PRIOR:
+                r["task"] = "ANOX-TASK-EVIL-001"
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 267. Missing EVENT-0053 (0054 follows 0052 directly) is rejected.
+    def test_267_missing_0053_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.PRIOR]
+        self._write(recs)
+        self.assert_fails(self.PRIOR)
+
+    # 268. Registry at 12 records while state claims preservation fails.
+    def test_268_registry_at_12_rejected(self):
+        recs = [r for r in self._registry() if r.get("audit_id") != self.PRES_ID]
+        self._write_registry(recs)
+        self.assert_fails("exactly 13 records")
+
+    # 269. Registry grown to 14 records is rejected.
+    def test_269_registry_at_14_rejected(self):
+        recs = self._registry()
+        recs.append(dict(recs[-1], audit_id="SOME-OTHER-RECORD-001"))
+        self._write_registry(recs)
+        self.assert_fails("unexpected records")
+
+    # 270. An unknown extra registry record is rejected.
+    def test_270_unknown_extra_record_rejected(self):
+        recs = self._registry()
+        recs[-1]["audit_id"] = "FORGED-EXTRA-001"
+        self._write_registry(recs)
+        self.assert_fails("unexpected records")
+
+    # 271. A duplicated preservation record is rejected.
+    def test_271_duplicate_preservation_record_rejected(self):
+        recs = self._registry()
+        recs.append(dict(next(r for r in recs if r.get("audit_id") == self.PRES_ID),
+                         record_id="SEC-AUDIT-REG-0014"))
+        self._write_registry(recs)
+        self.assert_fails()
+
+    # 272. Altered preservation artifact class is rejected.
+    def test_272_wrong_preservation_artifact_type_rejected(self):
+        recs, rec = self._pres_record()
+        rec["artifact_type"] = "SECURITY_REMEDIATION_COVERAGE_GATE"
+        self._write_registry(recs)
+        self.assert_fails("artifact_type")
+
+    # 273. Altered preservation task ID is rejected.
+    def test_273_wrong_preservation_task_rejected(self):
+        recs, rec = self._pres_record()
+        rec["task_id"] = "ANOX-TASK-WRONG-001"
+        self._write_registry(recs)
+        self.assert_fails("task_id")
+
+    # 274. Altered S0 corrected substantive SHA is rejected.
+    def test_274_wrong_s0_sha_rejected(self):
+        recs, rec = self._pres_record()
+        rec["s0_corrected_substantive_sha"] = "0" * 40
+        self._write_registry(recs)
+        self.assert_fails("s0_corrected_substantive_sha")
+
+    # 275. A false MSC-closure claim is rejected.
+    def test_275_false_msc_closure_rejected(self):
+        recs, rec = self._pres_record()
+        rec["msc_closed_by_s0"] = 1
+        self._write_registry(recs)
+        self.assert_fails("msc_closed_by_s0")
+
+    # 276. GLOBAL OPEN MSC changed from 42 is rejected.
+    def test_276_open_msc_changed_rejected(self):
+        recs, rec = self._pres_record()
+        rec["open_msc_units"] = 41
+        self._write_registry(recs)
+        self.assert_fails("open_msc_units")
+
+    # 277. B004 marked started / a residual LOW follow-up dropped — both rejected.
+    def test_277_b004_started_or_followup_removed_rejected(self):
+        recs, rec = self._pres_record()
+        rec["b004"] = "STARTED"
+        self._write_registry(recs)
+        self.assert_fails("b004")
+        recs, rec = self._pres_record()
+        rec["residual_low_followup_ids"] = rec["residual_low_followup_ids"][:1]
+        rec["residual_low_followups"] = 1
+        self._write_registry(recs)
+        self.assert_fails("residual_low_followup")
 
 
 if __name__ == "__main__":

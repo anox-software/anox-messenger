@@ -67,6 +67,71 @@ DECISION_REPORT_BYTES = 10128
 DECISION_REGISTRY_RECORD = "SEC-AUDIT-REG-0012"
 DECISION_FINDING_ID = "ANOX-DECISION-HUMANPREREMEDIATION001"
 LEDGER_MAX_LINE_BYTES = 4096
+# REMEDIATION_SESSION_S0 (contract freeze) is the first authorized remediation
+# delivery after LEDGER_EVENT. Its Project Memory event is accepted as the sole
+# admissible successor of LEDGER_EVENT only when every identifying field below
+# matches; any other appended event still fails closed. The S0 contract itself
+# is validated by the S0-owned tools/audit/validate_s0_contract_freeze.py.
+S0_SUCCESSOR_EVENT = {
+    "event_id": "ANOX-EVENT-0053",
+    "type": "remediation_session_contract_freeze",
+    "task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+    "start_head": "0f932520393feee6d479cc099f179f5766323125",
+    "ref": "docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md",
+    "delivery_branch": "security/remediation-s0-contract-freeze-001",
+}
+
+
+def _s0_delivery_active(state):
+    """True when CURRENT_STATE declares the S0 contract-freeze delivery as current."""
+    return (
+        state.get("current_task") == S0_SUCCESSOR_EVENT["task"]
+        and state.get("delivery_branch") == S0_SUCCESSOR_EVENT["delivery_branch"]
+    )
+
+
+def _is_s0_successor_event(ev):
+    return (
+        ev.get("event_id") == S0_SUCCESSOR_EVENT["event_id"]
+        and ev.get("type") == S0_SUCCESSOR_EVENT["type"]
+        and ev.get("task") == S0_SUCCESSOR_EVENT["task"]
+        and ev.get("start_head") == S0_SUCCESSOR_EVENT["start_head"]
+        and S0_SUCCESSOR_EVENT["ref"] in (ev.get("refs") or [])
+    )
+
+
+# S0 evidence preservation (SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001) is
+# the sole admissible successor of S0_SUCCESSOR_EVENT, under Human ratification
+# ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001
+# (ONE_TIME_CHANGE_SPECIFIC — not generic future-event support). Every
+# identifying field is pinned; any other event after EVENT-0053 fails closed.
+S0_PRESERVATION_EVENT = {
+    "event_id": "ANOX-EVENT-0054",
+    "type": "audit_evidence_preservation",
+    "task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+    "start_head": "0be57335adaa25ad584357dde74666eb97339a01",
+    "ref": "docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md",
+    "delivery_branch": "governance/security-remediation-s0-evidence-preservation-001",
+}
+S0_PRESERVATION_ID = "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+
+
+def _s0_preservation_delivery_active(state):
+    """True when CURRENT_STATE declares the S0 evidence-preservation delivery."""
+    return (
+        state.get("current_task") == S0_PRESERVATION_EVENT["task"]
+        and state.get("delivery_branch") == S0_PRESERVATION_EVENT["delivery_branch"]
+    )
+
+
+def _is_s0_preservation_event(ev):
+    return (
+        ev.get("event_id") == S0_PRESERVATION_EVENT["event_id"]
+        and ev.get("type") == S0_PRESERVATION_EVENT["type"]
+        and ev.get("task") == S0_PRESERVATION_EVENT["task"]
+        and ev.get("start_head") == S0_PRESERVATION_EVENT["start_head"]
+        and S0_PRESERVATION_EVENT["ref"] in (ev.get("refs") or [])
+    )
 
 # ---------------------------------------------------------------------------
 # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
@@ -871,15 +936,38 @@ def validate_base(errors):
     if not re.fullmatch(r"[0-9a-f]{40}", described):
         fail(f"CURRENT_STATE described_head is not a valid SHA: {described}", errors)
         return
+    base_sha, delivery_branch, label = BASE_SHA, DELIVERY_BRANCH, "base"
+    if _s0_preservation_delivery_active(state):
+        # The S0 evidence-preservation delivery sits on top of the corrected S0
+        # final head; its two-commit proof is evaluated against the S0
+        # preservation base, which must descend from the S0 base (chain
+        # continuity 0052 → 0053 → 0054).
+        base_sha = S0_PRESERVATION_EVENT["start_head"]
+        delivery_branch = S0_PRESERVATION_EVENT["delivery_branch"]
+        label = "S0 preservation base"
+        if not ll._git_is_ancestor(S0_SUCCESSOR_EVENT["start_head"], base_sha, cwd=REPO_ROOT):
+            fail(f"S0 preservation base {base_sha[:12]} does not descend from "
+                 f"S0 base {S0_SUCCESSOR_EVENT['start_head'][:12]}", errors)
+            return
+    elif _s0_delivery_active(state):
+        # The S0 contract-freeze delivery sits on top of the merged decision
+        # delivery; its two-commit proof is evaluated against the S0 base,
+        # which must itself descend from BASE_SHA (chain continuity).
+        base_sha = S0_SUCCESSOR_EVENT["start_head"]
+        delivery_branch = S0_SUCCESSOR_EVENT["delivery_branch"]
+        label = "S0 base"
+        if not ll._git_is_ancestor(BASE_SHA, base_sha, cwd=REPO_ROOT):
+            fail(f"S0 base {base_sha[:12]} does not descend from {BASE_SHA[:12]}", errors)
+            return
     ok, _, _, reason = ll.canonical_two_commit_delivery(
-        BASE_SHA, described, head,
-        canonical_branch="main", delivery_branch=DELIVERY_BRANCH,
+        base_sha, described, head,
+        canonical_branch="main", delivery_branch=delivery_branch,
         cwd=REPO_ROOT, metadata_allowlist=METADATA_ALLOWLIST,
     )
     if not ok:
         fail(f"canonical two-commit delivery failed: {reason}", errors)
         return
-    print("  OK   exactly 2 task-authored commits above base (merge-aware)")
+    print(f"  OK   exactly 2 task-authored commits above {label} (merge-aware)")
 
 
 def validate_reports(errors):
@@ -921,13 +1009,69 @@ def validate_reports(errors):
             fail(f"source_status for {name} is not YES", errors)
 
 
+# Pinned expectations for the single S0 evidence-preservation registry record
+# admitted under ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001
+# (ONE_TIME_CHANGE_SPECIFIC — registry grows 12 → 13 for exactly this record;
+# no arbitrary growth). Nested dicts are compared by exact equality.
+S0_PRESERVATION_REGISTRY_REQUIRED = {
+    "record_id": "SEC-AUDIT-REG-0013",
+    "audit_id": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+    "artifact_type": "SECURITY_REMEDIATION_EVIDENCE",
+    "task_id": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+    "base_sha": "0be57335adaa25ad584357dde74666eb97339a01",
+    "s0_original_base_sha": "0f932520393feee6d479cc099f179f5766323125",
+    "s0_corrected_substantive_sha": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
+    "s0_corrected_final_head_sha": "0be57335adaa25ad584357dde74666eb97339a01",
+    "implementation_result": "PASS",
+    "first_independent_retest": "PASS_WITH_FINDINGS",
+    "correction_result": "PASS",
+    "targeted_retest_result": "PASS_WITH_FINDINGS",
+    "merge_blockers_remaining": 0,
+    "medium_or_higher_open_retest_findings": 0,
+    "residual_low_followups": 2,
+    "residual_low_followup_ids": [
+        "S0-RESIDUAL-LOW-F05-UNANCHORED-CC-CLAUSES",
+        "S0-RESIDUAL-LOW-F08-AUTHORITY-HOME-FREETEXT",
+    ],
+    "findings_final_disposition": {
+        "F-01": "RATIFIED_DISCLOSED_FILE_OWNERSHIP_DEVIATION",
+        "F-02": "FIXED", "F-03": "FIXED", "F-04": "FIXED", "F-05": "FIXED",
+        "F-06": "FIXED", "F-07": "FIXED", "F-08": "FIXED", "F-09": "FIXED",
+        "F-10": "FIXED",
+    },
+    "evidence_preserved": "YES",
+    "msc_closed_by_s0": 0,
+    "open_msc_units": 42,
+    "security_remediation": "IN_PROGRESS",
+    "s0_merge_readiness": "READY",
+    "s0_residual_low_followups": "2_NON_BLOCKING",
+    "b004": "NOT_STARTED",
+    "b005": "NOT_STARTED",
+    "product": "BLOCKED_PENDING_FINAL_AUDIT",
+    "s1_files_changed_by_s0": 0,
+    "product_behavior_changed": "NO",
+    "previous_evidence_weakened": "NO",
+    "status": "PRESERVED",
+    "preserved_at_event": "ANOX-EVENT-0054",
+    "delivery_branch": "governance/security-remediation-s0-evidence-preservation-001",
+    "report_path": "docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md",
+    "report_sha256": "995b4006c96ee53646c78fe93e70ea5d79d99d5a7eab565f997f513a8d3868f8",
+}
+S0_PRESERVATION_SOURCE_SHA256 = {
+    "implementation": "19cb339f398c4bd9b702a1442ea21d0bf96ffc57ed97ff351d9b49c1eed9484a",
+    "first_independent_retest": "fb2f4b8cb83b6b812dfb3656d9f6b1b0c2541b8f9b1af22c55787422e4fa5d29",
+    "correction": "19cb339f398c4bd9b702a1442ea21d0bf96ffc57ed97ff351d9b49c1eed9484a",
+    "targeted_correction_retest": "67cb2c152c234397fe94259207492263200123db6acd07e2d97f80ecb5d5b951",
+}
+
+
 def validate_registry(errors):
     audits = {a.get("audit_id"): a for a in load_jsonl(EVIDENCE_DIR / "audit_registry.jsonl")}
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 12:
-        fail(f"audit_registry.jsonl must contain exactly 12 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact + 1 human governance decision record), found {len(audits)}", errors)
+    if len(audits) != 13:
+        fail(f"audit_registry.jsonl must contain exactly 13 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact + 1 human governance decision record + 1 S0 preservation evidence record), found {len(audits)}", errors)
     msc_rec = audits.get(MSC_ID) or {}
     if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
         fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
@@ -937,8 +1081,40 @@ def validate_registry(errors):
     dec_rec = audits.get(DECISION_ID) or {}
     if dec_rec.get("artifact_type") != "HUMAN_GOVERNANCE_DECISION_RECORD":
         fail(f"{DECISION_ID} registry record missing or artifact_type != HUMAN_GOVERNANCE_DECISION_RECORD", errors)
-    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID}):
-        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID})}", errors)
+    pres_rec = audits.get(S0_PRESERVATION_ID)
+    if pres_rec is None:
+        fail(f"{S0_PRESERVATION_ID} registry record missing (registry must carry exactly one S0 preservation evidence record)", errors)
+    else:
+        for key, expected in S0_PRESERVATION_REGISTRY_REQUIRED.items():
+            if pres_rec.get(key) != expected:
+                fail(f"{S0_PRESERVATION_ID} field {key}={pres_rec.get(key)!r}, expected {expected!r}", errors)
+        srcs = pres_rec.get("preserved_sources") or {}
+        for skey, expected_sha in S0_PRESERVATION_SOURCE_SHA256.items():
+            srec = srcs.get(skey) or {}
+            if srec.get("sha256") != expected_sha:
+                fail(f"{S0_PRESERVATION_ID} preserved_sources.{skey}.sha256={srec.get('sha256')!r}, expected {expected_sha!r}", errors)
+            if not srec.get("path") or not srec.get("id"):
+                fail(f"{S0_PRESERVATION_ID} preserved_sources.{skey} missing path/id", errors)
+        fb = srcs.get("first_independent_retest") or {}
+        if fb.get("source_class") != "HUMAN_AUTHORIZED_RECONSTRUCTED_SECURITY_EVIDENCE" \
+                or fb.get("verbatim_original_transcript_available") != "NO" \
+                or fb.get("reconstructed") != "YES" \
+                or fb.get("reconstruction_human_authorized") != "YES":
+            fail(f"{S0_PRESERVATION_ID} Source-B reconstruction markers missing/incorrect", errors)
+        # Every referenced preserved-source path must exist and hash-match.
+        for skey, srec in srcs.items():
+            sp = REPO_ROOT / str(srec.get("path", ""))
+            if not sp.exists():
+                fail(f"{S0_PRESERVATION_ID} preserved_sources.{skey} file missing: {srec.get('path')}", errors)
+            elif srec.get("sha256") and sha256_file(sp) != srec.get("sha256"):
+                fail(f"{S0_PRESERVATION_ID} preserved_sources.{skey} file hash mismatch: {srec.get('path')}", errors)
+        pp = REPO_ROOT / str(pres_rec.get("report_path", ""))
+        if not pp.exists():
+            fail(f"{S0_PRESERVATION_ID} preservation record missing: {pres_rec.get('report_path')}", errors)
+        elif sha256_file(pp) != pres_rec.get("report_sha256"):
+            fail(f"{S0_PRESERVATION_ID} preservation record hash mismatch", errors)
+    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID, S0_PRESERVATION_ID}):
+        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID, S0_PRESERVATION_ID})}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -3050,10 +3226,19 @@ def validate_project_memory(errors):
     latest = ledger[-1]
     if state.get("latest_material_event_id") != latest.get("event_id"):
         fail("Project Memory stale: latest_material_event_id != last ledger event", errors)
-    elif latest.get("event_id") != LEDGER_EVENT:
-        fail(f"last ledger event must be {LEDGER_EVENT}, got {latest.get('event_id')}", errors)
-    else:
+    elif latest.get("event_id") == LEDGER_EVENT:
         print(f"  OK   Project Memory synced to {latest.get('event_id')}")
+    elif _is_s0_preservation_event(latest) and len(ledger) >= 3 \
+            and _is_s0_successor_event(ledger[-2]) \
+            and ledger[-3].get("event_id") == LEDGER_EVENT:
+        print(f"  OK   Project Memory synced to {latest.get('event_id')} "
+              f"(S0 evidence-preservation successor of {S0_SUCCESSOR_EVENT['event_id']})")
+    elif _is_s0_successor_event(latest) and len(ledger) >= 2 and ledger[-2].get("event_id") == LEDGER_EVENT:
+        print(f"  OK   Project Memory synced to {latest.get('event_id')} (REMEDIATION_SESSION_S0 successor of {LEDGER_EVENT})")
+    else:
+        fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
+             f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "
+             f"{S0_PRESERVATION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
     raw = ledger_path.read_bytes().splitlines()
     overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
     if overlong:

@@ -1,7 +1,7 @@
 # Track B Freeze Registry — Current
 
 **Status:** CURRENT  
-**Date:** 2026-08-20
+**Date:** 2026-09-14
 
 ---
 
@@ -18,18 +18,18 @@
 | ID | Title | Status | Location |
 |----|-------|--------|----------|
 | B-001 | Master Completeness | DEFINED | `docs/authority/B025/TRACK_B/B001_MASTER_COMPLETENESS.md` |
-| B-002 | Device Authentication | FROZEN v1.1 | `docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md` |
-| B-003 | Account + License | FROZEN v1.5 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-003` |
-| B-004 | Backend Service Architecture | FROZEN v1.1-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-004` |
-| B-005 | Database Schema + RLS | FROZEN v1.11-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-005` |
-| B-006 | vodozemac Key Distribution | FROZEN v1.3-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-006` |
-| B-007 | API + Wire Protocol | FROZEN v2.0-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-007` |
+| B-002 | Device Authentication | FROZEN v1.2-f04 (amended by B025_MANDATORY_AMENDMENTS_V1_4.md §3–§5, §12; v1.1 snapshot otherwise in force) | `docs/authority/B025/TRACK_B/B002_DEVICE_AUTHENTICATION.md` (base v1.1) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
+| B-003 | Account + License | FROZEN v1.6 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md; further amended by B025_MANDATORY_AMENDMENTS_V1_4.md §6–§8) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-003` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
+| B-004 | Backend Service Architecture | FROZEN v1.2-f04 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md; further amended by B025_MANDATORY_AMENDMENTS_V1_4.md §2–§3) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-004` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
+| B-005 | Database Schema + RLS | FROZEN v1.12-f04 — DB-SCHEMA-V1-FROZEN single authority home: V1.2 §B-005 as amended by B025_MANDATORY_AMENDMENTS_V1_4.md §1–§2, §11 (V1.4 wins on conflict) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-005` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
+| B-006 | vodozemac Key Distribution | FROZEN v1.4-f04 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md; further amended by B025_MANDATORY_AMENDMENTS_V1_4.md §11 publication epoch) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-006` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
+| B-007 | API + Wire Protocol | FROZEN v2.1-f04 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md; further amended by B025_MANDATORY_AMENDMENTS_V1_4.md §3.7, §4–§6) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-007` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
 | B-008 | Messaging + Sync | FROZEN v1.6 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-008` |
-| B-009 | Local Messenger Database | FROZEN v1.4 | `docs/authority/B025/TRACK_B/B009_LOCAL_DATABASE.md` |
+| B-009 | Local Messenger Database | FROZEN v1.5-f04 (v1.4 snapshot; wipe/first-run bullets amended by B025_MANDATORY_AMENDMENTS_V1_4.md §7, §9–§10) | `docs/authority/B025/TRACK_B/B009_LOCAL_DATABASE.md` (base v1.4) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
 | B-010 | Contacts + Verification | FROZEN v1.3 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-010` |
 | B-011 | Push + Offline Queue | FROZEN v1.3-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-011` |
 | B-012 | Attachments | FROZEN v1.1-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-012` |
-| B-013 | Account / Device Lifecycle | FROZEN v1.3 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-013` |
+| B-013 | Account / Device Lifecycle | FROZEN v1.4-f04 (amended by B025_MANDATORY_AMENDMENTS_V1_1.md; further amended by B025_MANDATORY_AMENDMENTS_V1_4.md §9–§10) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_1.md#B-013` (base) + `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (S0 amendments) |
 | B-014 | Privacy / Retention / Logging | FROZEN v1.4-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-014` |
 | B-015 | Abuse / Rate Limits | FROZEN v1.1-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-015` |
 | B-016 | Production Infrastructure | FROZEN v1.3-f02 (amended by B025_MANDATORY_AMENDMENTS_V1_2.md) | `docs/authority/B025_MANDATORY_AMENDMENTS_V1_2.md#B-016` |
@@ -44,6 +44,12 @@
 | B-025 | New-Chat Handoff Package | COMPLETE | `docs/authority/B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` |
 | B-026 | Continuous Development Governance | FROZEN | `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` |
 | B-027 | AI Workforce / Work-Control Governance | FROZEN / IMPLEMENTED (A/B/C); FINAL_PRE_PRODUCT_AUDIT REQUIRED | `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md` |
+
+---
+
+## Security contract freeze (REMEDIATION_SESSION_S0)
+
+`B025_MANDATORY_AMENDMENTS_V1_4.md` (contract version `S0-CONTRACT-FREEZE v1`, 2026-09-14) freezes the Pre-B004 security contracts for B-002, B-003, B-004, B-005, B-006, B-007, B-009 and B-013. It supersedes only the provisions enumerated in its §18; the earlier amendment locations remain in force for all other clauses. Machine index: `docs/authority/contracts/S0_CONTRACT_FREEZE_MANIFEST.json`.
 
 ---
 
