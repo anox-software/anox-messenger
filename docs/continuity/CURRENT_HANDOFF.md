@@ -1,26 +1,34 @@
 # CURRENT_HANDOFF — anoX V1
 
-**Event:** `ANOX-EVENT-0052` — HUMAN-PRE-REMEDIATION-DECISIONS-001  
-**Delivery branch:** `governance/human-pre-remediation-decisions-001`  
-**Substantive HEAD:** `30fe6e9afa7033ee94c31f79d8cc1774716ee386`  
-**Main baseline:** `9e585468d081272398e022f12e76e7500d55cbee`  
-**Effective gate:** `HUMAN-PRE-REMEDIATION-DECISIONS-001 — RECORD HUMAN PRE-REMEDIATION DECISIONS AND REMEDIATION AUTHORIZATION (Ready For Remote; awaiting human merge)`
+**Event:** `ANOX-EVENT-0054` — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001
+**Delivery branch:** `governance/security-remediation-s0-evidence-preservation-001`
+**Substantive HEAD:** `24576ec333f3567c36b46f42ed30c718788ea601`
+**Main baseline:** `0be57335adaa25ad584357dde74666eb97339a01` (corrected S0 final head on `security/remediation-s0-contract-freeze-001`; `main` = `0f932520393feee6d479cc099f179f5766323125`)
+**Effective gate:** `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
 
-Described HEAD: 30fe6e9afa7033ee94c31f79d8cc1774716ee386
+Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 
 ## Pre-merge gate
 
-`HUMAN-PRE-REMEDIATION-DECISIONS-001 — RECORD HUMAN PRE-REMEDIATION DECISIONS AND REMEDIATION AUTHORIZATION (Ready For Remote; awaiting human merge)`
+`SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
 
-- Authored the canonical human governance decision record `docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md` (SHA-256 `d558471d…`, 10,128 bytes): the Human Product & Security Owner decided the preserved gate's Human Decision Packet with **zero auto-acceptance** — `H1=ARCHIVE_AND_RETIRE_SHA_PINNED_VALIDATORS`, `H2=ACCEPT_MODEL_DEVIATION_WITH_PRESERVED_RATIONALE`, `H3=RETIRE_ARCH_010_AT_B004_START`, `R1=RATIFY_ROOT_013_AS_MEDIUM`.
-- Recorded `SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER` for the first authorized wave `S0 ∥ S1` (`REMEDIATION_SESSION_S0` ∥ `REMEDIATION_SESSION_S1`). **Authorization is not execution**: security remediation `NOT_STARTED`; `B-004`/`B-005` `NOT_STARTED`; product `BLOCKED_PENDING_FINAL_AUDIT`; `PHYSICAL_P1..P17` `NOT_EXECUTED`; 42 open `MSC_UNIT_*` unchanged, 0 fixed.
-- Recorded registry entry `SEC-AUDIT-REG-0012` (`artifact_type=HUMAN_GOVERNANCE_DECISION_RECORD`; registry now 12 records) and the decision layer in `audit_traceability.jsonl`: 4× `human_decision` (human authority only), `human_remediation_authorization` (`GRANTED_BY_HUMAN_OWNER`, `S0_AND_S1`), `canonical_severity_transition` (`ROOT-013` LOW→MEDIUM, status OPEN — consensus LOW + overlay PENDING preserved), `finding_retirement_trigger` (`ANOX-SECURITY-ARCH-010` `RETIRE_AT_B004_START`, stays Open/INFO), `validator_lifecycle` (10 SHA/event-pinned one-shot validators `RETIRED` — files, pins and historical evidence preserved, not rewritten, not deleted; 11 active current-state validators), `decision_artifact`, `next_gate` `SECURITY_REMEDIATION_WAVE_1` Candidate / NOT_EXECUTED.
-- Extended `tools/audit/validate_security_audit_evidence_preservation.py` fail-closed for the decision layer and added 33 adversarial tests (235 total incl. two real-git delivery-topology cases).
-- No product/CI/SQL/native/secret changes; remote mutation NONE; no remediation session executed; no finding closed or re-severitied except the canonical ROOT-013 severity ratification (still OPEN); no audit re-run.
+- Preserved the complete corrected S0 evidence chain as canonical repository evidence: `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (implementation PASS), `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` (`PASS_WITH_FINDINGS`, F-01…F-10 — `PROVENANCE_MARKED_CANONICAL_RECONSTRUCTION`, human-authorized; verbatim transcript unavailable), `REMEDIATION-SESSION-S0-CORRECTION-001` (PASS) and `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` (`PASS_WITH_FINDINGS`, merge blockers 0). Final dispositions: F-01 `RATIFIED_DISCLOSED_FILE_OWNERSHIP_DEVIATION`; F-02…F-10 `FIXED` (9/9). Residual LOW follow-ups (2, non-blocking, open): `S0-RESIDUAL-LOW-F05-UNANCHORED-CC-CLAUSES`, `S0-RESIDUAL-LOW-F08-AUTHORITY-HOME-FREETEXT`.
+- Human decision `ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001` (`HUMAN_RATIFIED_CHANGE_SPECIFIC_SHARED_VALIDATOR_EXTENSION`, `ONE_TIME_CHANGE_SPECIFIC`) authorized the pinned lifecycle extension of `tools/audit/validate_security_audit_evidence_preservation.py` — exactly `ANOX-EVENT-0054` after `ANOX-EVENT-0053`, and exactly one `SEC-AUDIT-REG-0013` `SECURITY_REMEDIATION_EVIDENCE` record (registry 12 → 13). No generic future-event support, no arbitrary registry growth, no S1 use.
+- Evidence layer: registry `SEC-AUDIT-REG-0013` + `s0_unit_evidence` (13), `s0_finding_disposition` (10), `s0_residual_low_followup` (2), `s0_preservation_summary`, `validator_lifecycle` traceability records; `evidence_hashes.json` extended; `AUDIT_EVIDENCE_INDEX.md` updated; dedicated validator `tools/audit/validate_s0_evidence_preservation.py` + 40 adversarial tests; central suite 277 tests.
+- **S0_MERGE_READINESS = READY** — next canonical action `MERGE_S0_INTO_MAIN` (push branch → PR → normal merge → verify new main SHA).
+
+- Executed `REMEDIATION_SESSION_S0` (`ARCHITECTURE_FREEZE`) — the first authorized security remediation session under `HUMAN-PRE-REMEDIATION-DECISIONS-001` (`SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER`, wave `S0 ∥ S1`; S1 stays authorized/parallel and was **not** executed by this task). **Security remediation is now `IN_PROGRESS`.**
+- Froze every Pre-B004 cross-component security contract in canonical authority `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (contract version `S0-CONTRACT-FREEZE v1`, 124 identified clauses `[S0-…]`): MSC-040 schema authority single source of truth (`DB-SCHEMA-V1-FROZEN` one home; `docs/current` schema docs defer — ARCH-004), MSC-028 device/JKT/account binding (global `UNIQUE(public_key)`+`UNIQUE(jkt)` incl. `REVOKED`, known-key rejection, immutable JKT→device→account, one active device / one wins, `identity_public_keys` immutable — S1/S2/S3/S16), MSC-026 server verifier (idempotency on `(registration_id, jkt)`, mandatory JKT binding, mandatory `ath`, shared atomic `(jkt, jti)` replay store, iat-keyed rollback-safe retention, transient/permanent rejection taxonomy — S4/S7/S8/S10/S11/S12/S17), MSC-022/026 HTU/HTM (raw encoded path; `%2F/%3F/%23/%00/%2520` distinct; no userinfo), MSC-025 nonce lifecycle (required, not optional; S9), MSC-027 typed `RegistrationPoP v1` at all three phases with JWK equality (S5), MSC-033 marker states + fail-closed first-run resolver with Keystore-alias cross-check + typed store taxonomy, MSC-018 `RejectedAfterArm` + explicit-reset order (alias before marker), MSC-032 wipe/logout/delete/reset/revocation domain matrix with truthful outcomes and marker-last order (S18), MSC-034 backup/restore/reinstall/profile/rollback expected state with assumption classes (S15 carrier), MSC-020 monotonic server `publication_epoch` (S15), MSC-042 hardware trust (V1: no remote attestation; self-report informational only; residual risk documented).
+- Authority maps: `SC-1…SC-14` one home each (`AMBIGUOUS = 0`, `CONTRADICTORY = 0`), `CC-1…CC-14` owner known 14/14, `SERVER_BREAKER_S1…S18` (15 `FROZEN_IN_AUTHORITY`, 3 `RETAINED_V1_2`), attackchain contract coverage AC-001/002/003/004/005/008/009/010/014 (AC-001 keeps C1 ∧ S1/S2; AC-003 keeps S7 — `ath` alone insufficient; AC-010 PoP tied to DeviceAuth identity). `CANONICAL CONTRACT AMBIGUITIES = 0`.
+- `AUTHORITY_INDEX.md` ranks V1.4 at 11 (directly after V1.3, above the Track B snapshot) and declares the single schema authority; `B_FREEZE_REGISTRY.md` rows B-002/003/004/005/006/007/009/013 point at V1.4. Machine index `docs/authority/contracts/S0_CONTRACT_FREEZE_MANIFEST.json`.
+- New S0-owned validator `tools/audit/validate_s0_contract_freeze.py` (structural + invariant, PASS) and `tools/audit/test_s0_contract_freeze.py` (98 tests: 53 original retained + 45 correction mutations, all fail-closed). `validate_security_audit_evidence_preservation.py` additively accepts exactly one recorded S0 successor ledger event (`ANOX-EVENT-0053`) — classified `PROTECTED_SHARED_GOVERNANCE_FILE`, content-pinned (SHA-256 `756141b3…`) to the single Human-ratified S0 change; 253/253 tests pass; audit-evidence registry untouched (S0 preservation step).
+- Correction pass `REMEDIATION-SESSION-S0-CORRECTION-001` rewrote the unmerged delivery in place after `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` = `PASS_WITH_FINDINGS` (old substantive `d9c7872d0c89` superseded): **F-01 `HUMAN_RATIFIED`** — Human Product & Security Owner ratified the disclosed file-ownership deviation on the protected shared validator as `ONE_TIME_CHANGE_SPECIFIC` (`ANOX-DECISION-S0-F01-RATIFICATION-001` → `docs/reports/security/decisions/S0-F01-FILE-OWNERSHIP-RATIFICATION-001.md`; no general ownership, no S1 permission, no future-session permission; historical Coverage Gate not rewritten); **F-02…F-10 `FIXED_PENDING_TARGETED_RETEST`** — fail-closed scope base, protected shared governance file enforcement, validator-owned schema deference set, independent SC/CC/breaker/AC mapping anchors, 18 new central successor-event tests, MSC-022 demoted to supporting contract entry, CC authority homes resolved to authority-indexed normative sources (evidence ≠ authority, `[S0-000-15]`), dangling `§8.4` refs retargeted to `[S0-018-05]`, B-002/B-009 base pointers restored. None independently verified yet — targeted retest pending.
+- Task record `docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md`. MSC lifecycle: 11 primary S0 contract units proposed `IMPLEMENTED (FROZEN_IN_AUTHORITY)` → `AUTOMATED_TESTED (CONTRACT_VALIDATOR_PASS)` + one supporting `MSC-022` contract entry (not staged, not closed); `CLOSED_BY_S0 = 0`; 42 MSC units remain open; targeted independent retest pending.
+- Preserved: `ROOT-013` `MEDIUM`/`OPEN`; `ROOT-016` `REJECTED_NOT_A_FINDING` (not revived); `ANOX-SECURITY-ARCH-010` `Open`/`INFO` `RETIRE_AT_B004_START`; MSC-039 not reopened. `B-004`/`B-005` `NOT_STARTED`; backend `NOT_IMPLEMENTED`; no product/CI/SQL/native/S1-owned change; remote mutation NONE.
 
 ## Post-merge gate
 
-`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 ∥ REMEDIATION_SESSION_S1 (Candidate; authorized by HUMAN-PRE-REMEDIATION-DECISIONS-001 — remediation NOT_STARTED)`
+`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)`
 
 ## Preserved audit outcomes
 
@@ -35,12 +43,19 @@ Described HEAD: 30fe6e9afa7033ee94c31f79d8cc1774716ee386
 - `MASTER-SPECIALIST-CONSOLIDATION-001` (consolidation): PASS_WITH_CONSOLIDATION_FINDINGS at `1eb773069d81`; 90/90 source items accounted; 44 `MSC_UNIT_001..044` (42 OPEN + 2 REJECTED); verdict `CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED`; SEC-C not required; provisional `REMEDIATION_SESSION_S0..S10` + Pre-B004 Master Set + closure standards preserved for the coverage gate.
 - `SECURITY-REMEDIATION-COVERAGE-GATE-001` (coverage gate): PASS at `610ed0833753`; 42/42 OPEN `MSC_UNIT_*` covered (0 uncovered/unknown); dependency cycles 0; parallel-writer collisions 0; `FCP_1..8` enforced; false-closure A–F blocked; `SC/CC 14/14`; `PHYSICAL_P1..P17` assigned 17/17, executed 0; retest owners 42/42; DoD unowned 0; `HUMAN_DECISION_H1/H2/H3/R1` pending in the preserved gate record (now decided — see decision record); PASS is coverage proof only.
 - `HUMAN-PRE-REMEDIATION-DECISIONS-001` (human governance decision record): `DECIDED — REMEDIATION_WAVE_1_AUTHORIZED` at `9e585468d081`; H1/H2/H3/R1 decided by Human Product & Security Owner; `SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER` for first wave `S0 ∥ S1`; authorization is not execution.
+- `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (S0 evidence chain, `ANOX-EVENT-0054`): four sources preserved — implementation `PASS`, first retest `PASS_WITH_FINDINGS` (human-authorized reconstruction), correction `PASS`, targeted retest `PASS_WITH_FINDINGS`; F-01 `RATIFIED`, F-02…F-10 `FIXED`; 2 residual LOW follow-ups non-blocking/open; registry `SEC-AUDIT-REG-0013` (13 records); `S0_MERGE_READINESS = READY`.
 
 ## Open product findings
 
 - `ANOX-MAINARCH-013`, `ANOX-MAINARCH-018` (`PHYSICAL_VERIFICATION_REQUIRED`), `ANOX-MAINARCH-030`, `ANOX-LEGACY-INTEGRATION-005`, `ANOX-LEGACY-B003-001`
 - `ANOX-SECURITY-ARCH-001`..`010` (Open; 001..004 are B-004 blockers; `ANOX-SECURITY-ARCH-010` scheduled trigger `RETIRE_AT_B004_START` — stays Open/INFO until B004 start)
 - Active consensus roots `ROOT-001`..`ROOT-015`, `ROOT-017`, `ROOT-018` (`ROOT-013` canonical severity now `MEDIUM`, remains OPEN) + `ANOX-CRYPTOJNI-CANDIDATE-001..006` + `ANOX-AUTHDPOP-CANDIDATE-001..003` + `ANOX-AUTHDPOP-GAP-001..003` + `ANOX-ANDROIDSTORAGE-CANDIDATE-001..002` + `ANOX-ANDROIDSTORAGE-GAP-001..003` + `ANOX-ATTACKCHAIN-CANDIDATE-001..015` + consolidated `MSC_UNIT_001..042` open units (see `docs/security/audit-evidence/audit_traceability.jsonl`)
+
+## Remediation state
+
+- `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`): `RETESTED_AND_EVIDENCE_PRESERVED` — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`; validator PASS; 98 adversarial tests; targeted independent retest `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking); evidence chain preserved under `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0054`, registry `SEC-AUDIT-REG-0013`); 0 MSC units closed. `S0_MERGE_READINESS = READY`.
+- `REMEDIATION_SESSION_S1`: `ISOLATED / IMPLEMENTATION_COMPLETE / NOT_INTEGRATED` (independent repository `anoX-s1`; its provisional `ANOX-EVENT-0054` is not canonical main-line history and will be regenerated/renumbered at post-S0 integration).
+- `S2`/`S3`/`S4`: `NOT_STARTED`.
 
 ## Product state
 
@@ -49,7 +64,7 @@ Described HEAD: 30fe6e9afa7033ee94c31f79d8cc1774716ee386
 - `B005 = NOT_STARTED`
 - `SECURITY-REMEDIATION-COVERAGE-GATE = EXECUTED_AND_PRESERVED (PASS — coverage only, NOT a remediation authorization)`
 - `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION = EXECUTED_AND_PRESERVED (decided; SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER)`
-- `SECURITY REMEDIATION = NOT_STARTED`
-- `SECURITY_REMEDIATION_WAVE_1 (REMEDIATION_SESSION_S0 ∥ S1) = CANDIDATE / NOT_EXECUTED`
+- `SECURITY REMEDIATION = IN_PROGRESS` (S0 corrected pending targeted independent retest; S1 authorized/not executed)
+- `SECURITY_REMEDIATION_WAVE_1 (REMEDIATION_SESSION_S0 ∥ S1) = IN_PROGRESS — S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 NOT_EXECUTED; wave completion Candidate`
 - `FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE = PENDING / NOT_EXECUTED`
 - `Human final product gate = NOT_EXECUTED`
