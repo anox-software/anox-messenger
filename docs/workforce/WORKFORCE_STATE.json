@@ -1,340 +1,340 @@
 {
-  "schema_version": "B027C-v1.1",
-  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
-  "canonical_branch": "main",
-  "delivery_branch": "security/remediation-s0-contract-freeze-001",
-  "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
-  "current_gate": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 — FREEZE PRE-B004 SECURITY CONTRACTS (Ready For Remote; corrected after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS; awaiting targeted independent retest of F-01…F-10, S0 evidence preservation and human merge)",
-  "active_roles": [
-    "ROLE-003",
-    "ROLE-009"
+ "schema_version": "B027C-v1.1",
+ "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
+ "canonical_branch": "main",
+ "delivery_branch": "governance/security-remediation-s0-evidence-preservation-001",
+ "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
+ "current_gate": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)",
+ "active_roles": [
+  "ROLE-003",
+  "ROLE-009"
+ ],
+ "blocked_tasks": [],
+ "authorized_tasks": [
+  "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+ ],
+ "current_writer": {
+  "task_id": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+  "role_id": "ROLE-009",
+  "branch": "governance/security-remediation-s0-evidence-preservation-001"
+ },
+ "pending_human_remote_actions": [],
+ "latest_decision_id": "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001",
+ "latest_finding_id": "ANOX-SECURITY-ARCH-010",
+ "latest_run_id": "ANOX-RUN-SECARCHFREEZE0001",
+ "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
+ "final_pre_product_audit": {
+  "required": true,
+  "status": "IN_PROGRESS",
+  "completed_audit_ids": [
+   "AUDIT-MAIN-ARCHITECTURE",
+   "ANOX-AUDIT-WORKFORCE-ARCH-001",
+   "LEGACY-AUDIT-B002",
+   "LEGACY-AUDIT-B003",
+   "LEGACY-AUDIT-CRYPTO",
+   "LEGACY-AUDIT-ANDROID-SEC",
+   "LEGACY-AUDIT-BUILD",
+   "LEGACY-AUDIT-INTEGRATION",
+   "ANOX-AUDIT-SECURITY-ARCH-001",
+   "AUDIT-SECURITY-CODEBASE-001",
+   "AUDIT-SECURITY-CODEBASE-002",
+   "CODEBASE-SECURITY-CONSENSUS-001",
+   "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
+   "AUDIT-SECURITY-CRYPTO-JNI-001",
+   "AUDIT-SECURITY-AUTH-DPOP-001",
+   "AUDIT-SECURITY-ANDROID-STORAGE-001",
+   "AUDIT-SECURITY-ATTACKCHAIN-001",
+   "MASTER-SPECIALIST-CONSOLIDATION",
+   "SECURITY-REMEDIATION-COVERAGE-GATE",
+   "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION"
   ],
-  "blocked_tasks": [],
-  "authorized_tasks": [
-    "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
+  "required_audits": [
+   "AUDIT-MAIN-ARCHITECTURE",
+   "AUDIT-WORKFORCE-ARCHITECTURE",
+   "AUDIT-SECURITY-ARCHITECTURE"
   ],
-  "current_writer": {
-    "task_id": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
-    "role_id": "ROLE-009",
-    "branch": "security/remediation-s0-contract-freeze-001"
-  },
-  "pending_human_remote_actions": [],
-  "latest_decision_id": "ANOX-DECISION-S0-F01-RATIFICATION-001",
-  "latest_finding_id": "ANOX-SECURITY-ARCH-010",
-  "latest_run_id": "ANOX-RUN-SECARCHFREEZE0001",
-  "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
-  "final_pre_product_audit": {
-    "required": true,
-    "status": "IN_PROGRESS",
-    "completed_audit_ids": [
-      "AUDIT-MAIN-ARCHITECTURE",
-      "ANOX-AUDIT-WORKFORCE-ARCH-001",
-      "LEGACY-AUDIT-B002",
-      "LEGACY-AUDIT-B003",
-      "LEGACY-AUDIT-CRYPTO",
-      "LEGACY-AUDIT-ANDROID-SEC",
-      "LEGACY-AUDIT-BUILD",
-      "LEGACY-AUDIT-INTEGRATION",
-      "ANOX-AUDIT-SECURITY-ARCH-001",
-      "AUDIT-SECURITY-CODEBASE-001",
-      "AUDIT-SECURITY-CODEBASE-002",
-      "CODEBASE-SECURITY-CONSENSUS-001",
-      "AUDIT-SECURITY-BUILD-SUPPLYCHAIN-001",
-      "AUDIT-SECURITY-CRYPTO-JNI-001",
-      "AUDIT-SECURITY-AUTH-DPOP-001",
-      "AUDIT-SECURITY-ANDROID-STORAGE-001",
-      "AUDIT-SECURITY-ATTACKCHAIN-001",
-      "MASTER-SPECIALIST-CONSOLIDATION",
-      "SECURITY-REMEDIATION-COVERAGE-GATE",
-      "HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION"
-    ],
-    "required_audits": [
-      "AUDIT-MAIN-ARCHITECTURE",
-      "AUDIT-WORKFORCE-ARCHITECTURE",
-      "AUDIT-SECURITY-ARCHITECTURE"
-    ],
-    "required_legacy_audits": [
-      "LEGACY-AUDIT-B002",
-      "LEGACY-AUDIT-B003",
-      "LEGACY-AUDIT-CRYPTO",
-      "LEGACY-AUDIT-ANDROID-SEC",
-      "LEGACY-AUDIT-BUILD",
-      "LEGACY-AUDIT-INTEGRATION"
-    ],
-    "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-    "main_architecture_audit": "COMPLETE",
-    "main_architecture_remediation_phase": "COMPLETE",
-    "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
-    "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
-    "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-    "legacy_audit_set_status": "6/6 COMPLETE",
-    "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
-    "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
-    "class_a_foundation_blockers": "CLOSED",
-    "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST (F-01 HUMAN_RATIFIED; F-02…F-10 FIXED_PENDING_TARGETED_RETEST); S1 authorized/NOT_EXECUTED"
-  },
-  "pre_merge_state": {
-    "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
-    "current_gate": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 — FREEZE PRE-B004 SECURITY CONTRACTS (Ready For Remote; corrected after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS; awaiting targeted independent retest of F-01…F-10, S0 evidence preservation and human merge)",
-    "current_writer": {
-      "task_id": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
-      "role_id": "ROLE-009",
-      "branch": "security/remediation-s0-contract-freeze-001"
-    },
-    "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-    "current_task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
-    "active_task": "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
-  },
-  "post_merge_state": {
-    "described_head": "8756a94824ba9baef678176ef2ee24a2c302f1d0",
-    "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST ∥ REMEDIATION_SESSION_S1 authorized / NOT_EXECUTED (wave-completion Candidate; security remediation IN_PROGRESS; next: TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE/FREEZE S0 REMEDIATION EVIDENCE → MERGE)",
-    "current_writer": null,
-    "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-    "current_task": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 sealed — REMEDIATION_SESSION_S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; next TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE S0 EVIDENCE → MERGE; S1 authorized/not executed",
-    "active_task": null
-  },
-  "previous_merges": [
-    {
-      "merge_head": "8385f4019184be9b568f65ec4748194595ef339c",
-      "pre_merge_state": {
-        "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
-        "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-WORKFORCEFIX01",
-          "role_id": "ROLE-003",
-          "branch": "remediation/workforce-fix-01-governance-continuity"
-        },
-        "next_phase": "WORKFORCE-RETEST-01",
-        "current_task": "ANOX-TASK-WORKFORCEFIX01",
-        "active_task": "ANOX-TASK-WORKFORCEFIX01"
-      },
-      "post_merge_state": {
-        "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
-        "current_gate": "WORKFORCE-RETEST-01 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "WORKFORCE-RETEST-01",
-        "current_task": "WORKFORCE-FIX-01 merged — awaiting independent retest",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "81e091f3346a7c8653c100a334a1dbfe2c54d464",
-      "pre_merge_state": {
-        "described_head": "9ed0c32efbb78e850a974af7ad2df5d026891a07",
-        "current_gate": "WORKFORCE-FIX-02 — HANDOFF ARCHIVE EFFECTIVE-STATE RENDERING (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-WORKFORCEFIX02",
-          "role_id": "ROLE-009",
-          "branch": "remediation/workforce-fix-02-handoff-archive"
-        },
-        "next_phase": "WORKFORCE-RETEST-02",
-        "current_task": "ANOX-TASK-WORKFORCEFIX02",
-        "active_task": "ANOX-TASK-WORKFORCEFIX02"
-      },
-      "post_merge_state": {
-        "described_head": "9ed0c32efbb78e850a974af7ad2df5d026891a07",
-        "current_gate": "WORKFORCE-RETEST-02 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "WORKFORCE-RETEST-02",
-        "current_task": "WORKFORCE-FIX-02 merged — awaiting independent retest",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
-      "pre_merge_state": {
-        "described_head": "36ec5227dec4727950ce793df9bea013f8de8823",
-        "current_gate": "WORKFORCE-TEST-HARNESS-FIX-01 — Workforce/Handoff test fixture repair (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01",
-          "role_id": "ROLE-009",
-          "branch": "remediation/workforce-test-harness-fix-01"
-        },
-        "next_phase": "WORKFORCE-HARNESS-RECHECK-01",
-        "current_task": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01",
-        "active_task": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01"
-      },
-      "post_merge_state": {
-        "described_head": "36ec5227dec4727950ce793df9bea013f8de8823",
-        "current_gate": "WORKFORCE-HARNESS-RECHECK-01 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "WORKFORCE-HARNESS-RECHECK-01",
-        "current_task": "WORKFORCE-TEST-HARNESS-FIX-01 merged — awaiting independent retest",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
-      "pre_merge_state": {
-        "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
-        "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
-          "role_id": "ROLE-009",
-          "branch": "remediation/workforce-continuity-sync-fix-01"
-        },
-        "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
-        "current_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
-        "active_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
-      },
-      "post_merge_state": {
-        "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
-        "current_gate": "WORKFORCE-HARNESS-RECHECK-02 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
-        "current_task": "WORKFORCE-CONTINUITY-SYNC-FIX-01 merged — awaiting independent retest",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
-      "pre_merge_state": {
-        "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
-        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 — RETROSPECTIVE + CURRENT SECURITY AUDIT EVIDENCE PRESERVATION (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-          "role_id": "ROLE-009",
-          "branch": "governance/security-audit-evidence-preservation-001"
-        },
-        "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
-        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
-        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
-      },
-      "post_merge_state": {
-        "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
-        "current_gate": "AUDIT-SECURITY-CRYPTO-JNI-001 — CRYPTO/JNI SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
-        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 merged — awaiting Crypto/JNI specialist audit authorization",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
-      "pre_merge_state": {
-        "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
-        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 — PRESERVE AUDIT-SECURITY-CRYPTO-JNI-001 EVIDENCE (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
-          "role_id": "ROLE-009",
-          "branch": "governance/security-audit-evidence-preservation-002"
-        },
-        "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
-        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
-        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
-      },
-      "post_merge_state": {
-        "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
-        "current_gate": "AUDIT-SECURITY-AUTH-DPOP-001 — AUTH/DPOP SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
-        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 merged — awaiting Auth/DPoP specialist audit authorization",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "b9abeb0850a476716403d224b87a857c1147502e",
-      "pre_merge_state": {
-        "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
-        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
-          "role_id": "ROLE-009",
-          "branch": "governance/security-audit-evidence-preservation-003"
-        },
-        "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
-        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
-        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
-      },
-      "post_merge_state": {
-        "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
-        "current_gate": "AUDIT-SECURITY-ANDROID-STORAGE-001 — ANDROID/STORAGE SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
-        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 merged — awaiting Android/Storage specialist audit authorization",
-        "active_task": null
-      }
-    },
-    {
-      "merge_head": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
-      "pre_merge_state": {
-        "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
-        "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 — PRESERVE AUDIT-SECURITY-ANDROID-STORAGE-001 EVIDENCE (Ready For Remote; awaiting human merge)",
-        "current_writer": {
-          "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
-          "role_id": "ROLE-009",
-          "branch": "governance/security-audit-evidence-preservation-004"
-        },
-        "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
-        "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
-        "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
-      },
-      "post_merge_state": {
-        "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
-        "current_gate": "AUDIT-SECURITY-ATTACKCHAIN-001 — ATTACKCHAIN SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
-        "current_writer": null,
-        "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
-        "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 merged — awaiting Attackchain specialist audit authorization",
-        "active_task": null
-      }
-    }
-  ],
-  "final_operational_handoff_acceptance_gate": {
-    "gate_id": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
-    "title": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
-    "status": "NOT_EXECUTED",
-    "result": "PENDING",
-    "work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
-    "rationale": "Before the product final gate opens, the project must prove the complete development/workforce system can be reconstructed from the repository and handoff archive without chat history."
-  },
-  "notes": [
-    "B027-C final integration merged to main; B027-A/B/C canonical.",
-    "AUDIT-MAIN-ARCHITECTURE executed: PASS WITH FINDINGS; 36 findings frozen.",
-    "MAINARCH-FIX-01 completed and merged to main via PR #10.",
-    "MAINARCH-RETEST-01 PASS: 17 findings verified and Closed.",
-    "MAINARCH-FIX-02 complete: 8 findings moved to Ready For Retest; B025_MANDATORY_AMENDMENTS_V1_2.md freezes DB/RLS/API/OTK/retention/privacy contracts.",
-    "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
-    "MAINARCH-RETEST-02 PASS: 8 findings verified and Closed (MAIN Closed total 25; remaining 11).",
-    "MAINARCH-FIX-03 complete: invariant traceability (35/35), B-021 verification matrix (150 stable test IDs), release/signing/incident governance, branch-protection release gate, and implementation-readiness state model established; 5 findings (011, 024, 026, 027, 036) moved to Ready For Retest; none Closed.",
-    "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007; ANOX-MAINARCH-024 added (newly defined signing/release custody + incident trust boundary).",
-    "Next planned task: MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (pending human authorization).",
-    "MAINARCH-FIX-03 completed and merged to main via PR #14.",
-    "MAINARCH-RETEST-03 PASS: 5 findings (011, 024, 026, 027, 036) verified and Closed; MAIN Closed total 30; remaining Open 6 (013, 018, 019, 023, 030, 031); no findings remain Ready For Retest.",
-    "MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE.",
-    "Milestone security review remains PENDING for ANOX-MAINARCH-003, ANOX-MAINARCH-007 and ANOX-MAINARCH-024 (closure = architecture remediation verified, not milestone security audit).",
-    "ANOX-MAINARCH-018 physical GrapheneOS/StrongBox verification remains PHYSICAL_VERIFICATION_REQUIRED; no repository evidence may substitute.",
-    "B-004 and B-005 implementation remain NOT_STARTED; implementation_readiness.json unchanged in this respect.",
-    "Next planned task: LEGACY / BUILD / HARDWARE VERIFICATION phase — first session LEGACY-AUDIT-B002 per docs/workforce/audits/legacy-audit-plan.json (pending human authorization).",
-    "LEGACY-AUDIT-SET-FREEZE (ANOX-RUN-LEGACYFREEZE0001) on f245dc429a9e4bd10f51692eb452d03ccb9a6749: six legacy audits 6/6 COMPLETE; 7 audit-local candidates promoted to canonical Legacy findings; Product remains BLOCKED_PENDING_FINAL_AUDIT; next task ANOX-TASK-LEGACYFIX01.",
-    "2026-09-06T08:58:11.484746Z: LEGACY-FIX-01 complete at 342d55386f1bd7ea1531fc70e0e0f14fca0f279f. 8 target findings moved to Ready For Retest (019,023,031,ANDROIDSEC-001,CRYPTO-005,INTEGRATION-001/002/003); product remains BLOCKED_PENDING_FINAL_AUDIT; next task LEGACY-RETEST-01.",
-    "2026-09-07: LEGACY-RETEST-01 PASS — 8/8 foundation-safety findings independently verified PASS — REMEDIATED at canonical retest base 3adf56c17936fdf60c864e4a26f1863243478f44 (Devin SWE-1.7 Max, read-only); no FAIL/PARTIAL/REGRESSION/NOT-REVIEWABLE; JVM 177/0, Rust 17/0, lint 0 errors/0 NewApi; instrumentation NOT_RUN (device/emulator required).",
-    "2026-09-07: LEGACY-RETEST-01-INGEST complete — exactly 8 findings Closed (019, 023, 031, ANDROIDSEC-001, CRYPTO-005, INTEGRATION-001/002/003) with preserved severity/title/evidence; 38 Closed / 5 Open (013, 018, 030, INTEGRATION-005, B003-001); no Ready For Retest remain; Class-A foundation blocker set CLOSED.",
-    "2026-09-07: Historical audit validators hardened to lifecycle-aware semantics (snapshot expectations vs legal live transitions); stale equality checks for MAINARCH-FIX-01/02/03, RETEST-01/02/03-INGEST and the legacy consolidation updated; structured trigger detection replaces prose substring matching.",
-    "2026-09-07: Next canonical Final Pre-Product gate resolved: AUDIT-WORKFORCE-ARCHITECTURE (first unexecuted required audit session per final-audit-plan.json); Candidate task ANOX-TASK-WORKFORCEARCH001 recorded; start only on explicit human authorization.",
-    "2026-09-07: AUDIT-WORKFORCE-ARCHITECTURE (ANOX-AUDIT-WORKFORCE-ARCH-001) completed as PASS WITH FINDINGS on frozen base d5f76ba. Six audit-local candidates dispositioned; three promoted to canonical Open findings (ANOX-WORKFORCE-AUDIT-001, 002, 005), two merged into 002 (003, 004), one scope decision (006). Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance recorded as derived work candidate ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001. Product remains BLOCKED_PENDING_FINAL_AUDIT; next candidate ANOX-TASK-WORKFORCEFIX01; Security Architecture Audit not authorized until blocking Workforce findings are closed.",
-    "2026-09-07T20:00:00Z: WORKFORCE-FIX-01 authorized. Finding 001 (merge-aware validator), Finding 002 (post-merge derived continuity state), and Finding 005 (path normalization) remediated to Ready For Retest. Final operational handoff acceptance gate defined as PENDING/NOT_EXECUTED. Product remains BLOCKED_PENDING_FINAL_AUDIT; next Candidate ANOX-TASK-WORKFORCERETEST01.",
-    "2026-09-07T22:00:00Z: WORKFORCE-RETEST-01 completed at post-merge main SHA 8385f4019184be9b568f65ec4748194595ef339c. Overall FAIL: Finding 001 PASS — REMEDIATED, Finding 005 PASS — REMEDIATED, Finding 002 FAIL — NOT REMEDIATED (stale human-readable effective gate in archive CURRENT_HANDOFF.md). Finding 002 remains Ready For Retest pending WORKFORCE-FIX-02. Findings 001 and 005 remain Ready For Retest with prior PASS evidence preserved.",
-    "WORKFORCE-FIX-02: archive CURRENT_HANDOFF.md and CURRENT_STATE.json rendered from resolved effective state; no third bookkeeping commit required; no product/backend/SQL/CI/secret changes; no Security Architecture audit started.",
-    "2026-09-09: WORKFORCE-CONTINUITY-SYNC-FIX-01 authorized. Synchronize CURRENT_STATE.json (current_gate = __EFFECTIVE_GATE__) and WORKFORCE_STATE.json (described_head / pre_merge_state / post_merge_state) for the Human merge of the continuity-sync branch. Add previous_merges record for the Harness-Fix R1 Human merge (88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f). Preserve WORKFORCE-HARNESS-RECHECK-01 FAIL as immutable historical evidence; do NOT reuse the failed audit ID; create Candidate ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED.",
-    "2026-09-10: WORKFORCE-RETEST-CLOSURE-INGEST ready on branch governance/workforce-retest-closure-ingest at base 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7. WORKFORCE-HARNESS-RECHECK-02 PASS: 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. Findings 001/002/005 Closed. ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02 Closed; ANOX-TASK-SECURITY-ARCH-001 recorded as Candidate. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED; remote mutation NONE.",
-    "2026-09-10: ANOX-EVENT-0043 metadata commit sealed described_head to 8572ab99f4e2e62e5be75abb3144f6f927aa9f68.",
-    "2026-09-11T00:00:00Z: ANOX-AUDIT-SECURITY-ARCH-001 completed PASS_WITH_FINDINGS at c653a1d6a302; 10 canonical findings frozen (ANOX-SECURITY-ARCH-001..010); 4 HIGH B-004 blockers; ANOX-TASK-SECURITY-ARCH-001 Closed; ANOX-TASK-SECURITY-ARCH-FREEZE-001 Ready For Remote; product remains BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.",
-    "2026-09-11T00:00:00Z: ANOX-EVENT-0044 metadata commit sealed described_head to e2e9f372e100.",
-    "2026-09-11: ANOX-EVENT-0045 SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 at base 869b99acac04. Five audit reports preserved byte-exact under docs/reports/security/audits/; canonical evidence registry + traceability under docs/security/audit-evidence/. CODEBASE-001/002 + CONSENSUS-001 + BUILD-SUPPLYCHAIN-001 outcomes recorded; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-CRYPTO-JNI-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-13: ANOX-EVENT-0047 SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 at base 638e63a22c91. AUDIT-SECURITY-AUTH-DPOP-001 executed PASS_WITH_FINDINGS (3 candidates 0C/0H/1M/2L/0I + 3 architecture gaps; ROOT-006/007 confirmed, ROOT-008/009 confirmed+expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 57516d7d); registry 7/7 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ANDROID-STORAGE-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-13: ANOX-EVENT-0048 SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 at base b9abeb0850a4. AUDIT-SECURITY-ANDROID-STORAGE-001 executed PASS_WITH_FINDINGS (2 candidates 0C/0H/0M/2L/0I + 3 architecture gaps; ROOT-006/007/010/011/012/015/017 confirmed, 006/007/011/012 expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 7532877d); registry 8/8 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ATTACKCHAIN-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-13: ANOX-EVENT-0049 SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 at base e54584903a35. AUDIT-SECURITY-ATTACKCHAIN-001 executed PASS_WITH_FINDINGS (15 ANOX-ATTACKCHAIN candidates 0C/4H/7M/3L/1I — AC-003 conditional-critical overlay only; E2=8/E1=6/E0=1; 68 items UNMAPPED=0; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a4feac55); registry 9/9 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate MASTER-SPECIALIST-CONSOLIDATION = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-14: ANOX-EVENT-0050 MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 at base 1eb773069d81. MASTER-SPECIALIST-CONSOLIDATION-001 executed PASS_WITH_CONSOLIDATION_FINDINGS (90/90 source items accounted; 44 MSC units = 42 OPEN + 2 REJECTED; severity 0C/7H/16M/6L/4I-META/9CONTRACT; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a22c7798); registry 10/10 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED; next gate SECURITY-REMEDIATION-COVERAGE-GATE = Candidate/NOT_EXECUTED; remote mutation NONE.",
-    "2026-09-14: ANOX-EVENT-0051 SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 at base 610ed0833753. SECURITY-REMEDIATION-COVERAGE-GATE-001 executed PASS (42/42 OPEN MSC units covered, 0 uncovered, 0 unknown, dependency cycles 0, parallel-writer collisions 0; FCP_1..8 enforced; false-closure A-F blocked; SC/CC 14/14; PHYSICAL_P1..P17 assigned 17/17 executed 0; retest owners 42/42; DoD unowned 0; H1/H2/H3/R1 pending) and preserved byte-exact (SHA-256 175aa756, 33527 bytes); registry 11/11 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED (PASS does NOT authorize remediation); next state HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION PENDING; remote mutation NONE.",
-    "2026-09-14: ANOX-EVENT-0052 HUMAN-PRE-REMEDIATION-DECISIONS-001 at base 9e585468d081. H1/H2/H3/R1 decided by Human Product & Security Owner (0 auto-accepted); SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER for wave S0 ∥ S1 only; security remediation NOT_STARTED; B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; 42 open MSC units unchanged (0 fixed); remote mutation NONE.",
-    "2026-09-14: ANOX-EVENT-0053 REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 at base 0f932520393f. REMEDIATION_SESSION_S0 contract freeze implemented in B025_MANDATORY_AMENDMENTS_V1_4.md (11 primary contract units FROZEN_IN_AUTHORITY / CONTRACT_VALIDATOR_PASS + 1 supporting MSC-022 entry; SC 14/14, CC 14/14, S1-S18; ambiguities 0; 98 adversarial tests); corrected in place by REMEDIATION-SESSION-S0-CORRECTION-001 after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS (F-01 HUMAN_RATIFIED via ANOX-DECISION-S0-F01-RATIFICATION-001; F-02..F-10 FIXED_PENDING_TARGETED_RETEST; old substantive d9c7872d0c89 superseded by 8756a94824ba); security remediation IN_PROGRESS; S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 authorized/not executed; 0 MSC units closed (42 open); B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE."
+  "required_legacy_audits": [
+   "LEGACY-AUDIT-B002",
+   "LEGACY-AUDIT-B003",
+   "LEGACY-AUDIT-CRYPTO",
+   "LEGACY-AUDIT-ANDROID-SEC",
+   "LEGACY-AUDIT-BUILD",
+   "LEGACY-AUDIT-INTEGRATION"
   ],
   "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
-  "next_phase": "SECURITY_REMEDIATION_WAVE_1",
   "main_architecture_audit": "COMPLETE",
   "main_architecture_remediation_phase": "COMPLETE",
   "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
-  "legacy_audit_set_status": "6/6 COMPLETE",
   "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
-  "last_sync": "ANOX-EVENT-0053"
+  "next_phase": "SECURITY_REMEDIATION_WAVE_1",
+  "legacy_audit_set_status": "6/6 COMPLETE",
+  "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
+  "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
+  "class_a_foundation_blockers": "CLOSED",
+  "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (S0_MERGE_READINESS=READY; F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); S1 isolated/IMPLEMENTATION_COMPLETE/NOT_INTEGRATED"
+ },
+ "pre_merge_state": {
+  "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
+  "current_gate": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)",
+  "current_writer": {
+   "task_id": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+   "role_id": "ROLE-009",
+   "branch": "governance/security-remediation-s0-evidence-preservation-001"
+  },
+  "next_phase": "SECURITY_REMEDIATION_WAVE_1",
+  "current_task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+  "active_task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+ },
+ "post_merge_state": {
+  "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
+  "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)",
+  "current_writer": null,
+  "next_phase": "SECURITY_REMEDIATION_WAVE_1",
+  "current_task": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 sealed — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED; next MERGE_S0_INTO_MAIN → post-S0 S1 integration (regenerate S1 provisional event identity); S2/S3/S4 NOT_STARTED",
+  "active_task": null
+ },
+ "previous_merges": [
+  {
+   "merge_head": "8385f4019184be9b568f65ec4748194595ef339c",
+   "pre_merge_state": {
+    "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
+    "current_gate": "WORKFORCE-FIX-01 — WORKFORCE GOVERNANCE / CONTINUITY HARDENING (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-WORKFORCEFIX01",
+     "role_id": "ROLE-003",
+     "branch": "remediation/workforce-fix-01-governance-continuity"
+    },
+    "next_phase": "WORKFORCE-RETEST-01",
+    "current_task": "ANOX-TASK-WORKFORCEFIX01",
+    "active_task": "ANOX-TASK-WORKFORCEFIX01"
+   },
+   "post_merge_state": {
+    "described_head": "3cc663e00a23e6a0cc342d3ad941a8e926772cd6",
+    "current_gate": "WORKFORCE-RETEST-01 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "WORKFORCE-RETEST-01",
+    "current_task": "WORKFORCE-FIX-01 merged — awaiting independent retest",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "81e091f3346a7c8653c100a334a1dbfe2c54d464",
+   "pre_merge_state": {
+    "described_head": "9ed0c32efbb78e850a974af7ad2df5d026891a07",
+    "current_gate": "WORKFORCE-FIX-02 — HANDOFF ARCHIVE EFFECTIVE-STATE RENDERING (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-WORKFORCEFIX02",
+     "role_id": "ROLE-009",
+     "branch": "remediation/workforce-fix-02-handoff-archive"
+    },
+    "next_phase": "WORKFORCE-RETEST-02",
+    "current_task": "ANOX-TASK-WORKFORCEFIX02",
+    "active_task": "ANOX-TASK-WORKFORCEFIX02"
+   },
+   "post_merge_state": {
+    "described_head": "9ed0c32efbb78e850a974af7ad2df5d026891a07",
+    "current_gate": "WORKFORCE-RETEST-02 — INDEPENDENT TARGETED WORKFORCE GOVERNANCE DELTA RETEST (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "WORKFORCE-RETEST-02",
+    "current_task": "WORKFORCE-FIX-02 merged — awaiting independent retest",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f",
+   "pre_merge_state": {
+    "described_head": "36ec5227dec4727950ce793df9bea013f8de8823",
+    "current_gate": "WORKFORCE-TEST-HARNESS-FIX-01 — Workforce/Handoff test fixture repair (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01",
+     "role_id": "ROLE-009",
+     "branch": "remediation/workforce-test-harness-fix-01"
+    },
+    "next_phase": "WORKFORCE-HARNESS-RECHECK-01",
+    "current_task": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01",
+    "active_task": "ANOX-TASK-WORKFORCE-TEST-HARNESS-FIX-01"
+   },
+   "post_merge_state": {
+    "described_head": "36ec5227dec4727950ce793df9bea013f8de8823",
+    "current_gate": "WORKFORCE-HARNESS-RECHECK-01 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "WORKFORCE-HARNESS-RECHECK-01",
+    "current_task": "WORKFORCE-TEST-HARNESS-FIX-01 merged — awaiting independent retest",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7",
+   "pre_merge_state": {
+    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
+    "current_gate": "WORKFORCE-CONTINUITY-SYNC-FIX-01 — POST-MERGE CONTINUITY / WORKFORCE STATE SYNCHRONIZATION (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+     "role_id": "ROLE-009",
+     "branch": "remediation/workforce-continuity-sync-fix-01"
+    },
+    "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+    "current_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01",
+    "active_task": "ANOX-TASK-WORKFORCE-CONTINUITY-SYNC-FIX-01"
+   },
+   "post_merge_state": {
+    "described_head": "9b38352ebf60d1e0540bb631d97e16e1e72aa969",
+    "current_gate": "WORKFORCE-HARNESS-RECHECK-02 — INDEPENDENT TARGETED HARNESS RECHECK (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "WORKFORCE-HARNESS-RECHECK-02",
+    "current_task": "WORKFORCE-CONTINUITY-SYNC-FIX-01 merged — awaiting independent retest",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "a79166ab7e65db71ba70e3a427df2ad017dc9225",
+   "pre_merge_state": {
+    "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 — RETROSPECTIVE + CURRENT SECURITY AUDIT EVIDENCE PRESERVATION (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+     "role_id": "ROLE-009",
+     "branch": "governance/security-audit-evidence-preservation-001"
+    },
+    "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-001"
+   },
+   "post_merge_state": {
+    "described_head": "1d924a1182d17c504b352ea29f9e1f346f492cc9",
+    "current_gate": "AUDIT-SECURITY-CRYPTO-JNI-001 — CRYPTO/JNI SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "AUDIT-SECURITY-CRYPTO-JNI-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 merged — awaiting Crypto/JNI specialist audit authorization",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "638e63a22c91ca81365bf55c8a59ec47878dd7fd",
+   "pre_merge_state": {
+    "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 — PRESERVE AUDIT-SECURITY-CRYPTO-JNI-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
+     "role_id": "ROLE-009",
+     "branch": "governance/security-audit-evidence-preservation-002"
+    },
+    "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-002"
+   },
+   "post_merge_state": {
+    "described_head": "45402df319f778d1fc11bcf25cec045ac9769401",
+    "current_gate": "AUDIT-SECURITY-AUTH-DPOP-001 — AUTH/DPOP SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "AUDIT-SECURITY-AUTH-DPOP-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-002 merged — awaiting Auth/DPoP specialist audit authorization",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "b9abeb0850a476716403d224b87a857c1147502e",
+   "pre_merge_state": {
+    "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 — PRESERVE AUDIT-SECURITY-AUTH-DPOP-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+     "role_id": "ROLE-009",
+     "branch": "governance/security-audit-evidence-preservation-003"
+    },
+    "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-003"
+   },
+   "post_merge_state": {
+    "described_head": "07fecde79643dd43c3d9c9b412225881780254c6",
+    "current_gate": "AUDIT-SECURITY-ANDROID-STORAGE-001 — ANDROID/STORAGE SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "AUDIT-SECURITY-ANDROID-STORAGE-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 merged — awaiting Android/Storage specialist audit authorization",
+    "active_task": null
+   }
+  },
+  {
+   "merge_head": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
+   "pre_merge_state": {
+    "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
+    "current_gate": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 — PRESERVE AUDIT-SECURITY-ANDROID-STORAGE-001 EVIDENCE (Ready For Remote; awaiting human merge)",
+    "current_writer": {
+     "task_id": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
+     "role_id": "ROLE-009",
+     "branch": "governance/security-audit-evidence-preservation-004"
+    },
+    "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
+    "current_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004",
+    "active_task": "ANOX-TASK-SECURITY-AUDIT-EVIDENCE-PRESERVATION-004"
+   },
+   "post_merge_state": {
+    "described_head": "8b1cc8d4b3310a0fe910e5b493d2fd204635cba7",
+    "current_gate": "AUDIT-SECURITY-ATTACKCHAIN-001 — ATTACKCHAIN SPECIALIST SECURITY AUDIT (Candidate, pending human authorization)",
+    "current_writer": null,
+    "next_phase": "AUDIT-SECURITY-ATTACKCHAIN-001",
+    "current_task": "SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 merged — awaiting Attackchain specialist audit authorization",
+    "active_task": null
+   }
+  }
+ ],
+ "final_operational_handoff_acceptance_gate": {
+  "gate_id": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
+  "title": "FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE",
+  "status": "NOT_EXECUTED",
+  "result": "PENDING",
+  "work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
+  "rationale": "Before the product final gate opens, the project must prove the complete development/workforce system can be reconstructed from the repository and handoff archive without chat history."
+ },
+ "notes": [
+  "B027-C final integration merged to main; B027-A/B/C canonical.",
+  "AUDIT-MAIN-ARCHITECTURE executed: PASS WITH FINDINGS; 36 findings frozen.",
+  "MAINARCH-FIX-01 completed and merged to main via PR #10.",
+  "MAINARCH-RETEST-01 PASS: 17 findings verified and Closed.",
+  "MAINARCH-FIX-02 complete: 8 findings moved to Ready For Retest; B025_MANDATORY_AMENDMENTS_V1_2.md freezes DB/RLS/API/OTK/retention/privacy contracts.",
+  "Product development remains BLOCKED_PENDING_FINAL_AUDIT.",
+  "MAINARCH-RETEST-02 PASS: 8 findings verified and Closed (MAIN Closed total 25; remaining 11).",
+  "MAINARCH-FIX-03 complete: invariant traceability (35/35), B-021 verification matrix (150 stable test IDs), release/signing/incident governance, branch-protection release gate, and implementation-readiness state model established; 5 findings (011, 024, 026, 027, 036) moved to Ready For Retest; none Closed.",
+  "Milestone security review still required for ANOX-MAINARCH-003 and ANOX-MAINARCH-007; ANOX-MAINARCH-024 added (newly defined signing/release custody + incident trust boundary).",
+  "Next planned task: MAINARCH-RETEST-03 — TARGETED DELTA RETEST OF TRACEABILITY / RELEASE-GOVERNANCE FINDINGS (pending human authorization).",
+  "MAINARCH-FIX-03 completed and merged to main via PR #14.",
+  "MAINARCH-RETEST-03 PASS: 5 findings (011, 024, 026, 027, 036) verified and Closed; MAIN Closed total 30; remaining Open 6 (013, 018, 019, 023, 030, 031); no findings remain Ready For Retest.",
+  "MAIN ARCHITECTURE AUDIT = COMPLETE; MAIN ARCHITECTURE REMEDIATION PHASE = COMPLETE.",
+  "Milestone security review remains PENDING for ANOX-MAINARCH-003, ANOX-MAINARCH-007 and ANOX-MAINARCH-024 (closure = architecture remediation verified, not milestone security audit).",
+  "ANOX-MAINARCH-018 physical GrapheneOS/StrongBox verification remains PHYSICAL_VERIFICATION_REQUIRED; no repository evidence may substitute.",
+  "B-004 and B-005 implementation remain NOT_STARTED; implementation_readiness.json unchanged in this respect.",
+  "Next planned task: LEGACY / BUILD / HARDWARE VERIFICATION phase — first session LEGACY-AUDIT-B002 per docs/workforce/audits/legacy-audit-plan.json (pending human authorization).",
+  "LEGACY-AUDIT-SET-FREEZE (ANOX-RUN-LEGACYFREEZE0001) on f245dc429a9e4bd10f51692eb452d03ccb9a6749: six legacy audits 6/6 COMPLETE; 7 audit-local candidates promoted to canonical Legacy findings; Product remains BLOCKED_PENDING_FINAL_AUDIT; next task ANOX-TASK-LEGACYFIX01.",
+  "2026-09-06T08:58:11.484746Z: LEGACY-FIX-01 complete at 342d55386f1bd7ea1531fc70e0e0f14fca0f279f. 8 target findings moved to Ready For Retest (019,023,031,ANDROIDSEC-001,CRYPTO-005,INTEGRATION-001/002/003); product remains BLOCKED_PENDING_FINAL_AUDIT; next task LEGACY-RETEST-01.",
+  "2026-09-07: LEGACY-RETEST-01 PASS — 8/8 foundation-safety findings independently verified PASS — REMEDIATED at canonical retest base 3adf56c17936fdf60c864e4a26f1863243478f44 (Devin SWE-1.7 Max, read-only); no FAIL/PARTIAL/REGRESSION/NOT-REVIEWABLE; JVM 177/0, Rust 17/0, lint 0 errors/0 NewApi; instrumentation NOT_RUN (device/emulator required).",
+  "2026-09-07: LEGACY-RETEST-01-INGEST complete — exactly 8 findings Closed (019, 023, 031, ANDROIDSEC-001, CRYPTO-005, INTEGRATION-001/002/003) with preserved severity/title/evidence; 38 Closed / 5 Open (013, 018, 030, INTEGRATION-005, B003-001); no Ready For Retest remain; Class-A foundation blocker set CLOSED.",
+  "2026-09-07: Historical audit validators hardened to lifecycle-aware semantics (snapshot expectations vs legal live transitions); stale equality checks for MAINARCH-FIX-01/02/03, RETEST-01/02/03-INGEST and the legacy consolidation updated; structured trigger detection replaces prose substring matching.",
+  "2026-09-07: Next canonical Final Pre-Product gate resolved: AUDIT-WORKFORCE-ARCHITECTURE (first unexecuted required audit session per final-audit-plan.json); Candidate task ANOX-TASK-WORKFORCEARCH001 recorded; start only on explicit human authorization.",
+  "2026-09-07: AUDIT-WORKFORCE-ARCHITECTURE (ANOX-AUDIT-WORKFORCE-ARCH-001) completed as PASS WITH FINDINGS on frozen base d5f76ba. Six audit-local candidates dispositioned; three promoted to canonical Open findings (ANOX-WORKFORCE-AUDIT-001, 002, 005), two merged into 002 (003, 004), one scope decision (006). Final operational Handoff/Bootstrap/Employee Cold-Boot acceptance recorded as derived work candidate ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001. Product remains BLOCKED_PENDING_FINAL_AUDIT; next candidate ANOX-TASK-WORKFORCEFIX01; Security Architecture Audit not authorized until blocking Workforce findings are closed.",
+  "2026-09-07T20:00:00Z: WORKFORCE-FIX-01 authorized. Finding 001 (merge-aware validator), Finding 002 (post-merge derived continuity state), and Finding 005 (path normalization) remediated to Ready For Retest. Final operational handoff acceptance gate defined as PENDING/NOT_EXECUTED. Product remains BLOCKED_PENDING_FINAL_AUDIT; next Candidate ANOX-TASK-WORKFORCERETEST01.",
+  "2026-09-07T22:00:00Z: WORKFORCE-RETEST-01 completed at post-merge main SHA 8385f4019184be9b568f65ec4748194595ef339c. Overall FAIL: Finding 001 PASS — REMEDIATED, Finding 005 PASS — REMEDIATED, Finding 002 FAIL — NOT REMEDIATED (stale human-readable effective gate in archive CURRENT_HANDOFF.md). Finding 002 remains Ready For Retest pending WORKFORCE-FIX-02. Findings 001 and 005 remain Ready For Retest with prior PASS evidence preserved.",
+  "WORKFORCE-FIX-02: archive CURRENT_HANDOFF.md and CURRENT_STATE.json rendered from resolved effective state; no third bookkeeping commit required; no product/backend/SQL/CI/secret changes; no Security Architecture audit started.",
+  "2026-09-09: WORKFORCE-CONTINUITY-SYNC-FIX-01 authorized. Synchronize CURRENT_STATE.json (current_gate = __EFFECTIVE_GATE__) and WORKFORCE_STATE.json (described_head / pre_merge_state / post_merge_state) for the Human merge of the continuity-sync branch. Add previous_merges record for the Harness-Fix R1 Human merge (88b312fb2d7f3ba36fd49d95e80bdbfdded3d71f). Preserve WORKFORCE-HARNESS-RECHECK-01 FAIL as immutable historical evidence; do NOT reuse the failed audit ID; create Candidate ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED.",
+  "2026-09-10: WORKFORCE-RETEST-CLOSURE-INGEST ready on branch governance/workforce-retest-closure-ingest at base 1fa8ba9867fbed3936e0922c2c2b70c9afbc1ae7. WORKFORCE-HARNESS-RECHECK-02 PASS: 001 PASS — NO REGRESSION, 002 PASS — REMEDIATED, 005 PASS — NO REGRESSION. Findings 001/002/005 Closed. ANOX-TASK-WORKFORCE-HARNESS-RECHECK-02 Closed; ANOX-TASK-SECURITY-ARCH-001 recorded as Candidate. Product remains BLOCKED_PENDING_FINAL_AUDIT; Security Architecture Audit NOT_STARTED; remote mutation NONE.",
+  "2026-09-10: ANOX-EVENT-0043 metadata commit sealed described_head to 8572ab99f4e2e62e5be75abb3144f6f927aa9f68.",
+  "2026-09-11T00:00:00Z: ANOX-AUDIT-SECURITY-ARCH-001 completed PASS_WITH_FINDINGS at c653a1d6a302; 10 canonical findings frozen (ANOX-SECURITY-ARCH-001..010); 4 HIGH B-004 blockers; ANOX-TASK-SECURITY-ARCH-001 Closed; ANOX-TASK-SECURITY-ARCH-FREEZE-001 Ready For Remote; product remains BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.",
+  "2026-09-11T00:00:00Z: ANOX-EVENT-0044 metadata commit sealed described_head to e2e9f372e100.",
+  "2026-09-11: ANOX-EVENT-0045 SECURITY-AUDIT-EVIDENCE-PRESERVATION-001 at base 869b99acac04. Five audit reports preserved byte-exact under docs/reports/security/audits/; canonical evidence registry + traceability under docs/security/audit-evidence/. CODEBASE-001/002 + CONSENSUS-001 + BUILD-SUPPLYCHAIN-001 outcomes recorded; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-CRYPTO-JNI-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
+  "2026-09-13: ANOX-EVENT-0047 SECURITY-AUDIT-EVIDENCE-PRESERVATION-003 at base 638e63a22c91. AUDIT-SECURITY-AUTH-DPOP-001 executed PASS_WITH_FINDINGS (3 candidates 0C/0H/1M/2L/0I + 3 architecture gaps; ROOT-006/007 confirmed, ROOT-008/009 confirmed+expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 57516d7d); registry 7/7 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ANDROID-STORAGE-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
+  "2026-09-13: ANOX-EVENT-0048 SECURITY-AUDIT-EVIDENCE-PRESERVATION-004 at base b9abeb0850a4. AUDIT-SECURITY-ANDROID-STORAGE-001 executed PASS_WITH_FINDINGS (2 candidates 0C/0H/0M/2L/0I + 3 architecture gaps; ROOT-006/007/010/011/012/015/017 confirmed, 006/007/011/012 expanded; ROOT-016 remains rejected) and preserved byte-exact (SHA-256 7532877d); registry 8/8 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate AUDIT-SECURITY-ATTACKCHAIN-001 = Candidate/NOT_EXECUTED; remote mutation NONE.",
+  "2026-09-13: ANOX-EVENT-0049 SECURITY-AUDIT-EVIDENCE-PRESERVATION-005 at base e54584903a35. AUDIT-SECURITY-ATTACKCHAIN-001 executed PASS_WITH_FINDINGS (15 ANOX-ATTACKCHAIN candidates 0C/4H/7M/3L/1I — AC-003 conditional-critical overlay only; E2=8/E1=6/E0=1; 68 items UNMAPPED=0; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a4feac55); registry 9/9 audits; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; next gate MASTER-SPECIALIST-CONSOLIDATION = Candidate/NOT_EXECUTED; remote mutation NONE.",
+  "2026-09-14: ANOX-EVENT-0050 MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001 at base 1eb773069d81. MASTER-SPECIALIST-CONSOLIDATION-001 executed PASS_WITH_CONSOLIDATION_FINDINGS (90/90 source items accounted; 44 MSC units = 42 OPEN + 2 REJECTED; severity 0C/7H/16M/6L/4I-META/9CONTRACT; CROSS_COMPONENT_CONTRACT_HARDENING_REQUIRED; SEC-C=NO) and preserved byte-exact (SHA-256 a22c7798); registry 10/10 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED; next gate SECURITY-REMEDIATION-COVERAGE-GATE = Candidate/NOT_EXECUTED; remote mutation NONE.",
+  "2026-09-14: ANOX-EVENT-0051 SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001 at base 610ed0833753. SECURITY-REMEDIATION-COVERAGE-GATE-001 executed PASS (42/42 OPEN MSC units covered, 0 uncovered, 0 unknown, dependency cycles 0, parallel-writer collisions 0; FCP_1..8 enforced; false-closure A-F blocked; SC/CC 14/14; PHYSICAL_P1..P17 assigned 17/17 executed 0; retest owners 42/42; DoD unowned 0; H1/H2/H3/R1 pending) and preserved byte-exact (SHA-256 175aa756, 33527 bytes); registry 11/11 records; product remains BLOCKED_PENDING_FINAL_AUDIT; B-004/B-005 NOT_STARTED; security remediation NOT_STARTED (PASS does NOT authorize remediation); next state HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION PENDING; remote mutation NONE.",
+  "2026-09-14: ANOX-EVENT-0052 HUMAN-PRE-REMEDIATION-DECISIONS-001 at base 9e585468d081. H1/H2/H3/R1 decided by Human Product & Security Owner (0 auto-accepted); SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER for wave S0 ∥ S1 only; security remediation NOT_STARTED; B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; 42 open MSC units unchanged (0 fixed); remote mutation NONE.",
+  "2026-09-14: ANOX-EVENT-0053 REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001 at base 0f932520393f. REMEDIATION_SESSION_S0 contract freeze implemented in B025_MANDATORY_AMENDMENTS_V1_4.md (11 primary contract units FROZEN_IN_AUTHORITY / CONTRACT_VALIDATOR_PASS + 1 supporting MSC-022 entry; SC 14/14, CC 14/14, S1-S18; ambiguities 0; 98 adversarial tests); corrected in place by REMEDIATION-SESSION-S0-CORRECTION-001 after INDEPENDENT-ARCHITECTURE-RETEST-S0-001 PASS_WITH_FINDINGS (F-01 HUMAN_RATIFIED via ANOX-DECISION-S0-F01-RATIFICATION-001; F-02..F-10 FIXED_PENDING_TARGETED_RETEST; old substantive d9c7872d0c89 superseded by 8756a94824ba); security remediation IN_PROGRESS; S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 authorized/not executed; 0 MSC units closed (42 open); B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE."
+ ],
+ "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
+ "next_phase": "SECURITY_REMEDIATION_WAVE_1",
+ "main_architecture_audit": "COMPLETE",
+ "main_architecture_remediation_phase": "COMPLETE",
+ "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
+ "legacy_audit_set_status": "6/6 COMPLETE",
+ "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
+ "last_sync": "ANOX-EVENT-0054"
 }

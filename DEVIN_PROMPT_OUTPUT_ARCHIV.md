@@ -110,3 +110,12 @@
 - Commits: substantive `8756a94824ba9baef678176ef2ee24a2c302f1d0` (`security: freeze and harden pre-B004 security contracts`; supersedes unmerged `d9c7872d0c89…`); metadata-only `docs: sync corrected S0 remediation state` (seals described_head). PR: none; remote mutation NONE.
 - Final result: `PASS` — `REMEDIATION_SESSION_S0 = CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST` (F-01 `HUMAN_RATIFIED`; F-02…F-10 `FIXED_PENDING_TARGETED_RETEST`); `SECURITY_REMEDIATION = IN_PROGRESS`; `CLOSED_BY_S0 = 0` (42 MSC units open); B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ROOT-013 MEDIUM/OPEN; ROOT-016 REJECTED; ARCH-010 RETIRE_AT_B004_START.
 - Next recommended step: `TARGETED INDEPENDENT RETEST OF F-01…F-10 ON CORRECTED S0 HEAD → PRESERVE/FREEZE S0 REMEDIATION EVIDENCE → MERGE`; S1 in parallel; no S3/S4 before the S0 gate.
+
+## ANOX-EVENT-0054 — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 (2026-09-16)
+
+- Task: `ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001`
+- Substantive commit: `24576ec333f3567c36b46f42ed30c718788ea601`
+- Canonical base: `0be57335adaa25ad584357dde74666eb97339a01`
+- Result: `Ready For Remote`; complete corrected S0 evidence chain preserved — implementation `PASS`, `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` `PASS_WITH_FINDINGS` (human-authorized reconstruction; verbatim transcript lost before ingestion — `HUMAN_AUTHORIZED_RECONSTRUCTED_SECURITY_EVIDENCE`, no invented hash), correction `PASS`, `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking).
+- Key files: `docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md`, `docs/reports/security/retests/` (2 reports), `docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md`, `docs/security/audit-evidence/` (registry `SEC-AUDIT-REG-0013`, 13 records; +27 traceability; hashes; index), `tools/audit/validate_s0_evidence_preservation.py` + `test_s0_evidence_preservation.py` (40 tests), `tools/audit/validate_security_audit_evidence_preservation.py` (pinned extension), `tools/audit/test_security_audit_evidence_preservation.py` (277 tests), `docs/continuity/*`, `docs/workforce/*`.
+- Invariants preserved: `GLOBAL_OPEN_MSC = 42`; `MSC_CLOSED_BY_S0 = 0`; `SECURITY_REMEDIATION = IN_PROGRESS`; `B004/B005 = NOT_STARTED`; product `BLOCKED_PENDING_FINAL_AUDIT`; S1 isolated (provisional event identity not canonical); no remote mutation.
