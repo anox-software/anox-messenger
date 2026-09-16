@@ -75,6 +75,9 @@ DECISIONS_PATH = "docs/workforce/registries/decisions.jsonl"
 F01_RATIFICATION_DECISION_ID = "ANOX-DECISION-S0-F01-RATIFICATION-001"
 F01_RATIFICATION_REPORT = "docs/reports/security/decisions/S0-F01-FILE-OWNERSHIP-RATIFICATION-001.md"
 S0_TASK_ID = "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
+PRESERVATION_RATIFICATION_DECISION_ID = "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001"
+PRESERVATION_RATIFICATION_REPORT = "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md"
+PRESERVATION_TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
 PROTECTED_SHARED_FILES = {
     "tools/audit/validate_security_audit_evidence_preservation.py": {
         "classification": "PROTECTED_SHARED_GOVERNANCE_FILE",
@@ -84,6 +87,14 @@ PROTECTED_SHARED_FILES = {
         "ratified_change": "S0_SUCCESSOR_EVENT_SUPPORT",
         # SHA-256 of the single Human-ratified post-change content.
         "authorized_sha256": "756141b378a19e3e30c225e1e158bbcd61d6d0b7dc921a3f4fe591c81e497b80",
+        # Second Human-ratified content: the S0 preservation lifecycle
+        # extension (EVENT-0054 + 13th registry record), ratified separately
+        # under ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.
+        "preservation_decision_id": PRESERVATION_RATIFICATION_DECISION_ID,
+        "preservation_ratified_task": PRESERVATION_TASK_ID,
+        "preservation_ratified_change": "S0_PRESERVATION_LIFECYCLE_EXTENSION",
+        "preservation_authorized_sha256": "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7",
+        "preservation_record_path": PRESERVATION_RATIFICATION_REPORT,
         "base_sha256": "2ab59295301e65ed17a7b7256209530bd69e3aeaa57364b0db68aaa0af90bcc9",
         "s1_prohibited_before_integration": True,
     },
@@ -1127,12 +1138,56 @@ def _f01_ratification(errors):
     return rec
 
 
+def _preservation_ratification(errors):
+    """Locate and validate the Human S0-preservation shared-validator ratification
+    record.  Mirrors _f01_ratification; separate authority, same fail-closed
+    pinning discipline (ONE_TIME_CHANGE_SPECIFIC, no blanket grants)."""
+    recs = load_jsonl(DECISIONS_PATH)
+    rec = next((r for r in recs if r.get("decision_id") == PRESERVATION_RATIFICATION_DECISION_ID), None)
+    if rec is None:
+        fail(f"S0 preservation ratification {PRESERVATION_RATIFICATION_DECISION_ID} missing from "
+             f"{DECISIONS_PATH} — a PROTECTED_SHARED_GOVERNANCE_FILE change requires an explicit "
+             f"Human ratification", errors)
+        return None
+    actor = str(rec.get("authority_actor", ""))
+    if "Human Product & Security Owner" not in actor:
+        fail(f"S0 preservation ratification authority_actor must be the Human Product & Security Owner, got {actor!r}", errors)
+    if rec.get("ratified_task") != PRESERVATION_TASK_ID:
+        fail(f"S0 preservation ratification ratified_task must be {PRESERVATION_TASK_ID}, got {rec.get('ratified_task')!r}", errors)
+    files = rec.get("ratified_files") or []
+    if list(files) != list(PROTECTED_SHARED_FILES):
+        fail(f"S0 preservation ratification ratified_files must be exactly {sorted(PROTECTED_SHARED_FILES)}, got {files!r}", errors)
+    if rec.get("ratified_change") != "S0_PRESERVATION_LIFECYCLE_EXTENSION":
+        fail(f"S0 preservation ratification ratified_change must be S0_PRESERVATION_LIFECYCLE_EXTENSION, got {rec.get('ratified_change')!r}", errors)
+    if rec.get("scope") != "ONE_TIME_CHANGE_SPECIFIC":
+        fail("S0 preservation ratification scope must be ONE_TIME_CHANGE_SPECIFIC", errors)
+    for flag in ("grants_general_ownership", "grants_s1_permission", "grants_future_sessions",
+                 "grants_future_event_numbers", "grants_arbitrary_registry_growth"):
+        if rec.get(flag) is not False:
+            fail(f"S0 preservation ratification must record {flag}=false (no blanket grant), got {rec.get(flag)!r}", errors)
+    if rec.get("s1_prohibited_before_integration") is not True:
+        fail("S0 preservation ratification must record s1_prohibited_before_integration=true", errors)
+    digests = rec.get("ratified_sha256") or {}
+    for rel, spec in PROTECTED_SHARED_FILES.items():
+        if digests.get(rel) != spec["preservation_authorized_sha256"]:
+            fail(f"S0 preservation ratification ratified_sha256[{rel}] must pin the ratified content "
+                 f"{spec['preservation_authorized_sha256'][:16]}…, got {str(digests.get(rel))[:16]!r}", errors)
+    if PRESERVATION_RATIFICATION_REPORT not in str(rec.get("record_path", "")):
+        fail(f"S0 preservation ratification must reference its canonical record {PRESERVATION_RATIFICATION_REPORT}", errors)
+    if read_text(PRESERVATION_RATIFICATION_REPORT) is None:
+        fail(f"S0 preservation ratification canonical record {PRESERVATION_RATIFICATION_REPORT} missing", errors)
+    return rec
+
+
 def check_protected_shared_files(errors):
-    """F-03 — protected shared governance files are content-pinned to the single
-    Human-ratified change; any other content fails closed."""
+    """F-03 — protected shared governance files are content-pinned to Human-ratified
+    changes only; any other content fails closed.  Two ratified contents exist:
+    S0_SUCCESSOR_EVENT_SUPPORT (F-01) and S0_PRESERVATION_LIFECYCLE_EXTENSION
+    (preservation decision); the preservation content requires both records."""
     print("\n[S0-CONTRACT] Protected shared governance files (F-03)")
     before = len(errors)
     ratified = _f01_ratification(errors)
+    pres_ratified = _preservation_ratification(errors)
     for rel, spec in PROTECTED_SHARED_FILES.items():
         p = REPO_ROOT / rel
         if not p.exists():
@@ -1143,14 +1198,18 @@ def check_protected_shared_files(errors):
             if ratified is None:
                 fail(f"{rel} carries the S0 successor-support change but no valid Human ratification exists", errors)
             continue
+        if digest == spec["preservation_authorized_sha256"]:
+            if pres_ratified is None:
+                fail(f"{rel} carries the S0 preservation lifecycle extension but no valid Human ratification exists", errors)
+            continue
         if digest == spec["base_sha256"]:
             fail(f"{rel} is at its pre-S0 content — the ratified S0 successor-support change is absent", errors)
             continue
-        fail(f"{rel} content {digest[:16]}… is neither the pre-S0 baseline nor the single Human-ratified "
-             f"change {spec['authorized_sha256'][:16]}… — unauthorized modification of a "
-             f"{spec['classification']}; a new Human ratification is required", errors)
+        fail(f"{rel} content {digest[:16]}… is neither the pre-S0 baseline nor a Human-ratified "
+             f"change ({spec['authorized_sha256'][:16]}… / {spec['preservation_authorized_sha256'][:16]}…) — "
+             f"unauthorized modification of a {spec['classification']}; a new Human ratification is required", errors)
     if len(errors) == before:
-        ok(f"{len(PROTECTED_SHARED_FILES)} protected shared file(s) pinned to the ratified change; "
+        ok(f"{len(PROTECTED_SHARED_FILES)} protected shared file(s) pinned to the ratified change(s); "
            f"S1 prohibited before integration")
 
 
@@ -1189,8 +1248,16 @@ def check_scope(man, errors):
                  or p in S1_OWNED_FILES)
     if bad:
         fail(f"S0 changed product/S1-owned paths: {bad}", errors)
+    def _protected_change_ratified(rel):
+        digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest() if (REPO_ROOT / rel).exists() else None
+        spec = PROTECTED_SHARED_FILES[rel]
+        if digest == spec["authorized_sha256"]:
+            return _f01_ratification([]) is not None
+        if digest == spec["preservation_authorized_sha256"]:
+            return _preservation_ratification([]) is not None
+        return False
     unratified = sorted(p for p in changed
-                        if p in PROTECTED_SHARED_FILES and _f01_ratification([]) is None)
+                        if p in PROTECTED_SHARED_FILES and not _protected_change_ratified(p))
     if unratified:
         fail(f"S0 changed protected shared governance file(s) without Human ratification: {unratified}", errors)
     if len(errors) == before:

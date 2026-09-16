@@ -10,7 +10,8 @@
   "SECURITY-AUDIT-EVIDENCE-PRESERVATION-005",
   "MASTER-SPECIALIST-CONSOLIDATION-PRESERVATION-001",
   "SECURITY-REMEDIATION-COVERAGE-GATE-PRESERVATION-001",
-  "HUMAN-PRE-REMEDIATION-DECISIONS-001"
+  "HUMAN-PRE-REMEDIATION-DECISIONS-001",
+  "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
  ],
  "audit_base_sha": "869b99acac040412a29bbaadc76342070fb2085c",
  "audit_base_sha_latest": "e54584903a353e98ad154d1e8f90f93ed9d7db14",
@@ -139,6 +140,78 @@
    "original_path": "docs/reports/security/decisions/HUMAN-PRE-REMEDIATION-DECISIONS-001.md",
    "normalization": "none — canonical repository-authored decision record",
    "note": "Human Product & Security Owner decision record: H1/H2/H3/R1 decided (no auto-acceptance) + SECURITY_REMEDIATION_START_AUTHORIZATION=GRANTED_BY_HUMAN_OWNER (first wave S0 ∥ S1; remediation NOT_STARTED)."
+  },
+  "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001": {
+   "audit_id": "REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+   "artifact_type": "S0_REMEDIATION_IMPLEMENTATION",
+   "path": "docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md",
+   "sha256": "19cb339f398c4bd9b702a1442ea21d0bf96ffc57ed97ff351d9b49c1eed9484a",
+   "bytes": 17273,
+   "source_present": "YES",
+   "source_type": "CANONICAL_REPOSITORY_REPORT",
+   "original_path": "docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md",
+   "normalization": "none — canonical repository-authored record",
+   "note": "S0 contract-freeze implementation record including the REMEDIATION-SESSION-S0-CORRECTION-001 appendix (single canonical file; also serves as correction source C)."
+  },
+  "INDEPENDENT-ARCHITECTURE-RETEST-S0-001": {
+   "audit_id": "INDEPENDENT-ARCHITECTURE-RETEST-S0-001",
+   "artifact_type": "S0_INDEPENDENT_ARCHITECTURE_RETEST",
+   "path": "docs/reports/security/retests/INDEPENDENT-ARCHITECTURE-RETEST-S0-001.md",
+   "sha256": "fb2f4b8cb83b6b812dfb3656d9f6b1b0c2541b8f9b1af22c55787422e4fa5d29",
+   "bytes": 7727,
+   "source_present": "RECONSTRUCTED",
+   "source_type": "HUMAN_AUTHORIZED_RECONSTRUCTED_SECURITY_EVIDENCE",
+   "original_path": null,
+   "normalization": "reconstruction — verbatim original transcript unavailable; human-authorized; no invented hash",
+   "note": "VERBATIM_ORIGINAL_TRANSCRIPT_AVAILABLE=NO; RECONSTRUCTED=YES; RECONSTRUCTION_HUMAN_AUTHORIZED=YES; ORIGINAL_RESULT=PASS_WITH_FINDINGS; ORIGINAL_FINDING_COUNT=10."
+  },
+  "TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001": {
+   "audit_id": "TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001",
+   "artifact_type": "S0_TARGETED_CORRECTION_RETEST",
+   "path": "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
+   "sha256": "67cb2c152c234397fe94259207492263200123db6acd07e2d97f80ecb5d5b951",
+   "bytes": 9206,
+   "source_present": "YES",
+   "source_type": "VERBATIM_SESSION_TRANSCRIPT_PRESERVED",
+   "original_path": "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
+   "normalization": "verbatim transcript output; one compressed table cell explicitly marked and restored from canonical record facts",
+   "note": "Targeted independent retest of F-01..F-10 on corrected S0 head 0be57335adaa: all merge blockers cleared, 2 residual LOW non-blocking."
+  },
+  "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001": {
+   "audit_id": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+   "artifact_type": "S0_EVIDENCE_PRESERVATION",
+   "path": "docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md",
+   "sha256": "995b4006c96ee53646c78fe93e70ea5d79d99d5a7eab565f997f513a8d3868f8",
+   "bytes": 8552,
+   "source_present": "YES",
+   "source_type": "CANONICAL_REPOSITORY_REPORT",
+   "original_path": "docs/reports/security/remediation/SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001.md",
+   "normalization": "none — canonical repository-authored record",
+   "note": "Canonical preservation record for the S0 evidence chain (this task, ANOX-EVENT-0054)."
+  },
+  "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001": {
+   "audit_id": "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001",
+   "artifact_type": "HUMAN_GOVERNANCE_DECISION_RECORD",
+   "path": "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
+   "sha256": "6f4b21027347b4d94e04e70ef12c84cd43269bbbfe3bf873b2fec6d1d244928a",
+   "bytes": 7311,
+   "source_present": "YES",
+   "source_type": "HUMAN_GOVERNANCE_DECISION",
+   "original_path": "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
+   "normalization": "none — canonical repository-authored decision record",
+   "note": "ONE_TIME_CHANGE_SPECIFIC ratification of the EVENT-0054 + 13-record lifecycle extension in the protected shared evidence validator."
+  },
+  "REMEDIATION-SESSION-S0-CORRECTION-001": {
+   "audit_id": "REMEDIATION-SESSION-S0-CORRECTION-001",
+   "artifact_type": "S0_REMEDIATION_CORRECTION",
+   "path": "docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md",
+   "sha256": "19cb339f398c4bd9b702a1442ea21d0bf96ffc57ed97ff351d9b49c1eed9484a",
+   "bytes": 17273,
+   "source_present": "YES",
+   "source_type": "CANONICAL_REPOSITORY_REPORT_APPENDIX",
+   "original_path": "docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md",
+   "normalization": "none — canonical repository-authored record",
+   "note": "Correction pass source C is the F-01…F-10 correction appendix inside the canonical S0 implementation record (single canonical file)."
   }
  },
  "native_artifact_evidence": {
@@ -176,5 +249,6 @@
  ],
  "consolidation_base_sha": "1eb773069d81ea3d12b76249c73f2f5fb0b6cae9",
  "coverage_gate_base_sha": "610ed08337536857db73259168498c49b786caa1",
- "human_pre_remediation_decisions_base_sha": "9e585468d081272398e022f12e76e7500d55cbee"
+ "human_pre_remediation_decisions_base_sha": "9e585468d081272398e022f12e76e7500d55cbee",
+ "s0_preservation_base_sha": "0be57335adaa25ad584357dde74666eb97339a01"
 }

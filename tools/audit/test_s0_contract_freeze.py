@@ -35,6 +35,7 @@ FIXTURE_FILES = (
     # correction pass (F-01/F-03): Human ratification surfaces + the protected shared file
     v.DECISIONS_PATH,
     v.F01_RATIFICATION_REPORT,
+    v.PRESERVATION_RATIFICATION_REPORT,
     "tools/audit/validate_security_audit_evidence_preservation.py",
 )
 
