@@ -2,21 +2,21 @@
  "schema_version": "B027C-v1.1",
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
- "delivery_branch": "governance/security-remediation-s0-evidence-preservation-001",
- "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
- "current_gate": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)",
+ "delivery_branch": "integration/s1-after-s0-001",
+ "described_head": "ea20aaaf330c9268448df5523e89615aa0a69074",
+ "current_gate": "REMEDIATION-S1-CANONICAL-INTEGRATION-001 — INTEGRATE ISOLATED S1 ONTO CANONICAL MAIN + REMEDIATE RETEST FINDINGS F1-F9 + S1-ERA SHARED-VALIDATOR FOLLOW-UP AS RATIFICATION PROPOSAL + S1 VALIDATOR (Ready For Remote; merge dd6e2c5d82f0 of e32463ca71b0 onto 29a664318924; provisional isolated ANOX-EVENT-0054 NONCANONICAL → canonical ANOX-EVENT-0055; awaiting TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 and human merge into main)",
  "active_roles": [
   "ROLE-003",
   "ROLE-009"
  ],
  "blocked_tasks": [],
  "authorized_tasks": [
-  "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+  "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001"
  ],
  "current_writer": {
-  "task_id": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+  "task_id": "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001",
   "role_id": "ROLE-009",
-  "branch": "governance/security-remediation-s0-evidence-preservation-001"
+  "branch": "integration/s1-after-s0-001"
  },
  "pending_human_remote_actions": [],
  "latest_decision_id": "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001",
@@ -71,23 +71,23 @@
   "legacy_fix01_status": "COMPLETE — all 8 Class-A foundation findings remediated",
   "legacy_retest01_status": "PASS — 8/8 independently verified REMEDIATED and Closed",
   "class_a_foundation_blockers": "CLOSED",
-  "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (S0_MERGE_READINESS=READY; F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); S1 isolated/IMPLEMENTATION_COMPLETE/NOT_INTEGRATED"
+  "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 MERGED_TO_MAIN; REMEDIATION_SESSION_S1 INTEGRATED (merge dd6e2c5d82f0) + F1-F9 REMEDIATED, pending TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001; MSC_CLOSED=0; 42 open"
  },
  "pre_merge_state": {
-  "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
-  "current_gate": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)",
+  "described_head": "ea20aaaf330c9268448df5523e89615aa0a69074",
+  "current_gate": "REMEDIATION-S1-CANONICAL-INTEGRATION-001 — INTEGRATE ISOLATED S1 ONTO CANONICAL MAIN + REMEDIATE RETEST FINDINGS F1-F9 + S1-ERA SHARED-VALIDATOR FOLLOW-UP AS RATIFICATION PROPOSAL + S1 VALIDATOR (Ready For Remote; merge dd6e2c5d82f0 of e32463ca71b0 onto 29a664318924; provisional isolated ANOX-EVENT-0054 NONCANONICAL → canonical ANOX-EVENT-0055; awaiting TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 and human merge into main)",
   "current_writer": {
-   "task_id": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+   "task_id": "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001",
    "role_id": "ROLE-009",
-   "branch": "governance/security-remediation-s0-evidence-preservation-001"
+   "branch": "integration/s1-after-s0-001"
   },
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
-  "active_task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+  "current_task": "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001",
+  "active_task": "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001"
  },
  "post_merge_state": {
   "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",
-  "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)",
+  "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 MERGED_TO_MAIN ∥ REMEDIATION_SESSION_S1 INTEGRATED_ON_MAIN_LINEAGE + F1-F9 REMEDIATED (pending targeted independent integration retest; wave-completion Candidate; security remediation IN_PROGRESS; x86_64 runtime evidence PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE; next: TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 → human merge → S2 ∥ S3)",
   "current_writer": null,
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
   "current_task": "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 sealed — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED; next MERGE_S0_INTO_MAIN → post-S0 S1 integration (regenerate S1 provisional event identity); S2/S3/S4 NOT_STARTED",
@@ -336,5 +336,5 @@
  "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
  "legacy_audit_set_status": "6/6 COMPLETE",
  "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
- "last_sync": "ANOX-EVENT-0054"
+ "last_sync": "ANOX-EVENT-0055"
 }

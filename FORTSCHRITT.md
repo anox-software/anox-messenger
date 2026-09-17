@@ -275,3 +275,20 @@
 - `S1_SHARED_VALIDATOR_FOLLOWUP_REQUIRED` recorded: `tools/audit/validate_security_audit_evidence_preservation.py` is era-pinned to `ANOX-EVENT-0052` and read-only for S1; S1-era extension required post-integration (S0 `_s0_delivery_active` pattern).
 - No `crypto/rust/src` behavior diff; no B-004/B-005 work; no S0 merge/rebase/fetch; remote mutation NONE.
 - Next: human merge to `main`, then `INDEPENDENT BUILD/SUPPLY RETEST OF S1` on a fresh post-merge `main` SHA.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0055 -->
+## REMEDIATION-S1-CANONICAL-INTEGRATION-001 — 2026-09-16 (ANOX-EVENT-0055)
+
+- Branch: `integration/s1-after-s0-001` (from canonical `main` `29a6643189242a47c4a79c38acd04c1eca748787`)
+- Integration merge: `dd6e2c5d82f0777aedfea9fd7a2516cb83254fdb` (parents `29a664318924` canonical, `e32463ca71b0` isolated S1) — real ancestry, no rebase/squash/cherry-pick
+- Substantive commit: `ea20aaaf330c9268448df5523e89615aa0a69074`
+- Task ID: `ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001`
+- Result: `Ready For Remote` — `S1 = INTEGRATED_ON_MAIN_LINEAGE + RETEST_FINDINGS_REMEDIATED`; `SECURITY_REMEDIATION = IN_PROGRESS`
+- Conflicts (12, all continuity/workforce metadata): canonical S0 state wins on current-state surfaces; `FORTSCHRITT.md` keeps both (S1 section annotated provisional/NONCANONICAL); `tasks.jsonl` union; `ci.yml` auto-merge + CI hotfix applied to S1's instrumented jobs. No S1 security file conflicted.
+- Event collision: isolated S1 provisional `ANOX-EVENT-0054` → NONCANONICAL; canonical successor `ANOX-EVENT-0055` (next legal id after ledger inspection; no skip, no duplicate).
+- Retest findings: F-1…F-7, F-9 FIXED with paired adversarial tests (`tools/audit/test_s1_retest_remediation.py`, 94 tests); F-8 documented (`docs/security/remediation/S1_ACTION_PIN_PROVENANCE.md`; SHA pins unchanged). S1 suite fixtures tightened; 3 deficient tests rewritten (66 tests).
+- Shared-validator follow-up (governance-compliant): `validate_security_audit_evidence_preservation.py` is a PROTECTED_SHARED_GOVERNANCE_FILE content-pinned by the S0 contract — left byte-identical (`89c7358f…`). Exact S1-era extension preserved as `S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001` (patch → pinned `03bdf7c8…`; NOT a decision). `tools/audit/validate_s1_integration_evidence.py` runs all S0 protections verbatim + pinned S1 era (`ANOX-EVENT-0055`, `SEC-AUDIT-REG-0014`, `canonical_integration_delivery` topology proof, scope allow-list, CI-hotfix invariant, provisional-0054 rejection, proposal integrity); paired tests `test_s1_integration_evidence.py`. Ratified central suite kept at 277 (fixture normalisation). `validate_s0_evidence_preservation.py`: `SEC-AUDIT-REG-0014` excluded from S0 "prior" records (12-record protection unchanged). Ratified central validator FAILS by design until Human ratification.
+- MSC: `MSC-UNIT-001/002` `RUNTIME_TESTED` PASS → **PENDING** (exact FCP-1: arm64 implementer-only, x86_64 absent); `INDEPENDENTLY_RETESTED` PENDING for 001/002/003/038; **0 units CLOSED**; 42 open; B-004/B-005 `NOT_STARTED`; product `BLOCKED_PENDING_FINAL_AUDIT`.
+- Runtime evidence: arm64 implementer-only (not independent); x86_64 `PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE`. No JRE/SDK/emulator on this host: Gradle/JVM/Android/instrumented = NOT_RUN.
+- No push, no PR, no merge to `main`; remote mutation NONE.
+- Next: `TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001` → human merge.

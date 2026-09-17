@@ -1,3 +1,10 @@
+## ANOX-EVENT-0055 — REMEDIATION-S1-CANONICAL-INTEGRATION-001 (2026-09-16)
+
+- Task: `ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001` — prompt `REMEDIATION-S1-CANONICAL-INTEGRATION-001` (WRITABLE IMPLEMENTATION / INTEGRATION; ONE WRITER; worktree `integration/s1-after-s0-001`; canonical main at start `29a6643189242a47c4a79c38acd04c1eca748787`). Model: `Fable 5.1 Medium` requested; runtime `Claude Fable 5.1 Medium` (matched).
+- Purpose: integrate isolated S1 (`e32463ca71b0`) onto canonical main by real Git ancestry; resolve the ANOX-EVENT-0054 collision (S1 provisional → NONCANONICAL; canonical `ANOX-EVENT-0055`); remediate INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001 F-1…F-9; execute the confirmed shared-validator follow-up.
+- Result: `Ready For Remote`; merge `dd6e2c5d82f0` + substantive `ea20aaaf330c` + metadata commit; F-1…F-7/F-9 FIXED, F-8 documented; shared-validator extension prepared as Human ratification proposal (protected file unchanged) + `validate_s1_integration_evidence.py`; MSC-UNIT-001/002 RUNTIME_TESTED → PENDING under exact FCP-1; 0 CLOSED; 42 open.
+- Invariants preserved: S0 contract freeze PASS; S0 evidence preservation PASS; `dace1467035b` ancestor; CI hotfix intact (`packages: 'platform-tools'`, no `tools platform-tools`); `crypto/rust/src` unchanged vs S1 base; B-004/B-005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; no remote mutation.
+- Next recommended step: `TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001` (fresh independent session) → human push/PR/merge of `integration/s1-after-s0-001` into `main`.
 
 ## 2026-09-15 REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001 native build provenance + evidence gates
 

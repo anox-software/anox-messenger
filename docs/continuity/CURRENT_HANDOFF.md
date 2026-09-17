@@ -1,16 +1,16 @@
 # CURRENT_HANDOFF — anoX V1
 
-**Event:** `ANOX-EVENT-0054` — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001
-**Delivery branch:** `governance/security-remediation-s0-evidence-preservation-001`
-**Substantive HEAD:** `24576ec333f3567c36b46f42ed30c718788ea601`
-**Main baseline:** `0be57335adaa25ad584357dde74666eb97339a01` (corrected S0 final head on `security/remediation-s0-contract-freeze-001`; `main` = `0f932520393feee6d479cc099f179f5766323125`)
-**Effective gate:** `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+**Event:** `ANOX-EVENT-0055` — REMEDIATION-S1-CANONICAL-INTEGRATION-001
+**Delivery branch:** `integration/s1-after-s0-001`
+**Substantive HEAD:** `ea20aaaf330c9268448df5523e89615aa0a69074`
+**Main baseline:** `29a6643189242a47c4a79c38acd04c1eca748787` (canonical `main` at task start = S0 integration merge PR #36; S1 integrated via merge `dd6e2c5d82f0`)
+**Effective gate:** `REMEDIATION-S1-CANONICAL-INTEGRATION-001 — INTEGRATE ISOLATED S1 ONTO CANONICAL MAIN + REMEDIATE RETEST FINDINGS F1-F9 + S1-ERA SHARED-VALIDATOR FOLLOW-UP AS RATIFICATION PROPOSAL + S1 VALIDATOR (Ready For Remote; merge dd6e2c5d82f0 of e32463ca71b0 onto 29a664318924; provisional isolated ANOX-EVENT-0054 NONCANONICAL → canonical ANOX-EVENT-0055; awaiting TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 and human merge into main)`
 
-Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
+Described HEAD: ea20aaaf330c9268448df5523e89615aa0a69074
 
 ## Pre-merge gate
 
-`SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+`REMEDIATION-S1-CANONICAL-INTEGRATION-001 — INTEGRATE ISOLATED S1 ONTO CANONICAL MAIN + REMEDIATE RETEST FINDINGS F1-F9 + S1-ERA SHARED-VALIDATOR FOLLOW-UP AS RATIFICATION PROPOSAL + S1 VALIDATOR (Ready For Remote; merge dd6e2c5d82f0 of e32463ca71b0 onto 29a664318924; provisional isolated ANOX-EVENT-0054 NONCANONICAL → canonical ANOX-EVENT-0055; awaiting TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 and human merge into main)`
 
 - Preserved the complete corrected S0 evidence chain as canonical repository evidence: `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (implementation PASS), `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` (`PASS_WITH_FINDINGS`, F-01…F-10 — `PROVENANCE_MARKED_CANONICAL_RECONSTRUCTION`, human-authorized; verbatim transcript unavailable), `REMEDIATION-SESSION-S0-CORRECTION-001` (PASS) and `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` (`PASS_WITH_FINDINGS`, merge blockers 0). Final dispositions: F-01 `RATIFIED_DISCLOSED_FILE_OWNERSHIP_DEVIATION`; F-02…F-10 `FIXED` (9/9). Residual LOW follow-ups (2, non-blocking, open): `S0-RESIDUAL-LOW-F05-UNANCHORED-CC-CLAUSES`, `S0-RESIDUAL-LOW-F08-AUTHORITY-HOME-FREETEXT`.
 - Human decision `ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001` (`HUMAN_RATIFIED_CHANGE_SPECIFIC_SHARED_VALIDATOR_EXTENSION`, `ONE_TIME_CHANGE_SPECIFIC`) authorized the pinned lifecycle extension of `tools/audit/validate_security_audit_evidence_preservation.py` — exactly `ANOX-EVENT-0054` after `ANOX-EVENT-0053`, and exactly one `SEC-AUDIT-REG-0013` `SECURITY_REMEDIATION_EVIDENCE` record (registry 12 → 13). No generic future-event support, no arbitrary registry growth, no S1 use.
@@ -28,7 +28,7 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 
 ## Post-merge gate
 
-`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)`
+`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 MERGED_TO_MAIN ∥ REMEDIATION_SESSION_S1 INTEGRATED_ON_MAIN_LINEAGE + F1-F9 REMEDIATED (pending targeted independent integration retest; wave-completion Candidate; security remediation IN_PROGRESS; x86_64 runtime evidence PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE; next: TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 → human merge → S2 ∥ S3)`
 
 ## Preserved audit outcomes
 
@@ -54,7 +54,7 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 ## Remediation state
 
 - `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`): `RETESTED_AND_EVIDENCE_PRESERVED` — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`; validator PASS; 98 adversarial tests; targeted independent retest `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking); evidence chain preserved under `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0054`, registry `SEC-AUDIT-REG-0013`); 0 MSC units closed. `S0_MERGE_READINESS = READY`.
-- `REMEDIATION_SESSION_S1`: `ISOLATED / IMPLEMENTATION_COMPLETE / NOT_INTEGRATED` (independent repository `anoX-s1`; its provisional `ANOX-EVENT-0054` is not canonical main-line history and will be regenerated/renumbered at post-S0 integration).
+- `REMEDIATION_SESSION_S1`: `INTEGRATED_ON_MAIN_LINEAGE` by `REMEDIATION-S1-CANONICAL-INTEGRATION-001` (ANOX-EVENT-0055; merge `dd6e2c5d82f0` of `e32463ca71b0` onto `29a664318924`, both histories preserved). `INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001` = `PASS_WITH_FINDINGS` (F-1…F-9) — F-1…F-7, F-9 `FIXED`, F-8 documented (`PIN_PROVENANCE_UNVERIFIED` for dtolnay/rust-toolchain; SHA pins unchanged). Protected central validator unchanged (ratified `89c7358f…`); S1-era extension prepared as ratification proposal `03bdf7c8…` and enforced by `validate_s1_integration_evidence.py` (registry `SEC-AUDIT-REG-0014`). Isolated provisional `ANOX-EVENT-0054` is NONCANONICAL. MSC-UNIT-001/002 `RUNTIME_TESTED = PENDING` under exact FCP-1 (arm64 implementer-only; x86_64 `PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE`); `INDEPENDENTLY_RETESTED` PENDING; 0 units CLOSED. Next: `TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001` → human merge.
 - `S2`/`S3`/`S4`: `NOT_STARTED`.
 
 ## Product state
