@@ -65,10 +65,25 @@ emulator, `connectedDebugAndroidTest`, APK re-bound to the manifest before
 and after the run). Independent Build/Supply retest must produce the
 x86_64 runtime evidence.
 
-## Status
+## Status (as recorded by the isolated S1 session — historical)
 
 - MSC-001: IMPLEMENTED + AUTOMATED_TESTED + RUNTIME_TESTED (arm64,
   provenance-bound) — INDEPENDENTLY_RETESTED / ATTACKCHAIN_RETESTED pending.
 - MSC-002: IMPLEMENTED + AUTOMATED_TESTED + RUNTIME_TESTED (arm64) —
   INDEPENDENTLY_RETESTED pending.
 - No unit is CLOSED. Independent Build/Supply retest required.
+
+## Integration addendum — REMEDIATION-S1-CANONICAL-INTEGRATION-001
+
+The text above is preserved verbatim as the isolated S1 record. Under the
+exact FCP-1 semantics enforced since the canonical integration (retest
+finding F3), the recorded arm64-only, implementer-run evidence does **not**
+constitute `RUNTIME_TESTED = PASS`: FCP-1 requires same-run
+`BUILD_ARTIFACT_HASH_PROOF + PROVENANCE_VERIFIED_NATIVE_RUNTIME` for **every**
+required ABI (`arm64-v8a` and `x86_64`). `msc_state.jsonl` therefore carries
+`RUNTIME_TESTED = PENDING` for MSC-UNIT-001/002 with the arm64 run retained as
+`partial_evidence` (independent = NO). The independent retest
+(`INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001`) reproduced the two per-ABI artifact
+hashes above byte-identically from clean builds but could not execute the
+instrumented suite (no JRE / Android SDK / emulator on the retest host);
+x86_64 runtime evidence remains `PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE`.

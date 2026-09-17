@@ -72,7 +72,90 @@ def _toolchain_targets(path):
     return set()
 
 
-def check_static(repo_root):
+def resolve_git_dir(repo_root):
+    """Resolve the repository's git metadata directory (F2), fail closed.
+
+    Accepts a normal ``.git`` directory or a linked-worktree ``.git`` pointer
+    file (``gitdir: <path>``, absolute or relative to the repository root).
+    Returns (git_dir_path, None) on success or (None, reason) on any failure:
+    missing metadata, malformed pointer, unreadable file, pointer target that
+    is not a directory, or a target that does not look like git metadata.
+    """
+    dot_git = Path(repo_root) / ".git"
+    if not dot_git.exists():
+        return None, ".git metadata missing (non-repository context)"
+    if dot_git.is_dir():
+        if not (dot_git / "HEAD").exists():
+            return None, ".git directory has no HEAD (invalid repository metadata)"
+        return dot_git, None
+    if not dot_git.is_file():
+        return None, ".git is neither a directory nor a file"
+    try:
+        text = dot_git.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeDecodeError) as e:
+        return None, f".git pointer file unreadable: {e.__class__.__name__}"
+    lines = [l for l in text.splitlines() if l.strip()]
+    if len(lines) != 1 or not lines[0].startswith("gitdir:"):
+        return None, ".git pointer file malformed (expected exactly one 'gitdir: <path>' line)"
+    target = lines[0][len("gitdir:"):].strip()
+    if not target or "\x00" in target:
+        return None, ".git pointer file has empty/invalid gitdir target"
+    tpath = Path(target)
+    if not tpath.is_absolute():
+        tpath = (Path(repo_root) / tpath)
+    try:
+        tpath = tpath.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None, f".git pointer target does not exist: {target}"
+    if not tpath.is_dir():
+        return None, f".git pointer target is not a directory: {target}"
+    # A linked worktree gitdir carries HEAD + commondir; a bare/main gitdir carries HEAD.
+    if not (tpath / "HEAD").exists():
+        return None, f".git pointer target lacks HEAD (not git metadata): {target}"
+    if (tpath / "commondir").exists():
+        try:
+            common = (tpath / (tpath / "commondir").read_text(encoding="utf-8").strip()).resolve(strict=True)
+        except (OSError, RuntimeError, UnicodeDecodeError):
+            return None, ".git worktree commondir target unresolvable"
+        if not common.is_dir() or not (common / "HEAD").exists():
+            return None, ".git worktree commondir does not point at git metadata"
+    return tpath, None
+
+
+def check_rust_behavior_unchanged(repo_root, base_sha=S1_BASE_SHA):
+    """crypto/rust/src/** must carry zero diff vs the S1 base (scope guard).
+
+    F2: runs in normal repositories AND linked worktrees; every failure to
+    establish git context is an error, never a silent skip.
+    """
+    errors = []
+    root = Path(repo_root)
+    _, why = resolve_git_dir(root)
+    if why:
+        errors.append(f"git context unavailable — Rust behavior-scope check cannot run: {why}")
+        return errors
+    probe = subprocess.run(["git", "cat-file", "-e", f"{base_sha}^{{commit}}"], cwd=root,
+                           capture_output=True, text=True)
+    if probe.returncode != 0:
+        errors.append(f"S1 base commit {base_sha[:12]} not present in repository; scope check cannot run")
+        return errors
+    proc = subprocess.run(
+        ["git", "diff", "--name-only", base_sha, "--", "crypto/rust/src/"],
+        cwd=root, capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        errors.append("git diff for crypto/rust/src/ failed: " + proc.stderr.strip())
+    elif proc.stdout.strip():
+        errors.append(
+            "crypto/rust/src/** changed vs S1 base (behavior change forbidden): "
+            + proc.stdout.strip()
+        )
+    return errors
+
+
+def check_static(repo_root, git_scope_check=True):
+    """Static S1 gate. ``git_scope_check=False`` is a fixture-only seam for
+    tests of the non-git surfaces; the CLI always runs with True (fail-closed)."""
     errors = []
     root = Path(repo_root)
 
@@ -160,17 +243,9 @@ def check_static(repo_root):
     if not (root / CI_WORKFLOW).exists():
         errors.append(f"{CI_WORKFLOW} missing")
 
-    # 6. no behavioral Rust source change --------------------------------------
-    if (root / ".git").is_dir():
-        proc = subprocess.run(
-            ["git", "diff", "--name-only", S1_BASE_SHA, "--", "crypto/rust/src/"],
-            cwd=root, capture_output=True, text=True,
-        )
-        if proc.returncode == 0 and proc.stdout.strip():
-            errors.append(
-                "crypto/rust/src/** changed vs S1 base (behavior change forbidden): "
-                + proc.stdout.strip()
-            )
+    # 6. no behavioral Rust source change (F2: normal repo + linked worktree; never skipped)
+    if git_scope_check:
+        errors.extend(check_rust_behavior_unchanged(root))
     return errors
 
 

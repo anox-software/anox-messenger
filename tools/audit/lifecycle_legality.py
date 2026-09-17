@@ -484,6 +484,80 @@ def canonical_two_commit_delivery(base_sha, described_head, live_head,
     return True, delivery_parent, substantive_head, "exact two-commit delivery proven"
 
 
+def canonical_integration_delivery(base_sha, merged_head, merged_base, described_head,
+                                   live_head, cwd=REPO, metadata_allowlist=None):
+    """Verify the canonical *integration* delivery invariant (REMEDIATION-S1-
+    CANONICAL-INTEGRATION-001 era extension).
+
+    Topology (first-parent chain above ``base_sha``)::
+
+        base ── M ── C1 ── C2
+                │
+                └── merged_head (pinned foreign delivery, unmodified)
+
+    Requirements, all fail-closed:
+      * ``base_sha`` and ``merged_head`` are ancestors of the live head;
+      * the first-parent chain above base is exactly [M, C1, C2];
+      * M is a two-parent merge whose parents are exactly (base_sha, merged_head);
+      * C1 (substantive == described_head) and C2 (metadata) are single-parent;
+      * the only commits above base that are not on the first-parent chain are
+        exactly the pinned foreign delivery ``merged_base..merged_head`` — no
+        other history is smuggled in through the merge;
+      * ``merged_head`` itself is exactly two commits above ``merged_base``;
+      * C2 touches only metadata-allowlisted paths.
+    Returns (ok, merge_sha, substantive_head, metadata_head, reason).
+    """
+    if live_head is None:
+        live_head = _git(["rev-parse", "HEAD"], cwd=cwd)
+    if not live_head:
+        return False, None, None, None, "cannot resolve live HEAD"
+    for label, sha in (("base", base_sha), ("merged head", merged_head), ("merged base", merged_base)):
+        if not _git_is_ancestor(sha, live_head, cwd=cwd):
+            return False, None, None, None, f"{label} {sha[:12]} is not an ancestor of live {live_head[:12]}"
+    if not _git_is_ancestor(merged_base, merged_head, cwd=cwd):
+        return False, None, None, None, "merged base is not an ancestor of merged head"
+    if _git_is_ancestor(merged_head, base_sha, cwd=cwd):
+        return False, None, None, None, "merged head is already contained in base (nothing to integrate)"
+
+    fp = _git(["rev-list", "--first-parent", f"{base_sha}..{live_head}"], cwd=cwd)
+    chain = fp.splitlines() if fp else []
+    if len(chain) != 3:
+        return False, None, None, None, (
+            f"expected exactly 3 first-parent commits above base (merge + 2 task-authored), found {len(chain)}")
+    metadata_head, substantive_head, merge_sha = chain[0], chain[1], chain[2]
+
+    mparents = _git_merge_parents(merge_sha, cwd=cwd) or []
+    if len(mparents) != 2:
+        return False, None, None, None, "integration commit is not a two-parent merge"
+    if mparents[0] != base_sha or mparents[1] != merged_head:
+        return False, None, None, None, (
+            f"integration merge parents {[p[:12] for p in mparents]} != (base, pinned merged head)")
+    for label, sha in (("substantive", substantive_head), ("metadata", metadata_head)):
+        ps = _git_merge_parents(sha, cwd=cwd) or []
+        if len(ps) != 1:
+            return False, None, None, None, f"{label} commit is not a single-parent commit"
+    if substantive_head != described_head:
+        return False, None, None, None, (
+            f"substantive commit {substantive_head[:12]} != described_head {described_head[:12]}")
+
+    all_above = set((_git(["rev-list", f"{base_sha}..{live_head}"], cwd=cwd) or "").splitlines())
+    foreign = set((_git(["rev-list", f"{merged_base}..{merged_head}"], cwd=cwd) or "").splitlines())
+    if len(foreign) != 2:
+        return False, None, None, None, f"pinned foreign delivery must be exactly 2 commits, found {len(foreign)}"
+    extra = all_above - set(chain) - foreign
+    if extra:
+        return False, None, None, None, f"unexpected commits integrated beyond pinned delivery: {sorted(x[:12] for x in extra)}"
+
+    if metadata_allowlist:
+        meta_files = _git(["diff", "--name-only", f"{metadata_head}~1", metadata_head], cwd=cwd)
+        if meta_files is None:
+            return False, None, None, None, "cannot read metadata commit diff"
+        bad = [p for p in meta_files.splitlines() if p not in metadata_allowlist]
+        if bad:
+            return False, None, None, None, f"metadata commit touches non-metadata files: {bad}"
+    return True, merge_sha, substantive_head, metadata_head, "exact integration delivery proven"
+
+
 def historical_file_at(sha, rel_path, cwd=REPO):
     """Return the contents of a repository file at a specific commit, or None."""
     out = _git(["show", f"{sha}:{rel_path}"], cwd=cwd)

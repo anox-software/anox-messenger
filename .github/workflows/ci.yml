@@ -221,6 +221,7 @@ jobs:
     name: Android release compile smoke
     runs-on: ubuntu-latest
     needs:
+      - native-build
       - android-debug
       - gradle-wrapper-validation
     steps:
@@ -255,6 +256,9 @@ jobs:
         with:
           name: native-artifacts-${{ github.sha }}
           path: build/native
+
+      - name: Re-verify downloaded artifacts vs manifest
+        run: python3 tools/security/native_build.py verify
 
       - name: Assemble release
         run: ./gradlew --no-daemon :android:assembleRelease

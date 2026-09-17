@@ -4,8 +4,10 @@
 Scans every tracked file (or an explicit file list) for committed secret
 material:
 
-  * private-key PEM blocks (line-start anchored, so marker literals inside
-    tool source code do not false-positive),
+  * private-key PEM blocks — line-start anchored, PLUS indented/quoted headers
+    that are followed by a base64 body (F6), PLUS byte-domain markers inside
+    binary blobs (F6); bare marker literals inside tool source do not
+    false-positive,
   * well-known token formats (AWS, GitHub, Slack, Supabase service keys,
     generic Bearer/JWT service-role patterns),
   * committed key-store / certificate / env files that must never be tracked.
@@ -45,6 +47,47 @@ FORBIDDEN_TRACKED = re.compile(
 SKIP_DIRS = {".git", "build", "target", ".gradle", ".idea", "artifacts"}
 
 MAX_FILE_BYTES = 16 * 1024 * 1024
+
+# F6: byte-domain rules applied to EVERY file, including binary blobs (a NUL
+# byte no longer exempts a file). PEM markers inside binaries are always a
+# finding; token formats are byte-exact.
+BINARY_PATTERNS = [
+    ("pem_private_key_in_binary", re.compile(
+        rb"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----")),
+    ("aws_access_key", re.compile(rb"(?<![A-Z0-9])AKIA[0-9A-Z]{16}(?![A-Z0-9])")),
+    ("github_token", re.compile(rb"(?<![A-Za-z0-9])(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,}")),
+    ("github_fine_grained_pat", re.compile(rb"(?<![A-Za-z0-9])github_pat_[A-Za-z0-9_]{22,}")),
+    ("slack_token", re.compile(rb"(?<![A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}")),
+    ("supabase_service_key", re.compile(rb"(?<![A-Za-z0-9])sbp_[A-Za-z0-9]{20,}")),
+]
+
+# F6: indented / quoted / list-prefixed PEM header that is followed by a
+# base64 body line — i.e. a real key block embedded in YAML/JSON/Markdown.
+# A marker literal inside tool source (mid-line, followed by a quote/comma,
+# no base64 body) does not match, so scanner/validator sources stay clean.
+PEM_HEADER_ANYWHERE = re.compile(
+    r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----")
+PEM_BODY_LINE = re.compile(r"^\s*[\"']?[A-Za-z0-9+/=]{20,}[\"']?,?\s*$")
+
+
+def indented_pem_block(text):
+    """True if any PEM private-key header (at any indentation / quoting) is
+    directly followed by a base64-looking body line."""
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if not PEM_HEADER_ANYWHERE.search(line):
+            continue
+        for nxt in lines[i + 1:i + 3]:
+            if not nxt.strip():
+                continue
+            if PEM_BODY_LINE.match(nxt):
+                return True
+            break
+    return False
+
+
+def is_binary(data):
+    return b"\x00" in data[:2048]
 
 
 def tracked_files(repo_root):
@@ -89,16 +132,26 @@ def scan(repo_root, files=None):
             data = p.read_bytes()
         except OSError:
             continue
-        if b"\x00" in data[:2048]:
-            continue  # binary blob: token patterns are text-domain
+        if is_binary(data):
+            # F6: binary blobs are scanned in the byte domain — never skipped.
+            for name, pat in BINARY_PATTERNS:
+                if pat.search(data):
+                    findings.append((rel, name))
+                    break
+            continue
         try:
             text = data.decode("utf-8", errors="strict")
         except UnicodeDecodeError:
             text = data.decode("utf-8", errors="replace")
+        hit = None
         for name, pat in SECRET_PATTERNS:
             if pat.search(text):
-                findings.append((rel, name))
+                hit = name
                 break
+        if hit is None and indented_pem_block(text):
+            hit = "pem_private_key_indented"
+        if hit:
+            findings.append((rel, hit))
     return findings
 
 

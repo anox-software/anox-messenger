@@ -94,11 +94,12 @@ X86_SO = _fake_elf(62) + b"x86_64-payload"
 def _manifest(arm64_sha=None, x86_sha=None, repo_sha="0" * 40):
     return {
         "schema_version": "anox-native-manifest-v1",
-        "source": {"repo_sha": repo_sha, "cargo_lock_sha256": "0" * 64},
+        "source": {"repo_sha": repo_sha, "cargo_lock_sha256": "0" * 64, "working_tree": "clean"},
         "toolchain": {
             "channel": "1.97.1", "ndk_revision": "26.2.11394342",
             "cargo_ndk": "4.1.2", "rustc": "rustc 1.97.1",
         },
+        "build": _repro_build(arm64_sha or _sha(ARM64_SO), x86_sha or _sha(X86_SO)),
         "abis": ["arm64-v8a", "x86_64"],
         "artifacts": [
             {"abi": "arm64-v8a", "file": "arm64-v8a/libanox_crypto.so",
@@ -106,6 +107,19 @@ def _manifest(arm64_sha=None, x86_sha=None, repo_sha="0" * 40):
             {"abi": "x86_64", "file": "x86_64/libanox_crypto.so",
              "sha256": x86_sha or _sha(X86_SO), "size": len(X86_SO)},
         ],
+    }
+
+
+def _repro_build(arm64_sha, x86_sha, confirmed=True):
+    """Authoritative reproducibility attestation as written by rebuild-compare (F5)."""
+    return {
+        "build_id": "fixture", "profile": "release", "locked": True, "path_remapped": True,
+        "reproducible_build_confirmed": confirmed,
+        "reproducibility": {
+            "method": "two-clean-builds-three-way-compare", "builds": 2,
+            "build_ids": ["fixture-repro1", "fixture-repro2"],
+            "per_abi_sha256": {"arm64-v8a": arm64_sha, "x86_64": x86_sha},
+        } if confirmed else None,
     }
 
 
@@ -280,11 +294,12 @@ class NativeBuildManifestTests(unittest.TestCase):
         channel, _, _ = nb.parse_toolchain_toml(self.root / TOOLCHAIN)
         m = {
             "schema_version": "anox-native-manifest-v1",
-            "source": {"repo_sha": "0" * 40, "cargo_lock_sha256": lock_sha},
+            "source": {"repo_sha": "0" * 40, "cargo_lock_sha256": lock_sha, "working_tree": "clean"},
             "toolchain": {
                 "channel": channel, "ndk_revision": "26.2.11394342",
                 "cargo_ndk": "4.1.2", "rustc": "rustc 1.97.1",
             },
+            "build": _repro_build(_sha(ARM64_SO), _sha(X86_SO)),
             "abis": ["arm64-v8a", "x86_64"],
             "artifacts": [
                 {"abi": "arm64-v8a", "file": "arm64-v8a/libanox_crypto.so",
@@ -305,6 +320,7 @@ class NativeBuildManifestTests(unittest.TestCase):
         return nb.verify_manifest(
             str(self.root), str(self.mpath), str(self.prod),
             expected_source_sha=expected_source_sha,
+            require_clean_live_tree=False,  # fixture has no git; F7 live-tree tests use real repos
         )
 
     def test_14_control_valid_manifest_passes(self):
@@ -365,12 +381,8 @@ class NativeBuildManifestTests(unittest.TestCase):
         expected = nb.expected_jni_exports(str(self.root), errs)
         self.assertFalse(errs)
         missing = sorted(expected)[0]
-        errs = []
-        nb.check_symbol_parity.__wrapped__ if hasattr(nb.check_symbol_parity, "__wrapped__") else None
         # simulate the parity check against a symbol table missing one export
         fake_syms = set(expected) - {missing}
-        class _P:  # minimal stand-in: dynamic_symbols returns fake_syms
-            pass
         orig = nb.dynamic_symbols
         try:
             nb.dynamic_symbols = lambda *a, **k: fake_syms
@@ -381,26 +393,36 @@ class NativeBuildManifestTests(unittest.TestCase):
             nb.dynamic_symbols = orig
 
     def test_23_rebuild_compare_detects_divergence(self):
-        fp, _ = self._jni_fp()
-        m1 = {"artifacts": [{"abi": "arm64-v8a", "sha256": "a" * 64},
-                            {"abi": "x86_64", "sha256": "b" * 64}]}
-        m2 = {"artifacts": [{"abi": "arm64-v8a", "sha256": "a" * 64},
-                            {"abi": "x86_64", "sha256": "c" * 64}]}
-        diffs = nb.compare_manifest_hashes(m1, m2)
-        self.assertEqual(len(diffs), 1)
-        self.assertEqual(diffs[0][0], "x86_64")
+        # the attestation writer must refuse when a clean rebuild diverges from the
+        # primary manifest, and must leave reproducible_build_confirmed untouched
+        primary = json.loads(self.mpath.read_text())
+        primary["build"]["reproducible_build_confirmed"] = False
+        primary["build"]["reproducibility"] = None
+        self.mpath.write_text(json.dumps(primary))
+        same = {"artifacts": [{"abi": a["abi"], "sha256": a["sha256"]} for a in primary["artifacts"]]}
+        diverged = {"artifacts": [{"abi": "arm64-v8a", "sha256": primary["artifacts"][0]["sha256"]},
+                                  {"abi": "x86_64", "sha256": "c" * 64}]}
+        errs = nb.attest_reproducibility(str(self.mpath), same, diverged, ["r1", "r2"])
+        self.assertTrue(any("DIFF x86_64" in e for e in errs), str(errs))
+        self.assertIs(json.loads(self.mpath.read_text())["build"]["reproducible_build_confirmed"], False)
+        # and succeeds (writing the attestation) only when all three agree
+        errs = nb.attest_reproducibility(str(self.mpath), same, same, ["r1", "r2"])
+        self.assertEqual(errs, [], str(errs))
+        self.assertIs(json.loads(self.mpath.read_text())["build"]["reproducible_build_confirmed"], True)
 
     def test_24_unpinned_toolchain_channel_fails(self):
         tc = self.root / TOOLCHAIN
         tc.write_text('[toolchain]\nchannel = "stable"\n'
                       'targets = ["aarch64-linux-android", "x86_64-linux-android"]\n')
-        errs = []
-        channel, targets, terr = nb.parse_toolchain_toml(tc)
-        self.assertEqual(channel, "stable")
-        # static gate rejects non-version pins; check_toolchain does too
-        self.assertTrue(
-            not re.fullmatch(r"\d+\.\d+\.\d+", channel),
-            "non-pinned channel must not match the exact-version pattern")
+        import subprocess as _sp
+        orig = nb._run
+        try:
+            # external tools stubbed as unavailable so only repository-derived errors matter
+            nb._run = lambda *a, **k: _sp.CompletedProcess(a, 1, "", "stub")
+            errs = nb.check_toolchain(str(self.root), ndk_path=str(self.root / "no-ndk"))
+        finally:
+            nb._run = orig
+        self.assertTrue(any("not an exact version pin" in e for e in errs), str(errs))
 
 
 class CiPipelineStructureTests(unittest.TestCase):
@@ -609,26 +631,33 @@ class MatrixGateTests(unittest.TestCase):
         _, errs = self._check()
         self.assertTrue(any("evidence_state" in e for e in errs), str(errs))
 
-    def test_46_failed_row_accepted_fails_closure(self):
+    def _all_pre_product_verified(self):
         rows = self._rows()
         for r in rows:
-            r["pre_product_required"] = True
-            r["current_result"] = "FAIL"
-            break
-        self._write_rows(rows)
-        blockers = mx.evaluate_closure(self._rows())
-        self.assertTrue(blockers)
+            if r["pre_product_required"]:
+                r["current_result"] = "PASS"
+                r["evidence_state"] = "AUTOMATED_VERIFIED"
+                r["evidence_refs"] = ["docs/security/remediation/README.md"]
+        self.assertEqual(mx.evaluate_closure(rows), [], "fixture control must have zero blockers")
+        return rows
+
+    def test_46_failed_row_accepted_fails_closure(self):
+        rows = self._all_pre_product_verified()
+        victim = next(r for r in rows if r["pre_product_required"])
+        victim["current_result"] = "FAIL"
+        blockers = mx.evaluate_closure(rows)
+        self.assertEqual([b[0] for b in blockers], [victim["test_id"]], str(blockers))
+        self.assertIn("FAIL", blockers[0][1])
 
     def test_47_not_run_pre_product_row_fails_closure(self):
-        rows = self._rows()
-        for r in rows:
-            if r["current_result"] == "PASS":
-                r["current_result"] = "NOT_RUN"
-                r["evidence_state"] = "SPEC_ONLY"
-                r["evidence_refs"] = []
-        self._write_rows(rows)
-        blockers = mx.evaluate_closure(self._rows())
-        self.assertTrue(blockers, "NOT_RUN pre_product rows must block closure")
+        rows = self._all_pre_product_verified()
+        victim = next(r for r in rows if r["pre_product_required"])
+        victim["current_result"] = "NOT_RUN"
+        victim["evidence_state"] = "SPEC_ONLY"
+        victim["evidence_refs"] = []
+        blockers = mx.evaluate_closure(rows)
+        self.assertEqual([b[0] for b in blockers], [victim["test_id"]], str(blockers))
+        self.assertIn("NOT_RUN", blockers[0][1])
 
     def test_48_physical_row_marked_pass_fails(self):
         rows = self._rows()
@@ -728,7 +757,8 @@ class StaticGateTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def _check(self):
-        return s1.check_static(str(self.root))
+        # fixture has no git; the F2 git-context tests use real repositories
+        return s1.check_static(str(self.root), git_scope_check=False)
 
     def test_57_control_fixture_passes(self):
         errs = self._check()

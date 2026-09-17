@@ -384,16 +384,56 @@ def _git_head(repo_root):
     return proc.stdout.strip()
 
 
+def git_working_tree_state(repo_root):
+    """Return ("clean", []) or ("dirty", [paths]) or (None, [reason]) (F7).
+
+    Any tracked modification, staged change or untracked non-ignored file makes
+    the tree dirty: an unqualified repo SHA must never describe a tree that
+    differs from the commit it names. Fails closed when git is unavailable.
+    """
+    proc = _run(["git", "status", "--porcelain", "--untracked-files=all"], cwd=repo_root)
+    if proc.returncode != 0:
+        return None, ["git status failed: " + (proc.stderr or "").strip()]
+    paths = []
+    for line in proc.stdout.splitlines():
+        if line.strip():
+            paths.append(line[3:].strip() if len(line) > 3 else line.strip())
+    return ("clean", []) if not paths else ("dirty", paths)
+
+
+def require_clean_tree(repo_root, errors):
+    state, detail = git_working_tree_state(repo_root)
+    if state is None:
+        errors.append("cannot determine working-tree state: " + "; ".join(detail))
+    elif state != "clean":
+        shown = ", ".join(detail[:8]) + (" …" if len(detail) > 8 else "")
+        errors.append(
+            f"working tree is dirty ({len(detail)} path(s): {shown}); refusing to bind a "
+            "clean repo SHA to artifacts built from a modified tree"
+        )
+    return state
+
+
 def _rustc_version_line(repo_root):
     proc = _run(["rustc", "--version"], cwd=Path(repo_root) / CRATE_DIR)
     return proc.stdout.strip() if proc.returncode == 0 else "unknown"
 
 
 def write_manifest(repo_root, out_dir, manifest_path, ndk, build_id=None,
-                   reproducible_confirmed=None):
+                   reproducible_confirmed=False, reproducibility=None,
+                   require_clean=True):
+    """Emit the provenance manifest.
+
+    F7: ``source.working_tree`` is recorded and (by default) a dirty tree is an
+    error — the manifest never claims an unqualified clean SHA for a modified
+    tree.  F5: ``build.reproducible_build_confirmed`` is a boolean that is only
+    True when set by ``rebuild-compare`` after a successful three-way hash
+    comparison; ``build.reproducibility`` carries the attestation detail.
+    """
     root = Path(repo_root)
     out_dir = Path(out_dir)
     errors = []
+    tree_state = require_clean_tree(root, errors) if require_clean else git_working_tree_state(root)[0]
     expected = expected_jni_exports(root, errors)
     llvm_nm = find_llvm_nm(ndk) if ndk else None
 
@@ -425,6 +465,7 @@ def write_manifest(repo_root, out_dir, manifest_path, ndk, build_id=None,
             "crate_manifest": f"{CRATE_DIR}/Cargo.toml",
             "cargo_lock_sha256": sha256_file(root / CARGO_LOCK) if (root / CARGO_LOCK).exists() else None,
             "rust_toolchain_file": TOOLCHAIN_FILE,
+            "working_tree": tree_state or "unknown",
         },
         "toolchain": {
             "channel": channel,
@@ -438,7 +479,8 @@ def write_manifest(repo_root, out_dir, manifest_path, ndk, build_id=None,
             "profile": "release",
             "locked": True,
             "path_remapped": True,
-            "reproducible_build_confirmed": reproducible_confirmed,
+            "reproducible_build_confirmed": bool(reproducible_confirmed),
+            "reproducibility": reproducibility,
         },
         "abis": sorted(REQUIRED_ABIS.keys()),
         "artifacts": artifacts,
@@ -449,11 +491,13 @@ def write_manifest(repo_root, out_dir, manifest_path, ndk, build_id=None,
     return manifest, errors
 
 
-def verify_manifest(repo_root, manifest_path, produced_dir, expected_source_sha=None, errors=None):
+def verify_manifest(repo_root, manifest_path, produced_dir, expected_source_sha=None, errors=None,
+                    require_clean_live_tree=True):
     """Verify produced artifacts against the manifest — fail closed.
 
     Checks: schema, ABI set equality, per-artifact path/hash/size parity,
-    source revision binding, JNI surface fingerprint.
+    source revision binding, JNI surface fingerprint, clean-tree attestation
+    (F7) and the reproducibility attestation (F5).
     """
     errors = errors if errors is not None else []
     root = Path(repo_root)
@@ -483,6 +527,30 @@ def verify_manifest(repo_root, manifest_path, produced_dir, expected_source_sha=
     lock = root / CARGO_LOCK
     if lock.exists() and src.get("cargo_lock_sha256") != sha256_file(lock):
         errors.append("manifest cargo_lock_sha256 does not match Cargo.lock")
+    # F7: manifest must attest a clean tree, and the live tree must still be clean
+    if src.get("working_tree") != "clean":
+        errors.append(
+            f"manifest source.working_tree={src.get('working_tree')!r} — provenance from a "
+            "non-clean tree is not accepted"
+        )
+    if require_clean_live_tree:
+        require_clean_tree(root, errors)
+
+    # F5: reproducibility attestation is mandatory and must be consistent
+    build = m.get("build") or {}
+    if build.get("reproducible_build_confirmed") is not True:
+        errors.append(
+            "manifest build.reproducible_build_confirmed is not True — run "
+            "`native_build.py rebuild-compare` (two clean builds) before verify/packaging"
+        )
+    else:
+        rep = build.get("reproducibility") or {}
+        att = rep.get("per_abi_sha256") or {}
+        want = {a.get("abi"): a.get("sha256") for a in m.get("artifacts") or []}
+        if rep.get("builds") != 2 or rep.get("method") != "two-clean-builds-three-way-compare":
+            errors.append("manifest build.reproducibility attestation malformed")
+        if att != want:
+            errors.append("manifest build.reproducibility.per_abi_sha256 does not equal artifact hashes")
 
     tc = m.get("toolchain") or {}
     channel, _, _ = parse_toolchain_toml(root / TOOLCHAIN_FILE)
@@ -575,9 +643,11 @@ def cmd_symbols(args):
 
 def cmd_build(args):
     errors = check_toolchain(args.repo_root, ndk_path=args.ndk_path)
+    # F7: refuse to build provenance from a dirty tree before spending any time
+    require_clean_tree(args.repo_root, errors)
     if errors:
         _print_errors(errors)
-        print("RESULT: FAIL — toolchain assertion failed; build refused")
+        print("RESULT: FAIL — toolchain/tree assertion failed; build refused")
         return 1
     ndk = resolve_ndk_path(args.ndk_path)
     out_dir = Path(args.out_dir)
@@ -612,19 +682,56 @@ def cmd_verify(args):
         _print_errors(errors)
         print("RESULT: FAIL — artifact/manifest verification failed")
         return 1
-    print("RESULT: PASS — produced artifacts match manifest; ABI + JNI parity verified")
+    print("RESULT: PASS — produced artifacts match manifest; ABI + JNI parity + clean-tree + reproducibility attestation verified")
     return 0
 
 
+def attest_reproducibility(primary_manifest_path, m1, m2, build_ids):
+    """Three-way compare primary vs two clean rebuilds; on success write the
+    attestation INTO the primary manifest (F5). Returns list of errors."""
+    errors = []
+    p = Path(primary_manifest_path)
+    if not p.exists():
+        return [f"primary manifest missing: {p} (run `build` first)"]
+    try:
+        primary = json.loads(p.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return [f"primary manifest is not valid JSON: {e}"]
+    for label, other in (("build#1", m1), ("build#2", m2)):
+        for abi, h_p, h_o in compare_manifest_hashes(primary, other):
+            errors.append(f"DIFF {abi}: primary {h_p} != {label} {h_o}")
+    if compare_manifest_hashes(m1, m2):
+        errors.append("clean rebuilds differ from each other")
+    prim_abis = {a.get("abi") for a in primary.get("artifacts") or []}
+    if prim_abis != set(REQUIRED_ABIS):
+        errors.append("primary manifest does not cover exactly the required ABI set")
+    if errors:
+        return errors
+    primary.setdefault("build", {})
+    primary["build"]["reproducible_build_confirmed"] = True
+    primary["build"]["reproducibility"] = {
+        "method": "two-clean-builds-three-way-compare",
+        "builds": 2,
+        "build_ids": build_ids,
+        "per_abi_sha256": {a["abi"]: a["sha256"] for a in primary["artifacts"]},
+    }
+    p.write_text(json.dumps(primary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return []
+
+
 def cmd_rebuild_compare(args):
-    """Two clean builds under the same pinned environment; compare hashes."""
+    """Two clean builds under the same pinned environment; three-way compare
+    against the primary manifest; on success write the authoritative
+    reproducibility attestation into the primary manifest (F5)."""
     errors = check_toolchain(args.repo_root, ndk_path=args.ndk_path)
+    require_clean_tree(args.repo_root, errors)
     if errors:
         _print_errors(errors)
-        print("RESULT: FAIL — toolchain assertion failed; build refused")
+        print("RESULT: FAIL — toolchain/tree assertion failed; build refused")
         return 1
     ndk = resolve_ndk_path(args.ndk_path)
     manifests = []
+    build_ids = []
     with tempfile.TemporaryDirectory(prefix="anox-repro-") as td:
         td = Path(td)
         for i in (1, 2):
@@ -637,22 +744,23 @@ def cmd_rebuild_compare(args):
                 print(f"RESULT: FAIL — clean build #{i} failed")
                 return 1
             mpath = td / f"build{i}" / "manifest.json"
-            m, merr = write_manifest(args.repo_root, out, mpath, ndk)
+            bid = f"{args.build_id or 'local'}-repro{i}"
+            build_ids.append(bid)
+            m, merr = write_manifest(args.repo_root, out, mpath, ndk, build_id=bid)
             if merr:
                 _print_errors(merr)
                 return 1
             manifests.append(m)
-        diffs = compare_manifest_hashes(manifests[0], manifests[1])
-        for abi, h1, h2 in sorted(manifests[0] and [(a["abi"], a["sha256"], a["sha256"]) for a in manifests[0]["artifacts"]]):
-            print(f"  build#1 {abi}: {h1}")
-        for a in manifests[1]["artifacts"]:
-            print(f"  build#2 {a['abi']}: {a['sha256']}")
-        if diffs:
-            for abi, h1, h2 in diffs:
-                print(f"DIFF {abi}: {h1} != {h2}")
-            print("RESULT: FAIL — clean rebuild produced different artifact hashes")
+        for i, m in enumerate(manifests, 1):
+            for a in m["artifacts"]:
+                print(f"  build#{i} {a['abi']}: {a['sha256']}")
+        aerr = attest_reproducibility(args.manifest, manifests[0], manifests[1], build_ids)
+        if aerr:
+            _print_errors(aerr)
+            print("RESULT: FAIL — reproducibility attestation refused (hash divergence or missing primary manifest)")
             return 1
-        print("RESULT: PASS — two clean builds produced identical per-ABI SHA-256")
+        print(f"Attestation written: {args.manifest} (build.reproducible_build_confirmed = true)")
+        print("RESULT: PASS — primary manifest and two clean builds produced identical per-ABI SHA-256")
         return 0
 
 

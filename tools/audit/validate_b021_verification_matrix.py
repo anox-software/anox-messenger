@@ -11,11 +11,14 @@ Two surfaces:
    - a green CI run is NOT evidence: SPEC_ONLY / UNVERIFIED never count as PASS
 
 2. docs/security/remediation/msc_state.jsonl
-   - canonical stage chain per unit; IMPLEMENTED -> CLOSED jumps forbidden
-   - RUNTIME_TESTED on provenance-required units needs FCP-1 evidence
-     (BUILD_ARTIFACT_HASH_PROOF + PROVENANCE_VERIFIED_NATIVE_RUNTIME refs)
-   - retest stages require a different recording authority than the
-     implementing session (FCP-7)
+   - canonical stage chain per unit; every stage record must be present;
+     IMPLEMENTED -> CLOSED jumps and omitted/reordered stages forbidden (F9)
+   - RUNTIME_TESTED on provenance-required units needs exact FCP-1 evidence:
+     a structured `provenance` object with BUILD_ARTIFACT_HASH_PROOF and
+     PROVENANCE_VERIFIED_NATIVE_RUNTIME covering every required ABI, with
+     same-run hash binding (F3) — no token/filename matching
+   - retest stages require a different, non-empty recording authority than
+     the implementing session (FCP-7)
 
 Modes:
   --check integrity   structural honesty of both surfaces (CI default; PASS
@@ -130,13 +133,75 @@ PROVENANCE_REQUIRED_UNITS = {
     "MSC-UNIT-037",
 }
 
-PROVENANCE_REF = re.compile(
-    r"(native-manifest\.json|BUILD_ARTIFACT_HASH_PROOF|PROVENANCE_VERIFIED_NATIVE_RUNTIME)",
-    re.IGNORECASE,
-)
+# FCP-1 (frozen SECURITY-REMEDIATION-COVERAGE-GATE-001): "every native row
+# requires same-run BUILD_ARTIFACT_HASH_PROOF + PROVENANCE runtime". F3: this
+# is enforced STRUCTURALLY — a RUNTIME_TESTED=PASS record on a provenance
+# unit must carry a `provenance` object with BOTH components, covering every
+# required ABI, with the runtime artifact hash equal to the build hash proof
+# for that ABI. Token or filename matching never satisfies FCP-1.
+FCP1_REQUIRED_ABIS = {"arm64-v8a", "x86_64"}
+SHA256_HEX = re.compile(r"^[0-9a-f]{64}$")
+
+# Stages that are mandatory for every unit regardless of the gate table.
+ALWAYS_REQUIRED_STAGES = {
+    "IMPLEMENTED", "AUTOMATED_TESTED", "INDEPENDENTLY_RETESTED",
+    "EVIDENCE_PRESERVED", "CLOSED",
+}
 
 RETEST_STAGES = {"INDEPENDENTLY_RETESTED", "ATTACKCHAIN_RETESTED", "PHYSICAL_VERIFIED"}
 LEGAL_STAGE_RESULT = {"PASS", "PENDING", "FAIL", "NOT_APPLICABLE"}
+
+
+def _norm_authority(s):
+    return re.sub(r"\s+", "", str(s or "")).casefold()
+
+
+def check_fcp1(unit, stage, repo_root, errors):
+    """F3: exact FCP-1 — both components, all required ABIs, same-run hash binding."""
+    prov = stage.get("provenance")
+    if not isinstance(prov, dict):
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 requires a structured `provenance` object "
+                      f"(BUILD_ARTIFACT_HASH_PROOF + PROVENANCE_VERIFIED_NATIVE_RUNTIME); none present")
+        return
+    hp = prov.get("build_artifact_hash_proof")
+    rt = prov.get("provenance_verified_native_runtime")
+    if not isinstance(hp, dict):
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 BUILD_ARTIFACT_HASH_PROOF component missing")
+    if not isinstance(rt, dict):
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 PROVENANCE_VERIFIED_NATIVE_RUNTIME component missing")
+    if not (isinstance(hp, dict) and isinstance(rt, dict)):
+        return
+    per_abi = hp.get("per_abi_sha256")
+    if not isinstance(per_abi, dict) or set(per_abi) != FCP1_REQUIRED_ABIS:
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 hash proof must cover exactly {sorted(FCP1_REQUIRED_ABIS)}")
+        return
+    for abi, h in per_abi.items():
+        if not SHA256_HEX.match(str(h or "")):
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 hash proof for {abi} is not a SHA-256 hex")
+    mref = hp.get("manifest_ref")
+    if not mref or not _ref_resolves(repo_root, mref):
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 hash proof manifest_ref missing/unresolvable")
+    if hp.get("reproducible_build_confirmed") is not True:
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 hash proof lacks reproducible_build_confirmed=true")
+    runs = rt.get("per_abi")
+    if not isinstance(runs, dict) or set(runs) != FCP1_REQUIRED_ABIS:
+        errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 runtime evidence must cover exactly {sorted(FCP1_REQUIRED_ABIS)}"
+                      f" (partial ABI coverage is not RUNTIME_TESTED)")
+        return
+    for abi, r in runs.items():
+        if not isinstance(r, dict):
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 runtime record for {abi} malformed")
+            continue
+        if r.get("artifact_sha256") != per_abi.get(abi):
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 same-run violation for {abi}: runtime artifact hash "
+                          f"!= build hash proof")
+        if r.get("result") != "PASS" or not isinstance(r.get("tests"), int) or r.get("tests") < 1 \
+                or r.get("failures") != 0:
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 runtime for {abi} is not a PASS with >=1 test and 0 failures")
+        if not r.get("evidence_ref") or not _ref_resolves(repo_root, r.get("evidence_ref")):
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 runtime evidence_ref for {abi} missing/unresolvable")
+        if not r.get("recorded_by"):
+            errors.append(f"{unit}.RUNTIME_TESTED: FCP-1 runtime for {abi} lacks recorded_by authority")
 
 
 def _load_jsonl(path, errors, label):
@@ -285,10 +350,17 @@ def check_msc_state(repo_root, errors):
             errors.append(f"{unit}: stages must be an object")
             continue
         impl = rec.get("implementing_session") or ""
-        required = STAGE_REQUIREMENTS[unit]
+        if not impl:
+            errors.append(f"{unit}: implementing_session missing (FCP-7 authority separation impossible)")
+        required = set(STAGE_REQUIREMENTS[unit]) | ALWAYS_REQUIRED_STAGES
         unknown = sorted(set(stages) - set(STAGE_ORDER))
         if unknown:
             errors.append(f"{unit}: unknown stage names {unknown}")
+        # F9: the lifecycle chain must be COMPLETE — every stage has a record.
+        # An omitted intermediate stage is a fail, never an implicit skip.
+        for sname in STAGE_ORDER:
+            if stages.get(sname) is None:
+                errors.append(f"{unit}: lifecycle stage record missing: {sname} (omitted stages are forbidden)")
         for sname in STAGE_ORDER:
             s = stages.get(sname)
             if s is None:
@@ -299,6 +371,8 @@ def check_msc_state(repo_root, errors):
                 continue
             if sname in required and res == "NOT_APPLICABLE":
                 errors.append(f"{unit}.{sname}: required stage marked NOT_APPLICABLE")
+            if res == "NOT_APPLICABLE" and not str(s.get("reason") or "").strip():
+                errors.append(f"{unit}.{sname}: NOT_APPLICABLE without reason")
             if res == "PASS":
                 if not s.get("evidence_refs"):
                     errors.append(f"{unit}.{sname}: PASS without evidence_refs")
@@ -306,34 +380,46 @@ def check_msc_state(repo_root, errors):
                     for ref in s["evidence_refs"]:
                         if not _ref_resolves(repo_root, ref):
                             errors.append(f"{unit}.{sname}: evidence ref does not resolve: {ref}")
-                # FCP-1: provenance-bound runtime evidence
+                if not str(s.get("recorded_by") or "").strip():
+                    errors.append(f"{unit}.{sname}: PASS without recorded_by authority")
+                if not str(s.get("recorded_at") or "").strip():
+                    errors.append(f"{unit}.{sname}: PASS without recorded_at")
+                # F3: exact FCP-1 on provenance-required units
                 if sname == "RUNTIME_TESTED" and unit in PROVENANCE_REQUIRED_UNITS:
-                    refs = s.get("evidence_refs") or []
-                    if not any(PROVENANCE_REF.search(str(x)) for x in refs):
+                    check_fcp1(unit, s, repo_root, errors)
+                # FCP-7: retest stages need a DIFFERENT authority than the implementer
+                if sname in RETEST_STAGES:
+                    rb = s.get("recorded_by")
+                    if not _norm_authority(rb):
+                        errors.append(f"{unit}.{sname}: retest stage PASS without recorded_by "
+                                      f"(self-certification cannot be excluded)")
+                    elif _norm_authority(rb) == _norm_authority(impl) or \
+                            (_norm_authority(impl) and _norm_authority(impl) in _norm_authority(rb)):
                         errors.append(
-                            f"{unit}.RUNTIME_TESTED: PASS without provenance-bound "
-                            f"evidence (FCP-1 requires BUILD_ARTIFACT_HASH_PROOF + "
-                            f"PROVENANCE_VERIFIED_NATIVE_RUNTIME refs)"
+                            f"{unit}.{sname}: retest stage recorded by implementing session "
+                            f"(implementer != retester required)"
                         )
-                # FCP-7: retest stages need a different authority than implementer
-                if sname in RETEST_STAGES and s.get("recorded_by") == impl:
-                    errors.append(
-                        f"{unit}.{sname}: retest stage recorded by implementing session "
-                        f"(implementer != retester required)"
-                    )
-            # ordering: PASS requires every earlier stage resolved
-            idx = STAGE_ORDER.index(sname)
-            for prev in STAGE_ORDER[:idx]:
-                ps = stages.get(prev)
-                if ps is None:
-                    continue
-                pres = ps.get("result")
-                if res == "PASS" and pres not in ("PASS", "NOT_APPLICABLE"):
+            # F9 ordering: a PASS stage requires EVERY earlier stage to be present
+            # and resolved (PASS, or NOT_APPLICABLE only when not required).
+            if res == "PASS":
+                idx = STAGE_ORDER.index(sname)
+                for prev in STAGE_ORDER[:idx]:
+                    ps = stages.get(prev)
+                    if ps is None:
+                        errors.append(f"{unit}.{sname}: PASS while earlier stage {prev} is missing "
+                                      f"(omitted intermediate stage — lifecycle jump forbidden)")
+                        continue
+                    pres = ps.get("result")
+                    if pres == "PASS":
+                        continue
+                    if pres == "NOT_APPLICABLE" and prev not in required:
+                        continue
                     errors.append(
                         f"{unit}.{sname}: PASS while earlier stage {prev} is {pres} "
-                        f"(IMPLEMENTED -> CLOSED jumps are forbidden)"
+                        f"(lifecycle order violated; IMPLEMENTED -> CLOSED jumps are forbidden)"
                     )
-                    break
+            # F9 reordering: a non-PASS stage must not precede a PASS stage — covered by
+            # the check above from the later stage; additionally FAIL anywhere blocks later PASS.
         closed = (stages.get("CLOSED") or {}).get("result")
         if closed == "PASS":
             for sname in STAGE_ORDER[:-1]:

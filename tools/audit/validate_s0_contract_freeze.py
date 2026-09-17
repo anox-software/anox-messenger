@@ -63,6 +63,10 @@ S1_OWNED_FILES = (
 # not an ancestor of HEAD is a VALIDATION FAILURE, never a silent SKIP.
 # ---------------------------------------------------------------------------
 AUTHORIZED_S0_BASE_SHA = "0f932520393feee6d479cc099f179f5766323125"
+# Pinned corrected S0 final head (metadata commit of the corrected S0 delivery,
+# preserved by SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001). The S0 scope
+# gate evaluates S0's own range base..final-head; both must be HEAD ancestors.
+AUTHORIZED_S0_FINAL_HEAD_SHA = "0be57335adaa25ad584357dde74666eb97339a01"
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
 
 # ---------------------------------------------------------------------------
@@ -1242,12 +1246,40 @@ def check_scope(man, errors):
         fail(f"authorized S0 base {base[:12]} is not an ancestor of HEAD — "
              f"the S0 scope gate cannot be evaluated and must not be skipped", errors)
         return
-    out = subprocess.run(["git", "diff", "--name-only", base], cwd=REPO_ROOT, capture_output=True, text=True)
+    # The S0 scope property is about S0's OWN delivery: the pinned corrected S0
+    # range base..S0_FINAL_HEAD must not touch product/S1-owned paths. Evaluating
+    # against a moving HEAD would conflate S0 with every later authorized
+    # delivery (e.g. the S1 integration, which legitimately changes S1-owned
+    # files). The S0 final head is pinned and must be an ancestor of HEAD.
+    # (Era-precision correction recorded by REMEDIATION-S1-CANONICAL-INTEGRATION-001;
+    # forbidden set and protected-file checks unchanged.)
+    fin = subprocess.run(["git", "cat-file", "-e", f"{AUTHORIZED_S0_FINAL_HEAD_SHA}^{{commit}}"],
+                         cwd=REPO_ROOT, capture_output=True)
+    if fin.returncode != 0:
+        fail(f"pinned corrected S0 final head {AUTHORIZED_S0_FINAL_HEAD_SHA[:12]} does not exist in this repository", errors)
+        return
+    fin_anc = subprocess.run(["git", "merge-base", "--is-ancestor", AUTHORIZED_S0_FINAL_HEAD_SHA, "HEAD"],
+                             cwd=REPO_ROOT, capture_output=True)
+    if fin_anc.returncode != 0:
+        fail(f"pinned corrected S0 final head {AUTHORIZED_S0_FINAL_HEAD_SHA[:12]} is not an ancestor of HEAD — "
+             f"S0 delivery lineage broken", errors)
+        return
+    if subprocess.run(["git", "merge-base", "--is-ancestor", base, AUTHORIZED_S0_FINAL_HEAD_SHA],
+                      cwd=REPO_ROOT, capture_output=True).returncode != 0:
+        fail(f"pinned S0 final head does not descend from the authorized S0 base", errors)
+        return
+    out = subprocess.run(["git", "diff", "--name-only", base, AUTHORIZED_S0_FINAL_HEAD_SHA],
+                         cwd=REPO_ROOT, capture_output=True, text=True)
     changed = [p for p in out.stdout.splitlines() if p.strip()]
     bad = sorted(p for p in changed if p.startswith(FORBIDDEN_PRODUCT_PREFIXES) or p.endswith(".sql") or p.endswith(".so")
                  or p in S1_OWNED_FILES)
     if bad:
         fail(f"S0 changed product/S1-owned paths: {bad}", errors)
+    # Protected shared files are checked at their CURRENT content (below), so a
+    # later unratified modification is still caught regardless of range.
+    head_changed = subprocess.run(["git", "diff", "--name-only", base], cwd=REPO_ROOT,
+                                  capture_output=True, text=True).stdout.splitlines()
+    changed = sorted(set(changed) | {p for p in head_changed if p in PROTECTED_SHARED_FILES})
     def _protected_change_ratified(rel):
         digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest() if (REPO_ROOT / rel).exists() else None
         spec = PROTECTED_SHARED_FILES[rel]

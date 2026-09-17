@@ -85,6 +85,31 @@ def _write_jsonl(path, records):
     Path(path).write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
 
 
+# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository now carries the
+# S1 canonical-integration era (ANOX-EVENT-0055, registry record
+# SEC-AUDIT-REG-0014). The ratified central validator is era-pinned to
+# 0052 → 0053 → 0054 / 13 records; these fixtures therefore normalise the copied
+# surface back to the S0 evidence-preservation era so every S0 protection is
+# exercised unchanged. The S1 era is validated by
+# tools/audit/validate_s1_integration_evidence.py and its own adversarial suite.
+_S1_EVENT_ID = "ANOX-EVENT-0055"
+_S1_REGISTRY_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
+
+
+def _normalise_fixture_to_s0_era(root):
+    lp = root / "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    recs = _load_jsonl(lp)
+    recs = [r for r in recs if r.get("event_id") != _S1_EVENT_ID]
+    _write_jsonl(lp, recs)
+    rp = root / "docs/security/audit-evidence/audit_registry.jsonl"
+    _write_jsonl(rp, [r for r in _load_jsonl(rp) if r.get("audit_id") != _S1_REGISTRY_ID])
+    sp = root / "docs/continuity/CURRENT_STATE.json"
+    state = json.loads(sp.read_text(encoding="utf-8"))
+    if recs:
+        state["latest_material_event_id"] = recs[-1].get("event_id")
+    sp.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+
 class EvidencePreservationAdversarialTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -94,6 +119,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        _normalise_fixture_to_s0_era(self.root)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -2079,6 +2105,7 @@ class S0SuccessorEventAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        _normalise_fixture_to_s0_era(self.root)
         # These tests exercise the pre-preservation acceptance path in which the
         # ledger ends at the S0 successor event; drop the later preservation
         # event and resync the state pointer so the fixture is that state.
@@ -2264,6 +2291,7 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        _normalise_fixture_to_s0_era(self.root)
 
     def tearDown(self):
         self.tmp.cleanup()

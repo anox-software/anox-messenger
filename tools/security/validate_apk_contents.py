@@ -84,7 +84,52 @@ ELF_MACHINE = {
 }
 
 # Maximum size for in-memory member scans (64 MiB covers any legitimate APK member).
+# F6: members above this bound are NOT skipped — they fail closed as unscannable.
 MAX_SCAN_BYTES = 64 * 1024 * 1024
+# DoS bounds (F6): total uncompressed payload and per-member compression ratio.
+MAX_TOTAL_UNCOMPRESSED = 1024 * 1024 * 1024
+MAX_MEMBERS = 50000
+BOMB_RATIO = 1000
+BOMB_MIN_BYTES = 1024 * 1024
+
+_CANONICAL_SEGMENT = re.compile(r"^[A-Za-z0-9._~!$&'()*+,;=@\[\]{}^ -]+$")
+
+
+def canonical_member_path(name):
+    """Return (is_canonical, reason) for a ZIP member name (F1).
+
+    A canonical path is exactly what the Android packager emits: relative,
+    forward-slash separated, no empty / '.' / '..' segments, no leading './'
+    or '/', no backslashes, no NUL, no control characters. Anything else can
+    be used to hide a native library from a prefix-based inventory and is
+    rejected outright rather than normalized.
+    """
+    if not name:
+        return False, "empty member name"
+    if "\x00" in name:
+        return False, "NUL in member name"
+    if "\\" in name:
+        return False, "backslash in member name"
+    if name.startswith("/"):
+        return False, "absolute member path"
+    if any(ord(c) < 32 or ord(c) == 127 for c in name):
+        return False, "control character in member name"
+    is_dir = name.endswith("/")
+    segs = name[:-1].split("/") if is_dir else name.split("/")
+    for s in segs:
+        if s == "":
+            return False, "empty path segment (leading '/' or '//')"
+        if s in (".", ".."):
+            return False, f"non-canonical segment {s!r}"
+    return True, ""
+
+
+def is_native_library_member(name):
+    """True for any member that could be interpreted as a native library
+    under ANY spelling of lib/<abi>/*.so (case-insensitive), so that no
+    variant can hide from the provenance inventory."""
+    low = name.lower()
+    return (low.endswith(".so") or ".so." in low.rsplit("/", 1)[-1]) or low.startswith("lib/")
 
 
 def sha256_file(path):
@@ -124,10 +169,25 @@ def load_manifest(path):
     src = m.get("source") or {}
     if not re.fullmatch(r"[0-9a-f]{40}", str(src.get("repo_sha") or "")):
         errors.append("manifest source.repo_sha is not a 40-hex SHA")
+    # F7: a manifest may only claim an unqualified clean source SHA if the
+    # producing tree was clean; anything else is rejected here as well.
+    if src.get("working_tree") != "clean":
+        errors.append(
+            f"manifest source.working_tree={src.get('working_tree')!r}; provenance from a "
+            "non-clean tree cannot bind an APK"
+        )
     tc = m.get("toolchain") or {}
     for k in ("channel", "ndk_revision", "cargo_ndk", "rustc"):
         if not tc.get(k):
             errors.append(f"manifest toolchain.{k} missing")
+    # F5: reproducibility is an authoritative, verified attestation — not a
+    # decorative field. It must be exactly True (set only by rebuild-compare).
+    build = m.get("build") or {}
+    if build.get("reproducible_build_confirmed") is not True:
+        errors.append(
+            "manifest build.reproducible_build_confirmed is not True — artifacts have not "
+            "passed the two-clean-build reproducibility attestation"
+        )
     arts = m.get("artifacts") or []
     if not arts:
         errors.append("manifest has no artifacts")
@@ -185,20 +245,73 @@ def validate_apk(apk_path, manifest_path=None):
 
     try:
         with zipfile.ZipFile(apk_path, "r") as zf:
-            all_members = zf.namelist()
+            infos = zf.infolist()
+            all_members = [i.filename for i in infos]
             print(f"Member count: {len(all_members)}")
 
-            for m in all_members:
+            # ---- F1/F6: archive-structure fail-closed checks -----------------
+            if len(infos) > MAX_MEMBERS:
+                errors.append(f"APK has {len(infos)} members > bound {MAX_MEMBERS}")
+            total_uncompressed = sum(i.file_size for i in infos)
+            if total_uncompressed > MAX_TOTAL_UNCOMPRESSED:
+                errors.append(
+                    f"APK total uncompressed size {total_uncompressed} > bound {MAX_TOTAL_UNCOMPRESSED}"
+                )
+            # exact duplicate entries (central-directory ambiguity: verifier and
+            # installer may disagree on which copy wins)
+            seen_exact = set()
+            for name in all_members:
+                if name in seen_exact:
+                    errors.append(f"duplicate ZIP entry: {name}")
+                seen_exact.add(name)
+            # canonical-path + collision-after-folding checks
+            folded = {}
+            for name in all_members:
+                ok, why = canonical_member_path(name)
+                if not ok:
+                    errors.append(f"non-canonical ZIP member path {name!r}: {why}")
+                key = name.lower()
+                if key in folded and folded[key] != name:
+                    errors.append(
+                        f"ambiguous ZIP entries differing only by case: {folded[key]!r} vs {name!r}"
+                    )
+                folded.setdefault(key, name)
+
+            for info in infos:
+                m = info.filename
+                is_dir = m.endswith("/")
+                # F6: zip-bomb style members are rejected before any read
+                if (not is_dir and info.file_size >= BOMB_MIN_BYTES and info.compress_size > 0
+                        and info.file_size // info.compress_size > BOMB_RATIO):
+                    errors.append(
+                        f"{m}: compression ratio {info.file_size // info.compress_size}:1 exceeds bound"
+                    )
+                    continue
+
                 # inventory
                 if re.match(r"^classes\d*\.dex$", os.path.basename(m)):
                     classes_dex_count += 1
-                if m.startswith("lib/") and m.endswith(".so") and not m.endswith("/"):
-                    data = zf.read(m)
-                    native_libs[m] = sha256_bytes(data)
+                # F1: any spelling that could denote a native library is
+                # inventoried; only the exact canonical lib/<abi>/<name>.so form
+                # is admissible, every other variant is a hard failure.
+                if not is_dir and is_native_library_member(m):
                     parts = m.split("/")
-                    if len(parts) >= 3:
+                    canonical_form = (
+                        m.startswith("lib/") and len(parts) == 3 and parts[2].endswith(".so")
+                        and parts[1] != "" and parts[2] != ".so"
+                    )
+                    if not canonical_form:
+                        errors.append(
+                            f"native-library-like member outside canonical lib/<abi>/<name>.so form: {m!r}"
+                        )
+                    else:
+                        if info.file_size > MAX_SCAN_BYTES:
+                            errors.append(f"{m}: native library exceeds scan bound; refusing to bind")
+                            continue
+                        data = zf.read(m)
+                        native_libs[m] = sha256_bytes(data)
                         native_abis.add(parts[1])
-                if m.startswith("assets/") and not m.endswith("/"):
+                if m.startswith("assets/") and not is_dir:
                     asset_count += 1
                 if m == "AndroidManifest.xml" or m.lower() == "androidmanifest.xml":
                     has_manifest = True
@@ -211,17 +324,22 @@ def validate_apk(apk_path, manifest_path=None):
                         forbidden_findings.append((m, pat))
                         break
 
-                # secret marker scan on ALL members (binary included), bounded size
+                # secret marker scan on ALL members (binary included); F6:
+                # oversize members fail closed instead of being skipped.
+                if is_dir or info.file_size == 0:
+                    continue
+                if info.file_size > MAX_SCAN_BYTES:
+                    errors.append(f"{m}: member size {info.file_size} exceeds scan bound; unscannable member is a failure")
+                    continue
                 try:
-                    info = zf.getinfo(m)
-                    if 0 < info.file_size <= MAX_SCAN_BYTES and not m.endswith("/"):
-                        data = zf.read(m)
-                        for marker in SECRET_MARKERS:
-                            if marker in data:
-                                secret_findings.append((m, marker.decode("utf-8")))
-                                break
-                except (zipfile.BadZipFile, RuntimeError):
-                    pass
+                    data = zf.read(m)
+                except (zipfile.BadZipFile, RuntimeError, NotImplementedError) as e:
+                    errors.append(f"{m}: unreadable member ({e.__class__.__name__}); cannot be scanned")
+                    continue
+                for marker in SECRET_MARKERS:
+                    if marker in data:
+                        secret_findings.append((m, marker.decode("utf-8")))
+                        break
 
     except zipfile.BadZipFile as e:
         print(f"ERROR: not a valid APK/ZIP: {e}")

@@ -326,7 +326,15 @@ def check_lifecycle_claims(errors):
             fail(f"s0 traceability record claims closure by S0: {r.get('msc_unit') or r.get('finding_id')}", errors)
     # previous evidence not weakened: all 12 prior registry records still bound
     # to their preserved report hash and result (fields they carry canonically).
-    prior = [a for a in reg.values() if a.get("record_id") != "SEC-AUDIT-REG-0013"]
+    # REMEDIATION-S1-CANONICAL-INTEGRATION-001 appends exactly one later record
+    # (SEC-AUDIT-REG-0014, S1 integration evidence); it is pinned and validated
+    # by the central validator and is not a "prior" record of S0. The 12-record
+    # prior-evidence protection is unchanged.
+    later = {"SEC-AUDIT-REG-0013",
+             ("SEC-AUDIT-REG-0014", "REMEDIATION-S1-CANONICAL-INTEGRATION-001")}
+    prior = [a for a in reg.values()
+             if a.get("record_id") != "SEC-AUDIT-REG-0013"
+             and (a.get("record_id"), a.get("audit_id")) not in later]
     if len(prior) != 12:
         fail(f"prior evidence registry must still hold exactly 12 records, got {len(prior)}", errors)
     for a in prior:
@@ -420,11 +428,30 @@ def check_event(errors):
         if idx < 2 or ledger[idx - 1].get("event_id") != LEDGER_EVENT_0053 \
                 or ledger[idx - 2].get("event_id") != LEDGER_EVENT_0052:
             fail(f"{PRESERVATION_EVENT_ID} must directly follow {LEDGER_EVENT_0053} ← {LEDGER_EVENT_0052}", errors)
-        if ledger.index(ev) != len(ledger) - 1:
-            fail(f"{PRESERVATION_EVENT_ID} must be the last ledger event", errors)
+        # Era-precision (REMEDIATION-S1-CANONICAL-INTEGRATION-001): S0 preservation
+        # is a sealed chain position, not a freeze of the ledger. Later canonical
+        # events may follow, but 0054 must occur exactly once, nothing after it may
+        # re-record an S0 task or reuse 0054, and later ids must strictly ascend.
+        ids = [e.get("event_id") for e in ledger]
+        if ids.count(PRESERVATION_EVENT_ID) != 1:
+            fail(f"{PRESERVATION_EVENT_ID} must occur exactly once in the ledger", errors)
+        s0_tasks = {PRESERVATION_TASK, "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001",
+                    "ANOX-TASK-REMEDIATION-SESSION-S0-CORRECTION-001"}
+        prev_num = int(PRESERVATION_EVENT_ID.rsplit("-", 1)[1])
+        for later in ledger[idx + 1:]:
+            lid = str(later.get("event_id") or "")
+            m = re.fullmatch(r"ANOX-EVENT-(\d{4})", lid)
+            if not m or int(m.group(1)) <= prev_num:
+                fail(f"event after {PRESERVATION_EVENT_ID} has non-ascending/illegal id {lid!r}", errors)
+                break
+            prev_num = int(m.group(1))
+            if later.get("task") in s0_tasks:
+                fail(f"S0 task re-recorded after preservation ({lid}) — preserved S0 evidence may not be re-opened", errors)
     state = load_json("docs/continuity/CURRENT_STATE.json")
-    if state.get("latest_material_event_id") != PRESERVATION_EVENT_ID:
-        fail(f"CURRENT_STATE.latest_material_event_id != {PRESERVATION_EVENT_ID}", errors)
+    if ledger and state.get("latest_material_event_id") != ledger[-1].get("event_id"):
+        fail("CURRENT_STATE.latest_material_event_id != last ledger event (Project Memory stale)", errors)
+    if not ledger or PRESERVATION_EVENT_ID not in [e.get("event_id") for e in ledger]:
+        fail(f"CURRENT_STATE/ledger no longer carry {PRESERVATION_EVENT_ID}", errors)
     if len(errors) == before:
         ok(f"{PRESERVATION_EVENT_ID} recorded, ordered 0052 → 0053 → 0054, state synced")
 
