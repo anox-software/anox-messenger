@@ -7,15 +7,15 @@
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `0d1549d12d02fd7b277bf04fed7530b6605c1023`
+- **Substantive HEAD:** `a79e3b3db9b441fd81b5f76f6804f90eb44bb36b`
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 0d1549d12d02fd7b277bf04fed7530b6605c1023
+Described HEAD: a79e3b3db9b441fd81b5f76f6804f90eb44bb36b
 
 ## Pre-merge gate
 
-`REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 — HUMAN-AUTHORIZED SINGLE CORRECTION PASS (fail-closed worktree S0 scope gate; complete two-file shared-validator ratification package e52f626a46f2…+c305c21c9405… 277/277 post-application; escaped-PEM + consumer soft-fail detection; attestation trust-boundary wording; Ready For Remote; correction pair [0d1549d12d02 + metadata] over pinned delivery; Shared Validator remains proposal; B-1 unresolved pending final Human disposition; awaiting independent retest)`
+`REMEDIATION-S1-FINAL-CORRECTIONS-001 — HUMAN-AUTHORIZED FINAL CORRECTION PASS (B-1 Human-RATIFIED for the reviewed S1 integration/correction scope only; B-3 B027 governance restored with a valid Human authority record + single active writer; B-4 continuity live restored via metadata-only delivery tail; B-5 S0 test_91 environment-independent, test_s0_contract_freeze 100/100 in a normal clone; N-8 multiline CI exit-status masking rejected; N-9 consumed correction pair pinned; shared-validator package REGENERATED d03e539a49e9…+c305c21c9405…; Ready For Remote; correction pair [a79e3b3db9b4 + metadata] over the pinned delivery; Shared Validator remains a proposal; NOT INDEPENDENTLY VERIFIED — independent retest by a non-authoring session required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
 
 ## Post-merge gate
 

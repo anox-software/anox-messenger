@@ -77,5 +77,5 @@ Surface updates NOT tied to a new canonical event (2026-09-17):
   `CURRENT_IMPLEMENTATION_STATE.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`,
   `WORKFORCE_STATE.json`, `tasks.jsonl`, `decisions.jsonl` and
   `audit_registry.jsonl` (S1 record's proposed-hash fields) — correction pair
-  `[0d1549d12d02 + metadata]` over the pinned ANOX-EVENT-0055 delivery;
+  `[a79e3b3db9b4 + metadata]` over the pinned ANOX-EVENT-0055 delivery;
   `latest_material_event_id` remains `ANOX-EVENT-0055` (no new event).
