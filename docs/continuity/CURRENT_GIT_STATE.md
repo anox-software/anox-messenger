@@ -7,15 +7,15 @@
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `ea20aaaf330c9268448df5523e89615aa0a69074`
+- **Substantive HEAD:** `0d1549d12d02fd7b277bf04fed7530b6605c1023`
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: ea20aaaf330c9268448df5523e89615aa0a69074
+Described HEAD: 0d1549d12d02fd7b277bf04fed7530b6605c1023
 
 ## Pre-merge gate
 
-`REMEDIATION-S1-CANONICAL-INTEGRATION-001 — INTEGRATE ISOLATED S1 ONTO CANONICAL MAIN + REMEDIATE RETEST FINDINGS F1-F9 + S1-ERA SHARED-VALIDATOR FOLLOW-UP AS RATIFICATION PROPOSAL + S1 VALIDATOR (Ready For Remote; merge dd6e2c5d82f0 of e32463ca71b0 onto 29a664318924; provisional isolated ANOX-EVENT-0054 NONCANONICAL → canonical ANOX-EVENT-0055; awaiting TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 and human merge into main)`
+`REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 — HUMAN-AUTHORIZED SINGLE CORRECTION PASS (fail-closed worktree S0 scope gate; complete two-file shared-validator ratification package e52f626a46f2…+c305c21c9405… 277/277 post-application; escaped-PEM + consumer soft-fail detection; attestation trust-boundary wording; Ready For Remote; correction pair [0d1549d12d02 + metadata] over pinned delivery; Shared Validator remains proposal; B-1 unresolved pending final Human disposition; awaiting independent retest)`
 
 ## Post-merge gate
 

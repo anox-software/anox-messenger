@@ -1,3 +1,10 @@
+## 2026-09-17 — REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 (no new canonical event)
+
+- Task: `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001` — prompt `REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001`; authorized by `ANOX-DECISION-S1-PRE-RATIFICATION-CORRECTIONS-AUTHORIZATION-001` (Human Product & Security Owner; ONE_TIME_CHANGE_SPECIFIC). Model: `Claude Opus 5 Medium` (independent retest session continuing as authorized corrector).
+- Purpose: resolve independently verified S1 merge blockers/residual findings without weakening S0 authority — B-2 complete two-file Shared Validator ratification package; N-1 fail-closed Git-worktree S0 scope gate; N-3 escaped-newline PEM detection; N-4 consumer shell soft-fail detection; N-2/N-5/N-6 truthful wording.
+- Commits: substantive `0d1549d12d02fd7b277bf04fed7530b6605c1023` + metadata-only follow-up (authorized correction pair over the pinned `[dd6e2c5d, ea20aaaf, 573c5f58]` delivery; `ANOX-EVENT-0055` remains latest material event).
+- Result: `Ready For Remote` — validators PASS (S1 integration incl. correction-pair topology; S0 contract freeze incl. worktree gate; S0 evidence preservation; CI pipeline; secret scan; build provenance); test suites 100/40/277/68/101/66/35; proposal simulation yields `e52f626a46f2…` + `c305c21c9405…` with 277/277 post-application. Shared Validator remains a proposal; B-1 unresolved pending final Human disposition; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; no remote mutation; independent retest required before ratification/push.
+
 ## ANOX-EVENT-0055 — REMEDIATION-S1-CANONICAL-INTEGRATION-001 (2026-09-16)
 
 - Task: `ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001` — prompt `REMEDIATION-S1-CANONICAL-INTEGRATION-001` (WRITABLE IMPLEMENTATION / INTEGRATION; ONE WRITER; worktree `integration/s1-after-s0-001`; canonical main at start `29a6643189242a47c4a79c38acd04c1eca748787`). Model: `Fable 5.1 Medium` requested; runtime `Claude Fable 5.1 Medium` (matched).
