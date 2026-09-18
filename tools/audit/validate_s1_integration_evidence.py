@@ -45,7 +45,7 @@ CENTRAL_RATIFIED_SHA256 = "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00
 # The ratification package also carries the paired central-test-suite update so
 # that applying the proposal leaves BOTH files green (pre-ratification
 # correction REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
-CENTRAL_PROPOSED_SHA256 = "d03e539a49e9126e92b0fdc31fb5c8e424a6e7e82c98cf954881e99e6edbed74"
+CENTRAL_PROPOSED_SHA256 = "87cd5e202325f1921954fc3a6e23999f987fc65d65bb13652ae34473001fbecd"
 CENTRAL_TESTS_PROPOSED_SHA256 = "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462"
 PROPOSAL_PATCH = "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch"
 PROPOSAL_RECORD = "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md"
@@ -80,13 +80,24 @@ CONSUMED_CORRECTION_PAIRS = (
     # REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 (substantive, metadata)
     ("0d1549d12d02fd7b277bf04fed7530b6605c1023",
      "f08749e2e5ec45e76b1ea98c5c999e4679be3ffe"),
+    # REMEDIATION-S1-FINAL-CORRECTIONS-001 — frozen by retest S1-003 and promoted
+    # here, so D1'/D2' can no longer be substituted.
+    ("a79e3b3db9b441fd81b5f76f6804f90eb44bb36b",
+     "4319dacaa7ac94405e8b72fe23effb6e733ab898"),
 )
 S1_CORRECTION_TASKS = (
     "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
+    "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
 )
 # The one correction task still permitted to author an unpinned pair.
-S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001"
+S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001"
+# Human-ratification tail: R1 may change EXACTLY these paths, R2 is metadata-only.
+S1_RATIFICATION_PATHS = frozenset({
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+})
+S1_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
 
 S1_ALLOWED_EXACT = {
     ".github/workflows/ci.yml", ".gitignore", "android/build.gradle.kts",
@@ -111,6 +122,10 @@ S1_ALLOWED_EXACT = {
     "docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md",
     "docs/reports/security/remediation/REMEDIATION-S1-FINAL-CORRECTIONS-001.md",
     "docs/reports/security/retests/TARGETED-INDEPENDENT-PRE-RATIFICATION-RETEST-S1-002.md",
+    # REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 evidence surfaces
+    "docs/reports/security/decisions/S1-RATIFICATION-TAIL-CORRECTION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003.md",
 }
 S1_ALLOWED_PREFIXES = (
     "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
@@ -218,13 +233,26 @@ def load_central():
     if not p.exists():
         return None, f"protected shared validator missing: {CENTRAL}"
     digest = sha256_file(p)
-    if digest != CENTRAL_RATIFIED_SHA256:
+    # BLOCKER-2 (retest S1-003): pinning ONLY the pre-ratification content made this
+    # validator fail permanently the moment the Human ratified the package. Exactly
+    # two contents are admissible and they are distinguished, never conflated:
+    #   * CENTRAL_RATIFIED_SHA256  — the current Human-ratified content (pre-ratification state)
+    #   * CENTRAL_PROPOSED_SHA256  — the exact successor this proposal yields, admissible
+    #                                only once it has actually been ratified and applied
+    # Any other content is still a hard fail.
+    if digest == CENTRAL_RATIFIED_SHA256:
+        central_state = "PRE_RATIFICATION"
+    elif digest == CENTRAL_PROPOSED_SHA256:
+        central_state = "RATIFIED_SUCCESSOR_APPLIED"
+    else:
         return None, (f"protected shared validator content {digest[:16]}… is not the Human-ratified content "
-                      f"{CENTRAL_RATIFIED_SHA256[:16]}… — S1 must not run on a modified shared validator")
+                      f"{CENTRAL_RATIFIED_SHA256[:16]}… and not the exact proposed successor "
+                      f"{CENTRAL_PROPOSED_SHA256[:16]}… — S1 must not run on a modified shared validator")
     os.environ["SECURITY_AUDIT_PRESERVATION_REPO"] = str(REPO_ROOT)
     spec = importlib.util.spec_from_file_location("anox_central_ratified", p)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
+    mod._anox_central_state = central_state
     return mod, None
 
 
@@ -267,17 +295,37 @@ def validate_base_s1(central, errors):
         if not ll._git_is_ancestor(sha, s1["start_head"], cwd=REPO_ROOT):
             fail(f"S1 integration base {s1['start_head'][:12]} does not descend from {label} {sha[:12]}", errors)
             return
+    _delivery_out = {}
     ok, merge_sha, sub, meta, reason = ll.canonical_integration_delivery(
         s1["start_head"], s1["merged_head"], s1["merged_base"], described, head,
         cwd=REPO_ROOT, metadata_allowlist=central.METADATA_ALLOWLIST,
         s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
         correction_task=S1_CORRECTION_TASK,
-        consumed_correction_pairs=CONSUMED_CORRECTION_PAIRS)
+        consumed_correction_pairs=CONSUMED_CORRECTION_PAIRS,
+        ratification_paths=S1_RATIFICATION_PATHS, out=_delivery_out)
     if not ok:
         fail(f"canonical S1 integration delivery failed: {reason}", errors)
         return
+    tail = _delivery_out.get("ratification_tail", "NONE")
+    central_state = getattr(central, "_anox_central_state", "PRE_RATIFICATION")
+    if tail == "NONE" and central_state != "PRE_RATIFICATION":
+        fail("ratified successor content is present without an authorized ratification tail", errors)
+        return
+    if tail != "NONE" and central_state != "RATIFIED_SUCCESSOR_APPLIED":
+        fail("ratification tail present but the protected shared validator is not the exact "
+             "proposed successor content", errors)
+        return
+    if tail == "R1R2" and state.get("ratification_decision_id") != S1_RATIFICATION_DECISION_ID:
+        fail(f"ratification metadata commit must declare ratification_decision_id "
+             f"{S1_RATIFICATION_DECISION_ID}, got {state.get('ratification_decision_id')!r}", errors)
+        return
+    if tail != "NONE":
+        print(f"  OK   authorized Human-ratification tail {tail} "
+              f"(R1 {(_delivery_out.get('r1') or '')[:12]}"
+              f"{', R2 ' + (_delivery_out.get('r2') or '')[:12] if _delivery_out.get('r2') else ''}); "
+              f"exact package paths only; successor content matches the pinned proposal")
     _consumed_heads = {S1_METADATA_SHA} | {m for _, m in CONSUMED_CORRECTION_PAIRS}
-    if head not in _consumed_heads and state.get("current_task") != S1_CORRECTION_TASK:
+    if head not in _consumed_heads and tail == "NONE" and state.get("current_task") != S1_CORRECTION_TASK:
         fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
              f"{state.get('current_task')!r} is not the authorized correction task "
              f"{S1_CORRECTION_TASK}", errors)
@@ -292,19 +340,27 @@ def validate_registry_s1(central, errors):
     audits = {a.get("audit_id"): a for a in load_jsonl(reg_path)}
     if len(audits) != 14:
         fail(f"audit_registry.jsonl must contain exactly 14 records (13 ratified + 1 S1 integration record), found {len(audits)}", errors)
-    # Run the ratified S0 registry validator unchanged on the 13-record view.
-    original = central.load_jsonl
+    # Run the central registry validator unchanged. The S0-era ratified validator
+    # is era-pinned to 13 records, so the S1 record is hidden from it; the ratified
+    # SUCCESSOR expects all 14 and must therefore see the registry unfiltered.
+    # Applying the S0-era view to the successor silently removed the very record it
+    # validates (retest S1-003 follow-up).
+    central_state = getattr(central, "_anox_central_state", "PRE_RATIFICATION")
+    if central_state == "PRE_RATIFICATION":
+        original = central.load_jsonl
 
-    def _view(path):
-        recs = original(path)
-        if Path(path).name == "audit_registry.jsonl":
-            return [r for r in recs if r.get("audit_id") != S1_INTEGRATION_ID]
-        return recs
-    central.load_jsonl = _view
-    try:
+        def _view(path):
+            recs = original(path)
+            if Path(path).name == "audit_registry.jsonl":
+                return [r for r in recs if r.get("audit_id") != S1_INTEGRATION_ID]
+            return recs
+        central.load_jsonl = _view
+        try:
+            central.validate_registry(errors)
+        finally:
+            central.load_jsonl = original
+    else:
         central.validate_registry(errors)
-    finally:
-        central.load_jsonl = original
     rec = audits.get(S1_INTEGRATION_ID)
     if rec is None:
         fail(f"{S1_INTEGRATION_ID} registry record missing (registry must carry exactly one S1 integration evidence record)", errors)
@@ -346,11 +402,20 @@ def validate_scope_s1(errors):
     central_mod, _ = load_central()
     if central_mod is not None:
         meta = set(central_mod.METADATA_ALLOWLIST)
+    # After an authorized ratification tail the package paths have legitimately
+    # changed — that change IS the ratification, already bound by the tail proof
+    # (exact parent, exact changed-path set, exact successor content). Before it,
+    # any change to the protected validator remains a hard failure.
+    ratified = (central_mod is not None
+                and getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION")
+                == "RATIFIED_SUCCESSOR_APPLIED")
+    exempt = set(S1_RATIFICATION_PATHS) if ratified else set()
     outside = sorted(p for p in changed
-                     if p not in S1_ALLOWED_EXACT and not p.startswith(S1_ALLOWED_PREFIXES) and p not in meta)
+                     if p not in S1_ALLOWED_EXACT and not p.startswith(S1_ALLOWED_PREFIXES)
+                     and p not in meta and p not in exempt)
     if outside:
         fail(f"S1 integration changed paths outside the enumerated S1 surfaces: {outside}", errors)
-    if CENTRAL in changed:
+    if CENTRAL in changed and not ratified:
         fail(f"protected shared validator {CENTRAL} changed without Human ratification", errors)
     if _git(["ls-files", "--", "*.so"]).stdout.strip():
         fail("S1 integration leaves tracked native binaries", errors)
@@ -470,6 +535,24 @@ def validate_ratification_proposal(errors):
     for BOTH patched files (the protected validator and its paired adversarial
     test suite — the complete ratification package)."""
     print("\n[S1-INTEGRATION] Shared-validator ratification proposal integrity")
+    central_mod, _ = load_central()
+    if (central_mod is not None
+            and getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION")
+            == "RATIFIED_SUCCESSOR_APPLIED"):
+        # The proposal has been ratified and applied: the patch can no longer be
+        # re-applied to already-migrated files. Integrity is instead the identity
+        # of the live content with the pinned proposed post-images.
+        got = sha256_file(REPO_ROOT / CENTRAL)
+        tgot = sha256_file(REPO_ROOT / CENTRAL_TESTS)
+        if got != CENTRAL_PROPOSED_SHA256:
+            fail(f"ratified validator {got[:16]}… != pinned proposed {CENTRAL_PROPOSED_SHA256[:16]}…", errors)
+        if tgot != CENTRAL_TESTS_PROPOSED_SHA256:
+            fail(f"ratified paired suite {tgot[:16]}… != pinned proposed "
+                 f"{CENTRAL_TESTS_PROPOSED_SHA256[:16]}…", errors)
+        if not errors:
+            print(f"  OK   ratified content matches the pinned proposal exactly "
+                  f"({CENTRAL_PROPOSED_SHA256[:12]}… + {CENTRAL_TESTS_PROPOSED_SHA256[:12]}…)")
+        return
     patch = REPO_ROOT / PROPOSAL_PATCH
     record = REPO_ROOT / PROPOSAL_RECORD
     if not record.exists():

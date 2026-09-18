@@ -487,7 +487,8 @@ def canonical_two_commit_delivery(base_sha, described_head, live_head,
 def canonical_integration_delivery(base_sha, merged_head, merged_base, described_head,
                                    live_head, cwd=REPO, metadata_allowlist=None,
                                    s1_substantive_sha=None, s1_metadata_sha=None,
-                                   correction_task=None, consumed_correction_pairs=()):
+                                   correction_task=None, consumed_correction_pairs=(),
+                                   ratification_paths=None, out=None):
     """Verify the canonical *integration* delivery invariant (REMEDIATION-S1-
     CANONICAL-INTEGRATION-001 era extension, extended by
     REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
@@ -544,13 +545,27 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
 
     fp = _git(["rev-list", "--first-parent", f"{base_sha}..{live_head}"], cwd=cwd)
     chain = fp.splitlines() if fp else []
-    # Oldest-first: [M, C1, C2, (pair…)*]
+    # Oldest-first: [M, C1, C2, (pair…)*, (R1 (, R2))?]
     order = list(reversed(chain))
     consumed = [tuple(pr) for pr in (consumed_correction_pairs or ())]
     n_consumed = 2 * len(consumed)
-    allowed = {3 + n_consumed}
+    if out is None:
+        out = {}
+    out["ratification_tail"] = "NONE"
+    out["r1"] = out["r2"] = None
+
+    # Legal correction shapes, then the OPTIONAL Human-ratification tail on top.
+    # The tail is expressed only through relationships that are already known
+    # (parent = the delivery tip, an exact changed-path set, metadata-only R2), so
+    # no validator ever needs to know its own future commit SHA.
+    base_shapes = {3 + n_consumed}
     if correction_task:
-        allowed.add(3 + n_consumed + 2)
+        base_shapes.add(3 + n_consumed + 2)
+    allowed = set(base_shapes)
+    if ratification_paths:
+        for b in base_shapes:
+            allowed.add(b + 1)   # + R1 (ratification application)
+            allowed.add(b + 2)   # + R1 + R2 (required metadata synchronisation)
     if len(order) not in allowed:
         counts = " or ".join(str(n) for n in sorted(allowed))
         detail = "merge + 2 task-authored"
@@ -558,9 +573,46 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
             detail += f" + {len(consumed)} pinned correction pair(s)"
         if correction_task:
             detail += " + at most one authorized correction pair"
+        if ratification_paths:
+            detail += " + at most one Human-ratification tail (R1[, R2])"
         return False, None, None, None, (
             f"expected exactly {counts} first-parent commits above base "
             f"({detail}), found {len(order)}")
+
+    # Split off the ratification tail. Counting alone is AMBIGUOUS — e.g. with two
+    # consumed pairs a 9-commit chain could be "2 consumed + an open correction
+    # pair" or "1 consumed + R1 + R2". The tail is therefore identified by its
+    # SIGNATURE (R1 changes exactly the package paths), never by arithmetic, and
+    # the longest signature-matching split wins.
+    def _changed(sha):
+        files = _git(["diff", "--name-only", f"{sha}~1", sha], cwd=cwd)
+        return {p for p in (files or "").splitlines() if p.strip()}
+
+    n_tail = 0
+    if ratification_paths:
+        near_miss = None
+        for n in (2, 1):
+            if len(order) - n in base_shapes and len(order) - n >= 3:
+                got = _changed(order[len(order) - n])
+                if got == set(ratification_paths):
+                    n_tail = n
+                    break
+                if got & set(ratification_paths):
+                    # Touches the package but not exactly: report precisely
+                    # instead of degrading into a generic shape error.
+                    near_miss = near_miss or (order[len(order) - n], got)
+        if n_tail == 0 and near_miss and len(order) not in base_shapes:
+            sha, got = near_miss
+            return False, None, None, None, (
+                f"ratification commit R1 {sha[:12]} must change exactly "
+                f"{sorted(ratification_paths)}, changed {sorted(got)}")
+    if n_tail == 0 and len(order) not in base_shapes:
+        return False, None, None, None, (
+            f"commit chain of {len(order)} above base is not a legal delivery shape and its "
+            f"trailing commits do not carry the authorized ratification signature")
+    ratification = order[len(order) - n_tail:] if n_tail else []
+    order = order[:len(order) - n_tail] if n_tail else order
+
     merge_sha, substantive_head, metadata_head = order[0], order[1], order[2]
     tail = order[3:]
     # Consumed pairs are pinned by SHA and may never move (N-9).
@@ -607,7 +659,7 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
             ps = _git_merge_parents(sha, cwd=cwd) or []
             if len(ps) != 1:
                 return False, None, None, None, f"correction commit {sha[:12]} is not a single-parent commit"
-        if corr_sub != described_head:
+        if len(ratification) != 2 and corr_sub != described_head:
             return False, None, None, None, (
                 f"correction substantive commit {corr_sub[:12]} != described_head {described_head[:12]}")
         if metadata_allowlist:
@@ -620,7 +672,7 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
                     return False, None, None, None, (
                         f"correction metadata commit {cm[:12]} touches non-metadata files: {bad}")
     else:
-        if substantive_head != described_head:
+        if len(ratification) != 2 and substantive_head != described_head:
             return False, None, None, None, (
                 f"substantive commit {substantive_head[:12]} != described_head {described_head[:12]}")
         if s1_substantive_sha and substantive_head != s1_substantive_sha:
@@ -645,6 +697,49 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
         bad = [p for p in meta_files.splitlines() if p not in metadata_allowlist]
         if bad:
             return False, None, None, None, f"metadata commit touches non-metadata files: {bad}"
+
+    if ratification:
+        delivery_tip = (tail[-1] if tail else metadata_head)
+        r1 = ratification[0]
+        ps = _git_merge_parents(r1, cwd=cwd) or []
+        if len(ps) != 1:
+            return False, None, None, None, "ratification commit R1 is not a single-parent commit"
+        if ps[0] != delivery_tip:
+            return False, None, None, None, (
+                f"ratification commit R1 parent {ps[0][:12]} is not the completed delivery tip "
+                f"{delivery_tip[:12]}")
+        r1_files = _git(["diff", "--name-only", f"{r1}~1", r1], cwd=cwd)
+        if r1_files is None:
+            return False, None, None, None, "cannot read ratification commit diff"
+        got_paths = {p for p in r1_files.splitlines() if p.strip()}
+        if got_paths != set(ratification_paths):
+            return False, None, None, None, (
+                f"ratification commit R1 must change exactly {sorted(ratification_paths)}, "
+                f"changed {sorted(got_paths)}")
+        out["ratification_tail"] = "R1"
+        out["r1"] = r1
+        if len(ratification) > 1:
+            r2 = ratification[1]
+            ps2 = _git_merge_parents(r2, cwd=cwd) or []
+            if len(ps2) != 1:
+                return False, None, None, None, "ratification commit R2 is not a single-parent commit"
+            if ps2[0] != r1:
+                return False, None, None, None, (
+                    f"ratification metadata commit R2 parent {ps2[0][:12]} is not R1 {r1[:12]}")
+            if metadata_allowlist:
+                r2_files = _git(["diff", "--name-only", f"{r2}~1", r2], cwd=cwd)
+                if r2_files is None:
+                    return False, None, None, None, "cannot read ratification metadata commit diff"
+                bad = [p for p in r2_files.splitlines() if p not in metadata_allowlist]
+                if bad:
+                    return False, None, None, None, (
+                        f"ratification metadata commit R2 touches non-metadata files: {bad}")
+            if described_head != r1:
+                return False, None, None, None, (
+                    f"ratification metadata commit R2 must describe R1 {r1[:12]}, "
+                    f"described_head is {described_head[:12]}")
+            out["ratification_tail"] = "R1R2"
+            out["r2"] = r2
     return True, merge_sha, substantive_head, metadata_head, "exact integration delivery proven"
 
 

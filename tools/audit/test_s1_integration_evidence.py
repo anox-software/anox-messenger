@@ -553,6 +553,104 @@ class S1IntegrationTopologyTests(unittest.TestCase):
                                     **self._consumed_args((d1, d2), task=None))
         self.assertFalse(ok); self.assertIn("found 7", reason)
 
+    # -- Human-ratification tail R1[,R2] (non-circular; retest S1-003 BLOCKER-1)
+    RPATHS = frozenset({"PKG_A.py", "PKG_B.py"})
+
+    def _ratify(self, paths=None, parent_override=None):
+        """Author R1: change EXACTLY the package paths."""
+        if parent_override:
+            self.g("reset", "-q", "--hard", parent_override)
+        for name in sorted(paths if paths is not None else self.RPATHS):
+            (self.r / name).write_text(f"{name}-ratified\n")
+            self.g("add", name)
+        self.g("commit", "-q", "-m", "ratify R1")
+        return self.g("rev-parse", "HEAD")
+
+    def _ratify_meta(self, name="PROJECT_STATE.md"):
+        (self.r / name).write_text(f"{name}-r2\n")
+        self.g("add", name); self.g("commit", "-q", "-m", "ratify R2")
+        return self.g("rev-parse", "HEAD")
+
+    def _rargs(self, **kw):
+        a = dict(s1_substantive_sha=self.c1, s1_metadata_sha=self.c2,
+                 correction_task="ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
+                 ratification_paths=self.RPATHS)
+        a.update(kw)
+        return a
+
+    def test_430_ratification_R1_accepted(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify()
+        out = {}
+        ok, *_, reason = self.prove(described_head=d1, live_head=r1,
+                                    consumed_correction_pairs=((d1, d2),), out=out, **self._rargs())
+        self.assertTrue(ok, reason)
+        self.assertEqual(out["ratification_tail"], "R1")
+        self.assertEqual(out["r1"], r1)
+
+    def test_431_ratification_R1_R2_accepted(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(); r2 = self._ratify_meta()
+        out = {}
+        ok, *_, reason = self.prove(described_head=r1, live_head=r2,
+                                    consumed_correction_pairs=((d1, d2),), out=out, **self._rargs())
+        self.assertTrue(ok, reason)
+        self.assertEqual(out["ratification_tail"], "R1R2")
+        self.assertEqual((out["r1"], out["r2"]), (r1, r2))
+
+    def test_432_ratification_R1_extra_path_rejected(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(paths=set(self.RPATHS) | {"SNEAKY.py"})
+        ok, *_, reason = self.prove(described_head=d1, live_head=r1,
+                                    consumed_correction_pairs=((d1, d2),), **self._rargs())
+        self.assertFalse(ok); self.assertIn("must change exactly", reason)
+
+    def test_433_ratification_R1_missing_path_rejected(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(paths={"PKG_A.py"})
+        ok, *_, reason = self.prove(described_head=d1, live_head=r1,
+                                    consumed_correction_pairs=((d1, d2),), **self._rargs())
+        self.assertFalse(ok); self.assertIn("must change exactly", reason)
+
+    def test_434_ratification_R2_non_metadata_rejected(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(); r2 = self._ratify_meta("EVIL.md")
+        ok, *_, reason = self.prove(described_head=r1, live_head=r2,
+                                    consumed_correction_pairs=((d1, d2),), **self._rargs())
+        self.assertFalse(ok); self.assertIn("non-metadata", reason)
+
+    def test_435_ratification_R2_must_describe_R1(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(); r2 = self._ratify_meta()
+        ok, *_, reason = self.prove(described_head=d1, live_head=r2,
+                                    consumed_correction_pairs=((d1, d2),), **self._rargs())
+        self.assertFalse(ok); self.assertIn("must describe R1", reason)
+
+    def test_436_commit_after_completed_tail_rejected(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify(); self._ratify_meta(); self.c("after-tail")
+        ok, *_, reason = self.prove(described_head=r1, live_head=self.g("rev-parse", "HEAD"),
+                                    consumed_correction_pairs=((d1, d2),), **self._rargs())
+        self.assertFalse(ok)
+        self.assertIn("not a legal delivery shape", reason)
+
+    def test_437_tail_rejected_when_not_configured(self):
+        d1, d2 = self._pair("a")
+        r1 = self._ratify()
+        ok, *_, reason = self.prove(described_head=d1, live_head=r1,
+                                    consumed_correction_pairs=((d1, d2),),
+                                    **self._rargs(ratification_paths=None))
+        self.assertFalse(ok); self.assertIn("found 6", reason)
+
+    def test_438_ratification_without_correction_pair_accepted(self):
+        # Tail directly on a completed delivery whose pairs are all consumed.
+        d1, d2 = self._pair("a")
+        r1 = self._ratify()
+        out = {}
+        ok, *_, reason = self.prove(described_head=d1, live_head=r1,
+                                    consumed_correction_pairs=((d1, d2),), out=out, **self._rargs())
+        self.assertTrue(ok, reason); self.assertEqual(out["ratification_tail"], "R1")
+
     def test_422_consumed_metadata_commit_must_be_allowlisted(self):
         # Every correction metadata commit — including already-consumed ones — is
         # re-checked against the metadata allowlist on each run.
