@@ -1,3 +1,12 @@
+## 2026-09-18 — REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 (no new canonical event)
+
+- Task: `ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001` — authorized by `HUMAN-DECISION-S1-RATIFICATION-TAIL-CORRECTION-AUTHORIZATION-001` (Human Product & Security Owner; ONE_TIME_CHANGE_SPECIFIC, expires on completion). Model: `Claude Opus 5 Medium`.
+- Trigger: `TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003` committed the package in a disposable clone and showed the would-be-ratified validator **rejects its own repository** (chain 8/9 vs an allowed 5/7) — BLOCKER-1; and that the S1 validator could not survive ratification — BLOCKER-2.
+- Fix: non-circular ratification tail `R1[,R2]` (R1 = child of the delivery tip changing EXACTLY the two package paths; R2 = metadata-only child of R1 advancing `described_head`), nothing beyond it; signature-based tail detection (counting is ambiguous); S1 validator distinguishes the exact pre-ratification content from the exact ratified successor; `[a79e3b3db9b4, 4319dacaa7ac]` promoted into the consumed history; N-12 corrected.
+- Commits: substantive `4b31f680613651772d6006c2d47d1f6ccd1bb837` + metadata-only follow-up. `ANOX-EVENT-0055` remains the latest material event.
+- Package: regenerated `87cd5e202325…` + `c305c21c9405…` (paired-tests post-image unchanged by construction; the central suite stays pinned at 277, so tail coverage went into `test_s1_integration_evidence.py` 75 → 84). `e52f626a46f2…` and `d03e539a49e9…` are **SUPERSEDED — never ratify**.
+- Result: committed-R1 and committed-R1+R2 simulations PASS; every unauthorized append/substitution FAILS. **NOT INDEPENDENTLY VERIFIED / NOT HUMAN-RATIFIED** — targeted independent re-verification by a non-authoring session required. MSC 42 open / 0 closed; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; no remote mutation.
+
 ## 2026-09-18 — REMEDIATION-S1-FINAL-CORRECTIONS-001 (no new canonical event)
 
 - Task: `ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001` — authorized by `HUMAN-DECISION-S1-FINAL-CORRECTION-AUTHORIZATION-001` = `ANOX-DECISION-S1-FINAL-CORRECTION-AUTHORIZATION-001` (Human Product & Security Owner; ONE_TIME_CHANGE_SPECIFIC; recorded verbatim in `docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md`). Model: `Claude Opus 5 Medium`.

@@ -7,15 +7,15 @@
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `a79e3b3db9b441fd81b5f76f6804f90eb44bb36b`
+- **Substantive HEAD:** `4b31f680613651772d6006c2d47d1f6ccd1bb837`
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: a79e3b3db9b441fd81b5f76f6804f90eb44bb36b
+Described HEAD: 4b31f680613651772d6006c2d47d1f6ccd1bb837
 
 ## Pre-merge gate
 
-`REMEDIATION-S1-FINAL-CORRECTIONS-001 — HUMAN-AUTHORIZED FINAL CORRECTION PASS (B-1 Human-RATIFIED for the reviewed S1 integration/correction scope only; B-3 B027 governance restored with a valid Human authority record + single active writer; B-4 continuity live restored via metadata-only delivery tail; B-5 S0 test_91 environment-independent, test_s0_contract_freeze 100/100 in a normal clone; N-8 multiline CI exit-status masking rejected; N-9 consumed correction pair pinned; shared-validator package REGENERATED d03e539a49e9…+c305c21c9405…; Ready For Remote; correction pair [a79e3b3db9b4 + metadata] over the pinned delivery; Shared Validator remains a proposal; NOT INDEPENDENTLY VERIFIED — independent retest by a non-authoring session required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
+`REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — HUMAN-AUTHORIZED RATIFICATION-TAIL CORRECTION (BLOCKER-1 the Shared Validator package is now actually committable: non-circular tail R1[,R2] admitted, nothing beyond it; BLOCKER-2 S1 validator distinguishes the exact pre-ratification content from the exact ratified successor; D1'/D2' [a79e3b3db9b4, 4319dacaa7ac] promoted into the consumed correction history; N-12 stale references corrected; package regenerated 87cd5e202325… + c305c21c9405… — 87cd5e202325… (supersedes e52f626a46f2… and d03e539a49e9…, which must never be ratified) and 87cd5e202325… (supersedes e52f626a46f2… and d03e539a49e9…, which must never be ratified) SUPERSEDED, never ratify; correction pair [4b31f6806136 + metadata]; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
 
 ## Post-merge gate
 
