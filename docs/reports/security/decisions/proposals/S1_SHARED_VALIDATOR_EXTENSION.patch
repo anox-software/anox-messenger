@@ -140,10 +140,10 @@ index be0fd70..75ea76d 100644
      # 269. Registry grown to 14 records is rejected.
      def test_269_registry_at_14_rejected(self):
 diff --git a/tools/audit/validate_security_audit_evidence_preservation.py b/tools/audit/validate_security_audit_evidence_preservation.py
-index 594acd1..f8ed40d 100644
+index 594acd1..29fe1b1 100644
 --- a/tools/audit/validate_security_audit_evidence_preservation.py
 +++ b/tools/audit/validate_security_audit_evidence_preservation.py
-@@ -133,6 +133,93 @@ def _is_s0_preservation_event(ev):
+@@ -133,6 +133,119 @@ def _is_s0_preservation_event(ev):
          and S0_PRESERVATION_EVENT["ref"] in (ev.get("refs") or [])
      )
  
@@ -175,7 +175,28 @@ index 594acd1..f8ed40d 100644
 +# correction task. No other chain shape is accepted.
 +S1_SUBSTANTIVE_SHA = "ea20aaaf330c9268448df5523e89615aa0a69074"
 +S1_METADATA_SHA = "573c5f58b91a1871fb6d7a6d722585a8518fa02c"
-+S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001"
++# Correction passes on the S1 delivery branch. Every pair that has already been
++# delivered is pinned by SHA and is CONSUMED: it can never be replaced, rewritten
++# or reused as an open slot (retest finding N-9). Exactly one further (still
++# unpinned) pair is accepted, and only while S1_CORRECTION_TASK is declared.
++#
++# These pins live in THIS Human-ratified file on purpose. They are deliberately
++# NOT read from an S1-writable module, because that would let the S1 session widen
++# the acceptance criteria of the validator that is meant to constrain it.
++# tools/audit/validate_s1_integration_evidence.py carries the same values and
++# fail-closed cross-checks them against this file once ratified, so the two can
++# never drift apart silently again.
++S1_CONSUMED_CORRECTION_PAIRS = (
++    # REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 (substantive, metadata)
++    ("0d1549d12d02fd7b277bf04fed7530b6605c1023",
++     "f08749e2e5ec45e76b1ea98c5c999e4679be3ffe"),
++)
++S1_CORRECTION_TASKS = (
++    "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
++    "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
++)
++# The one correction task still permitted to author an unpinned pair.
++S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001"
 +
 +# Repository surfaces the S1 integration is allowed to change relative to its
 +# start head. Anything outside this set — in particular crypto/rust/src/**,
@@ -202,6 +223,11 @@ index 594acd1..f8ed40d 100644
 +    "tools/audit/test_s1_integration_evidence.py",
 +    "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md",
 +    "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch",
++    # REMEDIATION-S1-FINAL-CORRECTIONS-001 evidence surfaces (Human authority
++    # record, correction report, independent retest report)
++    "docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md",
++    "docs/reports/security/remediation/REMEDIATION-S1-FINAL-CORRECTIONS-001.md",
++    "docs/reports/security/retests/TARGETED-INDEPENDENT-PRE-RATIFICATION-RETEST-S1-002.md",
 +}
 +S1_ALLOWED_PREFIXES = (
 +    "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
@@ -218,7 +244,7 @@ index 594acd1..f8ed40d 100644
 +    """True when CURRENT_STATE declares the S1 canonical-integration delivery
 +    (or the authorized pre-ratification correction pass on the same branch)."""
 +    return (
-+        state.get("current_task") in (S1_INTEGRATION_EVENT["task"], S1_CORRECTION_TASK)
++        state.get("current_task") in (S1_INTEGRATION_EVENT["task"],) + S1_CORRECTION_TASKS
 +        and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"]
 +    )
 +
@@ -237,7 +263,7 @@ index 594acd1..f8ed40d 100644
  # ---------------------------------------------------------------------------
  # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
  # ---------------------------------------------------------------------------
-@@ -917,7 +1004,21 @@ def _rev_parse(ref):
+@@ -917,7 +1030,21 @@ def _rev_parse(ref):
  
  
  def has_git():
@@ -260,7 +286,7 @@ index 594acd1..f8ed40d 100644
  
  
  def validate_base(errors):
-@@ -937,6 +1038,33 @@ def validate_base(errors):
+@@ -937,6 +1064,35 @@ def validate_base(errors):
          fail(f"CURRENT_STATE described_head is not a valid SHA: {described}", errors)
          return
      base_sha, delivery_branch, label = BASE_SHA, DELIVERY_BRANCH, "base"
@@ -279,11 +305,13 @@ index 594acd1..f8ed40d 100644
 +            cwd=REPO_ROOT, metadata_allowlist=METADATA_ALLOWLIST,
 +            s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
 +            correction_task=S1_CORRECTION_TASK,
++            consumed_correction_pairs=S1_CONSUMED_CORRECTION_PAIRS,
 +        )
 +        if not ok:
 +            fail(f"canonical S1 integration delivery failed: {reason}", errors)
 +            return
-+        if head != S1_METADATA_SHA and state.get("current_task") != S1_CORRECTION_TASK:
++        _consumed_heads = {S1_METADATA_SHA} | {m for _, m in S1_CONSUMED_CORRECTION_PAIRS}
++        if head not in _consumed_heads and state.get("current_task") != S1_CORRECTION_TASK:
 +            fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
 +                 f"{state.get('current_task')!r} is not the authorized correction task "
 +                 f"{S1_CORRECTION_TASK}", errors)
@@ -294,7 +322,7 @@ index 594acd1..f8ed40d 100644
      if _s0_preservation_delivery_active(state):
          # The S0 evidence-preservation delivery sits on top of the corrected S0
          # final head; its two-commit proof is evaluated against the S0
-@@ -1065,13 +1193,93 @@ S0_PRESERVATION_SOURCE_SHA256 = {
+@@ -1065,13 +1221,93 @@ S0_PRESERVATION_SOURCE_SHA256 = {
  }
  
  
@@ -390,7 +418,7 @@ index 594acd1..f8ed40d 100644
      msc_rec = audits.get(MSC_ID) or {}
      if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
          fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
-@@ -1113,8 +1321,9 @@ def validate_registry(errors):
+@@ -1113,8 +1349,9 @@ def validate_registry(errors):
              fail(f"{S0_PRESERVATION_ID} preservation record missing: {pres_rec.get('report_path')}", errors)
          elif sha256_file(pp) != pres_rec.get("report_sha256"):
              fail(f"{S0_PRESERVATION_ID} preservation record hash mismatch", errors)
@@ -402,7 +430,7 @@ index 594acd1..f8ed40d 100644
      for aid, spec in EXPECTED_AUDITS.items():
          rec = audits.get(aid)
          if rec is None:
-@@ -3196,9 +3405,45 @@ def validate_tasks(errors):
+@@ -3196,9 +3433,45 @@ def validate_tasks(errors):
      print("  OK   next specialist gates are candidates, not executed")
  
  
@@ -448,7 +476,7 @@ index 594acd1..f8ed40d 100644
      out = subprocess.run(["git", "diff", "--name-only", BASE_SHA], cwd=REPO_ROOT, capture_output=True, text=True)
      changed = out.stdout.strip().splitlines()
      forbidden = [p for p in changed if p.startswith(FORBIDDEN_PREFIXES) or p.endswith(".sql")]
-@@ -3224,10 +3469,33 @@ def validate_project_memory(errors):
+@@ -3224,10 +3497,33 @@ def validate_project_memory(errors):
          fail("ledger empty", errors)
          return
      latest = ledger[-1]
@@ -482,7 +510,7 @@ index 594acd1..f8ed40d 100644
      elif _is_s0_preservation_event(latest) and len(ledger) >= 3 \
              and _is_s0_successor_event(ledger[-2]) \
              and ledger[-3].get("event_id") == LEDGER_EVENT:
-@@ -3238,7 +3506,8 @@ def validate_project_memory(errors):
+@@ -3238,7 +3534,8 @@ def validate_project_memory(errors):
      else:
          fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
               f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "

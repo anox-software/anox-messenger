@@ -41,11 +41,35 @@ condition, now made precise and ready for a Human decision.
 
 ## 2. The proposed change
 
+> ### SUPERSESSION NOTICE — do not reuse the previous hashes
+>
+> An earlier revision of this package proposed
+> `e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8` (validator)
+> with `c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462` (paired
+> suite). **`e52f626a46f2…` is SUPERSEDED and must never be ratified.** It was
+> valid *only* for the pre-final-correction topology
+> `[M, C1, C2, D1, D2]`: it hardcoded
+> `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001` as the sole
+> correction task and a 3-or-5-commit chain, so on the corrected tree it fails on
+> the very repository it governs (`expected exactly 2 task-authored commits above
+> base, found 20`; `CURRENT_STATE does not declare the S1 integration delivery`).
+>
+> The independent retest `TARGETED-INDEPENDENT-PRE-RATIFICATION-RETEST-S1-002`
+> verified `e52f626a46f2…` against `f08749e2` — that verification does **not**
+> carry over to the current package. The paired-suite post-image
+> `c305c21c9405…` is byte-identical in both revisions; only the validator
+> post-image changed.
+>
+> The current package was regenerated deterministically from the committed final
+> correction history by `REMEDIATION-S1-FINAL-CORRECTIONS-001` and is verified by
+> its **authoring** agent only. It is **NOT self-ratified** and requires targeted
+> independent re-verification before Human ratification.
+
 - **Patch:** `docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`
 - **Applies to (ratified):** `validate_security_audit_evidence_preservation.py` @
   `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7` and its paired adversarial
   suite `test_security_audit_evidence_preservation.py` @ `b69dbb3546eae50a82a322373a9b064ca976906cb4028f2a57a185d6de48c1d6`
-- **Yields (proposed):** validator `e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8`;
+- **Yields (proposed):** validator `d03e539a49e9126e92b0fdc31fb5c8e424a6e7e82c98cf954881e99e6edbed74`;
   paired test suite `c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462`
 - **Integrity:** `validate_s1_integration_evidence.py` applies the patch to both ratified files in a
   scratch directory and fails if either result is not exactly the proposed hash.
@@ -73,12 +97,12 @@ If ratified, the Human Owner would — following the exact precedent of
 
 1. record `ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001` in
    `docs/workforce/registries/decisions.jsonl` with `scope = ONE_TIME_CHANGE_SPECIFIC`,
-   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_sha256 = e52f626a…`, and all
+   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_sha256 = d03e539a…`, and all
    `grants_*` flags `false`;
-2. pin `e52f626a…` as a third authorized content in `tools/audit/validate_s0_contract_freeze.py`
+2. pin `d03e539a…` as a third authorized content in `tools/audit/validate_s0_contract_freeze.py`
    (`PROTECTED_SHARED_FILES`), with a paired adversarial test;
 3. apply the patch (`git apply docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`)
-   and verify the validator hash equals `e52f626a…` and the paired suite hash equals `c305c21c…`;
+   and verify the validator hash equals `d03e539a…` and the paired suite hash equals `c305c21c…`;
 4. no `PINNED_TEST_COUNTS` update is needed: the paired suite update keeps the count at exactly 277
    (era migration only, no added/removed assertions); re-running it must show 277/277 OK.
 

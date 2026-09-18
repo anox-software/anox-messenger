@@ -489,6 +489,78 @@ class S1IntegrationTopologyTests(unittest.TestCase):
                                     **self._corr_args())
         self.assertFalse(ok); self.assertIn("found 6", reason)
 
+    # -- N-9: a delivered correction pair is CONSUMED (pinned by SHA) and can
+    # never again be replaced, rewritten or reused as an open slot
+    # (REMEDIATION-S1-FINAL-CORRECTIONS-001).
+    def _pair(self, tag, meta_name="PROJECT_STATE.md"):
+        """Author one [substantive, metadata] pair with tag-unique content so
+        several pairs can be stacked in a single fixture."""
+        (self.r / f"corr-sub-{tag}").write_text(f"corr-sub-{tag}\n")
+        self.g("add", f"corr-sub-{tag}"); self.g("commit", "-q", "-m", f"corr-sub-{tag}")
+        d1 = self.g("rev-parse", "HEAD")
+        (self.r / meta_name).write_text(f"{meta_name}-corr-{tag}\n")
+        self.g("add", meta_name); self.g("commit", "-q", "-m", f"corr-meta-{tag}")
+        return d1, self.g("rev-parse", "HEAD")
+
+    def _consumed_args(self, pair, task="ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001"):
+        a = dict(s1_substantive_sha=self.c1, s1_metadata_sha=self.c2,
+                 consumed_correction_pairs=(pair,))
+        if task:
+            a["correction_task"] = task
+        return a
+
+    def test_416_consumed_pair_pinned_accepted_without_open_pair(self):
+        d1, d2 = self._corr_pair()
+        ok, m, s, meta, reason = self.prove(described_head=d1, live_head=d2,
+                                            **self._consumed_args((d1, d2)))
+        self.assertTrue(ok, reason)
+
+    def test_417_replaced_consumed_substantive_rejected(self):
+        # The exact attack that previously succeeded: a later session authors a
+        # DIFFERENT pair over C2 and re-declares described_head.
+        d1, d2 = self._corr_pair()
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2,
+                                    **self._consumed_args(("0" * 40, d2)))
+        self.assertFalse(ok)
+        self.assertIn("consumed correction pair 1 substantive", reason)
+
+    def test_418_replaced_consumed_metadata_rejected(self):
+        d1, d2 = self._corr_pair()
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2,
+                                    **self._consumed_args((d1, "0" * 40)))
+        self.assertFalse(ok)
+        self.assertIn("consumed correction pair 1 metadata", reason)
+
+    def test_419_consumed_plus_one_authorized_pair_accepted(self):
+        d1, d2 = self._pair("a")
+        e1, e2 = self._pair("b")
+        ok, *_, reason = self.prove(described_head=e1, live_head=e2,
+                                    **self._consumed_args((d1, d2)))
+        self.assertTrue(ok, reason)
+
+    def test_420_consumed_plus_second_unpinned_pair_rejected(self):
+        d1, d2 = self._pair("a")
+        self._pair("b")
+        f1, f2 = self._pair("c")
+        ok, *_, reason = self.prove(described_head=f1, live_head=f2,
+                                    **self._consumed_args((d1, d2)))
+        self.assertFalse(ok); self.assertIn("found 9", reason)
+
+    def test_421_open_pair_without_correction_task_rejected(self):
+        d1, d2 = self._pair("a")
+        e1, e2 = self._pair("b")
+        ok, *_, reason = self.prove(described_head=e1, live_head=e2,
+                                    **self._consumed_args((d1, d2), task=None))
+        self.assertFalse(ok); self.assertIn("found 7", reason)
+
+    def test_422_consumed_metadata_commit_must_be_allowlisted(self):
+        # Every correction metadata commit — including already-consumed ones — is
+        # re-checked against the metadata allowlist on each run.
+        d1, d2 = self._corr_pair(meta_name="evil.md")
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2,
+                                    **self._consumed_args((d1, d2)))
+        self.assertFalse(ok); self.assertIn("non-metadata", reason)
+
 
 class S0EraPrecisionTests(unittest.TestCase):
     """Paired tests for the two era-precision corrections applied to S0-owned

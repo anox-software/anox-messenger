@@ -487,23 +487,36 @@ def canonical_two_commit_delivery(base_sha, described_head, live_head,
 def canonical_integration_delivery(base_sha, merged_head, merged_base, described_head,
                                    live_head, cwd=REPO, metadata_allowlist=None,
                                    s1_substantive_sha=None, s1_metadata_sha=None,
-                                   correction_task=None):
+                                   correction_task=None, consumed_correction_pairs=()):
     """Verify the canonical *integration* delivery invariant (REMEDIATION-S1-
     CANONICAL-INTEGRATION-001 era extension, extended by
     REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
 
     Topology (first-parent chain above ``base_sha``)::
 
-        base ── M ── C1 ── C2            (original delivery)
-        base ── M ── C1 ── C2 ── D1 ── D2   (delivery + authorized correction pair)
+        base ── M ── C1 ── C2                          (original delivery)
+        base ── M ── C1 ── C2 ── [Dn,Dn'] … ── [Dk,Dk']  (+ correction pairs)
                 │
                 └── merged_head (pinned foreign delivery, unmodified)
 
+    Every correction pair that has already been delivered is pinned by SHA in
+    ``consumed_correction_pairs`` and can therefore never be replaced, rewritten
+    or reused (retest finding N-9). At most ONE unpinned pair may follow the
+    consumed ones, and only while ``correction_task`` names the currently
+    authorized correction task.
+
+    TRUST BOUNDARY (disclosed, not solved): the trailing unpinned pair cannot be
+    bound cryptographically by this validator, because the commit that carries
+    the pin is authored inside the same pass. An actor who authors that pair can
+    also author its declaration. Closing that gap requires an out-of-band anchor
+    (a signed commit/tag, or a Human-recorded SHA promoted into
+    ``consumed_correction_pairs`` after the fact).
+
     Requirements, all fail-closed:
       * ``base_sha`` and ``merged_head`` are ancestors of the live head;
-      * the first-parent chain above base is exactly [M, C1, C2] — or exactly
-        [M, C1, C2, D1, D2] when ``correction_task`` is given (a Human-authorized
-        pre-ratification correction pair on the same delivery branch);
+      * the first-parent chain above base is exactly [M, C1, C2] followed by
+        every pinned consumed correction pair, optionally followed by exactly one
+        further pair (only when ``correction_task`` is given);
       * M is a two-parent merge whose parents are exactly (base_sha, merged_head);
       * C1 (substantive) and C2 (metadata) are single-parent;
       * without a correction pair, C1 == described_head; with one, C1 must equal
@@ -531,16 +544,44 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
 
     fp = _git(["rev-list", "--first-parent", f"{base_sha}..{live_head}"], cwd=cwd)
     chain = fp.splitlines() if fp else []
-    corr_sub = corr_meta = None
-    if len(chain) == 3:
-        metadata_head, substantive_head, merge_sha = chain[0], chain[1], chain[2]
-    elif len(chain) == 5 and correction_task and s1_substantive_sha and s1_metadata_sha:
-        corr_meta, corr_sub, metadata_head, substantive_head, merge_sha = chain
-    else:
-        shape = "3 first-parent commits above base (merge + 2 task-authored)"
+    # Oldest-first: [M, C1, C2, (pair…)*]
+    order = list(reversed(chain))
+    consumed = [tuple(pr) for pr in (consumed_correction_pairs or ())]
+    n_consumed = 2 * len(consumed)
+    allowed = {3 + n_consumed}
+    if correction_task:
+        allowed.add(3 + n_consumed + 2)
+    if len(order) not in allowed:
+        counts = " or ".join(str(n) for n in sorted(allowed))
+        detail = "merge + 2 task-authored"
+        if consumed:
+            detail += f" + {len(consumed)} pinned correction pair(s)"
         if correction_task:
-            shape += " or 5 (incl. the authorized pre-ratification correction pair)"
-        return False, None, None, None, f"expected exactly {shape}, found {len(chain)}"
+            detail += " + at most one authorized correction pair"
+        return False, None, None, None, (
+            f"expected exactly {counts} first-parent commits above base "
+            f"({detail}), found {len(order)}")
+    merge_sha, substantive_head, metadata_head = order[0], order[1], order[2]
+    tail = order[3:]
+    # Consumed pairs are pinned by SHA and may never move (N-9).
+    for idx, (psub, pmeta) in enumerate(consumed):
+        gsub, gmeta = tail[2 * idx], tail[2 * idx + 1]
+        if gsub != psub:
+            return False, None, None, None, (
+                f"consumed correction pair {idx + 1} substantive {gsub[:12]} != pinned {psub[:12]}")
+        if gmeta != pmeta:
+            return False, None, None, None, (
+                f"consumed correction pair {idx + 1} metadata {gmeta[:12]} != pinned {pmeta[:12]}")
+    open_pair = tail[n_consumed:]
+    corr_sub = corr_meta = None
+    if open_pair:
+        corr_sub, corr_meta = open_pair[0], open_pair[1]
+    elif consumed:
+        # No open pair: the newest pinned correction substantive is the described head.
+        corr_sub, corr_meta = consumed[-1][0], consumed[-1][1]
+    correction_metadata_heads = [pmeta for _, pmeta in consumed]
+    if open_pair:
+        correction_metadata_heads.append(corr_meta)
 
     mparents = _git_merge_parents(merge_sha, cwd=cwd) or []
     if len(mparents) != 2:
@@ -562,20 +603,22 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
         if metadata_head != s1_metadata_sha:
             return False, None, None, None, (
                 f"S1 metadata commit {metadata_head[:12]} != pinned {s1_metadata_sha[:12]}")
-        for label, sha in (("correction substantive", corr_sub), ("correction metadata", corr_meta)):
+        for sha in tail:
             ps = _git_merge_parents(sha, cwd=cwd) or []
             if len(ps) != 1:
-                return False, None, None, None, f"{label} commit is not a single-parent commit"
+                return False, None, None, None, f"correction commit {sha[:12]} is not a single-parent commit"
         if corr_sub != described_head:
             return False, None, None, None, (
                 f"correction substantive commit {corr_sub[:12]} != described_head {described_head[:12]}")
         if metadata_allowlist:
-            corr_files = _git(["diff", "--name-only", f"{corr_meta}~1", corr_meta], cwd=cwd)
-            if corr_files is None:
-                return False, None, None, None, "cannot read correction metadata commit diff"
-            bad = [p for p in corr_files.splitlines() if p not in metadata_allowlist]
-            if bad:
-                return False, None, None, None, f"correction metadata commit touches non-metadata files: {bad}"
+            for cm in correction_metadata_heads:
+                corr_files = _git(["diff", "--name-only", f"{cm}~1", cm], cwd=cwd)
+                if corr_files is None:
+                    return False, None, None, None, "cannot read correction metadata commit diff"
+                bad = [p for p in corr_files.splitlines() if p not in metadata_allowlist]
+                if bad:
+                    return False, None, None, None, (
+                        f"correction metadata commit {cm[:12]} touches non-metadata files: {bad}")
     else:
         if substantive_head != described_head:
             return False, None, None, None, (

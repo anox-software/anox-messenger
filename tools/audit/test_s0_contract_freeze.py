@@ -661,9 +661,15 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
     def test_91_f02_linked_worktree_pointer_executes_scope_gate(self):
         # A fixture whose .git is a worktree pointer file must run the scope
         # gate, not silently skip it (the historical .is_dir() weakness).
-        gitdir = subprocess.run(["git", "rev-parse", "--git-dir"], cwd=REPO_ROOT,
+        # `--absolute-git-dir` is required: plain `--git-dir` returns the
+        # relative ".git" in a normal repository, which the validator resolves
+        # against the FIXTURE root (not the real repository) and correctly
+        # rejects. Using the relative form made this test pass only inside a
+        # linked worktree (retest finding B-5).
+        gitdir = subprocess.run(["git", "rev-parse", "--absolute-git-dir"], cwd=REPO_ROOT,
                                 capture_output=True, text=True).stdout.strip()
         self.assertTrue(gitdir, "test requires a git context")
+        self.assertTrue(Path(gitdir).is_absolute(), f"gitdir must be absolute, got {gitdir!r}")
         (Path(self.tmp) / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
         errors, out = run_validator(self.tmp)
         self.assertNotIn("fixture mode", out, "scope gate must not skip in a linked worktree")

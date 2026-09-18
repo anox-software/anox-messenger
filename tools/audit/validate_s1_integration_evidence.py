@@ -45,7 +45,7 @@ CENTRAL_RATIFIED_SHA256 = "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00
 # The ratification package also carries the paired central-test-suite update so
 # that applying the proposal leaves BOTH files green (pre-ratification
 # correction REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
-CENTRAL_PROPOSED_SHA256 = "e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8"
+CENTRAL_PROPOSED_SHA256 = "d03e539a49e9126e92b0fdc31fb5c8e424a6e7e82c98cf954881e99e6edbed74"
 CENTRAL_TESTS_PROPOSED_SHA256 = "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462"
 PROPOSAL_PATCH = "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch"
 PROPOSAL_RECORD = "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md"
@@ -70,7 +70,23 @@ S1_ORIGINAL_TASK = "ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001"
 # correction task. No other chain shape is accepted.
 S1_SUBSTANTIVE_SHA = "ea20aaaf330c9268448df5523e89615aa0a69074"
 S1_METADATA_SHA = "573c5f58b91a1871fb6d7a6d722585a8518fa02c"
-S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001"
+# N-9 (REMEDIATION-S1-FINAL-CORRECTIONS-001): every correction pair that has
+# already been delivered is pinned by SHA and can never again be replaced,
+# rewritten or reused as an open "slot". The pre-ratification pair below is now
+# CONSUMED; only the single currently authorized correction task may add one
+# further (still unpinned) pair. See the disclosed trust boundary in
+# lifecycle_legality.canonical_integration_delivery.
+CONSUMED_CORRECTION_PAIRS = (
+    # REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 (substantive, metadata)
+    ("0d1549d12d02fd7b277bf04fed7530b6605c1023",
+     "f08749e2e5ec45e76b1ea98c5c999e4679be3ffe"),
+)
+S1_CORRECTION_TASKS = (
+    "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
+    "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
+)
+# The one correction task still permitted to author an unpinned pair.
+S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001"
 
 S1_ALLOWED_EXACT = {
     ".github/workflows/ci.yml", ".gitignore", "android/build.gradle.kts",
@@ -91,6 +107,10 @@ S1_ALLOWED_EXACT = {
     "tools/audit/test_s1_retest_remediation.py",
     "tools/audit/validate_s1_integration_evidence.py",
     "tools/audit/test_s1_integration_evidence.py",
+    # REMEDIATION-S1-FINAL-CORRECTIONS-001 evidence surfaces
+    "docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-FINAL-CORRECTIONS-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-PRE-RATIFICATION-RETEST-S1-002.md",
 }
 S1_ALLOWED_PREFIXES = (
     "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
@@ -210,7 +230,7 @@ def load_central():
 
 # ---------------------------------------------------------------------------
 def _s1_delivery_active(state):
-    return (state.get("current_task") in (S1_INTEGRATION_EVENT["task"], S1_CORRECTION_TASK)
+    return (state.get("current_task") in (S1_INTEGRATION_EVENT["task"],) + S1_CORRECTION_TASKS
             and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"])
 
 
@@ -251,11 +271,13 @@ def validate_base_s1(central, errors):
         s1["start_head"], s1["merged_head"], s1["merged_base"], described, head,
         cwd=REPO_ROOT, metadata_allowlist=central.METADATA_ALLOWLIST,
         s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
-        correction_task=S1_CORRECTION_TASK)
+        correction_task=S1_CORRECTION_TASK,
+        consumed_correction_pairs=CONSUMED_CORRECTION_PAIRS)
     if not ok:
         fail(f"canonical S1 integration delivery failed: {reason}", errors)
         return
-    if head != S1_METADATA_SHA and state.get("current_task") != S1_CORRECTION_TASK:
+    _consumed_heads = {S1_METADATA_SHA} | {m for _, m in CONSUMED_CORRECTION_PAIRS}
+    if head not in _consumed_heads and state.get("current_task") != S1_CORRECTION_TASK:
         fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
              f"{state.get('current_task')!r} is not the authorized correction task "
              f"{S1_CORRECTION_TASK}", errors)
@@ -385,6 +407,63 @@ def validate_project_memory_s1(central, errors):
               f"{S1_INTEGRATION_EVENT['supersedes_provisional_event']} NONCANONICAL)")
 
 
+def _normalise_pin(value):
+    """Order-insensitive, container-insensitive comparison of pin values."""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return tuple(sorted(_normalise_pin(v) for v in value))
+    return value
+
+
+def _check_proposed_pin_drift(proposed_path, errors):
+    """B-2/N-9 anti-drift gate (REMEDIATION-S1-FINAL-CORRECTIONS-001).
+
+    The delivery-shape pins are duplicated on purpose: the Human-ratified central
+    validator is authoritative, and this S1-side validator carries the same
+    values. They are deliberately NOT collapsed into a shared module, because the
+    only file both could import (tools/audit/lifecycle_legality.py) is S1-writable
+    — delegating there would let the S1 session widen the acceptance criteria of
+    the validator meant to constrain it.
+
+    The cost of duplication is silent drift, and that is exactly what made the
+    previous ratification proposal reject the tree it governs: it pinned the
+    pre-ratification task id and a 3/5-commit chain. So the PROPOSED content (the
+    artifact actually awaiting Human ratification) is imported here and every
+    duplicated pin must match this validator EXACTLY, or ratification is blocked.
+    This runs pre-ratification, which is precisely when it is useful.
+    """
+    spec = importlib.util.spec_from_file_location("anox_proposed_central", proposed_path)
+    if spec is None or spec.loader is None:
+        fail("cannot load the proposed central validator for pin-drift comparison", errors)
+        return
+    mod = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(mod)
+    except Exception as exc:  # noqa: BLE001 - any import failure is fail-closed
+        fail(f"proposed central validator is not importable ({type(exc).__name__}: {exc})", errors)
+        return
+    before = len(errors)
+    for name, mine in (("S1_CORRECTION_TASKS", S1_CORRECTION_TASKS),
+                       ("S1_CORRECTION_TASK", S1_CORRECTION_TASK),
+                       ("S1_CONSUMED_CORRECTION_PAIRS", CONSUMED_CORRECTION_PAIRS),
+                       ("S1_SUBSTANTIVE_SHA", S1_SUBSTANTIVE_SHA),
+                       ("S1_METADATA_SHA", S1_METADATA_SHA)):
+        if not hasattr(mod, name):
+            fail(f"proposed central validator does not define {name} — the ratification package "
+                 f"would not recognise the authorized delivery shape", errors)
+            continue
+        theirs = getattr(mod, name)
+        if _normalise_pin(theirs) != _normalise_pin(mine):
+            fail(f"pin drift: proposed central {name}={theirs!r} != S1-side {mine!r}", errors)
+    missing = sorted(set(S1_ALLOWED_EXACT) - set(getattr(mod, "S1_ALLOWED_EXACT", ())))
+    if missing:
+        fail(f"scope drift: paths allowed S1-side but not by the proposed central validator: {missing}", errors)
+    if len(errors) == before:
+        print("  OK   proposed central validator agrees with every S1-side delivery pin "
+              "(tasks, consumed correction pairs, C1/C2 pins, scope allow-list)")
+
+
 def validate_ratification_proposal(errors):
     """The prepared S1-era extension is preserved tamper-evidently: applying the
     patch to the ratified content must yield exactly the proposed content hash
@@ -429,6 +508,7 @@ def validate_ratification_proposal(errors):
             fail(f"ratification proposal yields paired test suite {tgot[:16]}… != pinned proposed "
                  f"{CENTRAL_TESTS_PROPOSED_SHA256[:16]}…", errors)
             return
+        _check_proposed_pin_drift(dst, errors)
     print(f"  OK   proposal patch applies to ratified {CENTRAL_RATIFIED_SHA256[:12]}… and yields proposed "
           f"{CENTRAL_PROPOSED_SHA256[:12]}… + paired test suite {CENTRAL_TESTS_PROPOSED_SHA256[:12]}… "
           f"(awaiting Human ratification)")

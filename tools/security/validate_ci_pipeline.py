@@ -79,6 +79,66 @@ FORBIDDEN_STEP_KEYS = re.compile(r"^\s*(continue-on-error\s*:\s*true|if\s*:)", r
 # chaining — `cmd || true` / `cmd ; echo ok` / `cmd ; exit 0` all turn a
 # failing provenance check green. `&&` stays legal (it propagates failure).
 SOFTFAIL_RUN = re.compile(r"\|\||;")
+# N-8 hardening (REMEDIATION-S1-FINAL-CORRECTIONS-001): single-line chaining is
+# not the only way to swallow a mandatory step's exit status. A multi-line
+# `run: |` block can mask it without ever using `||` or `;`:
+#
+#     run: |                      run: |                     run: |
+#       set +e                      python3 … verify           python3 … verify
+#       python3 … verify            exit 0                     true
+#       exit 0
+#
+# Each of these reports success regardless of the verifier's result. The
+# detection is deliberately fail-closed: any errexit relaxation, any explicit
+# successful `exit`, and any trailing no-op success builtin in a MANDATORY step
+# is rejected. `&&` chaining and `set -e` / `set -euo pipefail` stay legal.
+SOFTFAIL_SET_PLUS_E = re.compile(r"^\s*set\s+(?:[-+][A-Za-z]*\s+)*\+[A-Za-z]*e", re.M)
+SOFTFAIL_EXIT_ZERO = re.compile(r"^\s*exit\s+0\s*$", re.M)
+SOFTFAIL_NOOP_TAIL = re.compile(r"^\s*(?:true|:)\s*$", re.M)
+
+
+def run_body(step_text):
+    """Return the shell body of a step's `run:` key (block or inline), or ''.
+
+    Only the script itself is inspected, so YAML keys/comments elsewhere in the
+    step cannot trigger or suppress a finding.
+    """
+    # `[ \t]*` (never `\s*`) so the newline after a block indicator is not
+    # consumed — otherwise the FIRST body line is mis-captured as inline
+    # text and silently dropped from the inspected script.
+    m = re.search(r"^([ \t]*)run[ \t]*:[ \t]*(\|[-+]?\d*|>[-+]?\d*)?[ \t]*(.*)$", step_text, re.M)
+    if not m:
+        return ""
+    indent, block, inline = m.group(1), m.group(2), m.group(3)
+    if not block:
+        return inline
+    body, started = [], False
+    for line in step_text[m.end():].splitlines():
+        if not line.strip():
+            body.append("")
+            continue
+        cur = len(line) - len(line.lstrip())
+        if cur <= len(indent) and started:
+            break
+        if cur <= len(indent) and not started:
+            break
+        started = True
+        body.append(line)
+    return "\n".join(body)
+
+
+def softfail_reason(step_text):
+    """Return a human-readable reason if a mandatory step can mask failure."""
+    if SOFTFAIL_RUN.search(step_text):
+        return "shell chaining (|| / ;)"
+    body = run_body(step_text)
+    if SOFTFAIL_SET_PLUS_E.search(body):
+        return "errexit relaxation (set +e)"
+    if SOFTFAIL_EXIT_ZERO.search(body):
+        return "forced success (exit 0)"
+    if SOFTFAIL_NOOP_TAIL.search(body):
+        return "trailing no-op success builtin (true / :)"
+    return None
 
 
 def split_jobs(text):
@@ -174,17 +234,20 @@ def validate_lineage(jobs, errors):
                     errors.append(f"lineage: '{job}' does not download the native artifact into build/native")
                 if FORBIDDEN_STEP_KEYS.search(s):
                     errors.append(f"lineage: '{job}' artifact download step is conditional/non-fatal")
-                if SOFTFAIL_RUN.search(s):
-                    errors.append(f"lineage: '{job}' artifact download step masks failure via shell chaining (|| / ;)")
+                _why = softfail_reason(s)
+                if _why:
+                    errors.append(f"lineage: '{job}' artifact download step masks failure via {_why}")
             if re.search(r"native_build\.py\s+verify\b", s):
                 verify_idx = i if verify_idx is None else verify_idx
                 if FORBIDDEN_STEP_KEYS.search(s):
                     errors.append(f"lineage: '{job}' verify step is conditional/non-fatal")
-                if SOFTFAIL_RUN.search(s):
-                    errors.append(f"lineage: '{job}' verify step masks failure via shell chaining (|| / ;)")
+                _why = softfail_reason(s)
+                if _why:
+                    errors.append(f"lineage: '{job}' verify step masks failure via {_why}")
             if re.search(r"gradlew[^\n]*(assemble|connected|test|lint)", s):
-                if SOFTFAIL_RUN.search(s):
-                    errors.append(f"lineage: '{job}' Gradle consumer step masks failure via shell chaining (|| / ;)")
+                _why = softfail_reason(s)
+                if _why:
+                    errors.append(f"lineage: '{job}' Gradle consumer step masks failure via {_why}")
                 if first_consume_idx is None:
                     first_consume_idx = i
                     if FORBIDDEN_STEP_KEYS.search(s):

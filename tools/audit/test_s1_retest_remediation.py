@@ -637,6 +637,52 @@ class F4CiLineageTests(unittest.TestCase):
         errs = self._mut(fn)
         self.assertFalse(any("masks failure via shell chaining" in e for e in errs), str(errs))
 
+    # -- N-8: a multi-line `run: |` block can swallow the exit status without
+    # ever using `||` or `;` (REMEDIATION-S1-FINAL-CORRECTIONS-001).
+    def _verify_block(self, body_lines):
+        def fn(t):
+            i = t.index("  android-debug:")
+            return t[:i] + t[i:].replace(
+                "run: python3 tools/security/native_build.py verify\n",
+                "run: |\n" + "".join(f"          {l}\n" for l in body_lines), 1)
+        return self._mut(fn)
+
+    def test_consumer_verify_multiline_set_plus_e_fails(self):
+        errs = self._verify_block(["set +e", "python3 tools/security/native_build.py verify"])
+        self.assertTrue(any("errexit relaxation" in e for e in errs), str(errs))
+
+    def test_consumer_verify_multiline_trailing_exit0_fails(self):
+        errs = self._verify_block(["python3 tools/security/native_build.py verify", "exit 0"])
+        self.assertTrue(any("forced success" in e for e in errs), str(errs))
+
+    def test_consumer_verify_multiline_trailing_noop_fails(self):
+        errs = self._verify_block(["python3 tools/security/native_build.py verify", "true"])
+        self.assertTrue(any("trailing no-op success" in e for e in errs), str(errs))
+
+    def test_consumer_gradle_multiline_exit0_fails(self):
+        def fn(t):
+            i = t.index("  android-debug:")
+            return t[:i] + t[i:].replace(
+                "run: ./gradlew --no-daemon :android:assembleDebug\n",
+                "run: |\n          ./gradlew --no-daemon :android:assembleDebug\n          exit 0\n", 1)
+        errs = self._mut(fn)
+        self.assertTrue(any("forced success" in e for e in errs), str(errs))
+
+    def test_consumer_verify_strict_multiline_still_accepted(self):
+        # `set -euo pipefail` is the hardened form and must NOT be rejected.
+        errs = self._verify_block(["set -euo pipefail", "python3 tools/security/native_build.py verify"])
+        self.assertFalse(any("masks failure" in e for e in errs), str(errs))
+
+    def test_run_body_keeps_first_block_line(self):
+        # Regression guard: the body extractor must not lose the FIRST line of a
+        # block scalar, or `set +e` on line 1 becomes invisible to every rule.
+        step = ("      - name: Re-verify downloaded artifacts vs manifest\n"
+                "        run: |\n"
+                "          set +e\n"
+                "          python3 tools/security/native_build.py verify\n")
+        self.assertIn("set +e", ci_v.run_body(step))
+        self.assertEqual(ci_v.softfail_reason(step), "errexit relaxation (set +e)")
+
 
 # ===========================================================================
 # F6 — secret scanner
