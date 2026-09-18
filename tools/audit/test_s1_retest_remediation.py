@@ -590,6 +590,53 @@ class F4CiLineageTests(unittest.TestCase):
         self.assertEqual(ci_v.parse_needs("    needs: solo\n"), {"solo"})
         self.assertEqual(ci_v.parse_needs("    needs:\n      - x\n      - y\n    steps:\n"), {"x", "y"})
 
+    def test_consumer_verify_or_true_softfail_fails(self):
+        def fn(t):
+            i = t.index("  android-debug:")
+            return t[:i] + t[i:].replace(
+                "run: python3 tools/security/native_build.py verify\n",
+                "run: python3 tools/security/native_build.py verify || true\n", 1)
+        errs = self._mut(fn)
+        self.assertTrue(any("masks failure via shell chaining" in e for e in errs), str(errs))
+
+    def test_consumer_verify_semicolon_softfail_fails(self):
+        def fn(t):
+            i = t.index("  android-release:")
+            return t[:i] + t[i:].replace(
+                "run: python3 tools/security/native_build.py verify\n",
+                "run: python3 tools/security/native_build.py verify ; exit 0\n", 1)
+        errs = self._mut(fn)
+        self.assertTrue(any("masks failure via shell chaining" in e for e in errs), str(errs))
+
+    def test_consumer_download_or_true_softfail_fails(self):
+        def fn(t):
+            i = t.index("  instrumented-arm64:")
+            return t[:i] + t[i:].replace(
+                "uses: actions/download-artifact@",
+                "run: true || true\n        uses: actions/download-artifact@", 1)
+        errs = self._mut(fn)
+        self.assertTrue(any("masks failure via shell chaining" in e for e in errs), str(errs))
+
+    def test_consumer_gradle_semicolon_softfail_fails(self):
+        def fn(t):
+            i = t.index("  android-debug:")
+            return t[:i] + t[i:].replace("./gradlew --no-daemon :android:lintDebug",
+                                        "./gradlew --no-daemon :android:lintDebug ; echo done", 1)
+        errs = self._mut(fn)
+        self.assertTrue(any("masks failure via shell chaining" in e for e in errs), str(errs))
+
+    def test_producer_verify_softfail_not_in_scope(self):
+        # The producer job's own verify step is not a consumer step; the soft-fail
+        # guard is consumer-scoped (the producer's authoritative guarantee comes
+        # from the enforced job graph, not a step-level regex).
+        def fn(t):
+            i = t.index("  native-build:")
+            return t[:i] + t[i:].replace(
+                "run: python3 tools/security/native_build.py verify\n",
+                "run: python3 tools/security/native_build.py verify || true\n", 1)
+        errs = self._mut(fn)
+        self.assertFalse(any("masks failure via shell chaining" in e for e in errs), str(errs))
+
 
 # ===========================================================================
 # F6 — secret scanner
@@ -642,6 +689,19 @@ class F6SecretScannerTests(unittest.TestCase):
     def test_indented_marker_followed_by_prose_not_flagged(self):
         txt = "  -----BEGIN RSA PRIVATE KEY----- is the header format\n  used by OpenSSL, described here.\n"
         self.assertEqual(self._scan({"docs/note.md": txt}), [])
+
+    def test_escaped_singleline_pem_detected(self):
+        # GCP service-account shape: a PEM key serialised onto ONE line with
+        # literal backslash-n separators inside a JSON string.
+        b64 = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDA"
+        j = ('{"type": "service_account", "private_key": "-----BEGIN PRIVATE KEY-----\\n'
+             + b64 + "\\n" + b64 + "\\n-----END PRIVATE KEY-----\\n\"}")
+        f = self._scan({"sa.json": j})
+        self.assertEqual([r for _, r in f], ["pem_private_key_escaped"])
+
+    def test_escaped_marker_literal_without_body_not_flagged(self):
+        src = 'HELP = "-----BEGIN PRIVATE KEY-----\\\\n is the escaped header"\n'
+        self.assertEqual(self._scan({"tools/x.py": src}), [])
 
     def test_oversize_file_reported_not_skipped(self):
         p = self.root / "big.bin"

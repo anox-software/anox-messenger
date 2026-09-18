@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -655,6 +656,29 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
             "`docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` |",
             text, flags=re.MULTILINE))
         self.assert_fail("lost its base-document pointer")
+
+    # -- F-02: linked-worktree .git detection (fail-closed, never a silent SKIP)
+    def test_91_f02_linked_worktree_pointer_executes_scope_gate(self):
+        # A fixture whose .git is a worktree pointer file must run the scope
+        # gate, not silently skip it (the historical .is_dir() weakness).
+        gitdir = subprocess.run(["git", "rev-parse", "--git-dir"], cwd=REPO_ROOT,
+                                capture_output=True, text=True).stdout.strip()
+        self.assertTrue(gitdir, "test requires a git context")
+        (Path(self.tmp) / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
+        errors, out = run_validator(self.tmp)
+        self.assertNotIn("fixture mode", out, "scope gate must not skip in a linked worktree")
+        self.assertFalse(errors, f"valid linked-worktree gitdir must evaluate cleanly\n{out}")
+        self.assertIn("protected shared changes ratified", out)
+
+    def test_92_f02_malformed_worktree_pointer_fails_closed(self):
+        for content in ("gitdir:\n", "not-a-pointer\n",
+                        "gitdir: /nonexistent/definitely-missing\n",
+                        "gitdir: a\ngitdir: b\n"):
+            (Path(self.tmp) / ".git").write_text(content, encoding="utf-8")
+            errors, out = run_validator(self.tmp)
+            self.assertTrue(errors, f"malformed .git pointer {content!r} must fail closed\n{out}")
+            self.assertIn("Git metadata unusable", out)
+            self.assertNotIn("fixture mode", out)
 
 
 if __name__ == "__main__":

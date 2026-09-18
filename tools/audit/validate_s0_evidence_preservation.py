@@ -107,7 +107,7 @@ S0_CONSUMED_UNIT = "MSC-UNIT-039"
 S0_AC_COVERED = ["AC-001", "AC-002", "AC-003", "AC-004", "AC-005", "AC-008", "AC-009", "AC-010", "AC-014"]
 
 PINNED_TEST_COUNTS = {
-    "tools/audit/test_s0_contract_freeze.py": 98,
+    "tools/audit/test_s0_contract_freeze.py": 100,
     "tools/audit/test_security_audit_evidence_preservation.py": 277,
     "tools/audit/test_s0_evidence_preservation.py": 40,
 }

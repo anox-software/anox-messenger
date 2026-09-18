@@ -1,8 +1,149 @@
+diff --git a/tools/audit/test_security_audit_evidence_preservation.py b/tools/audit/test_security_audit_evidence_preservation.py
+index be0fd70..75ea76d 100644
+--- a/tools/audit/test_security_audit_evidence_preservation.py
++++ b/tools/audit/test_security_audit_evidence_preservation.py
+@@ -40,6 +40,12 @@ FIXTURE_FILES = [
+     "docs/reports/security/retests/INDEPENDENT-ARCHITECTURE-RETEST-S0-001.md",
+     "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
+     "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
++    # S1 integration era preserved sources (pinned by the S1 integration
++    # registry record; must exist for the live S1-era surface to validate)
++    "docs/reports/security/retests/INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001.md",
++    "docs/reports/security/remediation/REMEDIATION-S1-CANONICAL-INTEGRATION-001.md",
++    "docs/security/remediation/S1_PROVENANCE_VERIFIED_NATIVE_RUNTIME.md",
++    "docs/security/remediation/S1_TASK_REPORT.md",
+     "docs/workforce/WORKFORCE_STATE.json",
+     "docs/workforce/registries/findings.jsonl",
+     "docs/workforce/registries/tasks.jsonl",
+@@ -85,13 +91,15 @@ def _write_jsonl(path, records):
+     Path(path).write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+ 
+ 
+-# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository now carries the
+-# S1 canonical-integration era (ANOX-EVENT-0055, registry record
+-# SEC-AUDIT-REG-0014). The ratified central validator is era-pinned to
+-# 0052 → 0053 → 0054 / 13 records; these fixtures therefore normalise the copied
+-# surface back to the S0 evidence-preservation era so every S0 protection is
+-# exercised unchanged. The S1 era is validated by
+-# tools/audit/validate_s1_integration_evidence.py and its own adversarial suite.
++# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository carries the S1
++# canonical-integration era (ANOX-EVENT-0055, registry record
++# SEC-AUDIT-REG-0014). Once the shared-validator extension is ratified this
++# suite runs against the S1-ERA-pinned central validator, so the main class
++# exercises the live S1-era surface unchanged; the two historical-era classes
++# (S0 successor / S0 preservation) keep their era-normalised fixtures to prove
++# the old eras are now REJECTED. While the ratified (S0-era-pinned) validator
++# is still in place the same file must also pass against it — the
++# _normalise_fixture_to_s0_era helper serves only the two historical classes.
+ _S1_EVENT_ID = "ANOX-EVENT-0055"
+ _S1_REGISTRY_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
+ 
+@@ -107,6 +115,11 @@ def _normalise_fixture_to_s0_era(root):
+     state = json.loads(sp.read_text(encoding="utf-8"))
+     if recs:
+         state["latest_material_event_id"] = recs[-1].get("event_id")
++    # Restore the era's delivery declaration so the normalised fixture is a
++    # faithful S0-preservation-era state (rejected by the era-pinned validator
++    # for era reasons, not for a malformed declaration).
++    state["current_task"] = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
++    state["delivery_branch"] = "governance/security-remediation-s0-evidence-preservation-001"
+     sp.write_text(json.dumps(state, indent=1), encoding="utf-8")
+ 
+ 
+@@ -119,7 +132,6 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
+             dst = self.root / rel
+             dst.parent.mkdir(parents=True, exist_ok=True)
+             shutil.copyfile(src, dst)
+-        _normalise_fixture_to_s0_era(self.root)
+ 
+     def tearDown(self):
+         self.tmp.cleanup()
+@@ -265,7 +277,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
+         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
+         _write_jsonl(rp, recs)
+-        self.assert_fails(self.run_validator(), "exactly 13 records")
++        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
+ 
+     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
+     def test_15_downgraded_cryptojni_001_severity_fails(self):
+@@ -363,7 +375,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
+         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
+         _write_jsonl(rp, recs)
+-        self.assert_fails(self.run_validator(), "exactly 13 records")
++        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
+ 
+     # 26. Alter the Auth/DPoP audited SHA.
+     def test_26_altered_authdpop_audited_sha_fails(self):
+@@ -536,7 +548,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
+         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
+         _write_jsonl(rp, recs)
+-        self.assert_fails(self.run_validator(), "exactly 13 records")
++        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
+ 
+     # 46. Alter the Android/Storage audited SHA.
+     def test_46_altered_androidstorage_audited_sha_fails(self):
+@@ -727,7 +739,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
+         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
+         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
+         _write_jsonl(rp, recs)
+-        self.assert_fails(self.run_validator(), "exactly 13 records")
++        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
+ 
+     # 66. Inflate the Attackchain chain count.
+     def test_66_inflated_attackchain_chain_count_fails(self):
+@@ -2153,12 +2165,12 @@ class S0SuccessorEventAdversarialTests(unittest.TestCase):
+         self._write(recs)
+ 
+     # -- control ------------------------------------------------------------
+-    # 238. The recorded, unmutated S0 successor event is accepted.
+-    def test_238_valid_s0_successor_accepted(self):
++    # 238. The S0 successor era is now sealed history: under the S1-era-pinned
++    # validator the pre-preservation-era state must be REJECTED.
++    def test_238_s0_successor_era_rejected(self):
+         r = self.run_validator()
+-        self.assertEqual(r.returncode, 0, f"recorded S0 successor must be accepted:\n{r.stdout}")
+-        self.assertIn(f"Project Memory synced to {self.SUCCESSOR}", r.stdout)
+-        self.assertIn("REMEDIATION_SESSION_S0 successor", r.stdout)
++        self.assertNotEqual(r.returncode, 0, f"S0 successor era must be rejected:\n{r.stdout}")
++        self.assertIn("exactly 14 records", r.stdout)
+ 
+     # -- identifying fields -------------------------------------------------
+     # 239. Successor with a foreign task is rejected.
+@@ -2342,12 +2354,12 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
+         return recs, rec
+ 
+     # -- control ------------------------------------------------------------
+-    # 254. The recorded, unmutated preservation event and 13-record registry pass.
+-    def test_254_valid_preservation_accepted(self):
++    # 254. The S0 preservation era is sealed history: under the S1-era-pinned
++    # validator the 0054-ending, 13-record state must be REJECTED.
++    def test_254_preservation_era_rejected(self):
+         r = self.run_validator()
+-        self.assertEqual(r.returncode, 0, f"recorded preservation state must be accepted:\n{r.stdout}")
+-        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
+-        self.assertIn("S0 evidence-preservation successor", r.stdout)
++        self.assertNotEqual(r.returncode, 0, f"S0 preservation era must be rejected:\n{r.stdout}")
++        self.assertIn("exactly 14 records", r.stdout)
+ 
+     # 255. Removing EVENT-0054 while state claims preservation fails (stale).
+     def test_255_missing_preservation_event_rejected(self):
+@@ -2447,7 +2459,7 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
+     def test_268_registry_at_12_rejected(self):
+         recs = [r for r in self._registry() if r.get("audit_id") != self.PRES_ID]
+         self._write_registry(recs)
+-        self.assert_fails("exactly 13 records")
++        self.assert_fails("exactly 14 records")
+ 
+     # 269. Registry grown to 14 records is rejected.
+     def test_269_registry_at_14_rejected(self):
 diff --git a/tools/audit/validate_security_audit_evidence_preservation.py b/tools/audit/validate_security_audit_evidence_preservation.py
-index 594acd1..014ccf6 100644
+index 594acd1..f8ed40d 100644
 --- a/tools/audit/validate_security_audit_evidence_preservation.py
 +++ b/tools/audit/validate_security_audit_evidence_preservation.py
-@@ -133,6 +133,82 @@ def _is_s0_preservation_event(ev):
+@@ -133,6 +133,93 @@ def _is_s0_preservation_event(ev):
          and S0_PRESERVATION_EVENT["ref"] in (ev.get("refs") or [])
      )
  
@@ -27,6 +168,14 @@ index 594acd1..014ccf6 100644
 +}
 +S1_INTEGRATION_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
 +S1_ORIGINAL_TASK = "ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001"
++# Pinned S1 delivery commits. A Human-authorized pre-ratification correction
++# pass (REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001) may append exactly one
++# further task pair [D1 substantive, D2 metadata] on the same delivery branch;
++# D1 is bound to CURRENT_STATE.described_head and current_task must be the
++# correction task. No other chain shape is accepted.
++S1_SUBSTANTIVE_SHA = "ea20aaaf330c9268448df5523e89615aa0a69074"
++S1_METADATA_SHA = "573c5f58b91a1871fb6d7a6d722585a8518fa02c"
++S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001"
 +
 +# Repository surfaces the S1 integration is allowed to change relative to its
 +# start head. Anything outside this set — in particular crypto/rust/src/**,
@@ -43,6 +192,8 @@ index 594acd1..014ccf6 100644
 +    "tools/audit/validate_s0_contract_freeze.py",  # explicit: S0 scope evaluated over S0's own pinned range
 +    "tools/audit/validate_security_audit_evidence_preservation.py",
 +    "tools/audit/test_security_audit_evidence_preservation.py",
++    "tools/audit/test_s0_contract_freeze.py",  # paired fail-closed worktree tests (S1-PRE-RAT-CORR)
++    "docs/reports/security/remediation/REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001.md",
 +    "tools/audit/validate_b021_verification_matrix.py",
 +    "tools/audit/validate_s1_build_provenance.py",
 +    "tools/audit/test_s1_build_provenance.py",
@@ -64,9 +215,10 @@ index 594acd1..014ccf6 100644
 +
 +
 +def _s1_integration_delivery_active(state):
-+    """True when CURRENT_STATE declares the S1 canonical-integration delivery."""
++    """True when CURRENT_STATE declares the S1 canonical-integration delivery
++    (or the authorized pre-ratification correction pass on the same branch)."""
 +    return (
-+        state.get("current_task") == S1_INTEGRATION_EVENT["task"]
++        state.get("current_task") in (S1_INTEGRATION_EVENT["task"], S1_CORRECTION_TASK)
 +        and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"]
 +    )
 +
@@ -85,7 +237,7 @@ index 594acd1..014ccf6 100644
  # ---------------------------------------------------------------------------
  # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
  # ---------------------------------------------------------------------------
-@@ -917,7 +993,21 @@ def _rev_parse(ref):
+@@ -917,7 +1004,21 @@ def _rev_parse(ref):
  
  
  def has_git():
@@ -108,7 +260,7 @@ index 594acd1..014ccf6 100644
  
  
  def validate_base(errors):
-@@ -937,6 +1027,26 @@ def validate_base(errors):
+@@ -937,6 +1038,33 @@ def validate_base(errors):
          fail(f"CURRENT_STATE described_head is not a valid SHA: {described}", errors)
          return
      base_sha, delivery_branch, label = BASE_SHA, DELIVERY_BRANCH, "base"
@@ -125,9 +277,16 @@ index 594acd1..014ccf6 100644
 +        ok, merge_sha, _, _, reason = ll.canonical_integration_delivery(
 +            s1["start_head"], s1["merged_head"], s1["merged_base"], described, head,
 +            cwd=REPO_ROOT, metadata_allowlist=METADATA_ALLOWLIST,
++            s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
++            correction_task=S1_CORRECTION_TASK,
 +        )
 +        if not ok:
 +            fail(f"canonical S1 integration delivery failed: {reason}", errors)
++            return
++        if head != S1_METADATA_SHA and state.get("current_task") != S1_CORRECTION_TASK:
++            fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
++                 f"{state.get('current_task')!r} is not the authorized correction task "
++                 f"{S1_CORRECTION_TASK}", errors)
 +            return
 +        print(f"  OK   S1 integration: merge {merge_sha[:12]} of pinned {s1['merged_head'][:12]} "
 +              f"onto {s1['start_head'][:12]} + exactly 2 task-authored commits")
@@ -135,7 +294,7 @@ index 594acd1..014ccf6 100644
      if _s0_preservation_delivery_active(state):
          # The S0 evidence-preservation delivery sits on top of the corrected S0
          # final head; its two-commit proof is evaluated against the S0
-@@ -1065,13 +1175,92 @@ S0_PRESERVATION_SOURCE_SHA256 = {
+@@ -1065,13 +1193,93 @@ S0_PRESERVATION_SOURCE_SHA256 = {
  }
  
  
@@ -162,6 +321,7 @@ index 594acd1..014ccf6 100644
 +        "F-9": "FIXED",
 +    },
 +    "shared_validator_followup": "PROPOSAL_PREPARED_PENDING_HUMAN_RATIFICATION",
++    "shared_validator_paired_tests_proposed_sha256": "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462",
 +    "medium_or_higher_open_retest_findings": 0,
 +    "msc_closed_by_s1": 0,
 +    "open_msc_units": 42,
@@ -230,7 +390,7 @@ index 594acd1..014ccf6 100644
      msc_rec = audits.get(MSC_ID) or {}
      if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
          fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
-@@ -1113,8 +1302,9 @@ def validate_registry(errors):
+@@ -1113,8 +1321,9 @@ def validate_registry(errors):
              fail(f"{S0_PRESERVATION_ID} preservation record missing: {pres_rec.get('report_path')}", errors)
          elif sha256_file(pp) != pres_rec.get("report_sha256"):
              fail(f"{S0_PRESERVATION_ID} preservation record hash mismatch", errors)
@@ -242,7 +402,7 @@ index 594acd1..014ccf6 100644
      for aid, spec in EXPECTED_AUDITS.items():
          rec = audits.get(aid)
          if rec is None:
-@@ -3196,9 +3386,45 @@ def validate_tasks(errors):
+@@ -3196,9 +3405,45 @@ def validate_tasks(errors):
      print("  OK   next specialist gates are candidates, not executed")
  
  
@@ -288,7 +448,7 @@ index 594acd1..014ccf6 100644
      out = subprocess.run(["git", "diff", "--name-only", BASE_SHA], cwd=REPO_ROOT, capture_output=True, text=True)
      changed = out.stdout.strip().splitlines()
      forbidden = [p for p in changed if p.startswith(FORBIDDEN_PREFIXES) or p.endswith(".sql")]
-@@ -3224,10 +3450,33 @@ def validate_project_memory(errors):
+@@ -3224,10 +3469,33 @@ def validate_project_memory(errors):
          fail("ledger empty", errors)
          return
      latest = ledger[-1]
@@ -322,7 +482,7 @@ index 594acd1..014ccf6 100644
      elif _is_s0_preservation_event(latest) and len(ledger) >= 3 \
              and _is_s0_successor_event(ledger[-2]) \
              and ledger[-3].get("event_id") == LEDGER_EVENT:
-@@ -3238,7 +3487,8 @@ def validate_project_memory(errors):
+@@ -3238,7 +3506,8 @@ def validate_project_memory(errors):
      else:
          fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
               f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "

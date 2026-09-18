@@ -1217,6 +1217,47 @@ def check_protected_shared_files(errors):
            f"S1 prohibited before integration")
 
 
+def _resolve_git_dir():
+    """Fail-closed Git metadata resolution (F-02 era-precision hardening,
+    REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
+
+    Returns (git_dir, None) on success or (None, reason). A normal ``.git``
+    directory AND a linked-worktree ``.git`` pointer file (``gitdir: <path>``)
+    both resolve; the only soft result is ``"absent"`` — no ``.git`` at all,
+    which is the test-fixture mode. A malformed, unreadable or dangling Git
+    context is a hard failure reason so the scope gate can never be silently
+    skipped in a real worktree."""
+    dot_git = REPO_ROOT / ".git"
+    if not dot_git.exists():
+        return None, "absent"
+    if dot_git.is_dir():
+        if not (dot_git / "HEAD").exists():
+            return None, ".git directory has no HEAD"
+        return dot_git, None
+    if not dot_git.is_file():
+        return None, ".git is neither a directory nor a file"
+    try:
+        text = dot_git.read_text(encoding="utf-8", errors="strict")
+    except (OSError, UnicodeDecodeError):
+        return None, ".git pointer file unreadable"
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if len(lines) != 1 or not lines[0].startswith("gitdir:"):
+        return None, ".git pointer file malformed"
+    target = lines[0][len("gitdir:"):].strip()
+    if not target or "\x00" in target:
+        return None, ".git pointer target empty or invalid"
+    tpath = Path(target)
+    if not tpath.is_absolute():
+        tpath = REPO_ROOT / tpath
+    try:
+        tpath = tpath.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return None, ".git pointer target does not exist"
+    if not tpath.is_dir() or not (tpath / "HEAD").exists():
+        return None, ".git pointer target is not a git directory"
+    return tpath, None
+
+
 def check_scope(man, errors):
     """F-02 — the scope gate fails closed. The authorized base is validator-owned;
     an absent, malformed, unauthorized, missing or non-ancestor base is a FAILURE,
@@ -1234,8 +1275,13 @@ def check_scope(man, errors):
         fail(f"manifest base_sha {base[:12]} is not the authorized S0 base "
              f"{AUTHORIZED_S0_BASE_SHA[:12]} — scope base may not be redeclared", errors)
         return
-    if not (REPO_ROOT / ".git").is_dir():
-        print("  SKIP git-diff checks (no .git — fixture mode); authorized base pinned")
+    git_dir, why = _resolve_git_dir()
+    if git_dir is None:
+        if why == "absent":
+            print("  SKIP git-diff checks (no .git — fixture mode); authorized base pinned")
+            return
+        fail(f"Git metadata unusable ({why}) — the S0 scope gate cannot be evaluated "
+             f"and must not be skipped", errors)
         return
     exists = subprocess.run(["git", "cat-file", "-e", f"{base}^{{commit}}"], cwd=REPO_ROOT, capture_output=True)
     if exists.returncode != 0:

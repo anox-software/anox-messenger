@@ -59,6 +59,11 @@ BINARY_PATTERNS = [
     ("github_fine_grained_pat", re.compile(rb"(?<![A-Za-z0-9])github_pat_[A-Za-z0-9_]{22,}")),
     ("slack_token", re.compile(rb"(?<![A-Za-z0-9])xox[baprs]-[A-Za-z0-9-]{10,}")),
     ("supabase_service_key", re.compile(rb"(?<![A-Za-z0-9])sbp_[A-Za-z0-9]{20,}")),
+    # F6: escaped single-line PEM — a key serialised as a JSON/env string with
+    # literal \n separators (e.g. a GCP service-account "private_key" field).
+    ("pem_private_key_escaped_in_binary", re.compile(
+        rb"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----\\n"
+        rb"(?:[A-Za-z0-9+/=]{8,}\\n){2,}")),
 ]
 
 # F6: indented / quoted / list-prefixed PEM header that is followed by a
@@ -68,6 +73,12 @@ BINARY_PATTERNS = [
 PEM_HEADER_ANYWHERE = re.compile(
     r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----")
 PEM_BODY_LINE = re.compile(r"^\s*[\"']?[A-Za-z0-9+/=]{20,}[\"']?,?\s*$")
+# F6: the same key material serialised onto ONE line with literal backslash-n
+# separators (JSON / .env / YAML single-line strings). Requires at least two
+# escaped base64 body segments so a lone pattern literal cannot match.
+PEM_ESCAPED_LINE = re.compile(
+    r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?: BLOCK)?-----\\n"
+    r"(?:[A-Za-z0-9+/=]{8,}\\n){2,}")
 
 
 def indented_pem_block(text):
@@ -150,6 +161,8 @@ def scan(repo_root, files=None):
                 break
         if hit is None and indented_pem_block(text):
             hit = "pem_private_key_indented"
+        if hit is None and PEM_ESCAPED_LINE.search(text):
+            hit = "pem_private_key_escaped"
         if hit:
             findings.append((rel, hit))
     return findings

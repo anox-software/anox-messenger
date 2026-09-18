@@ -74,6 +74,11 @@ REQUIRED_NEEDS = {
 ARTIFACT_CONSUMERS = {"android-debug", "android-release", "instrumented-arm64", "instrumented-x86_64"}
 NATIVE_ARTIFACT_NAME = "native-artifacts-${{ github.sha }}"
 FORBIDDEN_STEP_KEYS = re.compile(r"^\s*(continue-on-error\s*:\s*true|if\s*:)", re.M)
+# F4 hardening (REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001): a consumer
+# verify/download/Gradle step must also not mask its exit status via shell
+# chaining — `cmd || true` / `cmd ; echo ok` / `cmd ; exit 0` all turn a
+# failing provenance check green. `&&` stays legal (it propagates failure).
+SOFTFAIL_RUN = re.compile(r"\|\||;")
 
 
 def split_jobs(text):
@@ -169,14 +174,21 @@ def validate_lineage(jobs, errors):
                     errors.append(f"lineage: '{job}' does not download the native artifact into build/native")
                 if FORBIDDEN_STEP_KEYS.search(s):
                     errors.append(f"lineage: '{job}' artifact download step is conditional/non-fatal")
+                if SOFTFAIL_RUN.search(s):
+                    errors.append(f"lineage: '{job}' artifact download step masks failure via shell chaining (|| / ;)")
             if re.search(r"native_build\.py\s+verify\b", s):
                 verify_idx = i if verify_idx is None else verify_idx
                 if FORBIDDEN_STEP_KEYS.search(s):
                     errors.append(f"lineage: '{job}' verify step is conditional/non-fatal")
-            if re.search(r"gradlew[^\n]*(assemble|connected|test|lint)", s) and first_consume_idx is None:
-                first_consume_idx = i
-                if FORBIDDEN_STEP_KEYS.search(s):
-                    errors.append(f"lineage: '{job}' first Gradle consumer step is conditional/non-fatal")
+                if SOFTFAIL_RUN.search(s):
+                    errors.append(f"lineage: '{job}' verify step masks failure via shell chaining (|| / ;)")
+            if re.search(r"gradlew[^\n]*(assemble|connected|test|lint)", s):
+                if SOFTFAIL_RUN.search(s):
+                    errors.append(f"lineage: '{job}' Gradle consumer step masks failure via shell chaining (|| / ;)")
+                if first_consume_idx is None:
+                    first_consume_idx = i
+                    if FORBIDDEN_STEP_KEYS.search(s):
+                        errors.append(f"lineage: '{job}' first Gradle consumer step is conditional/non-fatal")
         if dl_idx is None:
             errors.append(f"lineage: '{job}' never downloads the native artifact")
         if verify_idx is None:

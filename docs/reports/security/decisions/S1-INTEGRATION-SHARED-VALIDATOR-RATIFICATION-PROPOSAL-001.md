@@ -27,7 +27,8 @@ either forge a Human ratification or re-pin the S0 contract itself — both of w
 weaken S0 authority. Neither is permitted. The task therefore:
 
 1. left the protected file **byte-identical** to the ratified content `89c7358f…`;
-2. prepared the exact minimum extension as a **patch** with a pinned post-change hash (below);
+2. prepared the exact minimum extension as a **patch** with pinned post-change hashes covering both
+   the validator and its paired adversarial test suite (below);
 3. shipped the identical S1-era acceptance logic in a **separate, non-protected** validator
    `tools/audit/validate_s1_integration_evidence.py`, which imports the ratified module and runs
    every S0 protection verbatim, adding only the pinned S1-era sections;
@@ -41,10 +42,18 @@ condition, now made precise and ready for a Human decision.
 ## 2. The proposed change
 
 - **Patch:** `docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`
-- **Applies to (ratified):** `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7`
-- **Yields (proposed):** `03bdf7c84d7cf1eac170c8c70de582c98b001f0b582136b0ecf76c8a5d102822`
-- **Integrity:** `validate_s1_integration_evidence.py` applies the patch to the ratified content in a
-  scratch directory and fails if the result is not exactly the proposed hash.
+- **Applies to (ratified):** `validate_security_audit_evidence_preservation.py` @
+  `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7` and its paired adversarial
+  suite `test_security_audit_evidence_preservation.py` @ `b69dbb3546eae50a82a322373a9b064ca976906cb4028f2a57a185d6de48c1d6`
+- **Yields (proposed):** validator `e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8`;
+  paired test suite `c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462`
+- **Integrity:** `validate_s1_integration_evidence.py` applies the patch to both ratified files in a
+  scratch directory and fails if either result is not exactly the proposed hash.
+- **Post-application test state:** the paired suite update migrates the fixture era and the era-
+  sensitive expected messages so the full **277/277** central adversarial suite passes against the
+  proposed validator (verified by simulated application during
+  `REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001`). The suite stays at 277 tests — no assertion is
+  weakened and no negative case is dropped; only era-pinned fixtures/needles move to the S1 era.
 
 Content of the extension (additive; no S0 predicate or pin is altered):
 
@@ -52,7 +61,7 @@ Content of the extension (additive; no S0 predicate or pin is altered):
 |---|---|
 | `has_git()` | recognises a linked-worktree `.git` pointer (F-2 class defect) — never downgrades to fixture mode in a worktree |
 | `S1_INTEGRATION_EVENT` | pinned: `ANOX-EVENT-0055`, type `remediation_session_integration`, task, `start_head 29a6643…`, `merged_head e32463ca…`, `merged_base 0f932520…`, report ref, branch `integration/s1-after-s0-001`, `supersedes_provisional_event = ANOX-EVENT-0054` |
-| `validate_base` | when the S1 delivery is active: `lifecycle_legality.canonical_integration_delivery` (merge parents exactly (start, pinned S1 head); first-parent chain exactly [merge, substantive, metadata]; only the two pinned S1 commits integrated; metadata allowlisted) |
+| `validate_base` | when the S1 delivery is active: `lifecycle_legality.canonical_integration_delivery` (merge parents exactly (start, pinned S1 head); first-parent chain exactly [merge, substantive, metadata]; only the two pinned S1 commits integrated; metadata allowlisted). Optionally, exactly one **authorized pre-ratification correction pair** `[D1, D2]` may follow — D1 pinned via `described_head`, D2 metadata-allowlisted — and only when `CURRENT_STATE` declares the Human-authorized correction task `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001`; unauthorized or malformed correction chains are rejected |
 | `validate_registry` | 13 → **14** for exactly `SEC-AUDIT-REG-0014` (all fields pinned, report + preserved-source hashes); arbitrary growth rejected; S0 record pins unchanged |
 | `validate_no_product_changes` | S1 delivery active → enumerated S1 surface allow-list; forbids `crypto/rust/src/**`, `android/src/main/java/**`, `backend/`, `supabase/`, `migrations/`, `*.sql`, `docs/authority/**`; re-asserts no tracked `.so`, `crypto/rust/src` unchanged vs S1 base, CI hotfix (`packages: 'platform-tools'`) |
 | `validate_project_memory` | accepts `0055` only as direct successor of `0052 → 0053 → 0054` and only when `CURRENT_STATE` declares the S1 delivery (S0 one-time exception **not** reusable); rejects duplicate ids, the S1 original task under any id (provisional 0054 as canonical), and the S1 task under any id ≠ 0055 |
@@ -64,15 +73,14 @@ If ratified, the Human Owner would — following the exact precedent of
 
 1. record `ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001` in
    `docs/workforce/registries/decisions.jsonl` with `scope = ONE_TIME_CHANGE_SPECIFIC`,
-   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_sha256 = 03bdf7c8…`, and all
+   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_sha256 = e52f626a…`, and all
    `grants_*` flags `false`;
-2. pin `03bdf7c8…` as a third authorized content in `tools/audit/validate_s0_contract_freeze.py`
+2. pin `e52f626a…` as a third authorized content in `tools/audit/validate_s0_contract_freeze.py`
    (`PROTECTED_SHARED_FILES`), with a paired adversarial test;
 3. apply the patch (`git apply docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`)
-   and verify the file hash equals `03bdf7c8…`;
-4. update `PINNED_TEST_COUNTS` in `tools/audit/validate_s0_evidence_preservation.py` if the central
-   adversarial suite is extended with the S1-era cases (currently kept at 277 with fixture
-   normalisation only).
+   and verify the validator hash equals `e52f626a…` and the paired suite hash equals `c305c21c…`;
+4. no `PINNED_TEST_COUNTS` update is needed: the paired suite update keeps the count at exactly 277
+   (era migration only, no added/removed assertions); re-running it must show 277/277 OK.
 
 ## 4. What this proposal does NOT do
 

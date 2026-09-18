@@ -43,6 +43,7 @@ FIXTURE_FILES = list(_ct.FIXTURE_FILES) + [
     "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch",
     "tools/audit/lifecycle_legality.py",
     "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
 ]
 
 
@@ -332,7 +333,16 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
     def test_350_proposal_patch_tamper_rejected(self):
         p = self.root / VAL.PROPOSAL_PATCH
         p.write_text(p.read_text(encoding="utf-8").replace("ANOX-EVENT-0055", "ANOX-EVENT-0099"), encoding="utf-8")
-        self.assert_fails("ratification proposal yields")
+        self.assert_fails("ratification proposal")
+
+    def test_350b_proposal_patch_subtle_tamper_still_applies_rejected(self):
+        # Tamper a post-side-only literal so the patch still applies cleanly but
+        # yields content whose hash differs from the pinned proposal.
+        p = self.root / VAL.PROPOSAL_PATCH
+        p.write_text(p.read_text(encoding="utf-8").replace("c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462",
+                                                          "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552463"),
+                     encoding="utf-8")
+        self.assert_fails("ratification proposal")
 
     def test_351_proposal_patch_missing_rejected(self):
         (self.root / VAL.PROPOSAL_PATCH).unlink()
@@ -434,11 +444,56 @@ class S1IntegrationTopologyTests(unittest.TestCase):
         ok, *_, reason = self.prove(described_head=x1, live_head=x2)
         self.assertFalse(ok); self.assertIn("not an ancestor", reason)
 
+    # -- authorized pre-ratification correction pair [D1, D2] ----------------
+    def _corr_args(self):
+        return dict(s1_substantive_sha=self.c1, s1_metadata_sha=self.c2,
+                    correction_task="ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001")
+
+    def _corr_pair(self, meta_name="PROJECT_STATE.md"):
+        self.c("corr-sub"); d1 = self.g("rev-parse", "HEAD")
+        (self.r / meta_name).write_text(meta_name + "-corr\n")
+        self.g("add", meta_name); self.g("commit", "-q", "-m", "corr-meta")
+        return d1, self.g("rev-parse", "HEAD")
+
+    def test_410_correction_pair_accepted(self):
+        d1, d2 = self._corr_pair()
+        ok, m, s, meta, reason = self.prove(described_head=d1, live_head=d2, **self._corr_args())
+        self.assertTrue(ok, reason); self.assertEqual((m, s, meta), (self.merge, self.c1, self.c2))
+
+    def test_411_correction_pair_without_authorization_rejected(self):
+        d1, d2 = self._corr_pair()
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2)
+        self.assertFalse(ok); self.assertIn("expected exactly 3 first-parent commits", reason)
+
+    def test_412_correction_wrong_s1_substantive_pin_rejected(self):
+        d1, d2 = self._corr_pair()
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2,
+                                    s1_substantive_sha=self.merge, s1_metadata_sha=self.c2,
+                                    correction_task="T")
+        self.assertFalse(ok); self.assertIn("!= pinned", reason)
+
+    def test_413_correction_metadata_outside_allowlist_rejected(self):
+        d1, d2 = self._corr_pair(meta_name="evil.md")
+        ok, *_, reason = self.prove(described_head=d1, live_head=d2, **self._corr_args())
+        self.assertFalse(ok); self.assertIn("non-metadata", reason)
+
+    def test_414_correction_described_head_mismatch_rejected(self):
+        self._corr_pair()
+        ok, *_, reason = self.prove(described_head=self.c1, live_head=self.g("rev-parse", "HEAD"),
+                                    **self._corr_args())
+        self.assertFalse(ok); self.assertIn("!= described_head", reason)
+
+    def test_415_six_commit_chain_rejected(self):
+        self._corr_pair(); self.c("extra")
+        ok, *_, reason = self.prove(described_head=self.c1, live_head=self.g("rev-parse", "HEAD"),
+                                    **self._corr_args())
+        self.assertFalse(ok); self.assertIn("found 6", reason)
+
 
 class S0EraPrecisionTests(unittest.TestCase):
     """Paired tests for the two era-precision corrections applied to S0-owned
     validators by REMEDIATION-S1-CANONICAL-INTEGRATION-001 (documented, not
-    silent; S0 test counts stay pinned at 98/40, so the pairs live here).
+    silent; S0 test counts stay pinned at 100/40, so the pairs live here).
 
     1. validate_s0_evidence_preservation: 0054 is a sealed chain position —
        later canonical events may follow, but 0054 exactly once, no S0 task

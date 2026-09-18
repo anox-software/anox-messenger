@@ -36,12 +36,17 @@ from pathlib import Path
 
 REPO_ROOT = Path(os.environ.get("SECURITY_AUDIT_PRESERVATION_REPO") or Path(__file__).resolve().parents[2])
 CENTRAL = "tools/audit/validate_security_audit_evidence_preservation.py"
+CENTRAL_TESTS = "tools/audit/test_security_audit_evidence_preservation.py"
 
 # Ratified content of the protected shared validator (pinned by the S0 contract
 # under ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001).
 CENTRAL_RATIFIED_SHA256 = "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7"
 # Proposed post-change content (S1-era extension) awaiting Human ratification.
-CENTRAL_PROPOSED_SHA256 = "03bdf7c84d7cf1eac170c8c70de582c98b001f0b582136b0ecf76c8a5d102822"
+# The ratification package also carries the paired central-test-suite update so
+# that applying the proposal leaves BOTH files green (pre-ratification
+# correction REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
+CENTRAL_PROPOSED_SHA256 = "e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8"
+CENTRAL_TESTS_PROPOSED_SHA256 = "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462"
 PROPOSAL_PATCH = "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch"
 PROPOSAL_RECORD = "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md"
 
@@ -58,6 +63,14 @@ S1_INTEGRATION_EVENT = {
 }
 S1_INTEGRATION_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
 S1_ORIGINAL_TASK = "ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001"
+# Pinned S1 delivery commits (merge is recorded in the registry/event). A
+# Human-authorized pre-ratification correction pass may append exactly one
+# further task pair [D1 substantive, D2 metadata] on the same delivery branch;
+# D1 is bound to CURRENT_STATE.described_head and current_task must be the
+# correction task. No other chain shape is accepted.
+S1_SUBSTANTIVE_SHA = "ea20aaaf330c9268448df5523e89615aa0a69074"
+S1_METADATA_SHA = "573c5f58b91a1871fb6d7a6d722585a8518fa02c"
+S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001"
 
 S1_ALLOWED_EXACT = {
     ".github/workflows/ci.yml", ".gitignore", "android/build.gradle.kts",
@@ -70,6 +83,8 @@ S1_ALLOWED_EXACT = {
     "tools/audit/validate_s0_evidence_preservation.py",  # explicit: SEC-AUDIT-REG-0014 is not an S0 "prior" record
     "tools/audit/validate_s0_contract_freeze.py",  # explicit: S0 scope evaluated over S0's own pinned range
     "tools/audit/test_security_audit_evidence_preservation.py",  # fixture normalisation only (277 tests pinned)
+    "tools/audit/test_s0_contract_freeze.py",  # paired fail-closed worktree tests (S1-PRE-RAT-CORR)
+    "docs/reports/security/remediation/REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001.md",
     "tools/audit/validate_b021_verification_matrix.py",
     "tools/audit/validate_s1_build_provenance.py",
     "tools/audit/test_s1_build_provenance.py",
@@ -109,6 +124,7 @@ S1_INTEGRATION_REGISTRY_REQUIRED = {
     },
     "shared_validator_followup": "PROPOSAL_PREPARED_PENDING_HUMAN_RATIFICATION",
     "shared_validator_proposed_sha256": CENTRAL_PROPOSED_SHA256,
+    "shared_validator_paired_tests_proposed_sha256": CENTRAL_TESTS_PROPOSED_SHA256,
     "medium_or_higher_open_retest_findings": 0,
     "msc_closed_by_s1": 0,
     "open_msc_units": 42,
@@ -194,7 +210,7 @@ def load_central():
 
 # ---------------------------------------------------------------------------
 def _s1_delivery_active(state):
-    return (state.get("current_task") == S1_INTEGRATION_EVENT["task"]
+    return (state.get("current_task") in (S1_INTEGRATION_EVENT["task"], S1_CORRECTION_TASK)
             and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"])
 
 
@@ -233,9 +249,16 @@ def validate_base_s1(central, errors):
             return
     ok, merge_sha, sub, meta, reason = ll.canonical_integration_delivery(
         s1["start_head"], s1["merged_head"], s1["merged_base"], described, head,
-        cwd=REPO_ROOT, metadata_allowlist=central.METADATA_ALLOWLIST)
+        cwd=REPO_ROOT, metadata_allowlist=central.METADATA_ALLOWLIST,
+        s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
+        correction_task=S1_CORRECTION_TASK)
     if not ok:
         fail(f"canonical S1 integration delivery failed: {reason}", errors)
+        return
+    if head != S1_METADATA_SHA and state.get("current_task") != S1_CORRECTION_TASK:
+        fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
+             f"{state.get('current_task')!r} is not the authorized correction task "
+             f"{S1_CORRECTION_TASK}", errors)
         return
     print(f"  OK   merge {merge_sha[:12]} = ({s1['start_head'][:12]}, pinned {s1['merged_head'][:12]}); "
           f"substantive {sub[:12]}; metadata {meta[:12]}; exactly 2 task-authored commits; metadata allowlisted")
@@ -364,14 +387,20 @@ def validate_project_memory_s1(central, errors):
 
 def validate_ratification_proposal(errors):
     """The prepared S1-era extension is preserved tamper-evidently: applying the
-    patch to the ratified content must yield exactly the proposed content hash."""
+    patch to the ratified content must yield exactly the proposed content hash
+    for BOTH patched files (the protected validator and its paired adversarial
+    test suite — the complete ratification package)."""
     print("\n[S1-INTEGRATION] Shared-validator ratification proposal integrity")
     patch = REPO_ROOT / PROPOSAL_PATCH
     record = REPO_ROOT / PROPOSAL_RECORD
     if not record.exists():
         fail(f"ratification proposal record missing: {PROPOSAL_RECORD}", errors)
-    elif CENTRAL_PROPOSED_SHA256 not in record.read_text(encoding="utf-8"):
-        fail("ratification proposal record does not carry the proposed post-change SHA-256", errors)
+    else:
+        rec_text = record.read_text(encoding="utf-8")
+        if CENTRAL_PROPOSED_SHA256 not in rec_text:
+            fail("ratification proposal record does not carry the proposed post-change SHA-256", errors)
+        if CENTRAL_TESTS_PROPOSED_SHA256 not in rec_text:
+            fail("ratification proposal record does not carry the proposed paired-test-suite SHA-256", errors)
     if not patch.exists():
         fail(f"ratification proposal patch missing: {PROPOSAL_PATCH}", errors)
         return
@@ -381,6 +410,12 @@ def validate_ratification_proposal(errors):
         dst = td / CENTRAL
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_bytes((REPO_ROOT / CENTRAL).read_bytes())
+        tsrc = REPO_ROOT / CENTRAL_TESTS
+        if not tsrc.exists():
+            fail(f"paired central test suite missing: {CENTRAL_TESTS}", errors)
+            return
+        tdst = td / CENTRAL_TESTS
+        tdst.write_bytes(tsrc.read_bytes())
         r = subprocess.run(["git", "apply", str(patch)], cwd=td, capture_output=True, text=True)
         if r.returncode != 0:
             fail(f"ratification proposal patch does not apply to the ratified content: {r.stderr.strip()[:200]}", errors)
@@ -389,8 +424,14 @@ def validate_ratification_proposal(errors):
         if got != CENTRAL_PROPOSED_SHA256:
             fail(f"ratification proposal yields {got[:16]}… != pinned proposed {CENTRAL_PROPOSED_SHA256[:16]}…", errors)
             return
+        tgot = sha256_file(tdst)
+        if tgot != CENTRAL_TESTS_PROPOSED_SHA256:
+            fail(f"ratification proposal yields paired test suite {tgot[:16]}… != pinned proposed "
+                 f"{CENTRAL_TESTS_PROPOSED_SHA256[:16]}…", errors)
+            return
     print(f"  OK   proposal patch applies to ratified {CENTRAL_RATIFIED_SHA256[:12]}… and yields proposed "
-          f"{CENTRAL_PROPOSED_SHA256[:12]}… (awaiting Human ratification)")
+          f"{CENTRAL_PROPOSED_SHA256[:12]}… + paired test suite {CENTRAL_TESTS_PROPOSED_SHA256[:12]}… "
+          f"(awaiting Human ratification)")
 
 
 def main():
