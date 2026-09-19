@@ -7,11 +7,11 @@
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `7120aedd452bd77bbe208bb76a6d2c421394c820`
+- **Substantive HEAD:** `e65c23d0b8a9e7cf5a8abe25c85989bc3729ec11`
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 7120aedd452bd77bbe208bb76a6d2c421394c820
+Described HEAD: e65c23d0b8a9e7cf5a8abe25c85989bc3729ec11
 
 ## Pre-merge gate
 
