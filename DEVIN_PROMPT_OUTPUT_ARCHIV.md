@@ -1,3 +1,13 @@
+## 2026-09-19 — REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 (no new canonical event)
+
+- Task: `ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001` — authorized by `HUMAN-DECISION-S1-FOUR-FILE-RATIFICATION-AUTHORIZATION-001` (Human Product & Security Owner; ONE_TIME_CHANGE_SPECIFIC, expires on completion). Model: `Claude Opus 5 Medium`.
+- Fixes independent retest S1-004 BLOCKING finding `B-6`: the two-path package was structurally NOT COMMITTABLE. Applying it made `validate_security_audit_evidence_preservation.py` a third content while the frozen S0 contract pinned it to two; an `R1` carrying that pin was rejected for changing a third path; a metadata-only `R2` may not touch `tools/**`. Also fixes `N-13` (current surfaces stated the *current* proposal was "SUPERSEDED, never ratify") and `N-14` (stale task/commit attribution).
+- The ratification is now ONE atomic `R1` over EXACTLY four paths: `tools/audit/validate_security_audit_evidence_preservation.py`, `tools/audit/test_security_audit_evidence_preservation.py`, `tools/audit/validate_s0_contract_freeze.py`, `tools/audit/test_s0_contract_freeze.py`. Optional metadata-only `R2` advances `described_head` and records the Human ratification. Nothing beyond `R1`/`R2`. No fixed point: the S0 contract pins the other three post-images, never its own; its own is pinned externally by `validate_s1_integration_evidence.py`, which is not part of `R1`.
+- Commits: substantive `7120aedd452bd77bbe208bb76a6d2c421394c820` + metadata-only follow-up. `ANOX-EVENT-0055` remains the latest material event.
+- Package: `859e834e0687…` (central validator) + `c305c21c9405…` (central suite) + `7dbcaf60d7ba…` (S0 contract) + `d22034e61257…` (S0 contract suite). `e52f626a46f2…`, `d03e539a49e9…` and `87cd5e202325…` are **SUPERSEDED — never ratify**. Pinned test counts unchanged: 277 and 100, in both eras.
+- `[4b31f6806136, 10cc68c442bc]` promoted into `CONSUMED_CORRECTION_PAIRS` in both validators.
+- **NOT INDEPENDENTLY VERIFIED / NOT HUMAN-RATIFIED** — same agent as retest S1-004; `ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001` deliberately absent from `decisions.jsonl`. MSC 42 open / 0 closed; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; no push/PR/merge.
+
 ## 2026-09-18 — REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 (no new canonical event)
 
 - Task: `ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001` — authorized by `HUMAN-DECISION-S1-RATIFICATION-TAIL-CORRECTION-AUTHORIZATION-001` (Human Product & Security Owner; ONE_TIME_CHANGE_SPECIFIC, expires on completion). Model: `Claude Opus 5 Medium`.

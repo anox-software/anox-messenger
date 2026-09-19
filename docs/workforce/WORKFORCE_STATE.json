@@ -4,7 +4,7 @@
  "canonical_branch": "main",
  "delivery_branch": "integration/s1-after-s0-001",
  "described_head": "4b31f680613651772d6006c2d47d1f6ccd1bb837",
- "current_gate": "REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — HUMAN-AUTHORIZED RATIFICATION-TAIL CORRECTION (BLOCKER-1 the Shared Validator package is now actually committable: non-circular tail R1[,R2] admitted, nothing beyond it; BLOCKER-2 S1 validator distinguishes the exact pre-ratification content from the exact ratified successor; D1'/D2' [a79e3b3db9b4, 4319dacaa7ac] promoted into the consumed correction history; N-12 stale references corrected; package regenerated 87cd5e202325… + c305c21c9405… — e52f626a46f2… and d03e539a49e9… SUPERSEDED, never ratify; correction pair [4b31f6806136 + metadata]; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)",
+ "current_gate": "REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — HUMAN-AUTHORIZED FOUR-FILE RATIFICATION TRANSACTION (retest S1-004 B-6 closed: the ratification is now ONE atomic R1 over exactly four paths — validate/test_security_audit_evidence_preservation.py plus the frozen S0 contract validate/test_s0_contract_freeze.py that pins it — because a two-path R1 broke the S0 contract with no authorized repair path; optional metadata-only R2 advances described_head and records the Human ratification; nothing beyond R1/R2; consumed pairs [0d1549d12d02, f08749e2e5ec], [a79e3b3db9b4, 4319dacaa7ac] and [4b31f6806136, 10cc68c442bc]; N-13/N-14 corrected; 859e834e0687… + c305c21c9405… + 7dbcaf60d7ba… + d22034e61257… CURRENT PROPOSAL (four-file transaction); e52f626a46f2… SUPERSEDED/NEVER RATIFY; d03e539a49e9… SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY; 87cd5e202325… SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)",
  "active_roles": [
   "ROLE-003",
   "ROLE-009"
@@ -14,7 +14,7 @@
   "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001"
  ],
  "current_writer": {
-  "task_id": "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
+  "task_id": "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
   "role_id": "ROLE-009",
   "branch": "integration/s1-after-s0-001"
  },
@@ -75,15 +75,15 @@
  },
  "pre_merge_state": {
   "described_head": "4b31f680613651772d6006c2d47d1f6ccd1bb837",
-  "current_gate": "REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — HUMAN-AUTHORIZED RATIFICATION-TAIL CORRECTION (BLOCKER-1 the Shared Validator package is now actually committable: non-circular tail R1[,R2] admitted, nothing beyond it; BLOCKER-2 S1 validator distinguishes the exact pre-ratification content from the exact ratified successor; D1'/D2' [a79e3b3db9b4, 4319dacaa7ac] promoted into the consumed correction history; N-12 stale references corrected; package regenerated 87cd5e202325… + c305c21c9405… — e52f626a46f2… and d03e539a49e9… SUPERSEDED, never ratify; correction pair [4b31f6806136 + metadata]; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)",
+  "current_gate": "REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — HUMAN-AUTHORIZED FOUR-FILE RATIFICATION TRANSACTION (retest S1-004 B-6 closed: the ratification is now ONE atomic R1 over exactly four paths — validate/test_security_audit_evidence_preservation.py plus the frozen S0 contract validate/test_s0_contract_freeze.py that pins it — because a two-path R1 broke the S0 contract with no authorized repair path; optional metadata-only R2 advances described_head and records the Human ratification; nothing beyond R1/R2; consumed pairs [0d1549d12d02, f08749e2e5ec], [a79e3b3db9b4, 4319dacaa7ac] and [4b31f6806136, 10cc68c442bc]; N-13/N-14 corrected; 859e834e0687… + c305c21c9405… + 7dbcaf60d7ba… + d22034e61257… CURRENT PROPOSAL (four-file transaction); e52f626a46f2… SUPERSEDED/NEVER RATIFY; d03e539a49e9… SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY; 87cd5e202325… SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)",
   "current_writer": {
-   "task_id": "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
+   "task_id": "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
    "role_id": "ROLE-009",
    "branch": "integration/s1-after-s0-001"
   },
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
-  "active_task": "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001"
+  "current_task": "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
+  "active_task": "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001"
  },
  "post_merge_state": {
   "described_head": "24576ec333f3567c36b46f42ed30c718788ea601",

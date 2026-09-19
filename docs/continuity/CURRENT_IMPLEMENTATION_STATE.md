@@ -2,7 +2,8 @@
 
 **Event:** `ANOX-EVENT-0055`
 
-- `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001` — Ready For Remote (substantive `4b31f6806136`; Human-authorized single correction pass over the pinned S1 delivery `ea20aaaf330c`/`dd6e2c5d82f0`; B-2 ratification package complete; N-1/N-3/N-4 detection fixes; B-1 unresolved pending final Human disposition; `INDEPENDENTLY_RETESTED` PENDING; x86_64 runtime PENDING).
+- `ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001` — Ready For Remote (substantive `7120aedd452b`; atomic four-file ratification transaction closing retest S1-004 `B-6`; package `859e834e0687…` + `c305c21c9405…` + `7dbcaf60d7ba…` + `d22034e61257…`, NOT Human-ratified; `INDEPENDENTLY_RETESTED` PENDING).
+- `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001` — Ready For Remote (CONSUMED pair `[0d1549d12d02, f08749e2e5ec]`; Human-authorized single correction pass over the pinned S1 delivery `ea20aaaf330c`/`dd6e2c5d82f0`; B-2 ratification package complete; N-1/N-3/N-4 detection fixes; B-1 unresolved pending final Human disposition; `INDEPENDENTLY_RETESTED` PENDING; x86_64 runtime PENDING).
 - `ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` — Merged to `main` (canonical `ANOX-EVENT-0054`; S0 preservation commit `dace1467035b`).
 - `ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001` — Integrated (isolated delivery `fc58414b6790`/`e32463ca71b0` merged via `dd6e2c5d82f0`; its provisional `ANOX-EVENT-0054` is NONCANONICAL; MSC-UNIT-001/002/003/038 IMPLEMENTED + AUTOMATED_TESTED; RUNTIME_TESTED PENDING (001/002); 0 CLOSED).
 - `ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` — Ready For Remote (corrected substantive `8756a94824ba`; `REMEDIATION_SESSION_S0` contract freeze; `RETESTED_AND_EVIDENCE_PRESERVED` — F-01 `HUMAN_RATIFIED`, F-02…F-10 `FIXED` per `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS`, merge blockers 0).

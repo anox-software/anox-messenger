@@ -7,15 +7,15 @@
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `4b31f680613651772d6006c2d47d1f6ccd1bb837`
+- **Substantive HEAD:** `7120aedd452bd77bbe208bb76a6d2c421394c820`
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 4b31f680613651772d6006c2d47d1f6ccd1bb837
+Described HEAD: 7120aedd452bd77bbe208bb76a6d2c421394c820
 
 ## Pre-merge gate
 
-`REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — HUMAN-AUTHORIZED RATIFICATION-TAIL CORRECTION (BLOCKER-1 the Shared Validator package is now actually committable: non-circular tail R1[,R2] admitted, nothing beyond it; BLOCKER-2 S1 validator distinguishes the exact pre-ratification content from the exact ratified successor; D1'/D2' [a79e3b3db9b4, 4319dacaa7ac] promoted into the consumed correction history; N-12 stale references corrected; package regenerated 87cd5e202325… + c305c21c9405… — 87cd5e202325… (supersedes e52f626a46f2… and d03e539a49e9…, which must never be ratified) and 87cd5e202325… (supersedes e52f626a46f2… and d03e539a49e9…, which must never be ratified) SUPERSEDED, never ratify; correction pair [4b31f6806136 + metadata]; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
+`REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — HUMAN-AUTHORIZED FOUR-FILE RATIFICATION TRANSACTION (retest S1-004 B-6 closed: the ratification is now ONE atomic R1 over exactly four paths — validate/test_security_audit_evidence_preservation.py plus the frozen S0 contract validate/test_s0_contract_freeze.py that pins it — because a two-path R1 broke the S0 contract with no authorized repair path; optional metadata-only R2 advances described_head and records the Human ratification; nothing beyond R1/R2; consumed pairs [0d1549d12d02, f08749e2e5ec], [a79e3b3db9b4, 4319dacaa7ac] and [4b31f6806136, 10cc68c442bc]; N-13/N-14 corrected; 859e834e0687… + c305c21c9405… + 7dbcaf60d7ba… + d22034e61257… CURRENT PROPOSAL (four-file transaction); e52f626a46f2… SUPERSEDED/NEVER RATIFY; d03e539a49e9… SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY; 87cd5e202325… SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
 
 ## Post-merge gate
 
