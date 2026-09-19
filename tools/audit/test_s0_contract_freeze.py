@@ -8,6 +8,7 @@ FAILS.  A baseline test asserts the unmodified tree PASSES.
 Run:  python3 -m unittest tools.audit.test_s0_contract_freeze
 """
 import contextlib
+import hashlib
 import io
 import json
 import os
@@ -38,6 +39,13 @@ FIXTURE_FILES = (
     v.F01_RATIFICATION_REPORT,
     v.PRESERVATION_RATIFICATION_REPORT,
     "tools/audit/validate_security_audit_evidence_preservation.py",
+    # four-path ratification transaction (REMEDIATION-S1-FOUR-FILE-RATIFICATION-
+    # TRANSACTION-001): the fixture must carry the WHOLE package, otherwise the
+    # third authorized content could never have its post-images verified here.
+    v.S1_INTEGRATION_RATIFICATION_REPORT,
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/validate_s0_contract_freeze.py",
 )
 
 
@@ -61,6 +69,24 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         self.addCleanup(setattr, v, "REPO_ROOT", REPO_ROOT)
 
     # -- helpers -----------------------------------------------------------
+    def central_era(self):
+        """Which Human-ratified content the protected central validator carries.
+
+        The paired suite must pass in BOTH legitimate eras: before the four-path
+        ratification transaction (`s0_preservation`) and after it
+        (`s1_integration`). Era is read from content, never assumed.
+        """
+        rel = "tools/audit/validate_security_audit_evidence_preservation.py"
+        spec = v.PROTECTED_SHARED_FILES[rel]
+        digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        if digest == spec.get("s1_integration_authorized_sha256"):
+            return "s1_integration"
+        if digest == spec["preservation_authorized_sha256"]:
+            return "s0_preservation"
+        if digest == spec["authorized_sha256"]:
+            return "s0_successor"
+        return "unknown"
+
     def path(self, rel):
         return Path(self.tmp) / rel
 
@@ -431,6 +457,20 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
         self.write(rel, self.read(rel) + "\n# unauthorized second change\n")
         self.assert_fail("unauthorized modification")
+        # Four-path transaction integrity (era-aware): once the protected central
+        # validator carries the S1 successor content, tampering with ANY
+        # externally pinned member of the ratification package must also fail
+        # closed, so the package can never be ratified piecemeal or half-applied.
+        # Before ratification the third pin is simply not active, and asserting
+        # on it would be asserting on the wrong era.
+        if self.central_era() == "s1_integration":
+            for member in sorted(v.S1_RATIFICATION_POST_IMAGES):
+                self.setUp()
+                self.write(member, self.read(member) + "\n# tampered package member\n")
+                errors, out = run_validator(self.tmp)
+                self.assertTrue(errors, f"tampered package member {member} must fail closed\n{out}")
+                self.assertTrue(any("four-file package is not intact" in e or "unauthorized modification" in e
+                                    for e in errors), f"unexpected errors for {member}: {errors}")
 
     def test_53_f03_protected_file_reverted_to_pre_s0(self):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
@@ -675,6 +715,12 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         self.assertNotIn("fixture mode", out, "scope gate must not skip in a linked worktree")
         self.assertFalse(errors, f"valid linked-worktree gitdir must evaluate cleanly\n{out}")
         self.assertIn("protected shared changes ratified", out)
+        # Era-aware: with Git resolvable, the S1 successor content must have been
+        # admitted by the STRUCTURAL four-path transaction proof (R1 or R1+R2),
+        # never by content identity alone.
+        if self.central_era() == "s1_integration":
+            self.assertIn("four-path ratification transaction proven", out)
+            self.assertNotIn("fixture mode", out)
 
     def test_92_f02_malformed_worktree_pointer_fails_closed(self):
         for content in ("gitdir:\n", "not-a-pointer\n",

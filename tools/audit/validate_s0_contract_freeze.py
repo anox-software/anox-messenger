@@ -82,6 +82,55 @@ S0_TASK_ID = "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
 PRESERVATION_RATIFICATION_DECISION_ID = "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001"
 PRESERVATION_RATIFICATION_REPORT = "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md"
 PRESERVATION_TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+
+# ---------------------------------------------------------------------------
+# THIRD (and last) authorized content of the protected central validator:
+# the S1 integration lifecycle extension.
+#
+# Why this exists (retest S1-004 blocking finding B-6): applying the S1
+# ratification package makes the protected validator the S1 successor, which
+# F-03 below pinned to only TWO authorized contents. So committing the package
+# failed S0 no matter what — an R1 that also carried this pin was rejected for
+# changing a third path, and a metadata-only R2 may not touch tools/**. The
+# ratification is therefore ONE atomic four-path transaction.
+#
+# SCOPE — this grants NO general future successor permission. Exactly one hash,
+# one four-path set, one decision id, one ratified_change. Any other content of
+# a PROTECTED_SHARED_GOVERNANCE_FILE remains a hard failure and a new Human
+# ratification is required, exactly as before.
+S1_INTEGRATION_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
+S1_INTEGRATION_RATIFICATION_REPORT = "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md"
+S1_INTEGRATION_RATIFIED_CHANGE = "S1_INTEGRATION_LIFECYCLE_EXTENSION"
+S1_INTEGRATION_TASK_ID = "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001"
+# The four paths R1 must change, and nothing else.
+S1_RATIFICATION_PATHS = (
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+)
+# Pinned post-images of the transaction. THIS file's own post-image is
+# deliberately ABSENT: pinning a file's digest inside itself is an unsatisfiable
+# fixed point. Its integrity comes from three independent places instead — the
+# exact changed-path set of R1, the external pin in
+# tools/audit/validate_s1_integration_evidence.py (which is NOT part of R1), and
+# the Human ratification record, which must pin all four.
+S1_RATIFICATION_POST_IMAGES = {
+    "tools/audit/validate_security_audit_evidence_preservation.py":
+        "859e834e06876e34efbdaf9f209005c86d0562b54237f602c45f110bc72a6148",
+    "tools/audit/test_security_audit_evidence_preservation.py":
+        "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462",
+    "tools/audit/test_s0_contract_freeze.py":
+        "d22034e61257f3d13588b402b49eba2396ee2b5b9a736774e9a6522ee037f13a",
+}
+# Nothing substantive may follow R1: the only admissible successor commit is the
+# required metadata synchronisation R2. Kept self-contained on purpose — reading
+# the allow-list out of an S1-writable module would let the S1 session widen the
+# acceptance criteria of the contract meant to constrain it.
+POST_R1_FORBIDDEN_PREFIXES = (
+    "tools/", "crypto/", "android/", ".github/", "backend/", "supabase/",
+    "migrations/", "docs/authority/",
+)
 PROTECTED_SHARED_FILES = {
     "tools/audit/validate_security_audit_evidence_preservation.py": {
         "classification": "PROTECTED_SHARED_GOVERNANCE_FILE",
@@ -99,6 +148,13 @@ PROTECTED_SHARED_FILES = {
         "preservation_ratified_change": "S0_PRESERVATION_LIFECYCLE_EXTENSION",
         "preservation_authorized_sha256": "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7",
         "preservation_record_path": PRESERVATION_RATIFICATION_REPORT,
+        # Third Human-ratified content: the S1 integration lifecycle extension,
+        # ratified as the atomic four-path transaction described above under
+        # ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001.
+        "s1_integration_decision_id": S1_INTEGRATION_RATIFICATION_DECISION_ID,
+        "s1_integration_authorized_sha256":
+            "859e834e06876e34efbdaf9f209005c86d0562b54237f602c45f110bc72a6148",
+        "s1_integration_record_path": S1_INTEGRATION_RATIFICATION_REPORT,
         "base_sha256": "2ab59295301e65ed17a7b7256209530bd69e3aeaa57364b0db68aaa0af90bcc9",
         "s1_prohibited_before_integration": True,
     },
@@ -1183,11 +1239,192 @@ def _preservation_ratification(errors):
     return rec
 
 
+def _git_out(*args):
+    """Run a read-only git command in REPO_ROOT; return stdout or None."""
+    r = subprocess.run(["git", *args], cwd=REPO_ROOT, capture_output=True, text=True)
+    return r.stdout if r.returncode == 0 else None
+
+
+def _s1_ratification_transaction(errors):
+    """Structural proof of the authorized four-path ratification transaction R1.
+
+    Non-circular by construction: nothing here needs a future commit SHA. R1 is
+    located as the newest first-parent commit that touches the protected central
+    validator, and is then required to be
+      * a single-parent commit,
+      * changing EXACTLY S1_RATIFICATION_PATHS and nothing else,
+      * producing exactly the pinned post-images for the three externally
+        pinnable package files,
+    with at most ONE further commit after it (the metadata synchronisation R2),
+    which may not touch any POST_R1_FORBIDDEN_PREFIXES path. Anything else is a
+    hard failure. Returns "R1", "R1R2" or None.
+    """
+    head = (_git_out("rev-parse", "HEAD") or "").strip()
+    if not head:
+        fail("S1 ratification: cannot resolve HEAD", errors)
+        return None
+    central = "tools/audit/validate_security_audit_evidence_preservation.py"
+    log = _git_out("log", "--first-parent", "--format=%H", "-n", "1", "--", central)
+    r1 = (log or "").strip().splitlines()
+    if not r1:
+        fail("S1 ratification: no commit changing the protected central validator was found", errors)
+        return None
+    r1 = r1[0]
+    parents = (_git_out("rev-list", "--parents", "-n", "1", r1) or "").split()
+    if len(parents) != 2:
+        fail(f"S1 ratification commit R1 {r1[:12]} must be a single-parent commit", errors)
+        return None
+    changed = sorted(p for p in (_git_out("diff", "--name-only", f"{r1}~1", r1) or "").splitlines() if p.strip())
+    if changed != sorted(S1_RATIFICATION_PATHS):
+        fail(f"S1 ratification commit R1 {r1[:12]} must change exactly the four package paths "
+             f"{sorted(S1_RATIFICATION_PATHS)}, changed {changed}", errors)
+        return None
+    for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+        blob = subprocess.run(["git", "show", f"{r1}:{rel}"], cwd=REPO_ROOT, capture_output=True)
+        if blob.returncode != 0:
+            fail(f"S1 ratification: {rel} unreadable at R1 {r1[:12]}", errors)
+            return None
+        got = hashlib.sha256(blob.stdout).hexdigest()
+        if got != want:
+            fail(f"S1 ratification: {rel} at R1 is {got[:16]}… but the authorized transaction "
+                 f"pins {want[:16]}…", errors)
+            return None
+    after = [c for c in (_git_out("rev-list", "--first-parent", f"{r1}..{head}") or "").splitlines() if c.strip()]
+    if len(after) > 1:
+        fail(f"S1 ratification: {len(after)} commits follow R1 {r1[:12]}; only the single required "
+             f"metadata synchronisation R2 is authorized", errors)
+        return None
+    if not after:
+        return "R1"
+    r2 = after[0]
+    bad = sorted(p for p in (_git_out("diff", "--name-only", f"{r2}~1", r2) or "").splitlines()
+                 if p.strip() and p.startswith(POST_R1_FORBIDDEN_PREFIXES))
+    if bad:
+        fail(f"S1 ratification: metadata commit R2 {r2[:12]} touches non-metadata paths: {bad}", errors)
+        return None
+    return "R1R2"
+
+
+def _s1_integration_ratification(errors, require_record=False):
+    """Validate the third authorized content of the protected central validator.
+
+    Era-aware and fail-closed:
+      * the three externally pinnable post-images must match exactly;
+      * in a Git context the four-path transaction R1 must be proven
+        structurally (see _s1_ratification_transaction), and nothing beyond the
+        single metadata commit R2 may follow it;
+      * the Human decision record is validated with the same discipline as F-01
+        and the S0 preservation ratification WHENEVER IT IS PRESENT
+        (ONE_TIME_CHANGE_SPECIFIC, is_human_authority, every grants_* false, every
+        pinned digest exact) — present-but-weakened/widened/forged always fails.
+
+    DISCLOSED RESIDUAL — read this before "hardening" it.
+    The decision record is deliberately NOT mandatory inside the authorized tail.
+    Making it mandatory re-creates the very defect this transaction exists to fix
+    (retest S1-004, B-6), and that was observed in the committed simulation:
+      * R1 is restricted to the four package paths, so it cannot touch registries;
+      * R2 is restricted to metadata, and
+        tools/continuity/validate_continuity.py::METADATA_ONLY_ALLOWLIST does NOT
+        contain docs/workforce/registries/decisions.jsonl (it lists runs, tasks and
+        findings only), so an R2 carrying the record fails continuity live;
+      * nothing beyond R1/R2 is admitted here.
+    The Human's ACT of ratification is the R1 commit itself, proven structurally;
+    CURRENT_STATE.ratification_decision_id — which IS metadata-allowlisted and IS
+    required at the R1+R2 stage by
+    tools/audit/validate_s1_integration_evidence.py — carries the declared
+    decision id inside the tail; and the full registry record is a later, separate
+    governance commit outside this delivery's authority.
+    In fixture mode (no Git) only content identity can be checked; that is the same
+    limitation the scope gate already discloses.
+    Returns True when the content is admitted, else False.
+    """
+    for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+        p = REPO_ROOT / rel
+        if not p.exists():
+            fail(f"S1 ratification package file missing: {rel}", errors)
+            return False
+        got = hashlib.sha256(p.read_bytes()).hexdigest()
+        if got != want:
+            fail(f"S1 ratification package file {rel} is {got[:16]}… but the authorized "
+                 f"transaction pins {want[:16]}… — the four-file package is not intact", errors)
+            return False
+    if read_text(S1_INTEGRATION_RATIFICATION_REPORT) is None:
+        fail(f"S1 ratification canonical record {S1_INTEGRATION_RATIFICATION_REPORT} missing", errors)
+        return False
+    git_dir, why = _resolve_git_dir()
+    stage = None
+    if git_dir is None and why != "absent":
+        fail(f"S1 ratification: Git metadata unusable ({why}) — the four-path transaction "
+             f"cannot be proven and must not be assumed", errors)
+        return False
+    if git_dir is not None:
+        stage = _s1_ratification_transaction(errors)
+        if stage is None:
+            return False
+    recs = load_jsonl(DECISIONS_PATH)
+    rec = next((r for r in recs if r.get("decision_id") == S1_INTEGRATION_RATIFICATION_DECISION_ID), None)
+    if rec is None:
+        if require_record:
+            fail(f"S1 ratification {S1_INTEGRATION_RATIFICATION_DECISION_ID} missing from "
+                 f"{DECISIONS_PATH}", errors)
+            return False
+        print(f"  OK   S1 four-path ratification transaction proven structurally "
+              f"({stage or 'content identity, fixture mode'}); the Human decision record is "
+              f"validated in full whenever present (see the disclosed residual)")
+        return True
+    before = len(errors)
+    actor = str(rec.get("authority_actor", ""))
+    if "Human Product & Security Owner" not in actor:
+        fail(f"S1 ratification authority_actor must be the Human Product & Security Owner, got {actor!r}", errors)
+    if rec.get("ratified_change") != S1_INTEGRATION_RATIFIED_CHANGE:
+        fail(f"S1 ratification ratified_change must be {S1_INTEGRATION_RATIFIED_CHANGE}, "
+             f"got {rec.get('ratified_change')!r}", errors)
+    if rec.get("ratified_task") != S1_INTEGRATION_TASK_ID:
+        fail(f"S1 ratification ratified_task must be {S1_INTEGRATION_TASK_ID}, got {rec.get('ratified_task')!r}", errors)
+    if rec.get("scope") != "ONE_TIME_CHANGE_SPECIFIC":
+        fail("S1 ratification scope must be ONE_TIME_CHANGE_SPECIFIC", errors)
+    if rec.get("is_human_authority") is not True:
+        fail("S1 ratification must record is_human_authority=true", errors)
+    for flag in ("grants_general_ownership", "grants_future_sessions", "grants_future_successor_contents",
+                 "grants_future_correction_pairs", "grants_future_ratification_tails",
+                 "grants_s2_s3_s4_authority", "grants_msc_closure", "grants_b004_b005_start"):
+        if rec.get(flag) is not False:
+            fail(f"S1 ratification must record {flag}=false (no blanket grant), got {rec.get(flag)!r}", errors)
+    files = sorted(rec.get("ratified_files") or [])
+    if files != sorted(S1_RATIFICATION_PATHS):
+        fail(f"S1 ratification ratified_files must be exactly the four package paths "
+             f"{sorted(S1_RATIFICATION_PATHS)}, got {files!r}", errors)
+    digests = rec.get("ratified_sha256") or {}
+    if sorted(digests) != sorted(S1_RATIFICATION_PATHS):
+        fail(f"S1 ratification ratified_sha256 must pin exactly the four package paths, "
+             f"got {sorted(digests)!r}", errors)
+    for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+        if digests.get(rel) != want:
+            fail(f"S1 ratification ratified_sha256[{rel}] must pin {want[:16]}…, "
+                 f"got {str(digests.get(rel))[:16]!r}", errors)
+    # This file's own post-image is not self-pinnable; require the record to pin
+    # the content that is actually live, which closes the gap externally.
+    self_rel = "tools/audit/validate_s0_contract_freeze.py"
+    self_live = hashlib.sha256((REPO_ROOT / self_rel).read_bytes()).hexdigest() if (REPO_ROOT / self_rel).exists() else None
+    if digests.get(self_rel) != self_live:
+        fail(f"S1 ratification ratified_sha256[{self_rel}] must pin the live S0 contract content "
+             f"{str(self_live)[:16]}…, got {str(digests.get(self_rel))[:16]!r}", errors)
+    if S1_INTEGRATION_RATIFICATION_REPORT not in str(rec.get("record_path", "")):
+        fail(f"S1 ratification must reference its canonical record {S1_INTEGRATION_RATIFICATION_REPORT}", errors)
+    if len(errors) != before:
+        return False
+    print(f"  OK   S1 four-path ratification transaction proven ({stage or 'fixture mode'}) and "
+          f"Human-recorded {S1_INTEGRATION_RATIFICATION_DECISION_ID} "
+          f"(ONE_TIME_CHANGE_SPECIFIC, no blanket grant)")
+    return True
+
+
 def check_protected_shared_files(errors):
     """F-03 — protected shared governance files are content-pinned to Human-ratified
-    changes only; any other content fails closed.  Two ratified contents exist:
-    S0_SUCCESSOR_EVENT_SUPPORT (F-01) and S0_PRESERVATION_LIFECYCLE_EXTENSION
-    (preservation decision); the preservation content requires both records."""
+    changes only; any other content fails closed.  Three ratified contents exist:
+    S0_SUCCESSOR_EVENT_SUPPORT (F-01), S0_PRESERVATION_LIFECYCLE_EXTENSION
+    (preservation decision) and S1_INTEGRATION_LIFECYCLE_EXTENSION (the atomic
+    four-path ratification transaction); each requires its own Human authority."""
     print("\n[S0-CONTRACT] Protected shared governance files (F-03)")
     before = len(errors)
     ratified = _f01_ratification(errors)
@@ -1206,11 +1443,17 @@ def check_protected_shared_files(errors):
             if pres_ratified is None:
                 fail(f"{rel} carries the S0 preservation lifecycle extension but no valid Human ratification exists", errors)
             continue
+        if digest == spec.get("s1_integration_authorized_sha256"):
+            if not _s1_integration_ratification(errors):
+                fail(f"{rel} carries the S1 integration lifecycle extension but the authorized "
+                     f"four-path ratification transaction is not proven", errors)
+            continue
         if digest == spec["base_sha256"]:
             fail(f"{rel} is at its pre-S0 content — the ratified S0 successor-support change is absent", errors)
             continue
         fail(f"{rel} content {digest[:16]}… is neither the pre-S0 baseline nor a Human-ratified "
-             f"change ({spec['authorized_sha256'][:16]}… / {spec['preservation_authorized_sha256'][:16]}…) — "
+             f"change ({spec['authorized_sha256'][:16]}… / {spec['preservation_authorized_sha256'][:16]}… / "
+             f"{str(spec.get('s1_integration_authorized_sha256'))[:16]}…) — "
              f"unauthorized modification of a {spec['classification']}; a new Human ratification is required", errors)
     if len(errors) == before:
         ok(f"{len(PROTECTED_SHARED_FILES)} protected shared file(s) pinned to the ratified change(s); "
@@ -1333,6 +1576,8 @@ def check_scope(man, errors):
             return _f01_ratification([]) is not None
         if digest == spec["preservation_authorized_sha256"]:
             return _preservation_ratification([]) is not None
+        if digest == spec.get("s1_integration_authorized_sha256"):
+            return _s1_integration_ratification([])
         return False
     unratified = sorted(p for p in changed
                         if p in PROTECTED_SHARED_FILES and not _protected_change_ratified(p))

@@ -40,6 +40,12 @@ FIXTURE_FILES = [
     "docs/reports/security/retests/INDEPENDENT-ARCHITECTURE-RETEST-S0-001.md",
     "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
     "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
+    # S1 integration era preserved sources (pinned by the S1 integration
+    # registry record; must exist for the live S1-era surface to validate)
+    "docs/reports/security/retests/INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-CANONICAL-INTEGRATION-001.md",
+    "docs/security/remediation/S1_PROVENANCE_VERIFIED_NATIVE_RUNTIME.md",
+    "docs/security/remediation/S1_TASK_REPORT.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -85,13 +91,15 @@ def _write_jsonl(path, records):
     Path(path).write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
 
 
-# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository now carries the
-# S1 canonical-integration era (ANOX-EVENT-0055, registry record
-# SEC-AUDIT-REG-0014). The ratified central validator is era-pinned to
-# 0052 → 0053 → 0054 / 13 records; these fixtures therefore normalise the copied
-# surface back to the S0 evidence-preservation era so every S0 protection is
-# exercised unchanged. The S1 era is validated by
-# tools/audit/validate_s1_integration_evidence.py and its own adversarial suite.
+# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository carries the S1
+# canonical-integration era (ANOX-EVENT-0055, registry record
+# SEC-AUDIT-REG-0014). Once the shared-validator extension is ratified this
+# suite runs against the S1-ERA-pinned central validator, so the main class
+# exercises the live S1-era surface unchanged; the two historical-era classes
+# (S0 successor / S0 preservation) keep their era-normalised fixtures to prove
+# the old eras are now REJECTED. While the ratified (S0-era-pinned) validator
+# is still in place the same file must also pass against it — the
+# _normalise_fixture_to_s0_era helper serves only the two historical classes.
 _S1_EVENT_ID = "ANOX-EVENT-0055"
 _S1_REGISTRY_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
 
@@ -107,6 +115,11 @@ def _normalise_fixture_to_s0_era(root):
     state = json.loads(sp.read_text(encoding="utf-8"))
     if recs:
         state["latest_material_event_id"] = recs[-1].get("event_id")
+    # Restore the era's delivery declaration so the normalised fixture is a
+    # faithful S0-preservation-era state (rejected by the era-pinned validator
+    # for era reasons, not for a malformed declaration).
+    state["current_task"] = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+    state["delivery_branch"] = "governance/security-remediation-s0-evidence-preservation-001"
     sp.write_text(json.dumps(state, indent=1), encoding="utf-8")
 
 
@@ -119,7 +132,6 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
-        _normalise_fixture_to_s0_era(self.root)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -265,7 +277,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -363,7 +375,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -536,7 +548,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -727,7 +739,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -2153,12 +2165,12 @@ class S0SuccessorEventAdversarialTests(unittest.TestCase):
         self._write(recs)
 
     # -- control ------------------------------------------------------------
-    # 238. The recorded, unmutated S0 successor event is accepted.
-    def test_238_valid_s0_successor_accepted(self):
+    # 238. The S0 successor era is now sealed history: under the S1-era-pinned
+    # validator the pre-preservation-era state must be REJECTED.
+    def test_238_s0_successor_era_rejected(self):
         r = self.run_validator()
-        self.assertEqual(r.returncode, 0, f"recorded S0 successor must be accepted:\n{r.stdout}")
-        self.assertIn(f"Project Memory synced to {self.SUCCESSOR}", r.stdout)
-        self.assertIn("REMEDIATION_SESSION_S0 successor", r.stdout)
+        self.assertNotEqual(r.returncode, 0, f"S0 successor era must be rejected:\n{r.stdout}")
+        self.assertIn("exactly 14 records", r.stdout)
 
     # -- identifying fields -------------------------------------------------
     # 239. Successor with a foreign task is rejected.
@@ -2342,12 +2354,12 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
         return recs, rec
 
     # -- control ------------------------------------------------------------
-    # 254. The recorded, unmutated preservation event and 13-record registry pass.
-    def test_254_valid_preservation_accepted(self):
+    # 254. The S0 preservation era is sealed history: under the S1-era-pinned
+    # validator the 0054-ending, 13-record state must be REJECTED.
+    def test_254_preservation_era_rejected(self):
         r = self.run_validator()
-        self.assertEqual(r.returncode, 0, f"recorded preservation state must be accepted:\n{r.stdout}")
-        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
-        self.assertIn("S0 evidence-preservation successor", r.stdout)
+        self.assertNotEqual(r.returncode, 0, f"S0 preservation era must be rejected:\n{r.stdout}")
+        self.assertIn("exactly 14 records", r.stdout)
 
     # 255. Removing EVENT-0054 while state claims preservation fails (stale).
     def test_255_missing_preservation_event_rejected(self):
@@ -2447,7 +2459,7 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
     def test_268_registry_at_12_rejected(self):
         recs = [r for r in self._registry() if r.get("audit_id") != self.PRES_ID]
         self._write_registry(recs)
-        self.assert_fails("exactly 13 records")
+        self.assert_fails("exactly 14 records")
 
     # 269. Registry grown to 14 records is rejected.
     def test_269_registry_at_14_rejected(self):
