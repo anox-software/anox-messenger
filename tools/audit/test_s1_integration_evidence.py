@@ -44,6 +44,12 @@ FIXTURE_FILES = list(_ct.FIXTURE_FILES) + [
     "tools/audit/lifecycle_legality.py",
     "tools/audit/validate_s1_integration_evidence.py",
     "tools/audit/test_security_audit_evidence_preservation.py",
+    # Four-file ratification transaction (REMEDIATION-S1-FOUR-FILE-RATIFICATION-
+    # TRANSACTION-001, retest S1-004 finding B-6): the fixture must carry the
+    # WHOLE package, otherwise the atomicity check cannot see three of its four
+    # members and would fail closed on every unrelated test.
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/test_s0_contract_freeze.py",
 ]
 
 
@@ -95,6 +101,25 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         return r
 
     # -- helpers ------------------------------------------------------------
+    def era(self):
+        """Which legitimate era the fixture sits in, read from content.
+
+        The suite must pass BOTH before the four-file ratification transaction
+        (`pre`) and after it (`post`). Era-sensitive assertions branch on this;
+        they are never dropped, only pointed at the malformed state that is
+        actually reachable in that era.
+        """
+        digest = hashlib.sha256((self.root / self.CENTRAL).read_bytes()).hexdigest()
+        if digest == VAL.CENTRAL_PROPOSED_SHA256:
+            return "post"
+        self.assertEqual(digest, VAL.CENTRAL_RATIFIED_SHA256,
+                         "fixture central validator is neither legitimate era")
+        return "pre"
+
+    def _tamper_package_member(self, rel):
+        p = self.root / rel
+        p.write_bytes(p.read_bytes() + b"\n# tampered package member\n")
+
     def _ledger(self):
         return _load_jsonl(self.root / self.LEDGER)
 
@@ -133,7 +158,11 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
         self.assertIn("NONCANONICAL", r.stdout)
         self.assertIn("S0 registry protections executed verbatim", r.stdout)
-        self.assertIn("awaiting Human ratification", r.stdout)
+        if self.era() == "post":
+            self.assertIn("ratified four-file transaction matches the pinned proposal exactly", r.stdout)
+            self.assertNotIn("awaiting Human ratification", r.stdout)
+        else:
+            self.assertIn("awaiting Human ratification", r.stdout)
 
     # -- protected shared validator -----------------------------------------
     def test_301_modified_shared_validator_refused(self):
@@ -331,6 +360,13 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
 
     # -- ratification proposal integrity --------------------------------------
     def test_350_proposal_patch_tamper_rejected(self):
+        # Pre-ratification the patch IS the artifact under review. Post-ratification
+        # it can no longer be re-applied, so the equivalent malformed state is a
+        # tampered live package member — asserted instead, never skipped.
+        if self.era() == "post":
+            self._tamper_package_member(VAL.CENTRAL_TESTS)
+            self.assert_fails("half-applied")
+            return
         p = self.root / VAL.PROPOSAL_PATCH
         p.write_text(p.read_text(encoding="utf-8").replace("ANOX-EVENT-0055", "ANOX-EVENT-0099"), encoding="utf-8")
         self.assert_fails("ratification proposal")
@@ -338,6 +374,10 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
     def test_350b_proposal_patch_subtle_tamper_still_applies_rejected(self):
         # Tamper a post-side-only literal so the patch still applies cleanly but
         # yields content whose hash differs from the pinned proposal.
+        if self.era() == "post":
+            self._tamper_package_member(VAL.S0_CONTRACT_TESTS)
+            self.assert_fails("half-applied")
+            return
         p = self.root / VAL.PROPOSAL_PATCH
         p.write_text(p.read_text(encoding="utf-8").replace("c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462",
                                                           "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552463"),
@@ -345,13 +385,25 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         self.assert_fails("ratification proposal")
 
     def test_351_proposal_patch_missing_rejected(self):
+        if self.era() == "post":
+            self._tamper_package_member(VAL.S0_CONTRACT)
+            self.assert_fails("half-applied")
+            return
         (self.root / VAL.PROPOSAL_PATCH).unlink()
         self.assert_fails("ratification proposal patch missing")
 
     def test_352_proposal_record_missing_hash_rejected(self):
-        p = self.root / VAL.PROPOSAL_RECORD
-        p.write_text(p.read_text(encoding="utf-8").replace(VAL.CENTRAL_PROPOSED_SHA256, "0" * 64), encoding="utf-8")
-        self.assert_fails("does not carry the proposed post-change SHA-256")
+        # Every one of the four pinned post-images must be carried by the
+        # proposal record; dropping ANY of them is rejected.
+        if self.era() == "post":
+            (self.root / VAL.CENTRAL_TESTS).unlink()
+            self.assert_fails("ratification package file missing")
+            return
+        base = (self.root / VAL.PROPOSAL_RECORD).read_text(encoding="utf-8")
+        for rel, want in sorted(VAL.S1_RATIFICATION_POST_IMAGES.items()):
+            (self.root / VAL.PROPOSAL_RECORD).write_text(base.replace(want, "0" * 64), encoding="utf-8")
+            self.assert_fails(f"does not carry the proposed post-image for {rel}")
+        (self.root / VAL.PROPOSAL_RECORD).write_text(base, encoding="utf-8")
 
     def test_353_proposal_is_not_a_decision(self):
         text = (REPO_ROOT / VAL.PROPOSAL_RECORD).read_text(encoding="utf-8")

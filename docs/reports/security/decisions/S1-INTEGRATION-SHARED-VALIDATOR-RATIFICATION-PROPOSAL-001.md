@@ -41,18 +41,24 @@ condition, now made precise and ready for a Human decision.
 
 ## 2. The proposed change
 
-> ### SUPERSESSION NOTICE — two earlier revisions must NEVER be ratified
+> ### SUPERSESSION NOTICE — three earlier revisions must NEVER be ratified
 >
 > | Revision | Validator post-image | Status |
 > |---|---|---|
-> | 1 | `e52f626a46f27af5…` | **SUPERSEDED — never ratify** (valid only for the pre-final-correction topology) |
-> | 2 | `d03e539a49e9126e…` | **SUPERSEDED — never ratify** (technically verified but *structurally not committable*: committing it makes the chain 8/9 while the shape rule admitted only 5 or 7) |
-> | 3 | `87cd5e202325f192…` | **CURRENT PROPOSAL** (admits the non-circular Human-ratification tail) |
+> | 1 | `e52f626a46f27af5…` | **SUPERSEDED — NEVER RATIFY** (valid only for the pre-final-correction topology) |
+> | 2 | `d03e539a49e9126e…` | **SUPERSEDED — NOT COMMITTABLE — NEVER RATIFY** (technically verified but structurally not committable: committing it makes the chain 8/9 while the shape rule admitted only 5 or 7) |
+> | 3 | `87cd5e202325f192…` | **SUPERSEDED BY THE NEW FOUR-FILE PACKAGE — NEVER RATIFY** (admitted the tail, but only over two paths, so committing it broke the frozen S0 contract with no authorized repair path — retest S1-004 blocking finding B-6) |
+> | 4 | `64fc3ffb3dc67bd0…` | **CURRENT PROPOSAL** (atomic four-file ratification transaction) |
 >
 > Revision 2's defect was found by
 > `TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003`, which committed
 > the package in a disposable clone and observed the would-be-ratified validator
-> reject its own repository.
+> reject its own repository. Revision 3's defect was found the same way by
+> `TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004`: the central validator and
+> the S1 validator both passed at committed R1/R2, but
+> `tools/audit/validate_s0_contract_freeze.py` pinned the protected validator to only
+> two authorized contents, and neither a two-path R1 (which may not touch the S0
+> contract) nor a metadata-only R2 (which may not touch `tools/**`) could repair it.
 >
 >
 > An earlier revision of this package proposed
@@ -77,14 +83,33 @@ condition, now made precise and ready for a Human decision.
 > its **authoring** agent only. It is **NOT self-ratified** and requires targeted
 > independent re-verification before Human ratification.
 
+### The ratification is ONE atomic four-path transaction (R1)
+
+`R1` must change **exactly** these four paths — no fewer, no fifth:
+
+| # | Path | Pre-image | Post-image (**pinned**) |
+|---|---|---|---|
+| 1 | `tools/audit/validate_security_audit_evidence_preservation.py` | `89c7358fbbe61c71…` | `859e834e06876e34efbdaf9f209005c86d0562b54237f602c45f110bc72a6148` |
+| 2 | `tools/audit/test_security_audit_evidence_preservation.py` | `b69dbb3546eae50a…` | `c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462` |
+| 3 | `tools/audit/validate_s0_contract_freeze.py` | `5077558321dcc6e3…` | `7dbcaf60d7ba4dab1124e2af035eea64a8847a6d7942a6316229eb2bf645d5b4` |
+| 4 | `tools/audit/test_s0_contract_freeze.py` | `6590a218b11bce51…` | `d22034e61257f3d13588b402b49eba2396ee2b5b9a736774e9a6522ee037f13a` |
+
+File 3 is the frozen S0 contract that content-pins file 1; file 4 is its paired
+adversarial suite. Files 1+2 alone were uncommittable (B-6). All four move in the
+same commit or the ratification does not happen.
+
+**No fixed point:** file 3 pins the post-images of files 1, 2 and 4, but never its
+own — a digest cannot be pinned inside the file it describes. File 3's own
+post-image is pinned externally by `tools/audit/validate_s1_integration_evidence.py`
+(which is deliberately **not** part of the transaction) and by the Human
+ratification record, and structurally by R1's exact changed-path set.
+
 - **Patch:** `docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`
-- **Applies to (ratified):** `validate_security_audit_evidence_preservation.py` @
-  `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7` and its paired adversarial
-  suite `test_security_audit_evidence_preservation.py` @ `b69dbb3546eae50a82a322373a9b064ca976906cb4028f2a57a185d6de48c1d6`
-- **Yields (proposed):** validator `87cd5e202325f1921954fc3a6e23999f987fc65d65bb13652ae34473001fbecd`;
-  paired test suite `c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462`
-- **Integrity:** `validate_s1_integration_evidence.py` applies the patch to both ratified files in a
-  scratch directory and fails if either result is not exactly the proposed hash.
+- **Integrity:** `validate_s1_integration_evidence.py` copies all four pre-images into a
+  scratch directory, applies the patch, and fails unless the changed path set is exactly the
+  four paths and every one of the four results is exactly its pinned post-image.
+- **Atomicity:** the same validator refuses any half-applied state — all four files must sit
+  in the same era (all pre-images or all post-images).
 - **Post-application test state:** the paired suite update migrates the fixture era and the era-
   sensitive expected messages so the full **277/277** central adversarial suite passes against the
   proposed validator (verified by simulated application during
@@ -107,20 +132,30 @@ Content of the extension (additive; no S0 predicate or pin is altered):
 If ratified, the Human Owner would — following the exact precedent of
 `ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001` —
 
-1. record `ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001` in
+1. apply the patch and commit it as **R1**, changing exactly the four package paths
+   (this commit *is* the act of ratification);
+2. commit the required metadata synchronisation **R2** (metadata allow-list only), which
+   advances `described_head` to R1 and records
+   `ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001` in
    `docs/workforce/registries/decisions.jsonl` with `scope = ONE_TIME_CHANGE_SPECIFIC`,
-   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_sha256 = 87cd5e20…`, and all
-   `grants_*` flags `false`;
-2. pin `87cd5e20…` as a third authorized content in `tools/audit/validate_s0_contract_freeze.py`
-   (`PROTECTED_SHARED_FILES`), with a paired adversarial test;
-3. apply the patch (`git apply docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch`)
-   and verify the validator hash equals `87cd5e20…` and the paired suite hash equals `c305c21c…`;
-4. no `PINNED_TEST_COUNTS` update is needed: the paired suite update keeps the count at exactly 277
-   (era migration only, no added/removed assertions); re-running it must show 277/277 OK.
+   `ratified_change = S1_INTEGRATION_LIFECYCLE_EXTENSION`, `ratified_files` = the four paths,
+   `ratified_sha256` pinning all four post-images, and all `grants_*` flags `false`;
+3. no separate follow-up is needed to pin the new content in the S0 contract: that pin, and its
+   paired adversarial coverage, are *inside* R1 (files 3 and 4). This is what makes the package
+   committable at all;
+4. verify the four post-images equal `64fc3ffb…`, `c305c21c…`, `058e8ec0…`, `d22034e6…`;
+5. no `PINNED_TEST_COUNTS` update is needed: the central paired suite stays at exactly **277** and
+   the S0 contract paired suite stays at exactly **100** (era migration and strengthened
+   assertions only — no assertion weakened, no negative case dropped). Both must show full
+   green before and after R1/R2.
 
 ## 4. What this proposal does NOT do
 
 - does **not** modify the protected shared validator or the S0 contract pin;
 - does **not** ratify itself, close any MSC unit, start B004/B005 or unblock the product;
 - does **not** grant S1 or any session standing permission over shared governance validators;
-- does **not** authorise event numbers beyond `ANOX-EVENT-0055` or registry growth beyond `SEC-AUDIT-REG-0014`.
+- does **not** authorise event numbers beyond `ANOX-EVENT-0055` or registry growth beyond `SEC-AUDIT-REG-0014`;
+- does **not** create any general future-successor permission for the protected shared validator:
+  the S0 contract admits exactly one further content (`64fc3ffb…`), under exactly one decision id,
+  over exactly one four-path set. Any other content remains a hard failure requiring a new Human
+  ratification.

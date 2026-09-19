@@ -37,16 +37,54 @@ from pathlib import Path
 REPO_ROOT = Path(os.environ.get("SECURITY_AUDIT_PRESERVATION_REPO") or Path(__file__).resolve().parents[2])
 CENTRAL = "tools/audit/validate_security_audit_evidence_preservation.py"
 CENTRAL_TESTS = "tools/audit/test_security_audit_evidence_preservation.py"
+S0_CONTRACT = "tools/audit/validate_s0_contract_freeze.py"
+S0_CONTRACT_TESTS = "tools/audit/test_s0_contract_freeze.py"
 
 # Ratified content of the protected shared validator (pinned by the S0 contract
 # under ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001).
 CENTRAL_RATIFIED_SHA256 = "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7"
 # Proposed post-change content (S1-era extension) awaiting Human ratification.
-# The ratification package also carries the paired central-test-suite update so
-# that applying the proposal leaves BOTH files green (pre-ratification
-# correction REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
-CENTRAL_PROPOSED_SHA256 = "87cd5e202325f1921954fc3a6e23999f987fc65d65bb13652ae34473001fbecd"
+#
+# FOUR-FILE RATIFICATION TRANSACTION
+# (REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001, closing retest S1-004
+# blocking finding B-6). A two-path package was verifiable but structurally
+# UNCOMMITTABLE: applying it made the protected validator the S1 successor, which
+# the frozen S0 contract pinned to only two authorized contents, so committed R1
+# failed S0 permanently; an R1 that also carried the S0 contract pin was rejected
+# for changing a third path; and a metadata-only R2 may not touch tools/**.
+# The ratification is therefore ONE atomic transaction over exactly four paths.
+#
+# SUPERSESSION — never ratify any of these:
+#   e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8  (rev 1)
+#   d03e539a49e9126e92b0fdc31fb5c8e424a6e7e82c98cf954881e99e6edbed74  (rev 2)
+#   87cd5e202325f1921954fc3a6e23999f987fc65d65bb13652ae34473001fbecd  (rev 3)
+CENTRAL_PROPOSED_SHA256 = "859e834e06876e34efbdaf9f209005c86d0562b54237f602c45f110bc72a6148"
 CENTRAL_TESTS_PROPOSED_SHA256 = "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462"
+S0_CONTRACT_PROPOSED_SHA256 = "7dbcaf60d7ba4dab1124e2af035eea64a8847a6d7942a6316229eb2bf645d5b4"
+S0_CONTRACT_TESTS_PROPOSED_SHA256 = "d22034e61257f3d13588b402b49eba2396ee2b5b9a736774e9a6522ee037f13a"
+# Pre-images the transaction applies to. Files 1/2 are the Human-ratified central
+# baseline; files 3/4 are the S0 contract pair as delivered pre-ratification.
+S1_RATIFICATION_PRE_IMAGES = {
+    CENTRAL: CENTRAL_RATIFIED_SHA256,
+    CENTRAL_TESTS: "b69dbb3546eae50a82a322373a9b064ca976906cb4028f2a57a185d6de48c1d6",
+    S0_CONTRACT: "5077558321dcc6e3c835d04cb8ec797a2407e7f5f447f3614203632fe89df0d1",
+    S0_CONTRACT_TESTS: "6590a218b11bce51d1f360d46206e411e150214acb40bbc5afdbfd6747dc2068",
+}
+S1_RATIFICATION_POST_IMAGES = {
+    CENTRAL: CENTRAL_PROPOSED_SHA256,
+    CENTRAL_TESTS: CENTRAL_TESTS_PROPOSED_SHA256,
+    S0_CONTRACT: S0_CONTRACT_PROPOSED_SHA256,
+    S0_CONTRACT_TESTS: S0_CONTRACT_TESTS_PROPOSED_SHA256,
+}
+# NO FIXED POINT: this validator is NOT part of the transaction, so it can pin
+# all four post-images — including the S0 contract's, which the S0 contract
+# itself cannot pin about itself. That is exactly why the external pin lives
+# here and why this file must never be added to S1_RATIFICATION_PATHS.
+SUPERSEDED_NEVER_RATIFY = (
+    "e52f626a46f27af59b51acf2af20ec6762ab71f8c1e35239e6c59f70182af1f8",
+    "d03e539a49e9126e92b0fdc31fb5c8e424a6e7e82c98cf954881e99e6edbed74",
+    "87cd5e202325f1921954fc3a6e23999f987fc65d65bb13652ae34473001fbecd",
+)
 PROPOSAL_PATCH = "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch"
 PROPOSAL_RECORD = "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md"
 
@@ -84,19 +122,24 @@ CONSUMED_CORRECTION_PAIRS = (
     # here, so D1'/D2' can no longer be substituted.
     ("a79e3b3db9b441fd81b5f76f6804f90eb44bb36b",
      "4319dacaa7ac94405e8b72fe23effb6e733ab898"),
+    # REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — frozen by
+    # TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004 and promoted here, so
+    # the ratification-tail pair can no longer be substituted either.
+    ("4b31f680613651772d6006c2d47d1f6ccd1bb837",
+     "10cc68c442bc67be03d863ad20e29e4dfcb0bd51"),
 )
 S1_CORRECTION_TASKS = (
     "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
+    "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
 )
 # The one correction task still permitted to author an unpinned pair.
-S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001"
-# Human-ratification tail: R1 may change EXACTLY these paths, R2 is metadata-only.
-S1_RATIFICATION_PATHS = frozenset({
-    "tools/audit/validate_security_audit_evidence_preservation.py",
-    "tools/audit/test_security_audit_evidence_preservation.py",
-})
+S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001"
+# Human-ratification tail: R1 may change EXACTLY these four paths, R2 is
+# metadata-only. The set is the atomic four-file transaction — see the
+# SUPERSESSION/FOUR-FILE block above. No fifth path is ever admissible.
+S1_RATIFICATION_PATHS = frozenset(S1_RATIFICATION_POST_IMAGES)
 S1_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
 
 S1_ALLOWED_EXACT = {
@@ -126,6 +169,10 @@ S1_ALLOWED_EXACT = {
     "docs/reports/security/decisions/S1-RATIFICATION-TAIL-CORRECTION-AUTHORIZATION-001.md",
     "docs/reports/security/remediation/REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001.md",
     "docs/reports/security/retests/TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003.md",
+    # REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 evidence surfaces
+    "docs/reports/security/decisions/S1-FOUR-FILE-RATIFICATION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004.md",
 }
 S1_ALLOWED_PREFIXES = (
     "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
@@ -160,6 +207,12 @@ S1_INTEGRATION_REGISTRY_REQUIRED = {
     "shared_validator_followup": "PROPOSAL_PREPARED_PENDING_HUMAN_RATIFICATION",
     "shared_validator_proposed_sha256": CENTRAL_PROPOSED_SHA256,
     "shared_validator_paired_tests_proposed_sha256": CENTRAL_TESTS_PROPOSED_SHA256,
+    # Four-file ratification transaction (B-6): the S0 contract that pins the
+    # protected validator, and its paired suite, move in the SAME commit.
+    "shared_validator_s0_contract_proposed_sha256": S0_CONTRACT_PROPOSED_SHA256,
+    "shared_validator_s0_contract_tests_proposed_sha256": S0_CONTRACT_TESTS_PROPOSED_SHA256,
+    "shared_validator_ratification_transaction": "FOUR_FILE_ATOMIC_R1_PLUS_METADATA_R2",
+    "shared_validator_superseded_never_ratify": list(SUPERSEDED_NEVER_RATIFY),
     "medium_or_higher_open_retest_findings": 0,
     "msc_closed_by_s1": 0,
     "open_msc_units": 42,
@@ -244,10 +297,28 @@ def load_central():
         central_state = "PRE_RATIFICATION"
     elif digest == CENTRAL_PROPOSED_SHA256:
         central_state = "RATIFIED_SUCCESSOR_APPLIED"
+    elif digest in SUPERSEDED_NEVER_RATIFY:
+        return None, (f"protected shared validator content {digest[:16]}… is a SUPERSEDED ratification "
+                      f"revision that must NEVER be ratified — only the Human-ratified baseline "
+                      f"{CENTRAL_RATIFIED_SHA256[:16]}… or the current four-file successor "
+                      f"{CENTRAL_PROPOSED_SHA256[:16]}… are admissible")
     else:
         return None, (f"protected shared validator content {digest[:16]}… is not the Human-ratified content "
                       f"{CENTRAL_RATIFIED_SHA256[:16]}… and not the exact proposed successor "
                       f"{CENTRAL_PROPOSED_SHA256[:16]}… — S1 must not run on a modified shared validator")
+    # The transaction is ATOMIC: all four package files must sit in the SAME era.
+    # A half-applied package (any member from the other era, or any third content)
+    # is never a legitimate state and must never be conflated with either era.
+    want = S1_RATIFICATION_POST_IMAGES if central_state == "RATIFIED_SUCCESSOR_APPLIED" else S1_RATIFICATION_PRE_IMAGES
+    for rel, expected in sorted(want.items()):
+        fp = REPO_ROOT / rel
+        if not fp.exists():
+            return None, f"ratification package file missing: {rel}"
+        got = sha256_file(fp)
+        if got != expected:
+            return None, (f"four-file ratification transaction is half-applied: {rel} is {got[:16]}… but the "
+                          f"{'ratified successor' if central_state == 'RATIFIED_SUCCESSOR_APPLIED' else 'pre-ratification'} "
+                          f"era pins {expected[:16]}… — the package moves atomically or not at all")
     os.environ["SECURITY_AUDIT_PRESERVATION_REPO"] = str(REPO_ROOT)
     spec = importlib.util.spec_from_file_location("anox_central_ratified", p)
     mod = importlib.util.module_from_spec(spec)
@@ -513,7 +584,11 @@ def _check_proposed_pin_drift(proposed_path, errors):
                        ("S1_CORRECTION_TASK", S1_CORRECTION_TASK),
                        ("S1_CONSUMED_CORRECTION_PAIRS", CONSUMED_CORRECTION_PAIRS),
                        ("S1_SUBSTANTIVE_SHA", S1_SUBSTANTIVE_SHA),
-                       ("S1_METADATA_SHA", S1_METADATA_SHA)):
+                       ("S1_METADATA_SHA", S1_METADATA_SHA),
+                       # B-6: the four-path set is the whole point of the
+                       # transaction; silent drift here is what made the previous
+                       # package uncommittable, so it is pin-checked too.
+                       ("S1_RATIFICATION_PATHS", S1_RATIFICATION_PATHS)):
         if not hasattr(mod, name):
             fail(f"proposed central validator does not define {name} — the ratification package "
                  f"would not recognise the authorized delivery shape", errors)
@@ -531,9 +606,10 @@ def _check_proposed_pin_drift(proposed_path, errors):
 
 def validate_ratification_proposal(errors):
     """The prepared S1-era extension is preserved tamper-evidently: applying the
-    patch to the ratified content must yield exactly the proposed content hash
-    for BOTH patched files (the protected validator and its paired adversarial
-    test suite — the complete ratification package)."""
+    patch to the pre-ratification content must yield exactly the pinned post-image
+    for ALL FOUR files of the atomic ratification transaction — the protected
+    central validator, its paired adversarial suite, the frozen S0 contract that
+    pins the protected validator, and the S0 contract's paired suite."""
     print("\n[S1-INTEGRATION] Shared-validator ratification proposal integrity")
     central_mod, _ = load_central()
     if (central_mod is not None
@@ -541,17 +617,14 @@ def validate_ratification_proposal(errors):
             == "RATIFIED_SUCCESSOR_APPLIED"):
         # The proposal has been ratified and applied: the patch can no longer be
         # re-applied to already-migrated files. Integrity is instead the identity
-        # of the live content with the pinned proposed post-images.
-        got = sha256_file(REPO_ROOT / CENTRAL)
-        tgot = sha256_file(REPO_ROOT / CENTRAL_TESTS)
-        if got != CENTRAL_PROPOSED_SHA256:
-            fail(f"ratified validator {got[:16]}… != pinned proposed {CENTRAL_PROPOSED_SHA256[:16]}…", errors)
-        if tgot != CENTRAL_TESTS_PROPOSED_SHA256:
-            fail(f"ratified paired suite {tgot[:16]}… != pinned proposed "
-                 f"{CENTRAL_TESTS_PROPOSED_SHA256[:16]}…", errors)
+        # of the live content with the pinned proposed post-images — for all four.
+        for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+            got = sha256_file(REPO_ROOT / rel)
+            if got != want:
+                fail(f"ratified {rel} {got[:16]}… != pinned proposed {want[:16]}…", errors)
         if not errors:
-            print(f"  OK   ratified content matches the pinned proposal exactly "
-                  f"({CENTRAL_PROPOSED_SHA256[:12]}… + {CENTRAL_TESTS_PROPOSED_SHA256[:12]}…)")
+            print("  OK   ratified four-file transaction matches the pinned proposal exactly ("
+                  + ", ".join(f"{v[:12]}…" for _, v in sorted(S1_RATIFICATION_POST_IMAGES.items())) + ")")
         return
     patch = REPO_ROOT / PROPOSAL_PATCH
     record = REPO_ROOT / PROPOSAL_RECORD
@@ -559,42 +632,50 @@ def validate_ratification_proposal(errors):
         fail(f"ratification proposal record missing: {PROPOSAL_RECORD}", errors)
     else:
         rec_text = record.read_text(encoding="utf-8")
-        if CENTRAL_PROPOSED_SHA256 not in rec_text:
-            fail("ratification proposal record does not carry the proposed post-change SHA-256", errors)
-        if CENTRAL_TESTS_PROPOSED_SHA256 not in rec_text:
-            fail("ratification proposal record does not carry the proposed paired-test-suite SHA-256", errors)
+        for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+            if want not in rec_text:
+                fail(f"ratification proposal record does not carry the proposed post-image for {rel}", errors)
+        for dead in SUPERSEDED_NEVER_RATIFY:
+            if dead in rec_text and "SUPERSEDED" not in rec_text:
+                fail("ratification proposal record names a superseded revision without marking it SUPERSEDED", errors)
     if not patch.exists():
         fail(f"ratification proposal patch missing: {PROPOSAL_PATCH}", errors)
         return
     with tempfile.TemporaryDirectory(prefix="anox-s1-proposal-") as td:
         td = Path(td)
         subprocess.run(["git", "init", "-q"], cwd=td, check=True)
-        dst = td / CENTRAL
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.write_bytes((REPO_ROOT / CENTRAL).read_bytes())
-        tsrc = REPO_ROOT / CENTRAL_TESTS
-        if not tsrc.exists():
-            fail(f"paired central test suite missing: {CENTRAL_TESTS}", errors)
-            return
-        tdst = td / CENTRAL_TESTS
-        tdst.write_bytes(tsrc.read_bytes())
+        for rel, pre in sorted(S1_RATIFICATION_PRE_IMAGES.items()):
+            src = REPO_ROOT / rel
+            if not src.exists():
+                fail(f"ratification package pre-image missing: {rel}", errors)
+                return
+            got = sha256_file(src)
+            if got != pre:
+                fail(f"ratification package pre-image {rel} is {got[:16]}… != pinned {pre[:16]}… — "
+                     f"the transaction no longer applies to the delivered tree", errors)
+                return
+            dst = td / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(src.read_bytes())
         r = subprocess.run(["git", "apply", str(patch)], cwd=td, capture_output=True, text=True)
         if r.returncode != 0:
-            fail(f"ratification proposal patch does not apply to the ratified content: {r.stderr.strip()[:200]}", errors)
+            fail(f"ratification proposal patch does not apply to the delivered content: {r.stderr.strip()[:200]}", errors)
             return
-        got = sha256_file(dst)
-        if got != CENTRAL_PROPOSED_SHA256:
-            fail(f"ratification proposal yields {got[:16]}… != pinned proposed {CENTRAL_PROPOSED_SHA256[:16]}…", errors)
+        changed = sorted(p.relative_to(td).as_posix() for p in td.rglob("*.py"))
+        if changed != sorted(S1_RATIFICATION_POST_IMAGES):
+            fail(f"ratification transaction touches {changed} — it must be exactly the four package paths "
+                 f"{sorted(S1_RATIFICATION_POST_IMAGES)}", errors)
             return
-        tgot = sha256_file(tdst)
-        if tgot != CENTRAL_TESTS_PROPOSED_SHA256:
-            fail(f"ratification proposal yields paired test suite {tgot[:16]}… != pinned proposed "
-                 f"{CENTRAL_TESTS_PROPOSED_SHA256[:16]}…", errors)
-            return
-        _check_proposed_pin_drift(dst, errors)
-    print(f"  OK   proposal patch applies to ratified {CENTRAL_RATIFIED_SHA256[:12]}… and yields proposed "
-          f"{CENTRAL_PROPOSED_SHA256[:12]}… + paired test suite {CENTRAL_TESTS_PROPOSED_SHA256[:12]}… "
-          f"(awaiting Human ratification)")
+        for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+            got = sha256_file(td / rel)
+            if got != want:
+                fail(f"ratification proposal yields {rel} {got[:16]}… != pinned proposed {want[:16]}…", errors)
+                return
+        _check_proposed_pin_drift(td / CENTRAL, errors)
+    print(f"  OK   proposal patch applies to the delivered four-file pre-image set and yields exactly "
+          f"{CENTRAL_PROPOSED_SHA256[:12]}… + {CENTRAL_TESTS_PROPOSED_SHA256[:12]}… + "
+          f"{S0_CONTRACT_PROPOSED_SHA256[:12]}… + {S0_CONTRACT_TESTS_PROPOSED_SHA256[:12]}… "
+          f"(awaiting Human ratification; {len(SUPERSEDED_NEVER_RATIFY)} superseded revisions must never be ratified)")
 
 
 def main():
