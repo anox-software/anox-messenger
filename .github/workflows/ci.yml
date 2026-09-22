@@ -438,6 +438,32 @@ jobs:
       - name: Re-verify downloaded artifacts vs manifest
         run: python3 tools/security/native_build.py verify
 
+      - name: Sanitize stale emulators (self-hosted runner)
+        run: |
+          set -euo pipefail
+          ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+          # The self-hosted runner is persistent: an emulator left over from a
+          # previous run would join this run's device set and split the
+          # instrumented install across devices. Kill every emulator-* device
+          # (physical/non-emulator devices are never touched), then require a
+          # clean emulator state before the run's AVD is created.
+          for dev in $("$ADB" devices | awk '/^emulator-/ {print $1}'); do
+            echo "killing stale emulator device: $dev"
+            "$ADB" -s "$dev" emu kill
+          done
+          remaining=""
+          for i in $(seq 1 30); do
+            remaining=$("$ADB" devices | awk '/^emulator-/ {print $1}')
+            [ -z "$remaining" ] && break
+            sleep 2
+          done
+          if [ -n "$remaining" ]; then
+            echo "ERROR: stale emulator devices still present after bounded wait: $remaining"
+            "$ADB" devices -l
+            exit 1
+          fi
+          "$ADB" devices -l
+
       - name: Create arm64 AVD
         run: |
           set -euo pipefail
@@ -483,6 +509,15 @@ jobs:
           "$ANDROID_SDK_ROOT/platform-tools/adb" shell settings put global window_animation_scale 0
           "$ANDROID_SDK_ROOT/platform-tools/adb" shell settings put global transition_animation_scale 0
           "$ANDROID_SDK_ROOT/platform-tools/adb" shell settings put global animator_duration_scale 0
+          # Exactly one online emulator must be visible: the AVD created by this
+          # run. Zero or more than one means the device set is contaminated and
+          # the instrumented install is not deterministic — fail closed.
+          count=$("$ANDROID_SDK_ROOT/platform-tools/adb" devices | awk '/^emulator-[0-9]+[[:space:]]+device$/ {n++} END {print n+0}')
+          if [ "$count" != "1" ]; then
+            echo "ERROR: expected exactly 1 online emulator device after boot, found $count"
+            "$ANDROID_SDK_ROOT/platform-tools/adb" devices -l
+            exit 1
+          fi
 
       - name: Run instrumented tests (arm64-v8a produced artifact)
         run: ./gradlew --no-daemon :android:connectedDebugAndroidTest
@@ -501,3 +536,18 @@ jobs:
           name: instrumented-arm64-report
           path: android/build/reports/androidTests/connected
           if-no-files-found: ignore
+
+      - name: Stop arm64 emulator (runner cleanup)
+        if: always()
+        run: |
+          ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+          # Leave no emulator behind on the persistent runner: a leftover would
+          # contaminate the next run's device set. Teardown is best-effort and
+          # must not mask the job result; a survivor is reported and will be
+          # killed deterministically by the sanitize step of the next run.
+          for dev in $("$ADB" devices 2>/dev/null | awk '/^emulator-/ {print $1}'); do
+            if ! "$ADB" -s "$dev" emu kill; then
+              echo "warning: could not stop emulator device $dev"
+            fi
+          done
+          "$ADB" devices -l
