@@ -331,6 +331,9 @@ jobs:
         run: |
           set -euo pipefail
           sudo chmod a+rw /dev/kvm || true
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
           AVDMGR="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
           [ -x "$AVDMGR" ] || AVDMGR="$(command -v avdmanager)"
           echo "no" | "$AVDMGR" create avd --force \
@@ -344,7 +347,25 @@ jobs:
           "$ANDROID_SDK_ROOT/emulator/emulator" -avd anox_x86_64 \
             -no-window -no-audio -no-snapshot-save -accel on \
             -gpu swiftshader_indirect &
-          "$ANDROID_SDK_ROOT/platform-tools/adb" wait-for-device
+          EMULATOR_PID=$!
+          ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+          for i in $(seq 1 120); do
+            if "$ADB" get-state >/dev/null 2>&1; then
+              break
+            fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              echo "ERROR: emulator process exited before ADB became available"
+              "$ADB" devices -l || true
+              exit 1
+            fi
+            if [ "$i" = "120" ]; then
+              echo "ERROR: emulator did not become available through ADB within 10 minutes"
+              "$ADB" devices -l || true
+              exit 1
+            fi
+            sleep 5
+          done
+
           for i in $(seq 1 120); do
             if [ "$("$ANDROID_SDK_ROOT/platform-tools/adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
               break
@@ -433,7 +454,25 @@ jobs:
           "$ANDROID_SDK_ROOT/emulator/emulator" -avd anox_arm64 \
             -no-window -no-audio -no-snapshot-save \
             -gpu swiftshader_indirect &
-          "$ANDROID_SDK_ROOT/platform-tools/adb" wait-for-device
+          EMULATOR_PID=$!
+          ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+          for i in $(seq 1 120); do
+            if "$ADB" get-state >/dev/null 2>&1; then
+              break
+            fi
+            if ! kill -0 "$EMULATOR_PID" 2>/dev/null; then
+              echo "ERROR: emulator process exited before ADB became available"
+              "$ADB" devices -l || true
+              exit 1
+            fi
+            if [ "$i" = "120" ]; then
+              echo "ERROR: emulator did not become available through ADB within 10 minutes"
+              "$ADB" devices -l || true
+              exit 1
+            fi
+            sleep 5
+          done
+
           for i in $(seq 1 120); do
             if [ "$("$ANDROID_SDK_ROOT/platform-tools/adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; then
               break
