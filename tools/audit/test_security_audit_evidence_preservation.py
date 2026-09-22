@@ -108,6 +108,10 @@ def _normalise_fixture_to_s0_era(root):
     lp = root / "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
     recs = _load_jsonl(lp)
     recs = [r for r in recs if r.get("event_id") != _S1_EVENT_ID]
+    # The S0 era ends at ANOX-EVENT-0054: every later canonical event (the S1
+    # integration successor and any sealed successors of it) is dropped.
+    while recs and recs[-1].get("event_id") != "ANOX-EVENT-0054":
+        recs.pop()
     _write_jsonl(lp, recs)
     rp = root / "docs/security/audit-evidence/audit_registry.jsonl"
     _write_jsonl(rp, [r for r in _load_jsonl(rp) if r.get("audit_id") != _S1_REGISTRY_ID])
@@ -2529,6 +2533,145 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
         rec["residual_low_followups"] = 1
         self._write_registry(recs)
         self.assert_fails("residual_low_followup")
+
+
+class S1CIDispositionEventAdversarialTests(unittest.TestCase):
+    """Adversarial coverage of the CI-infrastructure tail disposition sealing
+    event `ANOX-EVENT-0058`, authorized by
+    ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.
+
+    Exactly one recorded disposition event may follow the pinned S1 integration
+    event `ANOX-EVENT-0055`; every identifying field is bound (task, type,
+    start_head, end_head == CURRENT_STATE.described_head, decision-record ref)
+    and any other appended event fails closed.
+    """
+
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    EVENT = "ANOX-EVENT-0058"
+    PRIOR = "ANOX-EVENT-0055"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        for rel in FIXTURE_FILES:
+            src = REPO_ROOT / rel
+            if not src.exists():
+                continue
+            dst = self.root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+        recs = _load_jsonl(self.root / self.LEDGER)
+        if not recs or recs[-1].get("event_id") != self.EVENT:
+            self.skipTest("CI-disposition era not sealed in this checkout")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_validator(self):
+        env = dict(os.environ)
+        env["SECURITY_AUDIT_PRESERVATION_REPO"] = str(self.root)
+        return subprocess.run([sys.executable, str(VALIDATOR)],
+                              cwd=self.root, env=env, capture_output=True, text=True)
+
+    def assert_fails(self, needle=None):
+        r = self.run_validator()
+        self.assertNotEqual(r.returncode, 0, f"validator must FAIL; stdout:\n{r.stdout}\n{r.stderr}")
+        self.assertIn("FAIL", r.stdout)
+        if needle:
+            self.assertIn(needle, r.stdout, f"missing expected failure detail {needle!r}:\n{r.stdout}")
+        return r
+
+    def _ledger(self):
+        return _load_jsonl(self.root / self.LEDGER)
+
+    def _write(self, recs):
+        _write_jsonl(self.root / self.LEDGER, recs)
+
+    def _sync_latest(self, event_id):
+        p = self.root / self.CS
+        state = json.loads(p.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = event_id
+        p.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+    def _mutate_event(self, **fields):
+        recs = self._ledger()
+        self.assertEqual(recs[-1].get("event_id"), self.EVENT)
+        recs[-1].update(fields)
+        self._write(recs)
+
+    # -- control ------------------------------------------------------------
+    # 278. The sealed CI-disposition state is accepted.
+    def test_278_control_disposition_event_accepted(self):
+        r = self.run_validator()
+        self.assertEqual(r.returncode, 0, f"sealed CI-disposition state must be accepted:\n{r.stdout}")
+        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
+
+    # 279. Removing EVENT-0058 while state claims the disposition fails (stale).
+    def test_279_missing_disposition_event_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.EVENT]
+        self._write(recs)
+        self.assert_fails("stale")
+
+    # 280. A duplicated disposition event is rejected.
+    def test_280_duplicate_disposition_event_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1]))
+        self._write(recs)
+        self.assert_fails("duplicate")
+
+    # 281. An arbitrary later event id is never accepted.
+    def test_281_arbitrary_future_event_rejected(self):
+        self._mutate_event(event_id="ANOX-EVENT-0059")
+        self.assert_fails("stale")
+        self._sync_latest("ANOX-EVENT-0059")
+        self.assert_fails("must be")
+
+    # 282. Disposition event with a foreign task is rejected.
+    def test_282_disposition_altered_task_rejected(self):
+        self._mutate_event(task="ANOX-TASK-SOMETHING-ELSE-001")
+        self.assert_fails("must be")
+
+    # 283. Disposition event with a foreign type is rejected.
+    def test_283_disposition_altered_type_rejected(self):
+        self._mutate_event(type="canonical_merge")
+        self.assert_fails("must be")
+
+    # 284. Disposition event with a wrong start_head is rejected.
+    def test_284_disposition_altered_start_head_rejected(self):
+        self._mutate_event(start_head="0" * 40)
+        self.assert_fails("must be")
+
+    # 285. Disposition event whose end_head does not equal the declared
+    # described_head (the R3a substantive) is rejected — the sealing head and
+    # the described head cannot drift apart.
+    def test_285_disposition_altered_end_head_rejected(self):
+        self._mutate_event(end_head="0" * 40)
+        self.assert_fails("must be")
+
+    # 286. Disposition event without the decision-record evidence ref is rejected.
+    def test_286_disposition_missing_record_ref_rejected(self):
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001" not in x]
+        self._write(recs)
+        self.assert_fails("must be")
+
+    # 287. A wrong event id for the disposition task is rejected — the task is
+    # canonically recorded only by ANOX-EVENT-0058, so the tail check fails.
+    def test_287_disposition_wrong_event_id_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0059"))
+        self._write(recs); self._sync_latest("ANOX-EVENT-0059")
+        self.assert_fails("must be")
+
+    # 288. An interposed event between 0055 and 0058 is rejected.
+    def test_288_interposed_event_rejected(self):
+        recs = self._ledger()
+        recs.insert(-1, dict(recs[-1], event_id="ANOX-EVENT-0057",
+                             task="ANOX-TASK-SOMETHING-ELSE-001"))
+        self._write(recs)
+        self.assert_fails("must be")
 
 
 if __name__ == "__main__":

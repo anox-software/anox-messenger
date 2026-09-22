@@ -66,8 +66,8 @@ S0_CONTRACT_TESTS_PROPOSED_SHA256 = "d22034e61257f3d13588b402b49eba2396ee2b5b9a7
 # baseline; files 3/4 are the S0 contract pair as delivered pre-ratification.
 S1_RATIFICATION_PRE_IMAGES = {
     CENTRAL: CENTRAL_RATIFIED_SHA256,
-    CENTRAL_TESTS: "b69dbb3546eae50a82a322373a9b064ca976906cb4028f2a57a185d6de48c1d6",
-    S0_CONTRACT: "5077558321dcc6e3c835d04cb8ec797a2407e7f5f447f3614203632fe89df0d1",
+    CENTRAL_TESTS: "29399c5ddb54909b94bf046d257608da52c39bd4ae94a76508ca21e60ac0ae0c",
+    S0_CONTRACT: "0978b8a53ee50f411c07699c0b33ece7da451b6534c9bad5c522af9700cb77b2",
     S0_CONTRACT_TESTS: "6590a218b11bce51d1f360d46206e411e150214acb40bbc5afdbfd6747dc2068",
 }
 S1_RATIFICATION_POST_IMAGES = {
@@ -127,20 +127,88 @@ CONSUMED_CORRECTION_PAIRS = (
     # the ratification-tail pair can no longer be substituted either.
     ("4b31f680613651772d6006c2d47d1f6ccd1bb837",
      "10cc68c442bc67be03d863ad20e29e4dfcb0bd51"),
+    # REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — consumed by the
+    # delivered R1/R2 transaction and promoted here under
+    # ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001, closing the last
+    # unpinned correction slot (the disclosed trust boundary is now fully
+    # resolved by SHA pins).
+    ("7120aedd452bd77bbe208bb76a6d2c421394c820",
+     "c57485d7c54f57ab03cb2c896d796b2da787fc13"),
 )
 S1_CORRECTION_TASKS = (
     "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
     "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
+    # Tasks that may legitimately appear as CURRENT_STATE.current_task on the
+    # S1 delivery branch under the CI-infrastructure tail disposition
+    # (ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001).
+    "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001",
+    "ANOX-TASK-S1-CI-ARM64-ISOLATION-001",
 )
-# The one correction task still permitted to author an unpinned pair.
-S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001"
+# REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001's pair is now CONSUMED:
+# promoted into CONSUMED_CORRECTION_PAIRS under
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001, which closes the last
+# disclosed unpinned surface — no open correction slot remains authorized.
+S1_CORRECTION_TASK = None
 # Human-ratification tail: R1 may change EXACTLY these four paths, R2 is
 # metadata-only. The set is the atomic four-file transaction — see the
 # SUPERSESSION/FOUR-FILE block above. No fifth path is ever admissible.
 S1_RATIFICATION_PATHS = frozenset(S1_RATIFICATION_POST_IMAGES)
 S1_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
+
+# --- Human-authorized post-R2 CI-infrastructure tail disposition -----------
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 ratifies exactly the
+# five ci.yml-only commits below — position (after the completed R1/R2 tail),
+# order and SHA identity are all bound — plus the disposition pair
+# [R3a substantive, R3b metadata] that carries this governance extension and
+# the sealing event ANOX-EVENT-0058. Nothing else is admissible: no SHA
+# substitution, no reorder, no additional unpinned CI commit, no path other
+# than .github/workflows/ci.yml, no tail before R2.
+S1_CI_TAIL = (
+    ("e7bd2c6547fb23de44a8aa762fe5d046c34d318e", frozenset({".github/workflows/ci.yml"})),
+    ("0636a4ee81e2e7ea9dd4ca7615d06bf80ae80827", frozenset({".github/workflows/ci.yml"})),
+    ("793246022c0501e85350113871d00db9ee843826", frozenset({".github/workflows/ci.yml"})),
+    ("45d1e4a63de45fe10d2fc8f455b321bb675e390a", frozenset({".github/workflows/ci.yml"})),
+    # ANOX-TASK-S1-CI-ARM64-ISOLATION-001 — deterministic stale-emulator
+    # isolation for the persistent self-hosted ARM64 runner.
+    ("4fc5263ff6763768088f0f13856d704bd1772178", frozenset({".github/workflows/ci.yml"})),
+)
+S1_CI_DISPOSITION_DECISION_ID = "ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_DISPOSITION_RECORD = "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md"
+S1_CI_DISPOSITION_TASK = "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_ARM64_ISOLATION_TASK = "ANOX-TASK-S1-CI-ARM64-ISOLATION-001"
+S1_CI_DISPOSITION_PATHS = frozenset({
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/test_s1_integration_evidence.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/validate_s0_evidence_preservation.py",
+    S1_CI_DISPOSITION_RECORD,
+})
+S1_CI_DISPOSITION_EVENT = {
+    "event_id": "ANOX-EVENT-0058",
+    "type": "governance",
+    "task": S1_CI_DISPOSITION_TASK,
+    "start_head": "45d1e4a63de45fe10d2fc8f455b321bb675e390a",
+}
+# Exact authorized post-images of every file the disposition transaction may
+# change — except this validator itself, which cannot pin its own content
+# (NO FIXED POINT; its live hash is pinned externally in the decision record,
+# closing the same disclosed residual the R1 transaction documented).
+S1_CI_DISPOSITION_POST_IMAGES = {
+    "tools/audit/lifecycle_legality.py": "519e99f75139df62e80084933dbbedec18459bb1b97940da057dac501754ec19",
+    CENTRAL: "fe5abd4e7a39029a679be336589d8aa766b80c72862a5bb77f05693a30034899",
+    CENTRAL_TESTS: "29399c5ddb54909b94bf046d257608da52c39bd4ae94a76508ca21e60ac0ae0c",
+    S0_CONTRACT: "0978b8a53ee50f411c07699c0b33ece7da451b6534c9bad5c522af9700cb77b2",
+    S0_CONTRACT_TESTS: "97d7896009235e5138aed86d6a7b7361d0cb333b605208d899900dc498832fa4",
+    "tools/audit/test_s1_integration_evidence.py": "ef40790e43d0524ac824b199f576a9dcd38a72e943fc24313e414f3725af0ea8",
+    "tools/audit/validate_s0_evidence_preservation.py": "671aa5a9350d6b36421d5d94de9360e1414fda258cdc53af2ffbfde33e016ca2",
+}
+CENTRAL_CI_DISPOSITION_SHA256 = S1_CI_DISPOSITION_POST_IMAGES[CENTRAL]
 
 S1_ALLOWED_EXACT = {
     ".github/workflows/ci.yml", ".gitignore", "android/build.gradle.kts",
@@ -161,6 +229,8 @@ S1_ALLOWED_EXACT = {
     "tools/audit/test_s1_retest_remediation.py",
     "tools/audit/validate_s1_integration_evidence.py",
     "tools/audit/test_s1_integration_evidence.py",
+    # REMEDIATION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 evidence surface
+    "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md",
     # REMEDIATION-S1-FINAL-CORRECTIONS-001 evidence surfaces
     "docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md",
     "docs/reports/security/remediation/REMEDIATION-S1-FINAL-CORRECTIONS-001.md",
@@ -297,6 +367,8 @@ def load_central():
         central_state = "PRE_RATIFICATION"
     elif digest == CENTRAL_PROPOSED_SHA256:
         central_state = "RATIFIED_SUCCESSOR_APPLIED"
+    elif digest == CENTRAL_CI_DISPOSITION_SHA256:
+        central_state = "CI_DISPOSITION_APPLIED"
     elif digest in SUPERSEDED_NEVER_RATIFY:
         return None, (f"protected shared validator content {digest[:16]}… is a SUPERSEDED ratification "
                       f"revision that must NEVER be ratified — only the Human-ratified baseline "
@@ -304,12 +376,21 @@ def load_central():
                       f"{CENTRAL_PROPOSED_SHA256[:16]}… are admissible")
     else:
         return None, (f"protected shared validator content {digest[:16]}… is not the Human-ratified content "
-                      f"{CENTRAL_RATIFIED_SHA256[:16]}… and not the exact proposed successor "
-                      f"{CENTRAL_PROPOSED_SHA256[:16]}… — S1 must not run on a modified shared validator")
+                      f"{CENTRAL_RATIFIED_SHA256[:16]}…, the exact proposed successor "
+                      f"{CENTRAL_PROPOSED_SHA256[:16]}…, or the authorized CI-disposition successor "
+                      f"{CENTRAL_CI_DISPOSITION_SHA256[:16]}… — S1 must not run on a modified shared validator")
     # The transaction is ATOMIC: all four package files must sit in the SAME era.
     # A half-applied package (any member from the other era, or any third content)
     # is never a legitimate state and must never be conflated with either era.
-    want = S1_RATIFICATION_POST_IMAGES if central_state == "RATIFIED_SUCCESSOR_APPLIED" else S1_RATIFICATION_PRE_IMAGES
+    if central_state == "CI_DISPOSITION_APPLIED":
+        want = {rel: S1_CI_DISPOSITION_POST_IMAGES[rel] for rel in S1_RATIFICATION_POST_IMAGES}
+        era_label = "CI-disposition successor"
+    elif central_state == "RATIFIED_SUCCESSOR_APPLIED":
+        want = S1_RATIFICATION_POST_IMAGES
+        era_label = "ratified successor"
+    else:
+        want = S1_RATIFICATION_PRE_IMAGES
+        era_label = "pre-ratification"
     for rel, expected in sorted(want.items()):
         fp = REPO_ROOT / rel
         if not fp.exists():
@@ -317,8 +398,7 @@ def load_central():
         got = sha256_file(fp)
         if got != expected:
             return None, (f"four-file ratification transaction is half-applied: {rel} is {got[:16]}… but the "
-                          f"{'ratified successor' if central_state == 'RATIFIED_SUCCESSOR_APPLIED' else 'pre-ratification'} "
-                          f"era pins {expected[:16]}… — the package moves atomically or not at all")
+                          f"{era_label} era pins {expected[:16]}… — the package moves atomically or not at all")
     os.environ["SECURITY_AUDIT_PRESERVATION_REPO"] = str(REPO_ROOT)
     spec = importlib.util.spec_from_file_location("anox_central_ratified", p)
     mod = importlib.util.module_from_spec(spec)
@@ -373,19 +453,38 @@ def validate_base_s1(central, errors):
         s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
         correction_task=S1_CORRECTION_TASK,
         consumed_correction_pairs=CONSUMED_CORRECTION_PAIRS,
-        ratification_paths=S1_RATIFICATION_PATHS, out=_delivery_out)
+        ratification_paths=S1_RATIFICATION_PATHS,
+        authorized_ci_tail=S1_CI_TAIL,
+        disposition_paths=S1_CI_DISPOSITION_PATHS, out=_delivery_out)
     if not ok:
         fail(f"canonical S1 integration delivery failed: {reason}", errors)
         return
     tail = _delivery_out.get("ratification_tail", "NONE")
+    ci_tail = _delivery_out.get("ci_tail") or []
+    disposition = _delivery_out.get("disposition")
     central_state = getattr(central, "_anox_central_state", "PRE_RATIFICATION")
     if tail == "NONE" and central_state != "PRE_RATIFICATION":
         fail("ratified successor content is present without an authorized ratification tail", errors)
         return
-    if tail != "NONE" and central_state != "RATIFIED_SUCCESSOR_APPLIED":
+    if tail != "NONE" and central_state not in ("RATIFIED_SUCCESSOR_APPLIED", "CI_DISPOSITION_APPLIED"):
         fail("ratification tail present but the protected shared validator is not the exact "
              "proposed successor content", errors)
         return
+    if disposition and central_state != "CI_DISPOSITION_APPLIED":
+        fail("CI-tail disposition pair present but the protected shared validator is not the "
+             "authorized disposition successor content", errors)
+        return
+    if disposition:
+        if not (REPO_ROOT / S1_CI_DISPOSITION_RECORD).exists():
+            fail(f"CI-tail disposition decision record missing: {S1_CI_DISPOSITION_RECORD}", errors)
+            return
+        if state.get("ci_disposition_decision_id") != S1_CI_DISPOSITION_DECISION_ID:
+            fail(f"disposition metadata commit must declare ci_disposition_decision_id "
+                 f"{S1_CI_DISPOSITION_DECISION_ID}, got {state.get('ci_disposition_decision_id')!r}", errors)
+            return
+        print(f"  OK   authorized CI-infrastructure tail {len(ci_tail)} commit(s) pinned "
+              f"({S1_CI_DISPOSITION_DECISION_ID}); disposition pair "
+              f"[{disposition[0][:12]}, {disposition[1][:12]}] proven")
     if tail == "R1R2" and state.get("ratification_decision_id") != S1_RATIFICATION_DECISION_ID:
         fail(f"ratification metadata commit must declare ratification_decision_id "
              f"{S1_RATIFICATION_DECISION_ID}, got {state.get('ratification_decision_id')!r}", errors)
@@ -477,10 +576,11 @@ def validate_scope_s1(errors):
     # changed — that change IS the ratification, already bound by the tail proof
     # (exact parent, exact changed-path set, exact successor content). Before it,
     # any change to the protected validator remains a hard failure.
-    ratified = (central_mod is not None
-                and getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION")
-                == "RATIFIED_SUCCESSOR_APPLIED")
+    central_state = getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION")
+    ratified = central_state in ("RATIFIED_SUCCESSOR_APPLIED", "CI_DISPOSITION_APPLIED")
     exempt = set(S1_RATIFICATION_PATHS) if ratified else set()
+    if central_state == "CI_DISPOSITION_APPLIED":
+        exempt |= set(S1_CI_DISPOSITION_PATHS)
     outside = sorted(p for p in changed
                      if p not in S1_ALLOWED_EXACT and not p.startswith(S1_ALLOWED_PREFIXES)
                      and p not in meta and p not in exempt)
@@ -501,6 +601,24 @@ def validate_scope_s1(errors):
           f"no tracked .so; crypto/rust/src unchanged; CI hotfix intact")
 
 
+def _is_s1_ci_disposition_event(ev, described_head):
+    """The sealing governance event for the CI-infrastructure tail disposition.
+
+    end_head is bound DYNAMICALLY to CURRENT_STATE.described_head (the
+    disposition substantive R3a) — the event cannot pin the R3a SHA literally
+    because the sealing metadata commit is authored before that SHA exists in
+    the validator source; the binding is nonetheless exact through
+    described_head, which the delivery topology already pins to R3a.
+    """
+    s1 = S1_CI_DISPOSITION_EVENT
+    return (ev.get("event_id") == s1["event_id"]
+            and ev.get("type") == s1["type"]
+            and ev.get("task") == s1["task"]
+            and ev.get("start_head") == s1["start_head"]
+            and ev.get("end_head") == described_head
+            and S1_CI_DISPOSITION_RECORD in (ev.get("refs") or []))
+
+
 def validate_project_memory_s1(central, errors):
     print("\n[S1-INTEGRATION] Project memory chain (0052 → 0053 → 0054 → 0055)")
     state = json.loads((REPO_ROOT / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
@@ -518,16 +636,31 @@ def validate_project_memory_s1(central, errors):
                  f"(S1 is canonically recorded only by {S1_INTEGRATION_EVENT['event_id']})", errors)
         if e.get("task") == S1_INTEGRATION_EVENT["task"] and e.get("event_id") != S1_INTEGRATION_EVENT["event_id"]:
             fail(f"S1 integration recorded under wrong event id {e.get('event_id')}", errors)
+        if e.get("task") == S1_CI_DISPOSITION_TASK and e.get("event_id") != S1_CI_DISPOSITION_EVENT["event_id"]:
+            fail(f"S1 CI-tail disposition recorded under wrong event id {e.get('event_id')}", errors)
     latest = ledger[-1]
     if state.get("latest_material_event_id") != latest.get("event_id"):
         fail("Project Memory stale: latest_material_event_id != last ledger event", errors)
         return
-    if not _is_s1_integration_event(latest):
-        fail(f"last ledger event must be the pinned S1 integration event {S1_INTEGRATION_EVENT['event_id']}, "
-             f"got {latest.get('event_id')}", errors)
+    if _is_s1_ci_disposition_event(latest, state.get("described_head") or ""):
+        # ANOX-EVENT-0058 seals the CI-infrastructure tail disposition on top
+        # of the pinned S1 integration event — verify 0055 immediately below,
+        # and the Human decision record it references must exist.
+        if not (REPO_ROOT / S1_CI_DISPOSITION_RECORD).exists():
+            fail(f"CI-tail disposition decision record missing: {S1_CI_DISPOSITION_RECORD}", errors)
+            return
+        s1_index = len(ledger) - 2
+    else:
+        s1_index = len(ledger) - 1
+    s1_event = ledger[s1_index] if s1_index >= 0 else None
+    if s1_event is None or not _is_s1_integration_event(s1_event):
+        fail(f"the pinned S1 integration event {S1_INTEGRATION_EVENT['event_id']} must be the last "
+             f"ledger event or sit directly below the pinned CI-disposition event "
+             f"{S1_CI_DISPOSITION_EVENT['event_id']}, got {latest.get('event_id')}", errors)
         return
-    if not (len(ledger) >= 4 and central._is_s0_preservation_event(ledger[-2])
-            and central._is_s0_successor_event(ledger[-3]) and ledger[-4].get("event_id") == central.LEDGER_EVENT):
+    if not (s1_index >= 3 and central._is_s0_preservation_event(ledger[s1_index - 1])
+            and central._is_s0_successor_event(ledger[s1_index - 2])
+            and ledger[s1_index - 3].get("event_id") == central.LEDGER_EVENT):
         fail(f"{S1_INTEGRATION_EVENT['event_id']} must directly follow the pinned chain "
              f"{central.LEDGER_EVENT} → {central.S0_SUCCESSOR_EVENT['event_id']} → {central.S0_PRESERVATION_EVENT['event_id']}", errors)
     if not _s1_delivery_active(state):
@@ -588,7 +721,13 @@ def _check_proposed_pin_drift(proposed_path, errors):
                        # B-6: the four-path set is the whole point of the
                        # transaction; silent drift here is what made the previous
                        # package uncommittable, so it is pin-checked too.
-                       ("S1_RATIFICATION_PATHS", S1_RATIFICATION_PATHS)):
+                       ("S1_RATIFICATION_PATHS", S1_RATIFICATION_PATHS),
+                       # CI-infrastructure tail disposition pins (same
+                       # duplicated-on-purpose discipline).
+                       ("S1_CI_TAIL", S1_CI_TAIL),
+                       ("S1_CI_DISPOSITION_PATHS", S1_CI_DISPOSITION_PATHS),
+                       ("S1_CI_DISPOSITION_TASK", S1_CI_DISPOSITION_TASK),
+                       ("S1_CI_ARM64_ISOLATION_TASK", S1_CI_ARM64_ISOLATION_TASK)):
         if not hasattr(mod, name):
             fail(f"proposed central validator does not define {name} — the ratification package "
                  f"would not recognise the authorized delivery shape", errors)
@@ -612,19 +751,29 @@ def validate_ratification_proposal(errors):
     pins the protected validator, and the S0 contract's paired suite."""
     print("\n[S1-INTEGRATION] Shared-validator ratification proposal integrity")
     central_mod, _ = load_central()
-    if (central_mod is not None
-            and getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION")
-            == "RATIFIED_SUCCESSOR_APPLIED"):
-        # The proposal has been ratified and applied: the patch can no longer be
-        # re-applied to already-migrated files. Integrity is instead the identity
-        # of the live content with the pinned proposed post-images — for all four.
-        for rel, want in sorted(S1_RATIFICATION_POST_IMAGES.items()):
+    central_state = getattr(central_mod, "_anox_central_state", "PRE_RATIFICATION") if central_mod else "PRE_RATIFICATION"
+    applied_images = {
+        "RATIFIED_SUCCESSOR_APPLIED": S1_RATIFICATION_POST_IMAGES,
+        "CI_DISPOSITION_APPLIED": {rel: S1_CI_DISPOSITION_POST_IMAGES[rel]
+                                   for rel in S1_RATIFICATION_POST_IMAGES},
+    }
+    if central_state in applied_images:
+        # The transaction has been ratified and applied: the patch can no
+        # longer be re-applied to already-migrated files. Integrity is instead
+        # the identity of the live content with the pinned post-images of the
+        # authorized era — for all four package files.
+        want_map = applied_images[central_state]
+        for rel, want in sorted(want_map.items()):
             got = sha256_file(REPO_ROOT / rel)
             if got != want:
-                fail(f"ratified {rel} {got[:16]}… != pinned proposed {want[:16]}…", errors)
+                fail(f"applied {rel} {got[:16]}… != pinned authorized {want[:16]}…", errors)
         if not errors:
-            print("  OK   ratified four-file transaction matches the pinned proposal exactly ("
-                  + ", ".join(f"{v[:12]}…" for _, v in sorted(S1_RATIFICATION_POST_IMAGES.items())) + ")")
+            if central_state == "CI_DISPOSITION_APPLIED":
+                print("  OK   applied four-file transaction matches the pinned authorized post-images exactly ("
+                      + ", ".join(f"{v[:12]}…" for _, v in sorted(want_map.items())) + ")")
+            else:
+                print("  OK   ratified four-file transaction matches the pinned proposal exactly ("
+                      + ", ".join(f"{v[:12]}…" for _, v in sorted(want_map.items())) + ")")
         return
     patch = REPO_ROOT / PROPOSAL_PATCH
     record = REPO_ROOT / PROPOSAL_RECORD

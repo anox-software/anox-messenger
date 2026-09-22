@@ -46,6 +46,13 @@ FIXTURE_FILES = (
     "tools/audit/test_security_audit_evidence_preservation.py",
     "tools/audit/test_s0_contract_freeze.py",
     "tools/audit/validate_s0_contract_freeze.py",
+    # CI-infrastructure tail disposition (fourth authorized content): the
+    # canonical decision record whose live post-image pins are verified.
+    v.S1_CI_DISPOSITION_RECORD,
+    "tools/audit/test_s1_integration_evidence.py",
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/validate_s0_evidence_preservation.py",
 )
 
 
@@ -79,6 +86,8 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
         spec = v.PROTECTED_SHARED_FILES[rel]
         digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        if digest == spec.get("s1_ci_disposition_authorized_sha256"):
+            return "s1_ci_disposition"
         if digest == spec.get("s1_integration_authorized_sha256"):
             return "s1_integration"
         if digest == spec["preservation_authorized_sha256"]:
@@ -471,6 +480,15 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
                 self.assertTrue(errors, f"tampered package member {member} must fail closed\n{out}")
                 self.assertTrue(any("four-file package is not intact" in e or "unauthorized modification" in e
                                     for e in errors), f"unexpected errors for {member}: {errors}")
+        if self.central_era() == "s1_ci_disposition":
+            for member in sorted(v.S1_CI_DISPOSITION_POST_IMAGES):
+                self.setUp()
+                self.write(member, self.read(member) + "\n# tampered package member\n")
+                errors, out = run_validator(self.tmp)
+                self.assertTrue(errors, f"tampered disposition package member {member} must fail closed\n{out}")
+                self.assertTrue(any("package is not intact" in e or "unauthorized modification" in e
+                                    or "disposition pins" in e
+                                    for e in errors), f"unexpected errors for {member}: {errors}")
 
     def test_53_f03_protected_file_reverted_to_pre_s0(self):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
@@ -517,6 +535,44 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
     def test_63_f03_ratification_record_document_missing(self):
         self.path(v.F01_RATIFICATION_REPORT).unlink()
         self.assert_fail("canonical record")
+
+    # -- F-03: CI-infrastructure tail disposition (fourth authorized content)
+    def _require_disposition_era(self):
+        if self.central_era() != "s1_ci_disposition":
+            self.skipTest("CI-disposition era not active in this checkout")
+
+    def test_63d_disposition_record_missing(self):
+        self._require_disposition_era()
+        self.path(v.S1_CI_DISPOSITION_RECORD).unlink()
+        self.assert_fail("canonical record")
+
+    def test_63e_disposition_record_marker_dropped(self):
+        self._require_disposition_era()
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        # Dropping the decision id marker must fail closed.
+        self.write(v.S1_CI_DISPOSITION_RECORD,
+                   text.replace(v.S1_CI_DISPOSITION_DECISION_ID, "ANOX-DECISION-OTHER"))
+        self.assert_fail("content marker")
+
+    def test_63f_disposition_record_tail_sha_dropped(self):
+        self._require_disposition_era()
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        # Every pinned tail SHA is a required record marker.
+        sha = v.S1_CI_TAIL_SHAS[2]
+        self.assertIn(sha, text)
+        self.write(v.S1_CI_DISPOSITION_RECORD, text.replace(sha, "0" * 40))
+        self.assert_fail("content marker")
+
+    def test_63g_disposition_record_post_image_tampered(self):
+        self._require_disposition_era()
+        # A record whose post-image binding no longer matches live content is
+        # rejected — the pin cannot be manipulated to launder modified files.
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        rel = "tools/audit/validate_s1_integration_evidence.py"
+        live = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        self.assertIn(live, text, "record must pin the live s1 validator content")
+        self.write(v.S1_CI_DISPOSITION_RECORD, text.replace(live, "0" * 64))
+        self.assert_fail("must pin live sha256")
 
     # -- F-04: deference set is validator-owned ----------------------------
     def test_64_f04_manifest_drops_deference_document(self):
@@ -720,6 +776,9 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         # never by content identity alone.
         if self.central_era() == "s1_integration":
             self.assertIn("four-path ratification transaction proven", out)
+            self.assertNotIn("fixture mode", out)
+        if self.central_era() == "s1_ci_disposition":
+            self.assertIn("CI-infrastructure tail disposition proven", out)
             self.assertNotIn("fixture mode", out)
 
     def test_92_f02_malformed_worktree_pointer_fails_closed(self):

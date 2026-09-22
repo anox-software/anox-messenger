@@ -50,6 +50,12 @@ FIXTURE_FILES = list(_ct.FIXTURE_FILES) + [
     # members and would fail closed on every unrelated test.
     "tools/audit/validate_s0_contract_freeze.py",
     "tools/audit/test_s0_contract_freeze.py",
+    # CI-infrastructure tail disposition (fifth authorized content): the
+    # canonical record and the S0 preservation validator whose S1-scope
+    # allowance was extended — the disposition-era package must be intact.
+    "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md",
+    "tools/audit/validate_s0_evidence_preservation.py",
+    "tools/audit/test_s1_integration_evidence.py",
 ]
 
 
@@ -110,6 +116,8 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         actually reachable in that era.
         """
         digest = hashlib.sha256((self.root / self.CENTRAL).read_bytes()).hexdigest()
+        if digest == VAL.CENTRAL_CI_DISPOSITION_SHA256:
+            return "disposition"
         if digest == VAL.CENTRAL_PROPOSED_SHA256:
             return "post"
         self.assertEqual(digest, VAL.CENTRAL_RATIFIED_SHA256,
@@ -155,10 +163,15 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
     def test_300_valid_s1_integration_accepted(self):
         r = self.run_validator()
         self.assertEqual(r.returncode, 0, f"recorded S1 integration state must be accepted:\n{r.stdout}\n{r.stderr}")
-        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
+        latest = self.DISP_EVENT if self.era() == "disposition" and any(
+            e.get("event_id") == self.DISP_EVENT for e in self._ledger()) else self.EVENT
+        self.assertIn(f"Project Memory synced to {latest}", r.stdout)
         self.assertIn("NONCANONICAL", r.stdout)
         self.assertIn("S0 registry protections executed verbatim", r.stdout)
-        if self.era() == "post":
+        if self.era() == "disposition":
+            self.assertIn("applied four-file transaction matches the pinned authorized post-images exactly", r.stdout)
+            self.assertNotIn("awaiting Human ratification", r.stdout)
+        elif self.era() == "post":
             self.assertIn("ratified four-file transaction matches the pinned proposal exactly", r.stdout)
             self.assertNotIn("awaiting Human ratification", r.stdout)
         else:
@@ -176,6 +189,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
 
     # -- event chain --------------------------------------------------------
     def test_303_missing_s1_event_while_state_claims_it_rejected(self):
+        self._unseal()
         self._write([r for r in self._ledger() if r.get("event_id") != self.EVENT])
         self.assert_fails("stale")
 
@@ -184,6 +198,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         self.assert_fails("duplicate event ids")
 
     def test_305_skipped_event_number_rejected(self):
+        self._unseal()
         self._mutate_event(event_id="ANOX-EVENT-0056"); self._sync_latest("ANOX-EVENT-0056")
         self.assert_fails("S1 integration recorded under wrong event id")
 
@@ -191,7 +206,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         recs = self._ledger()
         recs.append(dict(recs[-1], event_id="ANOX-EVENT-0056", task="ANOX-TASK-FUTURE-001", type="something_new"))
         self._write(recs); self._sync_latest("ANOX-EVENT-0056")
-        self.assert_fails("last ledger event must be the pinned S1 integration event")
+        self.assert_fails("must be the last ledger event or sit directly below")
 
     def test_307_provisional_isolated_0054_as_canonical_rejected(self):
         recs = self._ledger()
@@ -207,36 +222,44 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         self.assert_fails("admits the isolated S1 provisional event")
 
     def test_309_altered_task_rejected(self):
+        self._unseal()
         self._mutate_event(task="ANOX-TASK-SOMETHING-ELSE-001")
         self.assert_fails("pinned S1 integration event")
 
     def test_310_altered_type_rejected(self):
+        self._unseal()
         self._mutate_event(type="audit_evidence_preservation")
         self.assert_fails("pinned S1 integration event")
 
     def test_311_altered_start_head_rejected(self):
+        self._unseal()
         self._mutate_event(start_head="0" * 40)
         self.assert_fails("pinned S1 integration event")
 
     def test_312_altered_merged_head_rejected(self):
+        self._unseal()
         self._mutate_event(merged_head="0" * 40)
         self.assert_fails("pinned S1 integration event")
 
     def test_313_missing_supersedes_marker_rejected(self):
+        self._unseal()
         recs = self._ledger(); recs[-1].pop("supersedes_provisional_event", None); self._write(recs)
         self.assert_fails("pinned S1 integration event")
 
     def test_314_missing_report_ref_rejected(self):
+        self._unseal()
         recs = self._ledger()
         recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or []) if "S1-CANONICAL-INTEGRATION-001" not in x]
         self._write(recs)
         self.assert_fails("pinned S1 integration event")
 
     def test_315_s1_directly_after_0053_rejected(self):
+        self._unseal()
         self._write([r for r in self._ledger() if r.get("event_id") != self.PRIOR])
         self.assert_fails("must directly follow the pinned chain")
 
     def test_316_interposed_event_rejected(self):
+        self._unseal()
         recs = self._ledger(); recs.insert(-1, dict(recs[-2], event_id="ANOX-EVENT-0054B")); self._write(recs)
         self.assert_fails("must directly follow the pinned chain")
 
@@ -363,7 +386,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         # Pre-ratification the patch IS the artifact under review. Post-ratification
         # it can no longer be re-applied, so the equivalent malformed state is a
         # tampered live package member — asserted instead, never skipped.
-        if self.era() == "post":
+        if self.era() in ("post", "disposition"):
             self._tamper_package_member(VAL.CENTRAL_TESTS)
             self.assert_fails("half-applied")
             return
@@ -374,7 +397,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
     def test_350b_proposal_patch_subtle_tamper_still_applies_rejected(self):
         # Tamper a post-side-only literal so the patch still applies cleanly but
         # yields content whose hash differs from the pinned proposal.
-        if self.era() == "post":
+        if self.era() in ("post", "disposition"):
             self._tamper_package_member(VAL.S0_CONTRACT_TESTS)
             self.assert_fails("half-applied")
             return
@@ -385,7 +408,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         self.assert_fails("ratification proposal")
 
     def test_351_proposal_patch_missing_rejected(self):
-        if self.era() == "post":
+        if self.era() in ("post", "disposition"):
             self._tamper_package_member(VAL.S0_CONTRACT)
             self.assert_fails("half-applied")
             return
@@ -395,7 +418,7 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
     def test_352_proposal_record_missing_hash_rejected(self):
         # Every one of the four pinned post-images must be carried by the
         # proposal record; dropping ANY of them is rejected.
-        if self.era() == "post":
+        if self.era() in ("post", "disposition"):
             (self.root / VAL.CENTRAL_TESTS).unlink()
             self.assert_fails("ratification package file missing")
             return
@@ -411,6 +434,75 @@ class S1IntegrationEvidenceAdversarialTests(unittest.TestCase):
         decisions = _load_jsonl(REPO_ROOT / "docs/workforce/registries/decisions.jsonl")
         self.assertFalse(any("S1-INTEGRATION-SHARED-VALIDATOR" in str(d.get("decision_id", "")) for d in decisions),
                          "the integration task must not record a Human decision")
+
+    # -- CI-infrastructure tail disposition (ANOX-EVENT-0058 era) -------------
+    DISP_EVENT = "ANOX-EVENT-0058"
+
+    def _require_disposition_era(self):
+        if self.era() != "disposition":
+            self.skipTest("CI-disposition era not active in this checkout")
+
+    def _seal_disposition(self):
+        """Bring the fixture to the SEALED disposition state: the R3b ledger
+        event ANOX-EVENT-0058 on top of the pinned 0055 chain, internally
+        consistent with CURRENT_STATE (end_head == described_head)."""
+        st = self._state()
+        ev = {"event_id": self.DISP_EVENT, "type": VAL.S1_CI_DISPOSITION_EVENT["type"],
+              "task": VAL.S1_CI_DISPOSITION_TASK,
+              "start_head": VAL.S1_CI_DISPOSITION_EVENT["start_head"],
+              "end_head": st["described_head"],
+              "refs": [VAL.S1_CI_DISPOSITION_RECORD]}
+        recs = [r for r in self._ledger() if r.get("event_id") != self.DISP_EVENT]
+        recs.append(ev); self._write(recs)
+        self._sync_latest(self.DISP_EVENT)
+
+    def _unseal(self):
+        """Return the fixture to the PRE-sealing disposition-era state: the
+        ledger ends at the pinned S1 integration event and CURRENT_STATE
+        agrees. Used by tests written for the 0055-tail semantics — the
+        malformed state they construct must sit at the same position."""
+        recs = [r for r in self._ledger() if r.get("event_id") != self.DISP_EVENT]
+        self._write(recs); self._sync_latest(self.EVENT)
+
+    def test_354_disposition_record_missing_rejected(self):
+        self._require_disposition_era()
+        (self.root / VAL.S1_CI_DISPOSITION_RECORD).unlink()
+        self.assert_fails()
+
+    def test_355_disposition_event_end_head_tamper_rejected(self):
+        self._require_disposition_era()
+        recs = self._ledger()
+        recs[-1]["end_head"] = "0" * 40
+        self._write(recs)
+        self.assert_fails("must be")
+
+    def test_356_disposition_event_removed_rejected(self):
+        self._require_disposition_era()
+        recs = [r for r in self._ledger() if r.get("event_id") != self.DISP_EVENT]
+        self._write(recs)
+        self.assert_fails("stale")
+
+    def test_357_disposition_wrong_described_head_rejected(self):
+        self._require_disposition_era()
+        st = self._state()
+        st["described_head"] = "0" * 40
+        self._write_state(st)
+        self.assert_fails()
+
+    def test_358_disposition_event_wrong_task_rejected(self):
+        self._require_disposition_era()
+        recs = self._ledger()
+        recs[-1]["task"] = "ANOX-TASK-SOMETHING-ELSE-001"
+        self._write(recs)
+        self.assert_fails("must be")
+
+    def test_359_disposition_record_ref_dropped_rejected(self):
+        self._require_disposition_era()
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001" not in x]
+        self._write(recs)
+        self.assert_fails("must be")
 
     # -- scope constants --------------------------------------------------------
     def test_360_scope_constants_reject_product_and_authority_paths(self):
@@ -618,8 +710,8 @@ class S1IntegrationTopologyTests(unittest.TestCase):
         self.g("commit", "-q", "-m", "ratify R1")
         return self.g("rev-parse", "HEAD")
 
-    def _ratify_meta(self, name="PROJECT_STATE.md"):
-        (self.r / name).write_text(f"{name}-r2\n")
+    def _ratify_meta(self, name="PROJECT_STATE.md", tag="r2"):
+        (self.r / name).write_text(f"{name}-{tag}\n")
         self.g("add", name); self.g("commit", "-q", "-m", "ratify R2")
         return self.g("rev-parse", "HEAD")
 
@@ -711,6 +803,190 @@ class S1IntegrationTopologyTests(unittest.TestCase):
                                     **self._consumed_args((d1, d2)))
         self.assertFalse(ok); self.assertIn("non-metadata", reason)
 
+    # -- Human-authorized CI-infrastructure tail + disposition pair ----------
+    # ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001: exactly the
+    # pinned ci.yml-only commits in order, only after the completed R1/R2
+    # tail, optionally followed by the disposition pair [R3a, R3b].
+    CI_PATH = ".github/workflows/ci.yml"
+    DPATHS = frozenset({"GOV_A.py", "GOV_B.py", "DECISION.md"})
+
+    def _commit_paths(self, paths, tag):
+        for p in sorted(paths):
+            fp = self.r / p
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_text(f"{p}-{tag}\n")
+            self.g("add", p)
+        self.g("commit", "-q", "-m", tag)
+        return self.g("rev-parse", "HEAD")
+
+    def _ci_tail(self, n=5, extra_path_at=None):
+        shas = []
+        for i in range(n):
+            paths = {self.CI_PATH}
+            if i == extra_path_at:
+                paths = {self.CI_PATH, "evil.py"}
+            shas.append(self._commit_paths(paths, f"ci-tail-{i}"))
+        return shas
+
+    def _tail_args(self, pins, **kw):
+        a = dict(s1_substantive_sha=self.c1, s1_metadata_sha=self.c2,
+                 correction_task="ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
+                 ratification_paths=self.RPATHS,
+                 authorized_ci_tail=tuple((s, frozenset({self.CI_PATH})) for s in pins))
+        a.update(kw)
+        return a
+
+    def _r1r2(self, pair):
+        d1, d2 = pair
+        r1 = self._ratify(); r2 = self._ratify_meta()
+        return d1, d2, r1, r2
+
+    def test_440_authorized_ci_tail_accepted(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        out = {}
+        ok, *_, reason = self.prove(described_head=pins[-1], live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,), out=out,
+                                    **self._tail_args(pins))
+        self.assertTrue(ok, reason)
+        self.assertEqual(out["ci_tail"], pins)
+        self.assertEqual(out["ratification_tail"], "R1R2")
+
+    def test_441_tail_plus_disposition_pair_accepted(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        r3a = self._commit_paths(self.DPATHS, "R3a")
+        r3b = self._ratify_meta(tag="r3b")
+        out = {}
+        ok, *_, reason = self.prove(described_head=r3a, live_head=r3b,
+                                    consumed_correction_pairs=(pair,), out=out,
+                                    **self._tail_args(pins, disposition_paths=self.DPATHS))
+        self.assertTrue(ok, reason)
+        self.assertEqual(out["disposition"], (r3a, r3b))
+
+    def test_442_tail_sha_substitution_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        forged = list(pins); forged[2] = "0" * 40
+        ok, *_, reason = self.prove(described_head=pins[-1], live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(forged))
+        self.assertFalse(ok); self.assertIn("pinned authorized CI tail", reason)
+
+    def test_443_tail_reorder_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        reordered = [pins[0], pins[2], pins[1], pins[3], pins[4]]
+        ok, *_, reason = self.prove(described_head=pins[-1], live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(reordered))
+        self.assertFalse(ok); self.assertIn("pinned authorized CI tail", reason)
+
+    def test_444_extra_unpinned_ci_commit_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        self._commit_paths({self.CI_PATH}, "ci-extra")
+        ok, *_, reason = self.prove(described_head=self.g("rev-parse", "HEAD"),
+                                    live_head=self.g("rev-parse", "HEAD"),
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins))
+        self.assertFalse(ok); self.assertIn("expected exactly", reason)
+
+    def test_445_tail_commit_extra_path_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail(extra_path_at=3)
+        ok, *_, reason = self.prove(described_head=pins[-1], live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins))
+        self.assertFalse(ok); self.assertIn("touches undeclared paths", reason)
+
+    def test_446_tail_before_completed_r1r2_rejected(self):
+        # A tail whose commits sit on a chain that never completed the R1/R2
+        # ratification signature is not "after R2": R1 authored with a wrong
+        # path set means the ratification split cannot fire, so the position
+        # rule rejects the tail.
+        pair = self._pair("a")
+        bad_r1 = self._commit_paths({"WRONG.py"}, "bad-R1")
+        self._ratify_meta()
+        pins = self._ci_tail()
+        ok, *_, reason = self.prove(described_head=bad_r1, live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins))
+        self.assertFalse(ok); self.assertIn("admitted only after the completed R1/R2", reason)
+
+    def test_447_missing_tail_commit_rejected(self):
+        # Five pins are authorized; delivering only four is a shape violation.
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail(n=4)
+        declared = pins + ["0" * 40]
+        ok, *_, reason = self.prove(described_head=pins[-1], live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(declared))
+        self.assertFalse(ok); self.assertIn("expected exactly", reason)
+
+    def test_448_second_tail_commit_after_pinned_tail_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        self._commit_paths({self.CI_PATH}, "ci-second-T5-like")
+        ok, *_, reason = self.prove(described_head=self.g("rev-parse", "HEAD"),
+                                    live_head=self.g("rev-parse", "HEAD"),
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins))
+        self.assertFalse(ok); self.assertIn("expected exactly", reason)
+
+    def test_449_disposition_pair_without_tail_rejected(self):
+        # A [R3a, R3b] pair appended directly after R1/R2 — without the pinned
+        # authorized CI tail between them — is not a legal delivery shape.
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        r3a = self._commit_paths(self.DPATHS, "R3a")
+        r3b = self._ratify_meta(tag="r3b")
+        ok, *_, reason = self.prove(described_head=r3a, live_head=r3b,
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args([], disposition_paths=self.DPATHS))
+        self.assertFalse(ok); self.assertIn("without the pinned authorized CI tail", reason)
+
+    def test_450_disposition_metadata_non_metadata_rejected(self):
+        pair = self._pair("a")
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        r3a = self._commit_paths(self.DPATHS, "R3a")
+        r3b = self._commit_paths({"EVIL.md"}, "R3b-evil")
+        ok, *_, reason = self.prove(described_head=r3a, live_head=r3b,
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins, disposition_paths=self.DPATHS))
+        self.assertFalse(ok); self.assertIn("disposition metadata commit R3b", reason)
+
+    def test_451_disposition_described_head_must_be_r3a(self):
+        pair = self._pair("a")
+        d1, d2 = pair
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        r3a = self._commit_paths(self.DPATHS, "R3a")
+        r3b = self._ratify_meta(tag="r3b")
+        ok, *_, reason = self.prove(described_head=d1, live_head=r3b,
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins, disposition_paths=self.DPATHS))
+        self.assertFalse(ok); self.assertIn("must describe R3a", reason)
+
+    def test_452_described_head_must_be_tail_tip_without_disposition(self):
+        pair = self._pair("a")
+        d1, d2 = pair
+        _, _, r1, r2 = self._r1r2(pair)
+        pins = self._ci_tail()
+        ok, *_, reason = self.prove(described_head=d1, live_head=pins[-1],
+                                    consumed_correction_pairs=(pair,),
+                                    **self._tail_args(pins))
+        self.assertFalse(ok); self.assertIn("authorized CI tail tip", reason)
+
 
 class S0EraPrecisionTests(unittest.TestCase):
     """Paired tests for the two era-precision corrections applied to S0-owned
@@ -769,7 +1045,7 @@ class S0EraPrecisionTests(unittest.TestCase):
 
     def test_502_s0_task_rerecorded_after_preservation_rejected(self):
         recs = self._ledger()
-        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0056", task="ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"))
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0060", task="ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"))
         self._write(recs)
         r = self._run_pres(); self.assertNotEqual(r.returncode, 0); self.assertIn("S0 task re-recorded after preservation", r.stdout)
 

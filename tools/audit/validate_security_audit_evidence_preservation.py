@@ -186,15 +186,29 @@ S1_CONSUMED_CORRECTION_PAIRS = (
     # the ratification-tail pair can no longer be substituted either.
     ("4b31f680613651772d6006c2d47d1f6ccd1bb837",
      "10cc68c442bc67be03d863ad20e29e4dfcb0bd51"),
+    # REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — consumed by the
+    # delivered R1/R2 transaction and promoted here under
+    # ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001, closing the last
+    # unpinned correction slot (the disclosed trust boundary is now fully
+    # resolved by SHA pins).
+    ("7120aedd452bd77bbe208bb76a6d2c421394c820",
+     "c57485d7c54f57ab03cb2c896d796b2da787fc13"),
 )
 S1_CORRECTION_TASKS = (
     "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
     "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
     "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
+    # Tasks that may legitimately appear as CURRENT_STATE.current_task on the
+    # S1 delivery branch under the CI-infrastructure tail disposition
+    # (ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001).
+    "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001",
+    "ANOX-TASK-S1-CI-ARM64-ISOLATION-001",
 )
-# The one correction task still permitted to author an unpinned pair.
-S1_CORRECTION_TASK = "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001"
+# The last unpinned correction slot is CLOSED by
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001: no further
+# correction pair is authorized without a new Human decision.
+S1_CORRECTION_TASK = None
 
 # --- Human-ratification tail (non-circular) --------------------------------
 # The Human ratification of this very file is itself a commit (R1), optionally
@@ -228,6 +242,45 @@ S1_RATIFICATION_PATHS = frozenset({
     "tools/audit/test_s0_contract_freeze.py",
 })
 S1_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
+
+# --- Human-authorized post-R2 CI-infrastructure tail disposition -----------
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 ratifies exactly the
+# five ci.yml-only commits below — position (after the completed R1/R2 tail),
+# order and SHA identity are all bound — plus the disposition pair
+# [R3a substantive, R3b metadata] that carries this governance extension and
+# the sealing event ANOX-EVENT-0058. Nothing else is admissible: no SHA
+# substitution, no reorder, no additional unpinned CI commit, no path other
+# than .github/workflows/ci.yml, no tail before R2.
+S1_CI_TAIL = (
+    ("e7bd2c6547fb23de44a8aa762fe5d046c34d318e", frozenset({".github/workflows/ci.yml"})),
+    ("0636a4ee81e2e7ea9dd4ca7615d06bf80ae80827", frozenset({".github/workflows/ci.yml"})),
+    ("793246022c0501e85350113871d00db9ee843826", frozenset({".github/workflows/ci.yml"})),
+    ("45d1e4a63de45fe10d2fc8f455b321bb675e390a", frozenset({".github/workflows/ci.yml"})),
+    # ANOX-TASK-S1-CI-ARM64-ISOLATION-001 — deterministic stale-emulator
+    # isolation for the persistent self-hosted ARM64 runner.
+    ("4fc5263ff6763768088f0f13856d704bd1772178", frozenset({".github/workflows/ci.yml"})),
+)
+S1_CI_DISPOSITION_DECISION_ID = "ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_DISPOSITION_RECORD = "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md"
+S1_CI_DISPOSITION_TASK = "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_ARM64_ISOLATION_TASK = "ANOX-TASK-S1-CI-ARM64-ISOLATION-001"
+S1_CI_DISPOSITION_PATHS = frozenset({
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/test_s1_integration_evidence.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/validate_s0_evidence_preservation.py",
+    S1_CI_DISPOSITION_RECORD,
+})
+S1_CI_DISPOSITION_EVENT = {
+    "event_id": "ANOX-EVENT-0058",
+    "type": "governance",
+    "task": S1_CI_DISPOSITION_TASK,
+    "start_head": "45d1e4a63de45fe10d2fc8f455b321bb675e390a",
+}
 
 # Repository surfaces the S1 integration is allowed to change relative to its
 # start head. Anything outside this set — in particular crypto/rust/src/**,
@@ -267,6 +320,8 @@ S1_ALLOWED_EXACT = {
     "docs/reports/security/decisions/S1-FOUR-FILE-RATIFICATION-AUTHORIZATION-001.md",
     "docs/reports/security/remediation/REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001.md",
     "docs/reports/security/retests/TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004.md",
+    # REMEDIATION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 evidence surface
+    "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md",
 }
 S1_ALLOWED_PREFIXES = (
     "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
@@ -286,6 +341,24 @@ def _s1_integration_delivery_active(state):
         state.get("current_task") in (S1_INTEGRATION_EVENT["task"],) + S1_CORRECTION_TASKS
         and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"]
     )
+
+
+def _is_s1_ci_disposition_event(ev, described_head):
+    """The sealing governance event for the CI-infrastructure tail disposition.
+
+    end_head is bound DYNAMICALLY to CURRENT_STATE.described_head (the
+    disposition substantive R3a) — the event cannot pin the R3a SHA literally
+    because the sealing metadata commit is authored before that SHA exists in
+    the validator source; the binding is nonetheless exact through
+    described_head, which the delivery topology already pins to R3a.
+    """
+    s1 = S1_CI_DISPOSITION_EVENT
+    return (ev.get("event_id") == s1["event_id"]
+            and ev.get("type") == s1["type"]
+            and ev.get("task") == s1["task"]
+            and ev.get("start_head") == s1["start_head"]
+            and ev.get("end_head") == described_head
+            and S1_CI_DISPOSITION_RECORD in (ev.get("refs") or []))
 
 
 def _is_s1_integration_event(ev):
@@ -1134,7 +1207,9 @@ def validate_base(errors):
             s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
             correction_task=S1_CORRECTION_TASK,
             consumed_correction_pairs=S1_CONSUMED_CORRECTION_PAIRS,
-            ratification_paths=S1_RATIFICATION_PATHS, out=_delivery_out,
+            ratification_paths=S1_RATIFICATION_PATHS,
+            authorized_ci_tail=S1_CI_TAIL,
+            disposition_paths=S1_CI_DISPOSITION_PATHS, out=_delivery_out,
         )
         if not ok:
             fail(f"canonical S1 integration delivery failed: {reason}", errors)
@@ -3570,6 +3645,19 @@ def validate_project_memory(errors):
         fail("Project Memory stale: latest_material_event_id != last ledger event", errors)
     elif latest.get("event_id") == LEDGER_EVENT:
         print(f"  OK   Project Memory synced to {latest.get('event_id')}")
+    elif _is_s1_ci_disposition_event(latest, state.get("described_head") or "") \
+            and len(ledger) >= 5 \
+            and _is_s1_integration_event(ledger[-2]) \
+            and _is_s0_preservation_event(ledger[-3]) \
+            and _is_s0_successor_event(ledger[-4]) \
+            and ledger[-5].get("event_id") == LEDGER_EVENT:
+        if not _s1_integration_delivery_active(state):
+            fail(f"{S1_CI_DISPOSITION_EVENT['event_id']} recorded but CURRENT_STATE does not declare "
+                 f"the S1 delivery (task/branch)", errors)
+        else:
+            print(f"  OK   Project Memory synced to {latest.get('event_id')} "
+                  f"(CI-infrastructure tail disposition sealed on top of "
+                  f"{S1_INTEGRATION_EVENT['event_id']})")
     elif _is_s1_integration_event(latest) and len(ledger) >= 4 \
             and _is_s0_preservation_event(ledger[-2]) \
             and _is_s0_successor_event(ledger[-3]) \
@@ -3592,7 +3680,8 @@ def validate_project_memory(errors):
         fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
              f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "
              f"{S0_PRESERVATION_EVENT['event_id']}, or its recorded S1 canonical-integration successor "
-             f"{S1_INTEGRATION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
+             f"{S1_INTEGRATION_EVENT['event_id']}, or its recorded CI-infrastructure tail disposition "
+             f"successor {S1_CI_DISPOSITION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
     raw = ledger_path.read_bytes().splitlines()
     overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
     if overlong:

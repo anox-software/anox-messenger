@@ -107,8 +107,12 @@ S0_CONSUMED_UNIT = "MSC-UNIT-039"
 S0_AC_COVERED = ["AC-001", "AC-002", "AC-003", "AC-004", "AC-005", "AC-008", "AC-009", "AC-010", "AC-014"]
 
 PINNED_TEST_COUNTS = {
-    "tools/audit/test_s0_contract_freeze.py": 100,
-    "tools/audit/test_security_audit_evidence_preservation.py": 277,
+    # Updated under ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001:
+    # the paired adversarial suites legitimately grew by the CI-disposition
+    # coverage (100 → 104, 277 → 288). The counts remain pinned — a silent
+    # test removal or injection still fails closed.
+    "tools/audit/test_s0_contract_freeze.py": 104,
+    "tools/audit/test_security_audit_evidence_preservation.py": 288,
     "tools/audit/test_s0_evidence_preservation.py": 40,
 }
 

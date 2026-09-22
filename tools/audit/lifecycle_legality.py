@@ -488,7 +488,8 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
                                    live_head, cwd=REPO, metadata_allowlist=None,
                                    s1_substantive_sha=None, s1_metadata_sha=None,
                                    correction_task=None, consumed_correction_pairs=(),
-                                   ratification_paths=None, out=None):
+                                   ratification_paths=None, authorized_ci_tail=(),
+                                   disposition_paths=None, out=None):
     """Verify the canonical *integration* delivery invariant (REMEDIATION-S1-
     CANONICAL-INTEGRATION-001 era extension, extended by
     REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
@@ -553,6 +554,8 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
         out = {}
     out["ratification_tail"] = "NONE"
     out["r1"] = out["r2"] = None
+    out["ci_tail"] = []
+    out["disposition"] = None
 
     # Legal correction shapes, then the OPTIONAL Human-ratification tail on top.
     # The tail is expressed only through relationships that are already known
@@ -566,6 +569,13 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
         for b in base_shapes:
             allowed.add(b + 1)   # + R1 (ratification application)
             allowed.add(b + 2)   # + R1 + R2 (required metadata synchronisation)
+            if authorized_ci_tail:
+                # The pinned CI-infrastructure tail is admitted ONLY after the
+                # completed R1/R2 ratification tail, optionally followed by
+                # exactly one disposition pair [R3a, R3b].
+                allowed.add(b + 2 + len(authorized_ci_tail))
+                if disposition_paths:
+                    allowed.add(b + 2 + len(authorized_ci_tail) + 2)
     if len(order) not in allowed:
         counts = " or ".join(str(n) for n in sorted(allowed))
         detail = "merge + 2 task-authored"
@@ -575,19 +585,61 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
             detail += " + at most one authorized correction pair"
         if ratification_paths:
             detail += " + at most one Human-ratification tail (R1[, R2])"
+            if authorized_ci_tail:
+                detail += (f" + pinned authorized CI tail ({len(authorized_ci_tail)})"
+                           + (" + disposition pair" if disposition_paths else ""))
         return False, None, None, None, (
             f"expected exactly {counts} first-parent commits above base "
             f"({detail}), found {len(order)}")
+
+    # Split off the optional disposition pair [R3a, R3b] from the very END of
+    # the chain first: R3a is identified by its signature (changes exactly
+    # ``disposition_paths``), R3b is the trailing metadata commit. Then strip
+    # the pinned authorized CI tail that may sit between the R1/R2
+    # ratification tail and the disposition pair. Position, order and SHA
+    # identity of every tail commit are all bound — substitution, reorder,
+    # omission and extra commits are all rejected.
+    def _changed(sha):
+        files = _git(["diff", "--name-only", f"{sha}~1", sha], cwd=cwd)
+        return {p for p in (files or "").splitlines() if p.strip()}
+
+    disposition = []
+    if disposition_paths and len(order) >= 2:
+        got = _changed(order[len(order) - 2])
+        if got == set(disposition_paths):
+            disposition = order[len(order) - 2:]
+            order = order[:len(order) - 2]
+        elif got & set(disposition_paths) and len(order) - 2 - len(authorized_ci_tail) not in base_shapes:
+            # Touches the disposition package but not exactly: report precisely
+            # instead of degrading into a generic shape error.
+            return False, None, None, None, (
+                f"disposition commit {order[len(order) - 2][:12]} must change exactly "
+                f"{sorted(disposition_paths)}, changed {sorted(got)}")
+
+    ci_tail = []
+    if authorized_ci_tail:
+        n_ci = len(authorized_ci_tail)
+        pins = [s for s, _ in authorized_ci_tail]
+        region = order[len(order) - n_ci:] if len(order) >= n_ci else []
+        if region == pins:
+            for sha, allowed_paths in authorized_ci_tail:
+                extra = sorted(p for p in _changed(sha) if p not in set(allowed_paths))
+                if extra:
+                    return False, None, None, None, (
+                        f"authorized CI tail commit {sha[:12]} touches undeclared paths "
+                        f"{extra} (allowed: {sorted(allowed_paths)})")
+            ci_tail = region
+            order = order[:len(order) - n_ci]
+        elif set(region) & set(pins):
+            return False, None, None, None, (
+                "commits following the ratification tail do not equal the pinned "
+                "authorized CI tail — order, completeness and SHA identity are all bound")
 
     # Split off the ratification tail. Counting alone is AMBIGUOUS — e.g. with two
     # consumed pairs a 9-commit chain could be "2 consumed + an open correction
     # pair" or "1 consumed + R1 + R2". The tail is therefore identified by its
     # SIGNATURE (R1 changes exactly the package paths), never by arithmetic, and
     # the longest signature-matching split wins.
-    def _changed(sha):
-        files = _git(["diff", "--name-only", f"{sha}~1", sha], cwd=cwd)
-        return {p for p in (files or "").splitlines() if p.strip()}
-
     n_tail = 0
     if ratification_paths:
         near_miss = None
@@ -734,12 +786,53 @@ def canonical_integration_delivery(base_sha, merged_head, merged_base, described
                 if bad:
                     return False, None, None, None, (
                         f"ratification metadata commit R2 touches non-metadata files: {bad}")
-            if described_head != r1:
+            if not ci_tail and not disposition and described_head != r1:
                 return False, None, None, None, (
                     f"ratification metadata commit R2 must describe R1 {r1[:12]}, "
                     f"described_head is {described_head[:12]}")
             out["ratification_tail"] = "R1R2"
             out["r2"] = r2
+
+    # Position rule: the pinned authorized CI tail is admitted ONLY after the
+    # completed R1/R2 ratification tail — a tail before R2, without R1, or at
+    # any other position is rejected.
+    if ci_tail and n_tail != 2:
+        return False, None, None, None, (
+            "authorized CI tail is admitted only after the completed R1/R2 "
+            "ratification tail")
+    if ci_tail:
+        out["ci_tail"] = ci_tail
+
+    if disposition:
+        if not ci_tail:
+            return False, None, None, None, (
+                "disposition pair present without the pinned authorized CI tail")
+        r3a, r3b = disposition
+        for label, sha in (("disposition substantive", r3a), ("disposition metadata", r3b)):
+            ps = _git_merge_parents(sha, cwd=cwd) or []
+            if len(ps) != 1:
+                return False, None, None, None, (
+                    f"{label} commit {sha[:12]} is not a single-parent commit")
+        if metadata_allowlist:
+            r3b_files = _git(["diff", "--name-only", f"{r3b}~1", r3b], cwd=cwd)
+            if r3b_files is None:
+                return False, None, None, None, "cannot read disposition metadata commit diff"
+            bad = [p for p in r3b_files.splitlines() if p not in metadata_allowlist]
+            if bad:
+                return False, None, None, None, (
+                    f"disposition metadata commit R3b touches non-metadata files: {bad}")
+        if described_head != r3a:
+            return False, None, None, None, (
+                f"disposition metadata commit R3b must describe R3a {r3a[:12]}, "
+                f"described_head is {described_head[:12]}")
+        out["disposition"] = (r3a, r3b)
+    elif ci_tail:
+        # Tail sealed but disposition transaction not yet delivered: the
+        # described head must still anchor the authorized CI tail tip.
+        if described_head != ci_tail[-1]:
+            return False, None, None, None, (
+                f"described_head {described_head[:12]} must equal the authorized CI "
+                f"tail tip {ci_tail[-1][:12]}")
     return True, merge_sha, substantive_head, metadata_head, "exact integration delivery proven"
 
 
