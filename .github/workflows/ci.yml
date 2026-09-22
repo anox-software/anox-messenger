@@ -26,7 +26,7 @@ env:
 jobs:
   supply-chain-policy:
     name: B-017-Lite supply-chain policy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -62,7 +62,7 @@ jobs:
 
   gradle-wrapper-validation:
     name: Gradle wrapper JAR validation
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     needs: supply-chain-policy
     steps:
       - name: Checkout
@@ -73,7 +73,7 @@ jobs:
 
   rust:
     name: Rust crypto tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     needs: supply-chain-policy
     steps:
       - name: Checkout
@@ -101,7 +101,7 @@ jobs:
 
   native-build:
     name: Authoritative native build + provenance manifest
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     needs:
       - rust
       - gradle-wrapper-validation
@@ -157,7 +157,7 @@ jobs:
 
   android-debug:
     name: Android debug build
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     needs:
       - native-build
       - gradle-wrapper-validation
@@ -228,7 +228,7 @@ jobs:
 
   android-release:
     name: Android release compile smoke
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
     needs:
       - native-build
       - android-debug
@@ -397,7 +397,7 @@ jobs:
 
   instrumented-arm64:
     name: Instrumented tests on arm64-v8a emulator (S1 artifact)
-    runs-on: macos-14
+    runs-on: [self-hosted, macOS, ARM64]
     needs:
       - native-build
       - android-debug
