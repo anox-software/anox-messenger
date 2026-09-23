@@ -40,6 +40,12 @@ FIXTURE_FILES = [
     "docs/reports/security/retests/INDEPENDENT-ARCHITECTURE-RETEST-S0-001.md",
     "docs/reports/security/retests/TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001.md",
     "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md",
+    # S1 integration era preserved sources (pinned by the S1 integration
+    # registry record; must exist for the live S1-era surface to validate)
+    "docs/reports/security/retests/INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-CANONICAL-INTEGRATION-001.md",
+    "docs/security/remediation/S1_PROVENANCE_VERIFIED_NATIVE_RUNTIME.md",
+    "docs/security/remediation/S1_TASK_REPORT.md",
     "docs/workforce/WORKFORCE_STATE.json",
     "docs/workforce/registries/findings.jsonl",
     "docs/workforce/registries/tasks.jsonl",
@@ -83,6 +89,42 @@ def _load_jsonl(path):
 
 def _write_jsonl(path, records):
     Path(path).write_text("\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8")
+
+
+# REMEDIATION-S1-CANONICAL-INTEGRATION-001: the live repository carries the S1
+# canonical-integration era (ANOX-EVENT-0055, registry record
+# SEC-AUDIT-REG-0014). Once the shared-validator extension is ratified this
+# suite runs against the S1-ERA-pinned central validator, so the main class
+# exercises the live S1-era surface unchanged; the two historical-era classes
+# (S0 successor / S0 preservation) keep their era-normalised fixtures to prove
+# the old eras are now REJECTED. While the ratified (S0-era-pinned) validator
+# is still in place the same file must also pass against it — the
+# _normalise_fixture_to_s0_era helper serves only the two historical classes.
+_S1_EVENT_ID = "ANOX-EVENT-0055"
+_S1_REGISTRY_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
+
+
+def _normalise_fixture_to_s0_era(root):
+    lp = root / "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    recs = _load_jsonl(lp)
+    recs = [r for r in recs if r.get("event_id") != _S1_EVENT_ID]
+    # The S0 era ends at ANOX-EVENT-0054: every later canonical event (the S1
+    # integration successor and any sealed successors of it) is dropped.
+    while recs and recs[-1].get("event_id") != "ANOX-EVENT-0054":
+        recs.pop()
+    _write_jsonl(lp, recs)
+    rp = root / "docs/security/audit-evidence/audit_registry.jsonl"
+    _write_jsonl(rp, [r for r in _load_jsonl(rp) if r.get("audit_id") != _S1_REGISTRY_ID])
+    sp = root / "docs/continuity/CURRENT_STATE.json"
+    state = json.loads(sp.read_text(encoding="utf-8"))
+    if recs:
+        state["latest_material_event_id"] = recs[-1].get("event_id")
+    # Restore the era's delivery declaration so the normalised fixture is a
+    # faithful S0-preservation-era state (rejected by the era-pinned validator
+    # for era reasons, not for a malformed declaration).
+    state["current_task"] = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+    state["delivery_branch"] = "governance/security-remediation-s0-evidence-preservation-001"
+    sp.write_text(json.dumps(state, indent=1), encoding="utf-8")
 
 
 class EvidencePreservationAdversarialTests(unittest.TestCase):
@@ -239,7 +281,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-CRYPTO-JNI-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 15. Downgrade Crypto/JNI Candidate-001 severity HIGH -> MEDIUM.
     def test_15_downgraded_cryptojni_001_severity_fails(self):
@@ -337,7 +379,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-AUTH-DPOP-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 26. Alter the Auth/DPoP audited SHA.
     def test_26_altered_authdpop_audited_sha_fails(self):
@@ -510,7 +552,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ANDROID-STORAGE-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 46. Alter the Android/Storage audited SHA.
     def test_46_altered_androidstorage_audited_sha_fails(self):
@@ -701,7 +743,7 @@ class EvidencePreservationAdversarialTests(unittest.TestCase):
         rp = self.root / "docs/security/audit-evidence/audit_registry.jsonl"
         recs = [r for r in _load_jsonl(rp) if r.get("audit_id") != "AUDIT-SECURITY-ATTACKCHAIN-001"]
         _write_jsonl(rp, recs)
-        self.assert_fails(self.run_validator(), "exactly 13 records")
+        self.assert_fails(self.run_validator(), "must contain exactly 14 records")
 
     # 66. Inflate the Attackchain chain count.
     def test_66_inflated_attackchain_chain_count_fails(self):
@@ -2079,6 +2121,7 @@ class S0SuccessorEventAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        _normalise_fixture_to_s0_era(self.root)
         # These tests exercise the pre-preservation acceptance path in which the
         # ledger ends at the S0 successor event; drop the later preservation
         # event and resync the state pointer so the fixture is that state.
@@ -2126,12 +2169,12 @@ class S0SuccessorEventAdversarialTests(unittest.TestCase):
         self._write(recs)
 
     # -- control ------------------------------------------------------------
-    # 238. The recorded, unmutated S0 successor event is accepted.
-    def test_238_valid_s0_successor_accepted(self):
+    # 238. The S0 successor era is now sealed history: under the S1-era-pinned
+    # validator the pre-preservation-era state must be REJECTED.
+    def test_238_s0_successor_era_rejected(self):
         r = self.run_validator()
-        self.assertEqual(r.returncode, 0, f"recorded S0 successor must be accepted:\n{r.stdout}")
-        self.assertIn(f"Project Memory synced to {self.SUCCESSOR}", r.stdout)
-        self.assertIn("REMEDIATION_SESSION_S0 successor", r.stdout)
+        self.assertNotEqual(r.returncode, 0, f"S0 successor era must be rejected:\n{r.stdout}")
+        self.assertIn("exactly 14 records", r.stdout)
 
     # -- identifying fields -------------------------------------------------
     # 239. Successor with a foreign task is rejected.
@@ -2264,6 +2307,7 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        _normalise_fixture_to_s0_era(self.root)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -2314,12 +2358,12 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
         return recs, rec
 
     # -- control ------------------------------------------------------------
-    # 254. The recorded, unmutated preservation event and 13-record registry pass.
-    def test_254_valid_preservation_accepted(self):
+    # 254. The S0 preservation era is sealed history: under the S1-era-pinned
+    # validator the 0054-ending, 13-record state must be REJECTED.
+    def test_254_preservation_era_rejected(self):
         r = self.run_validator()
-        self.assertEqual(r.returncode, 0, f"recorded preservation state must be accepted:\n{r.stdout}")
-        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
-        self.assertIn("S0 evidence-preservation successor", r.stdout)
+        self.assertNotEqual(r.returncode, 0, f"S0 preservation era must be rejected:\n{r.stdout}")
+        self.assertIn("exactly 14 records", r.stdout)
 
     # 255. Removing EVENT-0054 while state claims preservation fails (stale).
     def test_255_missing_preservation_event_rejected(self):
@@ -2419,7 +2463,7 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
     def test_268_registry_at_12_rejected(self):
         recs = [r for r in self._registry() if r.get("audit_id") != self.PRES_ID]
         self._write_registry(recs)
-        self.assert_fails("exactly 13 records")
+        self.assert_fails("exactly 14 records")
 
     # 269. Registry grown to 14 records is rejected.
     def test_269_registry_at_14_rejected(self):
@@ -2489,6 +2533,145 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
         rec["residual_low_followups"] = 1
         self._write_registry(recs)
         self.assert_fails("residual_low_followup")
+
+
+class S1CIDispositionEventAdversarialTests(unittest.TestCase):
+    """Adversarial coverage of the CI-infrastructure tail disposition sealing
+    event `ANOX-EVENT-0058`, authorized by
+    ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.
+
+    Exactly one recorded disposition event may follow the pinned S1 integration
+    event `ANOX-EVENT-0055`; every identifying field is bound (task, type,
+    start_head, end_head == CURRENT_STATE.described_head, decision-record ref)
+    and any other appended event fails closed.
+    """
+
+    LEDGER = "docs/continuity/PROJECT_HISTORY_LEDGER.jsonl"
+    CS = "docs/continuity/CURRENT_STATE.json"
+    EVENT = "ANOX-EVENT-0058"
+    PRIOR = "ANOX-EVENT-0055"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        for rel in FIXTURE_FILES:
+            src = REPO_ROOT / rel
+            if not src.exists():
+                continue
+            dst = self.root / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+        recs = _load_jsonl(self.root / self.LEDGER)
+        if not recs or recs[-1].get("event_id") != self.EVENT:
+            self.skipTest("CI-disposition era not sealed in this checkout")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def run_validator(self):
+        env = dict(os.environ)
+        env["SECURITY_AUDIT_PRESERVATION_REPO"] = str(self.root)
+        return subprocess.run([sys.executable, str(VALIDATOR)],
+                              cwd=self.root, env=env, capture_output=True, text=True)
+
+    def assert_fails(self, needle=None):
+        r = self.run_validator()
+        self.assertNotEqual(r.returncode, 0, f"validator must FAIL; stdout:\n{r.stdout}\n{r.stderr}")
+        self.assertIn("FAIL", r.stdout)
+        if needle:
+            self.assertIn(needle, r.stdout, f"missing expected failure detail {needle!r}:\n{r.stdout}")
+        return r
+
+    def _ledger(self):
+        return _load_jsonl(self.root / self.LEDGER)
+
+    def _write(self, recs):
+        _write_jsonl(self.root / self.LEDGER, recs)
+
+    def _sync_latest(self, event_id):
+        p = self.root / self.CS
+        state = json.loads(p.read_text(encoding="utf-8"))
+        state["latest_material_event_id"] = event_id
+        p.write_text(json.dumps(state, indent=1), encoding="utf-8")
+
+    def _mutate_event(self, **fields):
+        recs = self._ledger()
+        self.assertEqual(recs[-1].get("event_id"), self.EVENT)
+        recs[-1].update(fields)
+        self._write(recs)
+
+    # -- control ------------------------------------------------------------
+    # 278. The sealed CI-disposition state is accepted.
+    def test_278_control_disposition_event_accepted(self):
+        r = self.run_validator()
+        self.assertEqual(r.returncode, 0, f"sealed CI-disposition state must be accepted:\n{r.stdout}")
+        self.assertIn(f"Project Memory synced to {self.EVENT}", r.stdout)
+
+    # 279. Removing EVENT-0058 while state claims the disposition fails (stale).
+    def test_279_missing_disposition_event_rejected(self):
+        recs = [r for r in self._ledger() if r.get("event_id") != self.EVENT]
+        self._write(recs)
+        self.assert_fails("stale")
+
+    # 280. A duplicated disposition event is rejected.
+    def test_280_duplicate_disposition_event_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1]))
+        self._write(recs)
+        self.assert_fails("duplicate")
+
+    # 281. An arbitrary later event id is never accepted.
+    def test_281_arbitrary_future_event_rejected(self):
+        self._mutate_event(event_id="ANOX-EVENT-0059")
+        self.assert_fails("stale")
+        self._sync_latest("ANOX-EVENT-0059")
+        self.assert_fails("must be")
+
+    # 282. Disposition event with a foreign task is rejected.
+    def test_282_disposition_altered_task_rejected(self):
+        self._mutate_event(task="ANOX-TASK-SOMETHING-ELSE-001")
+        self.assert_fails("must be")
+
+    # 283. Disposition event with a foreign type is rejected.
+    def test_283_disposition_altered_type_rejected(self):
+        self._mutate_event(type="canonical_merge")
+        self.assert_fails("must be")
+
+    # 284. Disposition event with a wrong start_head is rejected.
+    def test_284_disposition_altered_start_head_rejected(self):
+        self._mutate_event(start_head="0" * 40)
+        self.assert_fails("must be")
+
+    # 285. Disposition event whose end_head does not equal the declared
+    # described_head (the R3a substantive) is rejected — the sealing head and
+    # the described head cannot drift apart.
+    def test_285_disposition_altered_end_head_rejected(self):
+        self._mutate_event(end_head="0" * 40)
+        self.assert_fails("must be")
+
+    # 286. Disposition event without the decision-record evidence ref is rejected.
+    def test_286_disposition_missing_record_ref_rejected(self):
+        recs = self._ledger()
+        recs[-1]["refs"] = [x for x in (recs[-1].get("refs") or [])
+                            if "S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001" not in x]
+        self._write(recs)
+        self.assert_fails("must be")
+
+    # 287. A wrong event id for the disposition task is rejected — the task is
+    # canonically recorded only by ANOX-EVENT-0058, so the tail check fails.
+    def test_287_disposition_wrong_event_id_rejected(self):
+        recs = self._ledger()
+        recs.append(dict(recs[-1], event_id="ANOX-EVENT-0059"))
+        self._write(recs); self._sync_latest("ANOX-EVENT-0059")
+        self.assert_fails("must be")
+
+    # 288. An interposed event between 0055 and 0058 is rejected.
+    def test_288_interposed_event_rejected(self):
+        recs = self._ledger()
+        recs.insert(-1, dict(recs[-1], event_id="ANOX-EVENT-0057",
+                             task="ANOX-TASK-SOMETHING-ELSE-001"))
+        self._write(recs)
+        self.assert_fails("must be")
 
 
 if __name__ == "__main__":

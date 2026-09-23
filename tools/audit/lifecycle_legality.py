@@ -484,6 +484,358 @@ def canonical_two_commit_delivery(base_sha, described_head, live_head,
     return True, delivery_parent, substantive_head, "exact two-commit delivery proven"
 
 
+def canonical_integration_delivery(base_sha, merged_head, merged_base, described_head,
+                                   live_head, cwd=REPO, metadata_allowlist=None,
+                                   s1_substantive_sha=None, s1_metadata_sha=None,
+                                   correction_task=None, consumed_correction_pairs=(),
+                                   ratification_paths=None, authorized_ci_tail=(),
+                                   disposition_paths=None, out=None):
+    """Verify the canonical *integration* delivery invariant (REMEDIATION-S1-
+    CANONICAL-INTEGRATION-001 era extension, extended by
+    REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001).
+
+    Topology (first-parent chain above ``base_sha``)::
+
+        base ── M ── C1 ── C2                          (original delivery)
+        base ── M ── C1 ── C2 ── [Dn,Dn'] … ── [Dk,Dk']  (+ correction pairs)
+                │
+                └── merged_head (pinned foreign delivery, unmodified)
+
+    Every correction pair that has already been delivered is pinned by SHA in
+    ``consumed_correction_pairs`` and can therefore never be replaced, rewritten
+    or reused (retest finding N-9). At most ONE unpinned pair may follow the
+    consumed ones, and only while ``correction_task`` names the currently
+    authorized correction task.
+
+    TRUST BOUNDARY (disclosed, not solved): the trailing unpinned pair cannot be
+    bound cryptographically by this validator, because the commit that carries
+    the pin is authored inside the same pass. An actor who authors that pair can
+    also author its declaration. Closing that gap requires an out-of-band anchor
+    (a signed commit/tag, or a Human-recorded SHA promoted into
+    ``consumed_correction_pairs`` after the fact).
+
+    Requirements, all fail-closed:
+      * ``base_sha`` and ``merged_head`` are ancestors of the live head;
+      * the first-parent chain above base is exactly [M, C1, C2] followed by
+        every pinned consumed correction pair, optionally followed by exactly one
+        further pair (only when ``correction_task`` is given);
+      * M is a two-parent merge whose parents are exactly (base_sha, merged_head);
+      * C1 (substantive) and C2 (metadata) are single-parent;
+      * without a correction pair, C1 == described_head; with one, C1 must equal
+        the pinned ``s1_substantive_sha``, C2 must equal the pinned
+        ``s1_metadata_sha``, and the correction substantive D1 == described_head;
+      * D1 and D2 are single-parent; D2 touches only metadata-allowlisted paths;
+      * the only commits above base that are not on the first-parent chain are
+        exactly the pinned foreign delivery ``merged_base..merged_head`` — no
+        other history is smuggled in through the merge;
+      * ``merged_head`` itself is exactly two commits above ``merged_base``;
+      * C2 touches only metadata-allowlisted paths.
+    Returns (ok, merge_sha, substantive_head, metadata_head, reason).
+    """
+    if live_head is None:
+        live_head = _git(["rev-parse", "HEAD"], cwd=cwd)
+    if not live_head:
+        return False, None, None, None, "cannot resolve live HEAD"
+    for label, sha in (("base", base_sha), ("merged head", merged_head), ("merged base", merged_base)):
+        if not _git_is_ancestor(sha, live_head, cwd=cwd):
+            return False, None, None, None, f"{label} {sha[:12]} is not an ancestor of live {live_head[:12]}"
+    if not _git_is_ancestor(merged_base, merged_head, cwd=cwd):
+        return False, None, None, None, "merged base is not an ancestor of merged head"
+    if _git_is_ancestor(merged_head, base_sha, cwd=cwd):
+        return False, None, None, None, "merged head is already contained in base (nothing to integrate)"
+
+    fp = _git(["rev-list", "--first-parent", f"{base_sha}..{live_head}"], cwd=cwd)
+    chain = fp.splitlines() if fp else []
+    # Oldest-first: [M, C1, C2, (pair…)*, (R1 (, R2))?]
+    order = list(reversed(chain))
+    consumed = [tuple(pr) for pr in (consumed_correction_pairs or ())]
+    n_consumed = 2 * len(consumed)
+    if out is None:
+        out = {}
+    out["ratification_tail"] = "NONE"
+    out["r1"] = out["r2"] = None
+    out["ci_tail"] = []
+    out["disposition"] = None
+
+    # Legal correction shapes, then the OPTIONAL Human-ratification tail on top.
+    # The tail is expressed only through relationships that are already known
+    # (parent = the delivery tip, an exact changed-path set, metadata-only R2), so
+    # no validator ever needs to know its own future commit SHA.
+    base_shapes = {3 + n_consumed}
+    if correction_task:
+        base_shapes.add(3 + n_consumed + 2)
+    allowed = set(base_shapes)
+    if ratification_paths:
+        for b in base_shapes:
+            allowed.add(b + 1)   # + R1 (ratification application)
+            allowed.add(b + 2)   # + R1 + R2 (required metadata synchronisation)
+            if authorized_ci_tail:
+                # The pinned CI-infrastructure tail is admitted ONLY after the
+                # completed R1/R2 ratification tail, optionally followed by
+                # exactly one disposition pair [R3a, R3b].
+                allowed.add(b + 2 + len(authorized_ci_tail))
+                if disposition_paths:
+                    allowed.add(b + 2 + len(authorized_ci_tail) + 2)
+    if len(order) not in allowed:
+        counts = " or ".join(str(n) for n in sorted(allowed))
+        detail = "merge + 2 task-authored"
+        if consumed:
+            detail += f" + {len(consumed)} pinned correction pair(s)"
+        if correction_task:
+            detail += " + at most one authorized correction pair"
+        if ratification_paths:
+            detail += " + at most one Human-ratification tail (R1[, R2])"
+            if authorized_ci_tail:
+                detail += (f" + pinned authorized CI tail ({len(authorized_ci_tail)})"
+                           + (" + disposition pair" if disposition_paths else ""))
+        return False, None, None, None, (
+            f"expected exactly {counts} first-parent commits above base "
+            f"({detail}), found {len(order)}")
+
+    # Split off the optional disposition pair [R3a, R3b] from the very END of
+    # the chain first: R3a is identified by its signature (changes exactly
+    # ``disposition_paths``), R3b is the trailing metadata commit. Then strip
+    # the pinned authorized CI tail that may sit between the R1/R2
+    # ratification tail and the disposition pair. Position, order and SHA
+    # identity of every tail commit are all bound — substitution, reorder,
+    # omission and extra commits are all rejected.
+    def _changed(sha):
+        files = _git(["diff", "--name-only", f"{sha}~1", sha], cwd=cwd)
+        return {p for p in (files or "").splitlines() if p.strip()}
+
+    disposition = []
+    if disposition_paths and len(order) >= 2:
+        got = _changed(order[len(order) - 2])
+        if got == set(disposition_paths):
+            disposition = order[len(order) - 2:]
+            order = order[:len(order) - 2]
+        elif got & set(disposition_paths) and len(order) - 2 - len(authorized_ci_tail) not in base_shapes:
+            # Touches the disposition package but not exactly: report precisely
+            # instead of degrading into a generic shape error.
+            return False, None, None, None, (
+                f"disposition commit {order[len(order) - 2][:12]} must change exactly "
+                f"{sorted(disposition_paths)}, changed {sorted(got)}")
+
+    ci_tail = []
+    if authorized_ci_tail:
+        n_ci = len(authorized_ci_tail)
+        pins = [s for s, _ in authorized_ci_tail]
+        region = order[len(order) - n_ci:] if len(order) >= n_ci else []
+        if region == pins:
+            for sha, allowed_paths in authorized_ci_tail:
+                extra = sorted(p for p in _changed(sha) if p not in set(allowed_paths))
+                if extra:
+                    return False, None, None, None, (
+                        f"authorized CI tail commit {sha[:12]} touches undeclared paths "
+                        f"{extra} (allowed: {sorted(allowed_paths)})")
+            ci_tail = region
+            order = order[:len(order) - n_ci]
+        elif set(region) & set(pins):
+            return False, None, None, None, (
+                "commits following the ratification tail do not equal the pinned "
+                "authorized CI tail — order, completeness and SHA identity are all bound")
+
+    # Split off the ratification tail. Counting alone is AMBIGUOUS — e.g. with two
+    # consumed pairs a 9-commit chain could be "2 consumed + an open correction
+    # pair" or "1 consumed + R1 + R2". The tail is therefore identified by its
+    # SIGNATURE (R1 changes exactly the package paths), never by arithmetic, and
+    # the longest signature-matching split wins.
+    n_tail = 0
+    if ratification_paths:
+        near_miss = None
+        for n in (2, 1):
+            if len(order) - n in base_shapes and len(order) - n >= 3:
+                got = _changed(order[len(order) - n])
+                if got == set(ratification_paths):
+                    n_tail = n
+                    break
+                if got & set(ratification_paths):
+                    # Touches the package but not exactly: report precisely
+                    # instead of degrading into a generic shape error.
+                    near_miss = near_miss or (order[len(order) - n], got)
+        if n_tail == 0 and near_miss and len(order) not in base_shapes:
+            sha, got = near_miss
+            return False, None, None, None, (
+                f"ratification commit R1 {sha[:12]} must change exactly "
+                f"{sorted(ratification_paths)}, changed {sorted(got)}")
+    if n_tail == 0 and len(order) not in base_shapes:
+        return False, None, None, None, (
+            f"commit chain of {len(order)} above base is not a legal delivery shape and its "
+            f"trailing commits do not carry the authorized ratification signature")
+    ratification = order[len(order) - n_tail:] if n_tail else []
+    order = order[:len(order) - n_tail] if n_tail else order
+
+    merge_sha, substantive_head, metadata_head = order[0], order[1], order[2]
+    tail = order[3:]
+    # Consumed pairs are pinned by SHA and may never move (N-9).
+    for idx, (psub, pmeta) in enumerate(consumed):
+        gsub, gmeta = tail[2 * idx], tail[2 * idx + 1]
+        if gsub != psub:
+            return False, None, None, None, (
+                f"consumed correction pair {idx + 1} substantive {gsub[:12]} != pinned {psub[:12]}")
+        if gmeta != pmeta:
+            return False, None, None, None, (
+                f"consumed correction pair {idx + 1} metadata {gmeta[:12]} != pinned {pmeta[:12]}")
+    open_pair = tail[n_consumed:]
+    corr_sub = corr_meta = None
+    if open_pair:
+        corr_sub, corr_meta = open_pair[0], open_pair[1]
+    elif consumed:
+        # No open pair: the newest pinned correction substantive is the described head.
+        corr_sub, corr_meta = consumed[-1][0], consumed[-1][1]
+    correction_metadata_heads = [pmeta for _, pmeta in consumed]
+    if open_pair:
+        correction_metadata_heads.append(corr_meta)
+
+    mparents = _git_merge_parents(merge_sha, cwd=cwd) or []
+    if len(mparents) != 2:
+        return False, None, None, None, "integration commit is not a two-parent merge"
+    if mparents[0] != base_sha or mparents[1] != merged_head:
+        return False, None, None, None, (
+            f"integration merge parents {[p[:12] for p in mparents]} != (base, pinned merged head)")
+    for label, sha in (("substantive", substantive_head), ("metadata", metadata_head)):
+        ps = _git_merge_parents(sha, cwd=cwd) or []
+        if len(ps) != 1:
+            return False, None, None, None, f"{label} commit is not a single-parent commit"
+
+    if corr_sub is not None:
+        # Correction phase: the S1 delivery commits are pinned exactly and the
+        # correction substantive is bound to CURRENT_STATE's described_head.
+        if substantive_head != s1_substantive_sha:
+            return False, None, None, None, (
+                f"S1 substantive commit {substantive_head[:12]} != pinned {s1_substantive_sha[:12]}")
+        if metadata_head != s1_metadata_sha:
+            return False, None, None, None, (
+                f"S1 metadata commit {metadata_head[:12]} != pinned {s1_metadata_sha[:12]}")
+        for sha in tail:
+            ps = _git_merge_parents(sha, cwd=cwd) or []
+            if len(ps) != 1:
+                return False, None, None, None, f"correction commit {sha[:12]} is not a single-parent commit"
+        if len(ratification) != 2 and corr_sub != described_head:
+            return False, None, None, None, (
+                f"correction substantive commit {corr_sub[:12]} != described_head {described_head[:12]}")
+        if metadata_allowlist:
+            for cm in correction_metadata_heads:
+                corr_files = _git(["diff", "--name-only", f"{cm}~1", cm], cwd=cwd)
+                if corr_files is None:
+                    return False, None, None, None, "cannot read correction metadata commit diff"
+                bad = [p for p in corr_files.splitlines() if p not in metadata_allowlist]
+                if bad:
+                    return False, None, None, None, (
+                        f"correction metadata commit {cm[:12]} touches non-metadata files: {bad}")
+    else:
+        if len(ratification) != 2 and substantive_head != described_head:
+            return False, None, None, None, (
+                f"substantive commit {substantive_head[:12]} != described_head {described_head[:12]}")
+        if s1_substantive_sha and substantive_head != s1_substantive_sha:
+            return False, None, None, None, (
+                f"S1 substantive commit {substantive_head[:12]} != pinned {s1_substantive_sha[:12]}")
+        if s1_metadata_sha and metadata_head != s1_metadata_sha:
+            return False, None, None, None, (
+                f"S1 metadata commit {metadata_head[:12]} != pinned {s1_metadata_sha[:12]}")
+
+    all_above = set((_git(["rev-list", f"{base_sha}..{live_head}"], cwd=cwd) or "").splitlines())
+    foreign = set((_git(["rev-list", f"{merged_base}..{merged_head}"], cwd=cwd) or "").splitlines())
+    if len(foreign) != 2:
+        return False, None, None, None, f"pinned foreign delivery must be exactly 2 commits, found {len(foreign)}"
+    extra = all_above - set(chain) - foreign
+    if extra:
+        return False, None, None, None, f"unexpected commits integrated beyond pinned delivery: {sorted(x[:12] for x in extra)}"
+
+    if metadata_allowlist:
+        meta_files = _git(["diff", "--name-only", f"{metadata_head}~1", metadata_head], cwd=cwd)
+        if meta_files is None:
+            return False, None, None, None, "cannot read metadata commit diff"
+        bad = [p for p in meta_files.splitlines() if p not in metadata_allowlist]
+        if bad:
+            return False, None, None, None, f"metadata commit touches non-metadata files: {bad}"
+
+    if ratification:
+        delivery_tip = (tail[-1] if tail else metadata_head)
+        r1 = ratification[0]
+        ps = _git_merge_parents(r1, cwd=cwd) or []
+        if len(ps) != 1:
+            return False, None, None, None, "ratification commit R1 is not a single-parent commit"
+        if ps[0] != delivery_tip:
+            return False, None, None, None, (
+                f"ratification commit R1 parent {ps[0][:12]} is not the completed delivery tip "
+                f"{delivery_tip[:12]}")
+        r1_files = _git(["diff", "--name-only", f"{r1}~1", r1], cwd=cwd)
+        if r1_files is None:
+            return False, None, None, None, "cannot read ratification commit diff"
+        got_paths = {p for p in r1_files.splitlines() if p.strip()}
+        if got_paths != set(ratification_paths):
+            return False, None, None, None, (
+                f"ratification commit R1 must change exactly {sorted(ratification_paths)}, "
+                f"changed {sorted(got_paths)}")
+        out["ratification_tail"] = "R1"
+        out["r1"] = r1
+        if len(ratification) > 1:
+            r2 = ratification[1]
+            ps2 = _git_merge_parents(r2, cwd=cwd) or []
+            if len(ps2) != 1:
+                return False, None, None, None, "ratification commit R2 is not a single-parent commit"
+            if ps2[0] != r1:
+                return False, None, None, None, (
+                    f"ratification metadata commit R2 parent {ps2[0][:12]} is not R1 {r1[:12]}")
+            if metadata_allowlist:
+                r2_files = _git(["diff", "--name-only", f"{r2}~1", r2], cwd=cwd)
+                if r2_files is None:
+                    return False, None, None, None, "cannot read ratification metadata commit diff"
+                bad = [p for p in r2_files.splitlines() if p not in metadata_allowlist]
+                if bad:
+                    return False, None, None, None, (
+                        f"ratification metadata commit R2 touches non-metadata files: {bad}")
+            if not ci_tail and not disposition and described_head != r1:
+                return False, None, None, None, (
+                    f"ratification metadata commit R2 must describe R1 {r1[:12]}, "
+                    f"described_head is {described_head[:12]}")
+            out["ratification_tail"] = "R1R2"
+            out["r2"] = r2
+
+    # Position rule: the pinned authorized CI tail is admitted ONLY after the
+    # completed R1/R2 ratification tail — a tail before R2, without R1, or at
+    # any other position is rejected.
+    if ci_tail and n_tail != 2:
+        return False, None, None, None, (
+            "authorized CI tail is admitted only after the completed R1/R2 "
+            "ratification tail")
+    if ci_tail:
+        out["ci_tail"] = ci_tail
+
+    if disposition:
+        if not ci_tail:
+            return False, None, None, None, (
+                "disposition pair present without the pinned authorized CI tail")
+        r3a, r3b = disposition
+        for label, sha in (("disposition substantive", r3a), ("disposition metadata", r3b)):
+            ps = _git_merge_parents(sha, cwd=cwd) or []
+            if len(ps) != 1:
+                return False, None, None, None, (
+                    f"{label} commit {sha[:12]} is not a single-parent commit")
+        if metadata_allowlist:
+            r3b_files = _git(["diff", "--name-only", f"{r3b}~1", r3b], cwd=cwd)
+            if r3b_files is None:
+                return False, None, None, None, "cannot read disposition metadata commit diff"
+            bad = [p for p in r3b_files.splitlines() if p not in metadata_allowlist]
+            if bad:
+                return False, None, None, None, (
+                    f"disposition metadata commit R3b touches non-metadata files: {bad}")
+        if described_head != r3a:
+            return False, None, None, None, (
+                f"disposition metadata commit R3b must describe R3a {r3a[:12]}, "
+                f"described_head is {described_head[:12]}")
+        out["disposition"] = (r3a, r3b)
+    elif ci_tail:
+        # Tail sealed but disposition transaction not yet delivered: the
+        # described head must still anchor the authorized CI tail tip.
+        if described_head != ci_tail[-1]:
+            return False, None, None, None, (
+                f"described_head {described_head[:12]} must equal the authorized CI "
+                f"tail tip {ci_tail[-1][:12]}")
+    return True, merge_sha, substantive_head, metadata_head, "exact integration delivery proven"
+
+
 def historical_file_at(sha, rel_path, cwd=REPO):
     """Return the contents of a repository file at a specific commit, or None."""
     out = _git(["show", f"{sha}:{rel_path}"], cwd=cwd)

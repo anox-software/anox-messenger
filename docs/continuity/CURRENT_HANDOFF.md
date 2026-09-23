@@ -1,16 +1,38 @@
 # CURRENT_HANDOFF — anoX V1
 
-**Event:** `ANOX-EVENT-0054` — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001
-**Delivery branch:** `governance/security-remediation-s0-evidence-preservation-001`
-**Substantive HEAD:** `24576ec333f3567c36b46f42ed30c718788ea601`
-**Main baseline:** `0be57335adaa25ad584357dde74666eb97339a01` (corrected S0 final head on `security/remediation-s0-contract-freeze-001`; `main` = `0f932520393feee6d479cc099f179f5766323125`)
-**Effective gate:** `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+**Event:** `ANOX-EVENT-0058` — S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 (governance sealing)
+**Delivery branch:** `integration/s1-after-s0-001`
+**Substantive HEAD:** `ca94bb91f3d2489c0e4db46cec6549043930e09d` (R3a — disposition sealed by ANOX-EVENT-0058)
+**Main baseline:** `29a6643189242a47c4a79c38acd04c1eca748787` (canonical `main` at task start = S0 integration merge PR #36; S1 integrated via merge `dd6e2c5d82f0`)
+**Effective gate:** `REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — HUMAN-AUTHORIZED FOUR-FILE RATIFICATION TRANSACTION (retest S1-004 B-6 closed: the ratification is now ONE atomic R1 over exactly four paths — validate/test_security_audit_evidence_preservation.py plus the frozen S0 contract validate/test_s0_contract_freeze.py that pins it — because a two-path R1 broke the S0 contract with no authorized repair path; optional metadata-only R2 advances described_head and records the Human ratification; nothing beyond R1/R2; consumed pairs [0d1549d12d02, f08749e2e5ec], [a79e3b3db9b4, 4319dacaa7ac] and [4b31f6806136, 10cc68c442bc]; N-13/N-14 corrected; 859e834e0687… + c305c21c9405… + 7dbcaf60d7ba… + d22034e61257… CURRENT PROPOSAL (four-file transaction); e52f626a46f2… SUPERSEDED/NEVER RATIFY; d03e539a49e9… SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY; 87cd5e202325… SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
 
-Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
+Described HEAD: ca94bb91f3d2489c0e4db46cec6549043930e09d
+
+**S1 IS NOT YET FULLY INTEGRATED.**
+
+**PR #37 MUST NOT BE MERGED UNTIL ALL REQUIRED CI GATES ARE SUCCESSFUL.**
+
+## Post-R2 delivery tail — DISPOSITIONED 2026-09-22 (ANOX-EVENT-0058)
+
+- Human decision `ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001` admitted the four post-R2 CI commits `e7bd2c6547fb` → `0636a4ee81e2` → `793246022c05` → `45d1e4a63de4` plus ARM64-isolation T5 `4fc5263ff676` (`ANOX-TASK-S1-CI-ARM64-ISOLATION-001`) as the pinned authorized CI tail — exact SHA/order/position (only after sealed R1/R2 `e65c23d0b8a9`/`05dbcad25ab7`) and `.github/workflows/ci.yml`-only paths bound. Disposition pair [`R3a ca94bb91f3d2` + `R3b`] sealed it; `described_head` = R3a.
+- Governance gates at tip: `validate_s1_integration_evidence.py` FAIL (17 first-parent commits; bound 9-13), `validate_s0_contract_freeze.py` FAIL (5 commits follow R1; only one R2 authorized), `validate_security_audit_evidence_preservation.py` FAIL (5 task-authored commits; `ci.yml` outside preservation scope); all three PASS at `05dbcad25ab7`. Same root cause: unauthorized append after a completed R1/R2.
+- PR #37 (`integration/s1-after-s0-001` → `main`): OPEN, `MERGEABLE`/`UNSTABLE`. CI run `35754183154` at `45d1e4a`: 6 PASS / 2 FAIL — x86_64 instrumented job never started (GitHub billing/spending-limit failure — infrastructure, not product) and arm64 job executed 66 instrumented tests on stale AVD `anox_api34_arm64` (leftover emulator on the persistent runner, NOT created by this run — all finished, no assertion failures) then failed installing split APK `android-debug.apk` onto the run-created AVD `anox_arm64` (`com.android.ddmlib.InstallException: Failed to install-write all apks`; 0 tests on that device) — packaging/device-provisioning failure, not assertions.
+- Self-hosted runner `MacBook-Air-von-3xpress` (labels `self-hosted`, `macOS`, `ARM64`) online; seven jobs route to it; the x86_64 instrumented job still requires Linux/KVM (`ubuntu-latest`) and remains blocked by billing.
+- Handoff ZIP generation is unblocked at the sealed tip: `described_head` == R3a == event `ANOX-EVENT-0058` end_head (governance successor of `ANOX-EVENT-0055`). Canonical handoff generation may proceed once every remaining gate (validators, continuity, archive freshness, clean tree, push/CI state) passes.
+
+### Required continuation order
+
+0. **DONE 2026-09-22 — Human disposition of the post-R2 CI tail:** `ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001` ratified the tail + T5 ARM64 isolation `4fc5263ff676`; R3a `ca94bb91f3d2` + R3b sealed under `ANOX-EVENT-0058`.
+1. **ARM64** — stale-device cleanup performed 2026-09-22 (leftover emulator `anox_api34_arm64` killed; `adb devices` empty). Deterministic in-workflow isolation is now COMMITTED as T5 `4fc5263ff676` (`ANOX-TASK-S1-CI-ARM64-ISOLATION-001`): pre-AVD stale `emulator-*` kill + bounded wait + fail-closed on residue, post-boot exactly-one-online-emulator assertion with `adb devices -l` diagnostics, `if: always()` emulator cleanup. Runtime re-verification pending next CI run on the persistent self-hosted runner.
+2. **x86_64** — restore execution of the required `ubuntu-latest` instrumented job (GitHub account billing/spending-limit resolution or an equivalent approved Linux/KVM path). Do not remove, skip, make optional, or weaken the required ABI test; no PASS without real execution evidence.
+3. **CI rerun** — obtain a complete run against the exact final PR HEAD where every required job succeeds.
+4. **Pre-merge gate** — verify local HEAD == remote integration branch == PR head; PR base == expected canonical main; PR OPEN; `origin/main` unmoved; clean working tree; the green CI run belongs to the exact final HEAD; no failing/pending/cancelled required checks.
+5. **Merge** — only then, a human-authorized normal merge: `gh pr merge 37 --merge` (no squash, no rebase, no force).
+6. **Post-merge audit** — verify new canonical main SHA, merge parent structure, S1/R1/R2/CI-tail ancestry preservation, local==origin main, canonical validators on merged main, clean worktrees, MSC 42 open / 0 closed, B-004/B-005 NOT_STARTED, PRODUCT BLOCKED_PENDING_FINAL_AUDIT, authority/continuity consistency. Only after that audit passes may S1 be declared fully integrated.
 
 ## Pre-merge gate
 
-`SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+`REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — HUMAN-AUTHORIZED FOUR-FILE RATIFICATION TRANSACTION (retest S1-004 B-6 closed: the ratification is now ONE atomic R1 over exactly four paths — validate/test_security_audit_evidence_preservation.py plus the frozen S0 contract validate/test_s0_contract_freeze.py that pins it — because a two-path R1 broke the S0 contract with no authorized repair path; optional metadata-only R2 advances described_head and records the Human ratification; nothing beyond R1/R2; consumed pairs [0d1549d12d02, f08749e2e5ec], [a79e3b3db9b4, 4319dacaa7ac] and [4b31f6806136, 10cc68c442bc]; N-13/N-14 corrected; 859e834e0687… + c305c21c9405… + 7dbcaf60d7ba… + d22034e61257… CURRENT PROPOSAL (four-file transaction); e52f626a46f2… SUPERSEDED/NEVER RATIFY; d03e539a49e9… SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY; 87cd5e202325… SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY; Shared Validator remains a PROPOSAL, NOT Human-ratified; NOT INDEPENDENTLY VERIFIED — targeted independent re-verification of the committed R1/R1+R2 simulation required; MSC 42 open / 0 closed; B004/B005 NOT_STARTED; no push/PR/merge)`
 
 - Preserved the complete corrected S0 evidence chain as canonical repository evidence: `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (implementation PASS), `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` (`PASS_WITH_FINDINGS`, F-01…F-10 — `PROVENANCE_MARKED_CANONICAL_RECONSTRUCTION`, human-authorized; verbatim transcript unavailable), `REMEDIATION-SESSION-S0-CORRECTION-001` (PASS) and `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` (`PASS_WITH_FINDINGS`, merge blockers 0). Final dispositions: F-01 `RATIFIED_DISCLOSED_FILE_OWNERSHIP_DEVIATION`; F-02…F-10 `FIXED` (9/9). Residual LOW follow-ups (2, non-blocking, open): `S0-RESIDUAL-LOW-F05-UNANCHORED-CC-CLAUSES`, `S0-RESIDUAL-LOW-F08-AUTHORITY-HOME-FREETEXT`.
 - Human decision `ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001` (`HUMAN_RATIFIED_CHANGE_SPECIFIC_SHARED_VALIDATOR_EXTENSION`, `ONE_TIME_CHANGE_SPECIFIC`) authorized the pinned lifecycle extension of `tools/audit/validate_security_audit_evidence_preservation.py` — exactly `ANOX-EVENT-0054` after `ANOX-EVENT-0053`, and exactly one `SEC-AUDIT-REG-0013` `SECURITY_REMEDIATION_EVIDENCE` record (registry 12 → 13). No generic future-event support, no arbitrary registry growth, no S1 use.
@@ -28,7 +50,7 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 
 ## Post-merge gate
 
-`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)`
+`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 MERGED_TO_MAIN ∥ REMEDIATION_SESSION_S1 INTEGRATED_ON_MAIN_LINEAGE + F1-F9 REMEDIATED (pending targeted independent integration retest; wave-completion Candidate; security remediation IN_PROGRESS; x86_64 runtime evidence PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE; next: TARGETED-INDEPENDENT-INTEGRATION-RETEST-S1-001 → human merge → S2 ∥ S3)`
 
 ## Preserved audit outcomes
 
@@ -54,7 +76,7 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 ## Remediation state
 
 - `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`): `RETESTED_AND_EVIDENCE_PRESERVED` — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`; validator PASS; 98 adversarial tests; targeted independent retest `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking); evidence chain preserved under `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0054`, registry `SEC-AUDIT-REG-0013`); 0 MSC units closed. `S0_MERGE_READINESS = READY`.
-- `REMEDIATION_SESSION_S1`: `ISOLATED / IMPLEMENTATION_COMPLETE / NOT_INTEGRATED` (independent repository `anoX-s1`; its provisional `ANOX-EVENT-0054` is not canonical main-line history and will be regenerated/renumbered at post-S0 integration).
+- `REMEDIATION_SESSION_S1`: `INTEGRATED_ON_MAIN_LINEAGE` by `REMEDIATION-S1-CANONICAL-INTEGRATION-001` (ANOX-EVENT-0055; merge `dd6e2c5d82f0` of `e32463ca71b0` onto `29a664318924`, both histories preserved). `INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001` = `PASS_WITH_FINDINGS` (F-1…F-9) — F-1…F-7, F-9 `FIXED`, F-8 documented (`PIN_PROVENANCE_UNVERIFIED` for dtolnay/rust-toolchain; SHA pins unchanged). Protected central validator unchanged (ratified `89c7358f…`); S1-era extension prepared as ratification proposal — the atomic FOUR-FILE transaction `859e834e0687…` (central validator) + `c305c21c9405…` (central suite) + `7dbcaf60d7ba…` (S0 contract) + `d22034e61257…` (S0 contract suite), completed by `REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001`; `e52f626a46f2…` SUPERSEDED/NEVER RATIFY, `d03e539a49e9…` SUPERSEDED/NOT COMMITTABLE/NEVER RATIFY, `87cd5e202325…` SUPERSEDED BY THE FOUR-FILE PACKAGE/NEVER RATIFY and enforced by `validate_s1_integration_evidence.py` (registry `SEC-AUDIT-REG-0014`). Isolated provisional `ANOX-EVENT-0054` is NONCANONICAL. MSC-UNIT-001/002 `RUNTIME_TESTED = PENDING` under exact FCP-1 (arm64 implementer-only; x86_64 `PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE`); `INDEPENDENTLY_RETESTED` PENDING; 0 units CLOSED. Next: independent retest of the corrected branch → Human disposition of B-1 + shared-validator ratification → human merge.
 - `S2`/`S3`/`S4`: `NOT_STARTED`.
 
 ## Product state

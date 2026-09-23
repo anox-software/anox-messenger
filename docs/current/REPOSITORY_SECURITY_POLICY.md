@@ -22,13 +22,18 @@
 
 ## Dependencies
 
-- `Cargo.lock` and Gradle lockfiles are retained in version control.
-- Dependencies are pinned or versioned responsibly.
+- `Cargo.lock` is retained in version control and all Rust builds use `--locked`.
+- Gradle dependency lockfiles do **not** exist yet; Gradle dependency locking/verification is tracked as later-gate work (B-017 RC scope). Prior wording claiming retained Gradle lockfiles was incorrect.
+- CI runs a fail-closed Rust advisory scan (`cargo audit`, pinned version) on every change to `crypto/rust/Cargo.lock`.
+- Dependencies are pinned or versioned responsibly; all GitHub Actions `uses:` references are pinned to 40-character commit SHAs (enforced by `tools/security/b017_lite_policy_validator.py`).
 
 ## Generated artifacts
 
-- Native `.so` libraries are currently committed because the project does not yet have a reproducible `cargo-ndk` CI pipeline.
-- When a CI build pipeline is added, native artifacts should be produced in CI and removed from the repository.
+- Native `.so` libraries are **never committed**. The only accepted source of `libanox_crypto.so` is the authoritative build path `tools/security/native_build.py`, which compiles the reviewed `crypto/rust` source with the toolchain pinned in `crypto/rust/rust-toolchain.toml` (Rust 1.97.1, NDK r26c, cargo-ndk 4.1.2) for exactly `arm64-v8a` and `x86_64`.
+- `android/src/main/jniLibs/` is ignored and must stay empty/absent; `android/build.gradle.kts` fails closed if a `.so` ever appears there and consumes only `build/native/jniLibs` produced by the authoritative build.
+- Every authoritative build emits `build/native/native-manifest.json` binding source revision, toolchain, ABI, artifact path and SHA-256; two clean builds must produce identical hashes; `tools/security/validate_apk_contents.py` verifies the packaged `.so` bytes against that manifest inside the final APK.
+- The build refuses a dirty working tree (the manifest records `source.working_tree = "clean"` and nothing else is accepted), and `native_build.py rebuild-compare` is the only in-repo writer of the `build.reproducible_build_confirmed = true` attestation, which `verify` and the APK validator require. The attestation is an unauthenticated manifest field: `verify` enforces consistency between manifest, attestation and artifacts, while the guarantee that a rebuild-compare actually ran comes from the enforced CI producer pipeline (the structural needs-graph gate), not from the manifest alone — a manifest authored outside that pipeline can assert the flag, so `verify` output is a consistency check, not standalone proof of reproducibility. APK member paths must be canonical (`lib/<abi>/<name>.so` exactly); any alternate spelling/casing/normalization that could hide a native library fails closed.
+- GitHub Action SHA pins and their independently verified release lineage are classified in `docs/security/remediation/S1_ACTION_PIN_PROVENANCE.md`; pins are never replaced by mutable refs.
 - `target/`, `build/`, `.gradle/`, and `.kotlin/` are not committed.
 
 ## Review policy

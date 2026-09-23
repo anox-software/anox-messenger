@@ -1,26 +1,26 @@
 # Project Memory Surface Index — anoX V1
 
-**Latest material event:** ANOX-EVENT-0054
-**Latest human history event:** ANOX-EVENT-0054
+**Latest material event:** ANOX-EVENT-0058
+**Latest human history event:** ANOX-EVENT-0058
 
 | Surface | Latest reference |
 |---------|-----------------|
-| CURRENT_STATE.json | ANOX-EVENT-0054 |
-| CURRENT_GIT_STATE.md | ANOX-EVENT-0054 |
-| CURRENT_HANDOFF.md | ANOX-EVENT-0054 |
-| CURRENT_OPEN_WORK.md | ANOX-EVENT-0054 |
-| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0054 |
-| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0054 |
-| PROJECT_STATE.md | ANOX-EVENT-0054 |
-| FORTSCHRITT.md | ANOX-EVENT-0054 |
-| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0054 |
+| CURRENT_STATE.json | ANOX-EVENT-0058 |
+| CURRENT_GIT_STATE.md | ANOX-EVENT-0058 |
+| CURRENT_HANDOFF.md | ANOX-EVENT-0058 |
+| CURRENT_OPEN_WORK.md | ANOX-EVENT-0058 |
+| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0058 |
+| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0058 |
+| PROJECT_STATE.md | ANOX-EVENT-0058 |
+| FORTSCHRITT.md | ANOX-EVENT-0058 |
+| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0058 |
 | WORKFORCE_STATE.json | ANOX-EVENT-0054 |
 | findings.jsonl | ANOX-EVENT-0052 |
 | tasks.jsonl | ANOX-EVENT-0054 |
 | runs.jsonl | ANOX-EVENT-0044 |
 | audits.jsonl | ANOX-EVENT-0044 |
-| decisions.jsonl | ANOX-EVENT-0054 |
-| PROJECT_HISTORY_LEDGER.jsonl | ANOX-EVENT-0054 |
+| decisions.jsonl | ANOX-EVENT-0058 |
+| PROJECT_HISTORY_LEDGER.jsonl | ANOX-EVENT-0058 |
 | docs/authority/* (AUTHORITY_INDEX, B_FREEZE_REGISTRY, B025_MANDATORY_AMENDMENTS_V1_4, contracts/S0_CONTRACT_FREEZE_MANIFEST.json) | ANOX-EVENT-0053 |
 | docs/current/DATABASE_ARCHITECTURE.md, BACKEND_ARCHITECTURE.md (schema deference) | ANOX-EVENT-0053 |
 | docs/reports/security/remediation/* (S0 task record; S0 preservation task record) | ANOX-EVENT-0054 |
@@ -68,3 +68,14 @@ Surface updates in this event:
 - `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` (ANOX-EVENT-0054)
 - `docs/workforce/WORKFORCE_STATE.json` (ANOX-EVENT-0054; described_head sealed; next_phase SECURITY_REMEDIATION_WAVE_1 (in progress))
 - `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` (ANOX-EVENT-0054)
+
+Surface updates NOT tied to a new canonical event (2026-09-17):
+- Human-authorized correction pass `REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001`
+  (`ANOX-DECISION-S1-PRE-RATIFICATION-CORRECTIONS-AUTHORIZATION-001`) updated
+  `CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`,
+  `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`,
+  `CURRENT_IMPLEMENTATION_STATE.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`,
+  `WORKFORCE_STATE.json`, `tasks.jsonl`, `decisions.jsonl` and
+  `audit_registry.jsonl` (S1 record's proposed-hash fields) — correction pair
+  `[7120aedd452b + metadata]` over the pinned ANOX-EVENT-0055 delivery and the CONSUMED pairs `[0d1549d12d02, f08749e2e5ec]`, `[a79e3b3db9b4, 4319dacaa7ac]`, `[4b31f6806136, 10cc68c442bc]`;
+  `latest_material_event_id` remains `ANOX-EVENT-0055` (no new event).

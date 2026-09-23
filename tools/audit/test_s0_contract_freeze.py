@@ -8,11 +8,13 @@ FAILS.  A baseline test asserts the unmodified tree PASSES.
 Run:  python3 -m unittest tools.audit.test_s0_contract_freeze
 """
 import contextlib
+import hashlib
 import io
 import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -37,6 +39,20 @@ FIXTURE_FILES = (
     v.F01_RATIFICATION_REPORT,
     v.PRESERVATION_RATIFICATION_REPORT,
     "tools/audit/validate_security_audit_evidence_preservation.py",
+    # four-path ratification transaction (REMEDIATION-S1-FOUR-FILE-RATIFICATION-
+    # TRANSACTION-001): the fixture must carry the WHOLE package, otherwise the
+    # third authorized content could never have its post-images verified here.
+    v.S1_INTEGRATION_RATIFICATION_REPORT,
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    # CI-infrastructure tail disposition (fourth authorized content): the
+    # canonical decision record whose live post-image pins are verified.
+    v.S1_CI_DISPOSITION_RECORD,
+    "tools/audit/test_s1_integration_evidence.py",
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/validate_s0_evidence_preservation.py",
 )
 
 
@@ -60,6 +76,26 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         self.addCleanup(setattr, v, "REPO_ROOT", REPO_ROOT)
 
     # -- helpers -----------------------------------------------------------
+    def central_era(self):
+        """Which Human-ratified content the protected central validator carries.
+
+        The paired suite must pass in BOTH legitimate eras: before the four-path
+        ratification transaction (`s0_preservation`) and after it
+        (`s1_integration`). Era is read from content, never assumed.
+        """
+        rel = "tools/audit/validate_security_audit_evidence_preservation.py"
+        spec = v.PROTECTED_SHARED_FILES[rel]
+        digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        if digest == spec.get("s1_ci_disposition_authorized_sha256"):
+            return "s1_ci_disposition"
+        if digest == spec.get("s1_integration_authorized_sha256"):
+            return "s1_integration"
+        if digest == spec["preservation_authorized_sha256"]:
+            return "s0_preservation"
+        if digest == spec["authorized_sha256"]:
+            return "s0_successor"
+        return "unknown"
+
     def path(self, rel):
         return Path(self.tmp) / rel
 
@@ -430,6 +466,29 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
         self.write(rel, self.read(rel) + "\n# unauthorized second change\n")
         self.assert_fail("unauthorized modification")
+        # Four-path transaction integrity (era-aware): once the protected central
+        # validator carries the S1 successor content, tampering with ANY
+        # externally pinned member of the ratification package must also fail
+        # closed, so the package can never be ratified piecemeal or half-applied.
+        # Before ratification the third pin is simply not active, and asserting
+        # on it would be asserting on the wrong era.
+        if self.central_era() == "s1_integration":
+            for member in sorted(v.S1_RATIFICATION_POST_IMAGES):
+                self.setUp()
+                self.write(member, self.read(member) + "\n# tampered package member\n")
+                errors, out = run_validator(self.tmp)
+                self.assertTrue(errors, f"tampered package member {member} must fail closed\n{out}")
+                self.assertTrue(any("four-file package is not intact" in e or "unauthorized modification" in e
+                                    for e in errors), f"unexpected errors for {member}: {errors}")
+        if self.central_era() == "s1_ci_disposition":
+            for member in sorted(v.S1_CI_DISPOSITION_POST_IMAGES):
+                self.setUp()
+                self.write(member, self.read(member) + "\n# tampered package member\n")
+                errors, out = run_validator(self.tmp)
+                self.assertTrue(errors, f"tampered disposition package member {member} must fail closed\n{out}")
+                self.assertTrue(any("package is not intact" in e or "unauthorized modification" in e
+                                    or "disposition pins" in e
+                                    for e in errors), f"unexpected errors for {member}: {errors}")
 
     def test_53_f03_protected_file_reverted_to_pre_s0(self):
         rel = "tools/audit/validate_security_audit_evidence_preservation.py"
@@ -476,6 +535,44 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
     def test_63_f03_ratification_record_document_missing(self):
         self.path(v.F01_RATIFICATION_REPORT).unlink()
         self.assert_fail("canonical record")
+
+    # -- F-03: CI-infrastructure tail disposition (fourth authorized content)
+    def _require_disposition_era(self):
+        if self.central_era() != "s1_ci_disposition":
+            self.skipTest("CI-disposition era not active in this checkout")
+
+    def test_63d_disposition_record_missing(self):
+        self._require_disposition_era()
+        self.path(v.S1_CI_DISPOSITION_RECORD).unlink()
+        self.assert_fail("canonical record")
+
+    def test_63e_disposition_record_marker_dropped(self):
+        self._require_disposition_era()
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        # Dropping the decision id marker must fail closed.
+        self.write(v.S1_CI_DISPOSITION_RECORD,
+                   text.replace(v.S1_CI_DISPOSITION_DECISION_ID, "ANOX-DECISION-OTHER"))
+        self.assert_fail("content marker")
+
+    def test_63f_disposition_record_tail_sha_dropped(self):
+        self._require_disposition_era()
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        # Every pinned tail SHA is a required record marker.
+        sha = v.S1_CI_TAIL_SHAS[2]
+        self.assertIn(sha, text)
+        self.write(v.S1_CI_DISPOSITION_RECORD, text.replace(sha, "0" * 40))
+        self.assert_fail("content marker")
+
+    def test_63g_disposition_record_post_image_tampered(self):
+        self._require_disposition_era()
+        # A record whose post-image binding no longer matches live content is
+        # rejected — the pin cannot be manipulated to launder modified files.
+        text = self.read(v.S1_CI_DISPOSITION_RECORD)
+        rel = "tools/audit/validate_s1_integration_evidence.py"
+        live = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest()
+        self.assertIn(live, text, "record must pin the live s1 validator content")
+        self.write(v.S1_CI_DISPOSITION_RECORD, text.replace(live, "0" * 64))
+        self.assert_fail("must pin live sha256")
 
     # -- F-04: deference set is validator-owned ----------------------------
     def test_64_f04_manifest_drops_deference_document(self):
@@ -655,6 +752,44 @@ class S0ContractFreezeAdversarialTests(unittest.TestCase):
             "`docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` |",
             text, flags=re.MULTILINE))
         self.assert_fail("lost its base-document pointer")
+
+    # -- F-02: linked-worktree .git detection (fail-closed, never a silent SKIP)
+    def test_91_f02_linked_worktree_pointer_executes_scope_gate(self):
+        # A fixture whose .git is a worktree pointer file must run the scope
+        # gate, not silently skip it (the historical .is_dir() weakness).
+        # `--absolute-git-dir` is required: plain `--git-dir` returns the
+        # relative ".git" in a normal repository, which the validator resolves
+        # against the FIXTURE root (not the real repository) and correctly
+        # rejects. Using the relative form made this test pass only inside a
+        # linked worktree (retest finding B-5).
+        gitdir = subprocess.run(["git", "rev-parse", "--absolute-git-dir"], cwd=REPO_ROOT,
+                                capture_output=True, text=True).stdout.strip()
+        self.assertTrue(gitdir, "test requires a git context")
+        self.assertTrue(Path(gitdir).is_absolute(), f"gitdir must be absolute, got {gitdir!r}")
+        (Path(self.tmp) / ".git").write_text(f"gitdir: {gitdir}\n", encoding="utf-8")
+        errors, out = run_validator(self.tmp)
+        self.assertNotIn("fixture mode", out, "scope gate must not skip in a linked worktree")
+        self.assertFalse(errors, f"valid linked-worktree gitdir must evaluate cleanly\n{out}")
+        self.assertIn("protected shared changes ratified", out)
+        # Era-aware: with Git resolvable, the S1 successor content must have been
+        # admitted by the STRUCTURAL four-path transaction proof (R1 or R1+R2),
+        # never by content identity alone.
+        if self.central_era() == "s1_integration":
+            self.assertIn("four-path ratification transaction proven", out)
+            self.assertNotIn("fixture mode", out)
+        if self.central_era() == "s1_ci_disposition":
+            self.assertIn("CI-infrastructure tail disposition proven", out)
+            self.assertNotIn("fixture mode", out)
+
+    def test_92_f02_malformed_worktree_pointer_fails_closed(self):
+        for content in ("gitdir:\n", "not-a-pointer\n",
+                        "gitdir: /nonexistent/definitely-missing\n",
+                        "gitdir: a\ngitdir: b\n"):
+            (Path(self.tmp) / ".git").write_text(content, encoding="utf-8")
+            errors, out = run_validator(self.tmp)
+            self.assertTrue(errors, f"malformed .git pointer {content!r} must fail closed\n{out}")
+            self.assertIn("Git metadata unusable", out)
+            self.assertNotIn("fixture mode", out)
 
 
 if __name__ == "__main__":

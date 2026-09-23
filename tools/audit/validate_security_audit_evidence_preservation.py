@@ -133,6 +133,245 @@ def _is_s0_preservation_event(ev):
         and S0_PRESERVATION_EVENT["ref"] in (ev.get("refs") or [])
     )
 
+
+# REMEDIATION-S1-CANONICAL-INTEGRATION-001 is the sole admissible successor of
+# S0_PRESERVATION_EVENT (chain 0052 → 0053 → 0054 → 0055). It integrates the
+# pinned isolated S1 delivery (which provisionally — and NONCANONICALLY — used
+# ANOX-EVENT-0054) onto canonical main and remediates retest findings F1–F9.
+# Every identifying field is pinned; this is NOT generic future-event support
+# and does NOT reuse the S0 one-time exception (all S0 predicates stay
+# state-gated to their own task/branch).
+S1_INTEGRATION_EVENT = {
+    "event_id": "ANOX-EVENT-0055",
+    "type": "remediation_session_integration",
+    "task": "ANOX-TASK-REMEDIATION-S1-CANONICAL-INTEGRATION-001",
+    "start_head": "29a6643189242a47c4a79c38acd04c1eca748787",
+    "merged_head": "e32463ca71b0fec62a5f20026e6dc528f9bff30c",
+    "merged_base": "0f932520393feee6d479cc099f179f5766323125",
+    "ref": "docs/reports/security/remediation/REMEDIATION-S1-CANONICAL-INTEGRATION-001.md",
+    "delivery_branch": "integration/s1-after-s0-001",
+    "supersedes_provisional_event": "ANOX-EVENT-0054",
+}
+S1_INTEGRATION_ID = "REMEDIATION-S1-CANONICAL-INTEGRATION-001"
+S1_ORIGINAL_TASK = "ANOX-TASK-REMEDIATION-SESSION-S1-BUILD-PROVENANCE-001"
+# Pinned S1 delivery commits. A Human-authorized pre-ratification correction
+# pass (REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001) may append exactly one
+# further task pair [D1 substantive, D2 metadata] on the same delivery branch;
+# D1 is bound to CURRENT_STATE.described_head and current_task must be the
+# correction task. No other chain shape is accepted.
+S1_SUBSTANTIVE_SHA = "ea20aaaf330c9268448df5523e89615aa0a69074"
+S1_METADATA_SHA = "573c5f58b91a1871fb6d7a6d722585a8518fa02c"
+# Correction passes on the S1 delivery branch. Every pair that has already been
+# delivered is pinned by SHA and is CONSUMED: it can never be replaced, rewritten
+# or reused as an open slot (retest finding N-9). Exactly one further (still
+# unpinned) pair is accepted, and only while S1_CORRECTION_TASK is declared.
+#
+# These pins live in THIS Human-ratified file on purpose. They are deliberately
+# NOT read from an S1-writable module, because that would let the S1 session widen
+# the acceptance criteria of the validator that is meant to constrain it.
+# tools/audit/validate_s1_integration_evidence.py carries the same values and
+# fail-closed cross-checks them against this file once ratified, so the two can
+# never drift apart silently again.
+S1_CONSUMED_CORRECTION_PAIRS = (
+    # REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001 (substantive, metadata)
+    ("0d1549d12d02fd7b277bf04fed7530b6605c1023",
+     "f08749e2e5ec45e76b1ea98c5c999e4679be3ffe"),
+    # REMEDIATION-S1-FINAL-CORRECTIONS-001 — frozen by
+    # TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003 and promoted
+    # here, so D1'/D2' can no longer be substituted (retest finding L).
+    ("a79e3b3db9b441fd81b5f76f6804f90eb44bb36b",
+     "4319dacaa7ac94405e8b72fe23effb6e733ab898"),
+    # REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 — frozen by
+    # TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004 and promoted here, so
+    # the ratification-tail pair can no longer be substituted either.
+    ("4b31f680613651772d6006c2d47d1f6ccd1bb837",
+     "10cc68c442bc67be03d863ad20e29e4dfcb0bd51"),
+    # REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 — consumed by the
+    # delivered R1/R2 transaction and promoted here under
+    # ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001, closing the last
+    # unpinned correction slot (the disclosed trust boundary is now fully
+    # resolved by SHA pins).
+    ("7120aedd452bd77bbe208bb76a6d2c421394c820",
+     "c57485d7c54f57ab03cb2c896d796b2da787fc13"),
+)
+S1_CORRECTION_TASKS = (
+    "ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001",
+    "ANOX-TASK-REMEDIATION-S1-FINAL-CORRECTIONS-001",
+    "ANOX-TASK-REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001",
+    "ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001",
+    # Tasks that may legitimately appear as CURRENT_STATE.current_task on the
+    # S1 delivery branch under the CI-infrastructure tail disposition
+    # (ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001).
+    "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001",
+    "ANOX-TASK-S1-CI-ARM64-ISOLATION-001",
+)
+# The last unpinned correction slot is CLOSED by
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001: no further
+# correction pair is authorized without a new Human decision.
+S1_CORRECTION_TASK = None
+
+# --- Human-ratification tail (non-circular) --------------------------------
+# The Human ratification of this very file is itself a commit (R1), optionally
+# followed by the required metadata synchronisation (R2). Refusing those commits
+# made the package structurally unratifiable
+# (TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003, BLOCKER-1).
+#
+# The tail is admitted WITHOUT any validator knowing its own future commit SHA.
+# It is pinned only by relationships that already exist:
+#   * R1's parent must be the completed delivery tip,
+#   * R1 must change EXACTLY the four package paths below and nothing else,
+#   * the resulting contents are fixed by hashes already recorded in evidence,
+#   * R2 must be a child of R1 restricted to METADATA_ALLOWLIST and must move
+#     described_head to R1.
+# Anything beyond R1/R2 is rejected, so this is not a generic append slot.
+#
+# FOUR-FILE TRANSACTION (REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001,
+# retest S1-004 blocking finding B-6): a two-path R1 was structurally
+# uncommittable. Applying the package makes this file's content the S1 successor,
+# which the frozen S0 contract (tools/audit/validate_s0_contract_freeze.py, F-03)
+# pinned to only two authorized contents — so R1 failed S0 no matter what, while
+# an R1 that also carried the S0 contract pin was rejected for changing a third
+# path, and a metadata-only R2 may not touch tools/**. The ratification is
+# therefore ONE atomic four-path transaction: the protected validator, its paired
+# suite, the S0 contract that pins it, and the S0 contract's paired suite. All
+# four move together or the ratification does not happen at all.
+S1_RATIFICATION_PATHS = frozenset({
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/test_s0_contract_freeze.py",
+})
+S1_RATIFICATION_DECISION_ID = "ANOX-DECISION-S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-001"
+
+# --- Human-authorized post-R2 CI-infrastructure tail disposition -----------
+# ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 ratifies exactly the
+# five ci.yml-only commits below — position (after the completed R1/R2 tail),
+# order and SHA identity are all bound — plus the disposition pair
+# [R3a substantive, R3b metadata] that carries this governance extension and
+# the sealing event ANOX-EVENT-0058. Nothing else is admissible: no SHA
+# substitution, no reorder, no additional unpinned CI commit, no path other
+# than .github/workflows/ci.yml, no tail before R2.
+S1_CI_TAIL = (
+    ("e7bd2c6547fb23de44a8aa762fe5d046c34d318e", frozenset({".github/workflows/ci.yml"})),
+    ("0636a4ee81e2e7ea9dd4ca7615d06bf80ae80827", frozenset({".github/workflows/ci.yml"})),
+    ("793246022c0501e85350113871d00db9ee843826", frozenset({".github/workflows/ci.yml"})),
+    ("45d1e4a63de45fe10d2fc8f455b321bb675e390a", frozenset({".github/workflows/ci.yml"})),
+    # ANOX-TASK-S1-CI-ARM64-ISOLATION-001 — deterministic stale-emulator
+    # isolation for the persistent self-hosted ARM64 runner.
+    ("4fc5263ff6763768088f0f13856d704bd1772178", frozenset({".github/workflows/ci.yml"})),
+)
+S1_CI_DISPOSITION_DECISION_ID = "ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_DISPOSITION_RECORD = "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md"
+S1_CI_DISPOSITION_TASK = "ANOX-TASK-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001"
+S1_CI_ARM64_ISOLATION_TASK = "ANOX-TASK-S1-CI-ARM64-ISOLATION-001"
+S1_CI_DISPOSITION_PATHS = frozenset({
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/validate_s0_contract_freeze.py",
+    "tools/audit/test_s1_integration_evidence.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",
+    "tools/audit/validate_s0_evidence_preservation.py",
+    S1_CI_DISPOSITION_RECORD,
+})
+S1_CI_DISPOSITION_EVENT = {
+    "event_id": "ANOX-EVENT-0058",
+    "type": "governance",
+    "task": S1_CI_DISPOSITION_TASK,
+    "start_head": "45d1e4a63de45fe10d2fc8f455b321bb675e390a",
+}
+
+# Repository surfaces the S1 integration is allowed to change relative to its
+# start head. Anything outside this set — in particular crypto/rust/src/**,
+# android/src/main/java/**, backend/, supabase/, migrations/, *.sql and
+# docs/authority/** — is rejected as an unrelated / S2+/B004+ change.
+S1_ALLOWED_EXACT = {
+    ".github/workflows/ci.yml", ".gitignore", "android/build.gradle.kts",
+    "crypto/rust/rust-toolchain.toml", "docs/current/REPOSITORY_SECURITY_POLICY.md",
+    "docs/reports/security/retests/INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-CANONICAL-INTEGRATION-001.md",
+    "docs/security/audit-evidence/audit_registry.jsonl",
+    "tools/audit/lifecycle_legality.py",
+    "tools/audit/validate_s0_evidence_preservation.py",  # explicit: SEC-AUDIT-REG-0014 is not an S0 "prior" record
+    "tools/audit/validate_s0_contract_freeze.py",  # explicit: S0 scope evaluated over S0's own pinned range
+    "tools/audit/validate_security_audit_evidence_preservation.py",
+    "tools/audit/test_security_audit_evidence_preservation.py",
+    "tools/audit/test_s0_contract_freeze.py",  # paired fail-closed worktree tests (S1-PRE-RAT-CORR)
+    "docs/reports/security/remediation/REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001.md",
+    "tools/audit/validate_b021_verification_matrix.py",
+    "tools/audit/validate_s1_build_provenance.py",
+    "tools/audit/test_s1_build_provenance.py",
+    "tools/audit/test_s1_retest_remediation.py",
+    "tools/audit/validate_s1_integration_evidence.py",
+    "tools/audit/test_s1_integration_evidence.py",
+    "docs/reports/security/decisions/S1-INTEGRATION-SHARED-VALIDATOR-RATIFICATION-PROPOSAL-001.md",
+    "docs/reports/security/decisions/proposals/S1_SHARED_VALIDATOR_EXTENSION.patch",
+    # REMEDIATION-S1-FINAL-CORRECTIONS-001 evidence surfaces (Human authority
+    # record, correction report, independent retest report)
+    "docs/reports/security/decisions/S1-FINAL-CORRECTION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-FINAL-CORRECTIONS-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-PRE-RATIFICATION-RETEST-S1-002.md",
+    # REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001 evidence surfaces
+    "docs/reports/security/decisions/S1-RATIFICATION-TAIL-CORRECTION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-RATIFICATION-TAIL-CORRECTION-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-RATIFICATION-COMMITTABILITY-RETEST-S1-003.md",
+    # REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001 evidence surfaces
+    "docs/reports/security/decisions/S1-FOUR-FILE-RATIFICATION-AUTHORIZATION-001.md",
+    "docs/reports/security/remediation/REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001.md",
+    "docs/reports/security/retests/TARGETED-INDEPENDENT-FINAL-RATIFICATION-RETEST-S1-004.md",
+    # REMEDIATION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001 evidence surface
+    "docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md",
+}
+S1_ALLOWED_PREFIXES = (
+    "android/src/main/jniLibs/",   # deletions of the committed-.so bypass only
+    "tools/security/",
+    "docs/security/remediation/",
+)
+S1_FORBIDDEN_PREFIXES = (
+    "crypto/rust/src/", "android/src/main/java/", "android/src/androidTest/", "android/src/test/",
+    "backend/", "supabase/", "migrations/", "docs/authority/",
+)
+
+
+def _s1_integration_delivery_active(state):
+    """True when CURRENT_STATE declares the S1 canonical-integration delivery
+    (or the authorized pre-ratification correction pass on the same branch)."""
+    return (
+        state.get("current_task") in (S1_INTEGRATION_EVENT["task"],) + S1_CORRECTION_TASKS
+        and state.get("delivery_branch") == S1_INTEGRATION_EVENT["delivery_branch"]
+    )
+
+
+def _is_s1_ci_disposition_event(ev, described_head):
+    """The sealing governance event for the CI-infrastructure tail disposition.
+
+    end_head is bound DYNAMICALLY to CURRENT_STATE.described_head (the
+    disposition substantive R3a) — the event cannot pin the R3a SHA literally
+    because the sealing metadata commit is authored before that SHA exists in
+    the validator source; the binding is nonetheless exact through
+    described_head, which the delivery topology already pins to R3a.
+    """
+    s1 = S1_CI_DISPOSITION_EVENT
+    return (ev.get("event_id") == s1["event_id"]
+            and ev.get("type") == s1["type"]
+            and ev.get("task") == s1["task"]
+            and ev.get("start_head") == s1["start_head"]
+            and ev.get("end_head") == described_head
+            and S1_CI_DISPOSITION_RECORD in (ev.get("refs") or []))
+
+
+def _is_s1_integration_event(ev):
+    return (
+        ev.get("event_id") == S1_INTEGRATION_EVENT["event_id"]
+        and ev.get("type") == S1_INTEGRATION_EVENT["type"]
+        and ev.get("task") == S1_INTEGRATION_EVENT["task"]
+        and ev.get("start_head") == S1_INTEGRATION_EVENT["start_head"]
+        and ev.get("merged_head") == S1_INTEGRATION_EVENT["merged_head"]
+        and ev.get("supersedes_provisional_event") == S1_INTEGRATION_EVENT["supersedes_provisional_event"]
+        and S1_INTEGRATION_EVENT["ref"] in (ev.get("refs") or [])
+    )
+
 # ---------------------------------------------------------------------------
 # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
 # ---------------------------------------------------------------------------
@@ -917,7 +1156,21 @@ def _rev_parse(ref):
 
 
 def has_git():
-    return (REPO_ROOT / ".git").is_dir()
+    """True for a normal repository OR a linked worktree (F2: a `.git` pointer
+    file must not silently downgrade the validator to fixture mode)."""
+    dot_git = REPO_ROOT / ".git"
+    if dot_git.is_dir():
+        return True
+    if dot_git.is_file():
+        try:
+            line = dot_git.read_text(encoding="utf-8").strip()
+        except (OSError, UnicodeDecodeError):
+            return False
+        if line.startswith("gitdir:"):
+            target = line[len("gitdir:"):].strip()
+            tpath = Path(target) if Path(target).is_absolute() else REPO_ROOT / target
+            return tpath.is_dir() and (tpath / "HEAD").exists()
+    return False
 
 
 def validate_base(errors):
@@ -937,6 +1190,41 @@ def validate_base(errors):
         fail(f"CURRENT_STATE described_head is not a valid SHA: {described}", errors)
         return
     base_sha, delivery_branch, label = BASE_SHA, DELIVERY_BRANCH, "base"
+    if _s1_integration_delivery_active(state):
+        # S1 canonical integration: merge of the pinned isolated S1 head onto
+        # canonical main, followed by exactly 2 task-authored commits. The
+        # start head must descend from the S0 preservation delivery (chain
+        # continuity 0052 → 0053 → 0054 → 0055).
+        s1 = S1_INTEGRATION_EVENT
+        if not ll._git_is_ancestor(S0_PRESERVATION_EVENT["start_head"], s1["start_head"], cwd=REPO_ROOT):
+            fail(f"S1 integration base {s1['start_head'][:12]} does not descend from S0 preservation base "
+                 f"{S0_PRESERVATION_EVENT['start_head'][:12]}", errors)
+            return
+        _delivery_out = {}
+        ok, merge_sha, _, _, reason = ll.canonical_integration_delivery(
+            s1["start_head"], s1["merged_head"], s1["merged_base"], described, head,
+            cwd=REPO_ROOT, metadata_allowlist=METADATA_ALLOWLIST,
+            s1_substantive_sha=S1_SUBSTANTIVE_SHA, s1_metadata_sha=S1_METADATA_SHA,
+            correction_task=S1_CORRECTION_TASK,
+            consumed_correction_pairs=S1_CONSUMED_CORRECTION_PAIRS,
+            ratification_paths=S1_RATIFICATION_PATHS,
+            authorized_ci_tail=S1_CI_TAIL,
+            disposition_paths=S1_CI_DISPOSITION_PATHS, out=_delivery_out,
+        )
+        if not ok:
+            fail(f"canonical S1 integration delivery failed: {reason}", errors)
+            return
+        _consumed_heads = {S1_METADATA_SHA} | {m for _, m in S1_CONSUMED_CORRECTION_PAIRS}
+        if (head not in _consumed_heads
+                and _delivery_out.get("ratification_tail", "NONE") == "NONE"
+                and state.get("current_task") != S1_CORRECTION_TASK):
+            fail(f"correction-delivery commits present but CURRENT_STATE.current_task "
+                 f"{state.get('current_task')!r} is not the authorized correction task "
+                 f"{S1_CORRECTION_TASK}", errors)
+            return
+        print(f"  OK   S1 integration: merge {merge_sha[:12]} of pinned {s1['merged_head'][:12]} "
+              f"onto {s1['start_head'][:12]} + exactly 2 task-authored commits")
+        return
     if _s0_preservation_delivery_active(state):
         # The S0 evidence-preservation delivery sits on top of the corrected S0
         # final head; its two-commit proof is evaluated against the S0
@@ -1065,13 +1353,93 @@ S0_PRESERVATION_SOURCE_SHA256 = {
 }
 
 
+# Pinned expectations for the single S1 canonical-integration evidence record
+# (registry grows 13 → 14 for exactly this record; no arbitrary growth).
+S1_INTEGRATION_REGISTRY_REQUIRED = {
+    "record_id": "SEC-AUDIT-REG-0014",
+    "audit_id": S1_INTEGRATION_ID,
+    "artifact_type": "SECURITY_REMEDIATION_EVIDENCE",
+    "task_id": S1_INTEGRATION_EVENT["task"],
+    "base_sha": S1_INTEGRATION_EVENT["start_head"],
+    "s1_original_base_sha": "0f932520393feee6d479cc099f179f5766323125",
+    "s1_original_substantive_sha": "fc58414b6790c07f65d1dc9f72c019abd42efc86",
+    "s1_original_final_head_sha": "e32463ca71b0fec62a5f20026e6dc528f9bff30c",
+    "s1_integration_merge_sha": "dd6e2c5d82f0777aedfea9fd7a2516cb83254fdb",
+    "s1_provisional_event": "ANOX-EVENT-0054",
+    "s1_provisional_event_status": "NONCANONICAL",
+    "canonical_event": "ANOX-EVENT-0055",
+    "independent_retest_id": "INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001",
+    "independent_retest_result": "PASS_WITH_FINDINGS",
+    "findings_final_disposition": {
+        "F-1": "FIXED", "F-2": "FIXED", "F-3": "FIXED", "F-4": "FIXED", "F-5": "FIXED",
+        "F-6": "FIXED", "F-7": "FIXED", "F-8": "DOCUMENTED_PIN_PROVENANCE_UNVERIFIED_PINS_UNCHANGED",
+        "F-9": "FIXED",
+    },
+    "shared_validator_followup": "PROPOSAL_PREPARED_PENDING_HUMAN_RATIFICATION",
+    "shared_validator_paired_tests_proposed_sha256": "c305c21c9405454067721efe7c8d0395e99aed9e6870cf49e3daedb4a3552462",
+    "medium_or_higher_open_retest_findings": 0,
+    "msc_closed_by_s1": 0,
+    "open_msc_units": 42,
+    "security_remediation": "IN_PROGRESS",
+    "b004": "NOT_STARTED",
+    "b005": "NOT_STARTED",
+    "product": "BLOCKED_PENDING_FINAL_AUDIT",
+    "native_behavior_source_changed": "NO",
+    "arm64_runtime_evidence": "IMPLEMENTER_ONLY_NOT_INDEPENDENT",
+    "x86_64_runtime_evidence": "PENDING_REAL_CI_OR_INDEPENDENT_RUNTIME_EVIDENCE",
+    "msc_runtime_tested_downgraded_under_exact_fcp1": ["MSC-UNIT-001", "MSC-UNIT-002"],
+    "s0_files_changed_by_s1": 0,
+    "previous_evidence_weakened": "NO",
+    "status": "INTEGRATED_PENDING_TARGETED_INDEPENDENT_RETEST",
+    "delivery_branch": S1_INTEGRATION_EVENT["delivery_branch"],
+    "report_path": S1_INTEGRATION_EVENT["ref"],
+    "report_sha256": "cbe0831071ea71e311cb9ad4458fd5be14a61bd2033a5ea0e9940c5321602d05",
+}
+S1_INTEGRATION_SOURCE_SHA256 = {
+    "independent_retest": ("docs/reports/security/retests/INDEPENDENT-BUILD-SUPPLY-RETEST-S1-001.md",
+                           "c3e6a564c32992731af42358a5c42a206b76baff95a2c0408147f732b91d95ae"),
+    "s1_runtime_evidence_record": ("docs/security/remediation/S1_PROVENANCE_VERIFIED_NATIVE_RUNTIME.md",
+                           "0db8adb9dc607e1e718babd7355e9e879b964270d3b1c5bd7b4fa713f58d727c"),
+    "s1_task_report": ("docs/security/remediation/S1_TASK_REPORT.md",
+                           "a487f0c4b0f1fb00ca4cb79dde7a17463b3092733a2b9f804ac795e6d37ae3ca"),
+}
+
+
+def _validate_s1_integration_record(audits, errors):
+    rec = audits.get(S1_INTEGRATION_ID)
+    if rec is None:
+        fail(f"{S1_INTEGRATION_ID} registry record missing (registry must carry exactly one S1 integration evidence record)", errors)
+        return
+    for key, expected in S1_INTEGRATION_REGISTRY_REQUIRED.items():
+        if rec.get(key) != expected:
+            fail(f"{S1_INTEGRATION_ID} field {key}={rec.get(key)!r}, expected {expected!r}", errors)
+    srcs = rec.get("preserved_sources") or {}
+    if set(srcs) != set(S1_INTEGRATION_SOURCE_SHA256):
+        fail(f"{S1_INTEGRATION_ID} preserved_sources keys {sorted(srcs)} != {sorted(S1_INTEGRATION_SOURCE_SHA256)}", errors)
+    for skey, (path, expected_sha) in S1_INTEGRATION_SOURCE_SHA256.items():
+        srec = srcs.get(skey) or {}
+        if srec.get("path") != path or srec.get("sha256") != expected_sha:
+            fail(f"{S1_INTEGRATION_ID} preserved_sources.{skey} path/sha256 mismatch", errors)
+        sp = REPO_ROOT / path
+        if not sp.exists():
+            fail(f"{S1_INTEGRATION_ID} preserved source missing: {path}", errors)
+        elif sha256_file(sp) != expected_sha:
+            fail(f"{S1_INTEGRATION_ID} preserved source hash mismatch: {path}", errors)
+    pp = REPO_ROOT / str(rec.get("report_path", ""))
+    if not pp.exists():
+        fail(f"{S1_INTEGRATION_ID} integration report missing: {rec.get('report_path')}", errors)
+    elif sha256_file(pp) != rec.get("report_sha256"):
+        fail(f"{S1_INTEGRATION_ID} integration report hash mismatch", errors)
+
+
 def validate_registry(errors):
     audits = {a.get("audit_id"): a for a in load_jsonl(EVIDENCE_DIR / "audit_registry.jsonl")}
     if not audits:
         fail("audit_registry.jsonl missing or empty", errors)
         return
-    if len(audits) != 13:
-        fail(f"audit_registry.jsonl must contain exactly 13 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact + 1 human governance decision record + 1 S0 preservation evidence record), found {len(audits)}", errors)
+    if len(audits) != 14:
+        fail(f"audit_registry.jsonl must contain exactly 14 records (9 audits + 1 master consolidation artifact + 1 coverage gate artifact + 1 human governance decision record + 1 S0 preservation evidence record + 1 S1 integration evidence record), found {len(audits)}", errors)
+    _validate_s1_integration_record(audits, errors)
     msc_rec = audits.get(MSC_ID) or {}
     if msc_rec.get("artifact_type") != "MASTER_SECURITY_CONSOLIDATION":
         fail(f"{MSC_ID} registry record missing or artifact_type != MASTER_SECURITY_CONSOLIDATION", errors)
@@ -1113,8 +1481,9 @@ def validate_registry(errors):
             fail(f"{S0_PRESERVATION_ID} preservation record missing: {pres_rec.get('report_path')}", errors)
         elif sha256_file(pp) != pres_rec.get("report_sha256"):
             fail(f"{S0_PRESERVATION_ID} preservation record hash mismatch", errors)
-    if (audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID, S0_PRESERVATION_ID}):
-        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - set(EXPECTED_AUDITS) - {MSC_ID, GATE_ID, DECISION_ID, S0_PRESERVATION_ID})}", errors)
+    known = set(EXPECTED_AUDITS) | {MSC_ID, GATE_ID, DECISION_ID, S0_PRESERVATION_ID, S1_INTEGRATION_ID}
+    if audits.keys() - known:
+        fail(f"audit_registry.jsonl contains unexpected records: {sorted(audits.keys() - known)}", errors)
     for aid, spec in EXPECTED_AUDITS.items():
         rec = audits.get(aid)
         if rec is None:
@@ -3196,8 +3565,44 @@ def validate_tasks(errors):
     print("  OK   next specialist gates are candidates, not executed")
 
 
+def _validate_s1_scope(errors):
+    """S1 integration scope: only the enumerated S1 surfaces may change vs the
+    S1 start head; forbidden product/S2+/B004+ paths fail; the CI hotfix
+    invariant and the committed-.so removal are re-asserted."""
+    s1 = S1_INTEGRATION_EVENT
+    out = subprocess.run(["git", "diff", "--name-only", s1["start_head"]], cwd=REPO_ROOT,
+                         capture_output=True, text=True)
+    changed = [p for p in out.stdout.strip().splitlines() if p]
+    forbidden = sorted(p for p in changed if p.startswith(S1_FORBIDDEN_PREFIXES) or p.endswith(".sql"))
+    if forbidden:
+        fail(f"S1 integration changed forbidden paths (product/S2+/B004+/authority): {forbidden}", errors)
+    outside = sorted(p for p in changed
+                     if p not in S1_ALLOWED_EXACT and not p.startswith(S1_ALLOWED_PREFIXES)
+                     and p not in METADATA_ALLOWLIST)
+    if outside:
+        fail(f"S1 integration changed paths outside the enumerated S1 surfaces: {outside}", errors)
+    jni_added = [p for p in changed if p.startswith("android/src/main/jniLibs/")]
+    tracked_so = subprocess.run(["git", "ls-files", "--", "*.so"], cwd=REPO_ROOT, capture_output=True, text=True)
+    if tracked_so.stdout.strip():
+        fail(f"S1 integration leaves tracked native binaries: {tracked_so.stdout.split()}", errors)
+    rust_src = subprocess.run(["git", "diff", "--name-only", s1["merged_base"], "--", "crypto/rust/src/"],
+                              cwd=REPO_ROOT, capture_output=True, text=True)
+    if rust_src.stdout.strip():
+        fail(f"crypto/rust/src/** changed vs S1 original base (native behavior change forbidden): {rust_src.stdout.split()}", errors)
+    ci = REPO_ROOT / ".github" / "workflows" / "ci.yml"
+    text = ci.read_text(encoding="utf-8") if ci.exists() else ""
+    if "tools platform-tools" in text or "packages: 'platform-tools'" not in text:
+        fail("CI hotfix invariant violated: setup-android must use packages: 'platform-tools' (no 'tools platform-tools')", errors)
+    print(f"  OK   S1 integration scope: {len(changed)} changed path(s) within enumerated S1 surfaces; "
+          f"{len(jni_added)} jniLibs path(s) (removal only); no tracked .so; crypto/rust/src unchanged; CI hotfix intact")
+
+
 def validate_no_product_changes(errors):
     if not has_git():
+        return
+    state = load_json(REPO_ROOT / "docs" / "continuity" / "CURRENT_STATE.json")
+    if _s1_integration_delivery_active(state):
+        _validate_s1_scope(errors)
         return
     out = subprocess.run(["git", "diff", "--name-only", BASE_SHA], cwd=REPO_ROOT, capture_output=True, text=True)
     changed = out.stdout.strip().splitlines()
@@ -3224,10 +3629,46 @@ def validate_project_memory(errors):
         fail("ledger empty", errors)
         return
     latest = ledger[-1]
+    # Global ledger integrity for the remediation era: no duplicate ids, and
+    # the isolated S1 provisional event must never appear as a canonical entry.
+    ids = [e.get("event_id") for e in ledger]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        fail(f"ledger contains duplicate event ids: {dupes}", errors)
+    for e in ledger:
+        if e.get("task") in (S1_ORIGINAL_TASK,) and e.get("event_id") != S1_INTEGRATION_EVENT["event_id"]:
+            fail(f"ledger admits the isolated S1 provisional event {e.get('event_id')} as canonical "
+                 f"(S1 is canonically recorded only by {S1_INTEGRATION_EVENT['event_id']})", errors)
+        if e.get("task") == S1_INTEGRATION_EVENT["task"] and e.get("event_id") != S1_INTEGRATION_EVENT["event_id"]:
+            fail(f"S1 integration recorded under wrong event id {e.get('event_id')}", errors)
     if state.get("latest_material_event_id") != latest.get("event_id"):
         fail("Project Memory stale: latest_material_event_id != last ledger event", errors)
     elif latest.get("event_id") == LEDGER_EVENT:
         print(f"  OK   Project Memory synced to {latest.get('event_id')}")
+    elif _is_s1_ci_disposition_event(latest, state.get("described_head") or "") \
+            and len(ledger) >= 5 \
+            and _is_s1_integration_event(ledger[-2]) \
+            and _is_s0_preservation_event(ledger[-3]) \
+            and _is_s0_successor_event(ledger[-4]) \
+            and ledger[-5].get("event_id") == LEDGER_EVENT:
+        if not _s1_integration_delivery_active(state):
+            fail(f"{S1_CI_DISPOSITION_EVENT['event_id']} recorded but CURRENT_STATE does not declare "
+                 f"the S1 delivery (task/branch)", errors)
+        else:
+            print(f"  OK   Project Memory synced to {latest.get('event_id')} "
+                  f"(CI-infrastructure tail disposition sealed on top of "
+                  f"{S1_INTEGRATION_EVENT['event_id']})")
+    elif _is_s1_integration_event(latest) and len(ledger) >= 4 \
+            and _is_s0_preservation_event(ledger[-2]) \
+            and _is_s0_successor_event(ledger[-3]) \
+            and ledger[-4].get("event_id") == LEDGER_EVENT:
+        if not _s1_integration_delivery_active(state):
+            fail(f"{S1_INTEGRATION_EVENT['event_id']} recorded but CURRENT_STATE does not declare the S1 "
+                 f"integration delivery (task/branch) — S0 one-time exception is not reusable for S1", errors)
+        else:
+            print(f"  OK   Project Memory synced to {latest.get('event_id')} "
+                  f"(S1 canonical-integration successor of {S0_PRESERVATION_EVENT['event_id']}; "
+                  f"provisional isolated {S1_INTEGRATION_EVENT['supersedes_provisional_event']} NONCANONICAL)")
     elif _is_s0_preservation_event(latest) and len(ledger) >= 3 \
             and _is_s0_successor_event(ledger[-2]) \
             and ledger[-3].get("event_id") == LEDGER_EVENT:
@@ -3238,7 +3679,9 @@ def validate_project_memory(errors):
     else:
         fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
              f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "
-             f"{S0_PRESERVATION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
+             f"{S0_PRESERVATION_EVENT['event_id']}, or its recorded S1 canonical-integration successor "
+             f"{S1_INTEGRATION_EVENT['event_id']}, or its recorded CI-infrastructure tail disposition "
+             f"successor {S1_CI_DISPOSITION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
     raw = ledger_path.read_bytes().splitlines()
     overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
     if overlong:
