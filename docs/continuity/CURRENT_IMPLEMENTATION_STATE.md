@@ -1,7 +1,8 @@
 # CURRENT_IMPLEMENTATION_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0055`
+**Event:** `ANOX-EVENT-0058`
 
+- `S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001` — SEALED 2026-09-22 under `ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001` + `ANOX-EVENT-0058` (governance): post-R2 CI tail `e7bd2c6547fb`/`0636a4ee81e2`/`793246022c05`/`45d1e4a63de4` + T5 ARM64 isolation `4fc5263ff676` ratified as pinned authorized CI tail; R3a `ca94bb91f3d2` (validator/test/record governance) + R3b (this metadata) = disposition pair; `described_head` = R3a. PR #37 OPEN/UNSTABLE, NOT merged; CI run `35754183154` remains the stale baseline (x86_64 billing-blocked pre-start; arm64 stale-AVD contamination — T5 hardens it); ARM64 + x86_64 runtime re-verification pending next CI run.
 - `ANOX-TASK-REMEDIATION-S1-FOUR-FILE-RATIFICATION-TRANSACTION-001` — Ready For Remote (substantive `7120aedd452b`; atomic four-file ratification transaction closing retest S1-004 `B-6`; package `859e834e0687…` + `c305c21c9405…` + `7dbcaf60d7ba…` + `d22034e61257…`, NOT Human-ratified; `INDEPENDENTLY_RETESTED` PENDING).
 - `ANOX-TASK-REMEDIATION-S1-PRE-RATIFICATION-CORRECTIONS-001` — Ready For Remote (CONSUMED pair `[0d1549d12d02, f08749e2e5ec]`; Human-authorized single correction pass over the pinned S1 delivery `ea20aaaf330c`/`dd6e2c5d82f0`; B-2 ratification package complete; N-1/N-3/N-4 detection fixes; B-1 unresolved pending final Human disposition; `INDEPENDENTLY_RETESTED` PENDING; x86_64 runtime PENDING).
 - `ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` — Merged to `main` (canonical `ANOX-EVENT-0054`; S0 preservation commit `dace1467035b`).

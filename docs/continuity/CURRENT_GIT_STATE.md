@@ -1,17 +1,21 @@
 # CURRENT_GIT_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0055`
+**Event:** `ANOX-EVENT-0058`
 **Branch (runtime):** `__HANDOFF_BRANCH__`
 **HEAD (runtime):** `__HANDOFF_HEAD__`
 **Working tree (runtime):** `__WORKING_TREE__`
 
 - **Canonical branch:** `main`
 - **Canonical baseline:** `29a6643189242a47c4a79c38acd04c1eca748787`
-- **Substantive HEAD:** `e65c23d0b8a9e7cf5a8abe25c85989bc3729ec11`
+- **Substantive HEAD:** `ca94bb91f3d2489c0e4db46cec6549043930e09d` (R3a disposition substantive — sealed by ANOX-EVENT-0058)
 - **Previous baseline:** `0f932520393feee6d479cc099f179f5766323125`
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: e65c23d0b8a9e7cf5a8abe25c85989bc3729ec11
+Described HEAD: ca94bb91f3d2489c0e4db46cec6549043930e09d
+
+## Post-R2 delivery tail — DISPOSITIONED 2026-09-22 (ANOX-EVENT-0058)
+
+Under Human decision `ANOX-DECISION-S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001` the four post-R2 ci.yml-only commits `e7bd2c6547fb` (full Git history for S1 provenance gate), `0636a4ee81e2` (pinned NDK path), `793246022c05` (emulator startup + x86 AVD hardening), `45d1e4a63de4` (self-hosted ARM64 routing) plus ARM64-isolation commit `4fc5263ff676` (`ANOX-TASK-S1-CI-ARM64-ISOLATION-001`: deterministic stale-emulator kill + bounded wait + fail-closed + single-device assertion + `if: always()` cleanup) are admitted as the pinned authorized CI tail — bound by exact SHA, exact order, position only after the completed R1/R2 pair (`e65c23d0b8a9`/`05dbcad25ab7`), and ci.yml-only paths. Disposition pair [`R3a ca94bb91f3d2` substantive + `R3b` metadata] seals the transaction; sealing governance event `ANOX-EVENT-0058` follows `ANOX-EVENT-0055`; `described_head` = R3a `ca94bb91f3d2`. The canonical decision record `docs/reports/security/decisions/S1-CI-INFRASTRUCTURE-TAIL-DISPOSITION-001.md` pins every post-image sha256. No product/crypto code authorized; no required gate removed; x86_64 remains REQUIRED (INFRASTRUCTURE_BLOCKED by GitHub billing — not a code pass); ARM64 runtime re-verification pending next CI run. PR #37 NOT merged.
 
 ## Pre-merge gate
 
