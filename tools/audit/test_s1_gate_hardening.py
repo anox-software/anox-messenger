@@ -999,6 +999,222 @@ class F4CiLineageTests(unittest.TestCase):
         errs = self._verify_run("        run: cd \"$GITHUB_WORKSPACE\" && python3 tools/security/native_build.py verify\n")
         self.assertEqual(errs, [], str(errs))
 
+# ===========================================================================
+# S1-ARM64-RUNTIME-INFRA-DISPOSITION-001 — two-path arm64 disposition gate
+# ===========================================================================
+
+class Arm64InfraDispositionTests(unittest.TestCase):
+    """The arm64 job has exactly two lawful outcomes: the emulator runtime
+    path genuinely executes (probe reports 'available'), or the job records
+    INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION ('unavailable').
+    Anything that fakes, forces, widens, or removes that contract must FAIL."""
+
+    AVAIL = "steps.arm64_virt.outputs.virtualization == 'available'"
+    UNAVAIL = "steps.arm64_virt.outputs.virtualization == 'unavailable'"
+    BLOCKED = "INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION"
+    TEST_STEP = ("      - name: Run instrumented tests (arm64-v8a produced artifact)\n"
+                 f"        if: steps.arm64_virt.outputs.virtualization == 'available'\n"
+                 "        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n")
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.wf = Path(self.tmp.name) / "ci.yml"
+        self.wf.write_text((REPO_ROOT / CI).read_text())
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _mut(self, fn):
+        self.wf.write_text(fn(self.wf.read_text()))
+        return ci_v.validate(str(self.wf))
+
+    @staticmethod
+    def _arm(fn):
+        """Apply `fn` to the tail of the workflow starting at the arm64 job."""
+        def wrap(t):
+            i = t.index("  instrumented-arm64:")
+            return t[:i] + fn(t[i:])
+        return wrap
+
+    # ---- control: the real two-path workflow must validate cleanly
+    def test_control_real_disposition_workflow_passes(self):
+        self.assertEqual(ci_v.validate(str(self.wf)), [])
+
+    # ---- continue-on-error remains forbidden, incl. on the probe
+    def test_continue_on_error_on_capability_probe_fails(self):
+        errs = self._mut(lambda t: t.replace("        id: arm64_virt\n",
+                                             "        id: arm64_virt\n        continue-on-error: true\n", 1))
+        self.assertTrue(any("capability probe" in e and "non-fatal" in e for e in errs), str(errs))
+
+    # ---- generic `exit 0` — inside a disposition step and standalone
+    def test_exit0_appended_to_disposition_step_fails(self):
+        errs = self._mut(lambda t: t.replace(
+            '            echo "- deferred: REAL_ARM64_RUNTIME_EVIDENCE required before the final security / pre-product acceptance gate"\n'
+            '          } >> "$GITHUB_STEP_SUMMARY"\n',
+            '            echo "- deferred: REAL_ARM64_RUNTIME_EVIDENCE required before the final security / pre-product acceptance gate"\n'
+            '          } >> "$GITHUB_STEP_SUMMARY"\n          exit 0\n', 1))
+        self.assertTrue(any("forced success" in e for e in errs), str(errs))
+
+    def test_standalone_exit0_step_fails(self):
+        fake = ("      - name: Greenwash\n        run: |\n          echo done\n          exit 0\n")
+        errs = self._mut(self._arm(lambda s: s.replace("      - name: Install SDK platform", fake + "      - name: Install SDK platform", 1)))
+        self.assertTrue(any("exit 0" in e for e in errs), str(errs))
+
+    # ---- generic `echo INFRASTRUCTURE_BLOCKED` + `exit 0` without the probe contract
+    def test_generic_blocked_echo_exit0_fails(self):
+        fake = ("      - name: Fake infrastructure disposition\n"
+                "        run: |\n"
+                f'          echo "ARM64_RUNTIME_STATUS={self.BLOCKED}"\n'
+                "          exit 0\n")
+        errs = self._mut(self._arm(lambda s: s.replace("      - name: Install SDK platform", fake + "      - name: Install SDK platform", 1)))
+        self.assertTrue(any("INFRASTRUCTURE_BLOCKED" in e or "ARM64_RUNTIME_STATUS" in e for e in errs), str(errs))
+
+    # ---- a runtime/test failure must not be convertible into 'infrastructure'
+    def test_runtime_failure_followed_by_blocked_status_fails(self):
+        fake = ("      - name: Convert test failure to infrastructure\n"
+                "        if: failure()\n"
+                "        run: |\n"
+                f'          echo "ARM64_RUNTIME_STATUS={self.BLOCKED}"\n\n')
+        anchor = "      - name: Verify tested APK is bound to the manifest\n"
+        errs = self._mut(self._arm(lambda s: s.replace(anchor, fake + anchor, 1)))
+        self.assertTrue(any("non-canonical condition" in e or "infrastructure-blocked status" in e
+                            for e in errs), str(errs))
+
+    # ---- forced environment variable claiming infrastructure blocked
+    def test_job_level_env_blocked_status_fails(self):
+        def fn(s):
+            return s.replace("    steps:\n",
+                             "    env:\n      ARM64_RUNTIME_STATUS: " + self.BLOCKED + "\n    steps:\n", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("env asserts ARM64 runtime status" in e for e in errs), str(errs))
+
+    def test_step_level_env_blocked_status_fails(self):
+        def fn(s):
+            return s.replace("        id: arm64_virt\n",
+                             "        id: arm64_virt\n        env:\n          ARM64_RUNTIME_STATUS: "
+                             + self.BLOCKED + "\n", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("env asserts ARM64 runtime status" in e for e in errs), str(errs))
+
+    # ---- removal of ARM64 provenance verification (artifact consumer verify)
+    def test_arm64_provenance_verify_removed_fails(self):
+        def fn(s):
+            return s.replace("      - name: Re-verify downloaded artifacts vs manifest\n"
+                             "        run: python3 tools/security/native_build.py verify\n", "", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("'instrumented-arm64' does not re-verify" in e for e in errs), str(errs))
+
+    def test_arm64_artifact_download_removed_fails(self):
+        step = ("      - name: Download authoritative native artifacts\n"
+                "        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0\n"
+                "        with:\n"
+                "          name: native-artifacts-${{ github.sha }}\n"
+                "          path: build/native\n\n")
+        errs = self._mut(self._arm(lambda s: s.replace(step, "", 1)))
+        self.assertTrue(any("never downloads the native artifact" in e for e in errs), str(errs))
+
+    # ---- removal of the ARM64 runtime path entirely
+    def test_arm64_runtime_path_removed_fails(self):
+        errs = self._mut(self._arm(lambda s: s.replace(self.TEST_STEP, "", 1)))
+        self.assertTrue(any("no step in job 'instrumented-arm64' executes" in e for e in errs), str(errs))
+
+    # ---- self-hosted ARM64 runner substitution
+    def test_self_hosted_arm64_runner_fails(self):
+        errs = self._mut(lambda t: t.replace("    runs-on: macos-latest\n",
+                                             "    runs-on: [self-hosted, macOS, ARM64]\n", 1))
+        self.assertTrue(any("required job 'instrumented-arm64' runs-on must be a single hosted runner label" in e
+                            for e in errs), str(errs))
+
+    # ---- `if: false` on the runtime step (or any non-canonical condition)
+    def test_if_false_on_runtime_step_fails(self):
+        def fn(s):
+            return s.replace(f"        if: {self.AVAIL}\n        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n",
+                             "        if: false\n        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("must run iff" in e or "non-canonical condition" in e for e in errs), str(errs))
+
+    def test_runtime_step_gated_on_unavailable_fails(self):
+        def fn(s):
+            return s.replace(f"        if: {self.AVAIL}\n        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n",
+                             f"        if: {self.UNAVAIL}\n        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("must run iff" in e for e in errs), str(errs))
+
+    def test_runtime_step_unconditioned_fails(self):
+        def fn(s):
+            return s.replace(f"        if: {self.AVAIL}\n        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n",
+                             "        run: ./gradlew --no-daemon :android:connectedDebugAndroidTest\n", 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("must run iff" in e for e in errs), str(errs))
+
+    # ---- `|| true` on the capability probe
+    def test_or_true_on_capability_probe_fails(self):
+        errs = self._mut(lambda t: t.replace("          echo virtualization=$VIRT >> $GITHUB_OUTPUT\n",
+                                             "          echo virtualization=$VIRT >> $GITHUB_OUTPUT || true\n", 1))
+        self.assertTrue(any("masks failure" in e for e in errs), str(errs))
+
+    # ---- the capability probe itself is mandatory and must be real
+    def test_capability_probe_removed_fails(self):
+        def fn(s):
+            start = s.index("      - name: Probe macOS ARM64 virtualization capability (HVF)\n")
+            end = s.index("      - name: Install SDK platform")
+            return s[:start] + s[end:]
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("no virtualization capability probe" in e for e in errs), str(errs))
+
+    def test_probe_without_accel_check_fails(self):
+        errs = self._mut(lambda t: t.replace("-accel-check", "-version", 1))
+        self.assertTrue(any("-accel-check" in e for e in errs), str(errs))
+
+    def test_probe_hardcoded_unavailable_fails(self):
+        # only one outcome remains -> the disposition is hardcoded, not derived
+        errs = self._mut(lambda t: t.replace("            VIRT=available\n", "            VIRT=unavailable\n", 1))
+        self.assertTrue(any("derive BOTH" in e for e in errs), str(errs))
+
+    def test_probe_without_github_output_write_fails(self):
+        errs = self._mut(lambda t: t.replace("          echo virtualization=$VIRT >> $GITHUB_OUTPUT\n",
+                                             "          echo virtualization=$VIRT\n", 1))
+        self.assertTrue(any("GITHUB_OUTPUT" in e for e in errs), str(errs))
+
+    # ---- the blocked disposition step is mandatory and must stay canonical
+    def test_blocked_disposition_step_removed_fails(self):
+        def fn(s):
+            start = s.index("      - name: Record ARM64 runtime disposition (infrastructure blocked)\n")
+            end = s.index("      - name: Upload instrumented test report\n")
+            return s[:start] + s[end:]
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("no infrastructure-disposition step" in e for e in errs), str(errs))
+
+    def test_blocked_status_under_available_condition_fails(self):
+        def fn(s):
+            return s.replace(
+                f"        if: {self.UNAVAIL}\n        run: |\n          set -euo pipefail\n"
+                f'          echo "ARM64_RUNTIME_STATUS={self.BLOCKED}"',
+                f"        if: {self.AVAIL}\n        run: |\n          set -euo pipefail\n"
+                f'          echo "ARM64_RUNTIME_STATUS={self.BLOCKED}"', 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("infrastructure-blocked status emitted outside" in e
+                            or "no infrastructure-disposition step" in e for e in errs), str(errs))
+
+    def test_pass_status_under_unavailable_condition_fails(self):
+        def fn(s):
+            return s.replace(
+                f"        if: {self.AVAIL}\n        run: |\n          set -euo pipefail\n"
+                '          echo "ARM64_RUNTIME_STATUS=PASS"',
+                f"        if: {self.UNAVAIL}\n        run: |\n          set -euo pipefail\n"
+                '          echo "ARM64_RUNTIME_STATUS=PASS"', 1)
+        errs = self._mut(self._arm(fn))
+        self.assertTrue(any("PASS marker emitted outside" in e or "no step records" in e
+                            for e in errs), str(errs))
+
+    # ---- a misleading job name must not imply a runtime pass
+    def test_misleading_job_name_fails(self):
+        errs = self._mut(self._arm(lambda s: s.replace(
+            "    name: ARM64 runtime / infrastructure disposition\n",
+            "    name: Instrumented tests on arm64-v8a emulator (S1 artifact)\n", 1)))
+        self.assertTrue(any("must state the runtime / infrastructure disposition" in e for e in errs), str(errs))
+
+
 class F6SecretScannerTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()

@@ -23,7 +23,16 @@ every mandatory job / gate is checked for BOTH presence and mandatoriness:
     descend from ``native-build``, download exactly the uploaded artifact
     into ``build/native``, re-verify before the first Gradle step, never
     rebuild native code; the producer uploads only after verify with
-    ``if-no-files-found: error``.
+    ``if-no-files-found: error``;
+  * the arm64 instrumented job implements the two-path infrastructure
+    disposition (S1-ARM64-RUNTIME-INFRA-DISPOSITION-001): an unconditional
+    capability probe (sysctl ``kern.hv_support`` + ``emulator -accel-check``)
+    publishes ``virtualization=available|unavailable``; the emulator runtime
+    path may only be gated by the exact ``== 'available'`` comparison and the
+    canonical blocked status may only be emitted under ``== 'unavailable'``.
+    Artifact download + manifest re-verification stay unconditional —
+    provenance is never deferred — and no env assignment, generic step, or
+    post-failure conversion may assert the ARM64 runtime status.
 
 Parsing is fail-closed: any construct outside the supported subset (anchors,
 aliases, tags, flow mappings, multi-document streams, tabs, duplicate keys)
@@ -305,6 +314,53 @@ HOSTED_UBUNTU = re.compile(r"^ubuntu-(latest|\d{2}\.\d{2})$")
 HOSTED_MACOS_ARM64 = re.compile(r"^macos-(latest|1[4-9]|[2-9]\d)(-xlarge|-large)?$")
 RUNNER_POLICY = {j: HOSTED_UBUNTU for j in REQUIRED_JOBS}
 RUNNER_POLICY["instrumented-arm64"] = HOSTED_MACOS_ARM64
+
+
+# ==========================================================================
+# ARM64 two-path disposition contract (S1-ARM64-RUNTIME-INFRA-DISPOSITION-001)
+#
+# The public repository runs the arm64 instrumented job on GitHub-hosted
+# Apple-silicon macOS. Those runners can lack nested virtualization
+# (observed: "HVF error: HV_UNSUPPORTED" / "failed to initialize HVF"), so
+# the job has exactly two lawful outcomes:
+#
+#   * virtualization available -> the real emulator path executes end to end
+#     and the job records RUNTIME_EXECUTED_AND_PASS / ARM64_RUNTIME_STATUS=PASS;
+#   * virtualization unavailable -> an explicit capability probe proved the
+#     hosted-infrastructure limitation BEFORE any emulator step, and the job
+#     records ARM64_RUNTIME_STATUS=INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_\
+#     NESTED_VIRTUALIZATION — a truthful disposition, never a runtime pass.
+#
+# The runtime-path steps may only be gated by the exact probe output
+# comparison '== available'; the blocked status may only be emitted under
+# '== unavailable'. Because neither condition contains a status-check
+# function, GitHub implicitly ANDs success() into both — a failed runtime
+# test can never trigger the blocked branch. Anything else — job/step-level
+# if:, env-asserted status, blocked status after a test failure, self-hosted
+# routing, soft-fail wrappers — is a violation.
+# ==========================================================================
+
+ARM64_JOB = "instrumented-arm64"
+ARM64_PROBE_ID = "arm64_virt"
+_ARM64_OUT = f"steps.{ARM64_PROBE_ID}.outputs.virtualization"
+ARM64_COND_AVAILABLE = f"{_ARM64_OUT} == 'available'"
+ARM64_COND_UNAVAILABLE = f"{_ARM64_OUT} == 'unavailable'"
+ARM64_CONDS = frozenset((ARM64_COND_AVAILABLE, ARM64_COND_UNAVAILABLE))
+ARM64_BLOCKED_STATUS = "INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION"
+ARM64_STATUS_TOKEN = "ARM64_RUNTIME_STATUS"
+# required-step labels in the arm64 job that are part of the emulated runtime
+# path — they may (and must) carry the exact 'available' disposition gate
+ARM64_DEFERRABLE = {
+    "instrumented job: arm64",
+    "instrumented arm64: tested APK bound to manifest",
+}
+ARM64_PASS_RX = re.compile(r"ARM64_RUNTIME_STATUS\s*=\s*PASS\b")
+# emulator-path commands that are meaningless without virtualization
+_RX_ARM64_EMUPATH = re.compile(r"system-images;[^\n\"']*arm64|\bavdmanager\b|\bemulator\b|\badb\b")
+_RX_ARM64_SYSCTL = re.compile(r"sysctl\b[^\n;&|(){}]*kern\.hv_support")
+_RX_ARM64_ACCEL = re.compile(r"[\w$./{}-]*emulator[\w./-]*\s+-accel-check\b")
+_RX_ARM64_OUTPUT = re.compile(r"echo\s+virtualization=\S*\s*>>\s*\$?\{?GITHUB_OUTPUT\b")
+
 
 def _rx(p):
     return re.compile(p)
@@ -737,9 +793,11 @@ def _truthy(v):
     return v is True or (isinstance(v, str) and v.strip().lower() not in ("", "false"))
 
 
-def _check_mandatory_step(job_name, label, step, errors, strict_semicolon=True):
-    """A mandatory step must be unconditional, fatal, and unmasked."""
-    if "if" in step:
+def _check_mandatory_step(job_name, label, step, errors, strict_semicolon=True, allowed_if=None):
+    """A mandatory step must be unconditional, fatal, and unmasked. The only
+    tolerated condition is the exact capability-probe disposition gate on the
+    arm64 runtime path (``allowed_if``)."""
+    if "if" in step and step.get("if") != allowed_if:
         errors.append(f"{label}: step in job '{job_name}' is conditional (if: {step.get('if')!r}) — mandatory gates may not be skipped")
     if _truthy(step.get("continue-on-error")):
         errors.append(f"{label}: step in job '{job_name}' is non-fatal (continue-on-error) — mandatory gates may not soft-fail")
@@ -829,12 +887,17 @@ def validate_lineage(jobs, errors):
                 verify_idx = i if verify_idx is None else verify_idx
                 if "if" in s or _truthy(s.get("continue-on-error")):
                     errors.append(f"lineage: '{job}' verify step is conditional/non-fatal")
+            # the arm64 runtime path (first Gradle consumer + tested-APK
+            # binding) may carry exactly the 'available' capability gate;
+            # every other consumer step must stay unconditional
+            arm64_runtime_if = ARM64_COND_AVAILABLE if job == ARM64_JOB else None
             if command_executes(run, _RX_GRADLE_CONSUME):
                 if first_consume_idx is None:
                     first_consume_idx = i
-                    if "if" in s or _truthy(s.get("continue-on-error")):
+                    if ("if" in s and s.get("if") != arm64_runtime_if) or _truthy(s.get("continue-on-error")):
                         errors.append(f"lineage: '{job}' first Gradle consumer step is conditional/non-fatal")
-            if "validate_apk_contents.py" in run and ("if" in s or _truthy(s.get("continue-on-error"))):
+            if "validate_apk_contents.py" in run and (
+                    ("if" in s and s.get("if") != arm64_runtime_if) or _truthy(s.get("continue-on-error"))):
                 errors.append(f"lineage: '{job}' APK-binding step is conditional/non-fatal")
             if re.search(r"native_build\.py\s+build(\s|$)|cargo\s+ndk", run):
                 errors.append(f"lineage: '{job}' rebuilds native artifacts instead of consuming native-build output")
@@ -883,6 +946,136 @@ def validate_lineage(jobs, errors):
             errors.append("lineage: native-build uploads the artifact before verifying it")
 
 
+def _env_asserts_arm64_status(env):
+    """ARM64 runtime status must be probe-derived — an env assignment can
+    only fake it, never prove it."""
+    if not isinstance(env, dict):
+        return False
+    txt = "\n".join(f"{k} {v}" for k, v in env.items())
+    return any(t in txt for t in (ARM64_STATUS_TOKEN, ARM64_BLOCKED_STATUS,
+                                  "RUNTIME_EXECUTED_AND_PASS", "RUNTIME_NOT_EXECUTED"))
+
+
+def _step_body(step):
+    """run body with comments stripped but quoted content kept — the status
+    strings are emitted via echo, so quote-blanking would hide real output."""
+    run = step.get("run")
+    if not isinstance(run, str):
+        return ""
+    return "\n".join(_strip_inline_comment(l) for l in run.splitlines())
+
+
+def validate_arm64_disposition(jobs, errors):
+    """Enforce the S1-ARM64-RUNTIME-INFRA-DISPOSITION-001 two-path contract on
+    the arm64 instrumented job (see the contract block above)."""
+    job = jobs.get(ARM64_JOB)
+    if not isinstance(job, dict) or not isinstance(job.get("steps"), list):
+        return  # generic required-job checks already reported this
+    label = f"job '{ARM64_JOB}'"
+    name = job.get("name")
+    if not (isinstance(name, str) and "arm64" in name.lower() and "disposition" in name.lower()):
+        errors.append(f"{label}: name {name!r} must state the runtime / infrastructure disposition "
+                      "(e.g. 'ARM64 runtime / infrastructure disposition') — it may not imply a "
+                      "successful runtime test when none ran")
+    if _env_asserts_arm64_status(job.get("env")):
+        errors.append(f"{label}: env asserts ARM64 runtime status out-of-band — only the "
+                      "probe-derived disposition steps may emit it")
+
+    steps = job["steps"]
+    probe_idx = None
+    for i, s in enumerate(steps):
+        if isinstance(s, dict) and s.get("id") == ARM64_PROBE_ID:
+            if probe_idx is not None:
+                errors.append(f"{label}: duplicate capability-probe step id '{ARM64_PROBE_ID}'")
+            probe_idx = i
+    if probe_idx is None:
+        errors.append(f"{label}: no virtualization capability probe step (id: {ARM64_PROBE_ID}) — "
+                      "the arm64 runtime path may only be deferred by an explicit HVF capability check")
+    else:
+        probe = steps[probe_idx]
+        _check_mandatory_step(ARM64_JOB, "arm64 capability probe", probe, errors)
+        run = probe.get("run")
+        if not isinstance(run, str):
+            errors.append("arm64 capability probe: has no run body")
+        else:
+            code = _strip_shell_quotes(run)
+            if not command_executes(run, _RX_ARM64_SYSCTL, allow_masked=True):
+                errors.append("arm64 capability probe: missing sysctl kern.hv_support capability check")
+            if not command_executes(run, _RX_ARM64_ACCEL, allow_masked=True):
+                errors.append("arm64 capability probe: missing 'emulator -accel-check' capability check")
+            if not (re.search(r"=\s*available\b", code) and re.search(r"=\s*unavailable\b", code)):
+                errors.append("arm64 capability probe: must derive BOTH 'available' and 'unavailable' "
+                              "dispositions from the capability checks (no hardcoded single outcome)")
+            if not command_executes(run, _RX_ARM64_OUTPUT):
+                errors.append("arm64 capability probe: does not publish virtualization= to "
+                              "$GITHUB_OUTPUT at an executable position")
+            if ARM64_STATUS_TOKEN in run or ARM64_BLOCKED_STATUS in run:
+                errors.append("arm64 capability probe must not assert ARM64_RUNTIME_STATUS itself — "
+                              "only the conditioned disposition steps emit the status")
+            for tok in ("RUNNER_OS", "RUNNER_ARCH", "uname"):
+                if tok not in run:
+                    errors.append(f"arm64 capability probe: missing runner diagnostic '{tok}'")
+
+    blocked_ok = pass_ok = False
+    for i, s in enumerate(steps):
+        if not isinstance(s, dict):
+            continue
+        cond = s.get("if")
+        uses = s.get("uses") if isinstance(s.get("uses"), str) else ""
+        body = _step_body(s)
+        if _env_asserts_arm64_status(s.get("env")):
+            errors.append(f"{label} step {i}: env asserts ARM64 runtime status out-of-band — "
+                          "only the probe-derived disposition steps may emit it")
+        if re.search(r"(?m)^\s*exit\s+0\s*$", body):
+            errors.append(f"{label} step {i}: bare 'exit 0' forces a step to succeed — "
+                          "forbidden in the arm64 disposition job")
+        if cond is not None and cond not in ARM64_CONDS \
+                and not (cond == "always()" and "upload-artifact@" in uses):
+            errors.append(f"{label} step {i}: non-canonical condition {cond!r} — only "
+                          f"{ARM64_COND_AVAILABLE!r} / {ARM64_COND_UNAVAILABLE!r} (and always() "
+                          "on artifact upload) are permitted in this job")
+        if cond in ARM64_CONDS and probe_idx is not None and i <= probe_idx:
+            errors.append(f"{label} step {i}: gated on the capability probe but precedes it")
+        if i != probe_idx and cond != ARM64_COND_AVAILABLE and _RX_ARM64_EMUPATH.search(body):
+            errors.append(f"{label} step {i}: emulator-path commands are not gated on "
+                          f"{ARM64_COND_AVAILABLE!r} — the runtime path executes only when "
+                          "virtualization is available")
+        if ARM64_BLOCKED_STATUS in body and cond != ARM64_COND_UNAVAILABLE:
+            errors.append(f"{label} step {i}: infrastructure-blocked status emitted outside the "
+                          f"{ARM64_COND_UNAVAILABLE!r} disposition — a blocked claim is only "
+                          "lawful on the probe-derived unavailable branch")
+        if (ARM64_PASS_RX.search(body) or "RUNTIME_EXECUTED_AND_PASS" in body) \
+                and cond != ARM64_COND_AVAILABLE:
+            errors.append(f"{label} step {i}: runtime PASS marker emitted outside the "
+                          f"{ARM64_COND_AVAILABLE!r} branch — PASS requires executed runtime")
+        if ARM64_STATUS_TOKEN in body and cond not in ARM64_CONDS:
+            errors.append(f"{label} step {i}: ARM64_RUNTIME_STATUS emitted by a non-disposition step")
+        if cond == ARM64_COND_UNAVAILABLE and ARM64_BLOCKED_STATUS in body:
+            for tok in ("ARM64_RUNTIME_STATUS=", ARM64_BLOCKED_STATUS,
+                        "RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED", "RUNNER_OS", "RUNNER_ARCH"):
+                if tok not in body:
+                    errors.append(f"arm64 infrastructure-disposition step {i}: missing {tok}")
+            if "hvf" not in body.lower():
+                errors.append(f"arm64 infrastructure-disposition step {i}: missing the "
+                              "emulator/HVF capability result diagnostic")
+            _check_mandatory_step(ARM64_JOB, "arm64 infrastructure-disposition", s, errors,
+                                  allowed_if=ARM64_COND_UNAVAILABLE)
+            blocked_ok = True
+        if cond == ARM64_COND_AVAILABLE and ARM64_PASS_RX.search(body):
+            if "RUNTIME_EXECUTED_AND_PASS" not in body:
+                errors.append(f"arm64 PASS-disposition step {i}: missing RUNTIME_EXECUTED_AND_PASS")
+            _check_mandatory_step(ARM64_JOB, "arm64 PASS-disposition", s, errors,
+                                  allowed_if=ARM64_COND_AVAILABLE)
+            pass_ok = True
+    if not blocked_ok:
+        errors.append(f"{label}: no infrastructure-disposition step emits "
+                      f"ARM64_RUNTIME_STATUS={ARM64_BLOCKED_STATUS} under the exact "
+                      f"{ARM64_COND_UNAVAILABLE!r} condition")
+    if not pass_ok:
+        errors.append(f"{label}: no step records ARM64_RUNTIME_STATUS=PASS / "
+                      f"RUNTIME_EXECUTED_AND_PASS under the exact {ARM64_COND_AVAILABLE!r} condition")
+
+
 def validate_structure(doc):
     errors = []
     if not isinstance(doc, dict):
@@ -924,10 +1117,19 @@ def validate_structure(doc):
                           "status-masked shell positions (condition, !, &, |, ||)")
         # APK-binding steps legitimately use `if [ -z ... ]; then` control syntax
         strict = "validate_apk_contents" not in rx.pattern
+        # arm64 runtime-path steps are the only mandatory steps allowed to
+        # carry a condition — and it must be the exact 'available' probe gate
+        allowed_if = ARM64_COND_AVAILABLE if job_name == ARM64_JOB and label in ARM64_DEFERRABLE else None
         for s in matched:
-            _check_mandatory_step(job_name, label, s, errors, strict_semicolon=strict)
+            if allowed_if is not None and s.get("if") != allowed_if:
+                errors.append(f"{label}: step in job '{job_name}' must run iff the arm64 capability "
+                              f"probe reports 'available' (exact condition {ARM64_COND_AVAILABLE!r} "
+                              f"required, got {s.get('if')!r})")
+            _check_mandatory_step(job_name, label, s, errors, strict_semicolon=strict,
+                                  allowed_if=allowed_if)
 
     validate_lineage(jobs, errors)
+    validate_arm64_disposition(jobs, errors)
     return errors
 
 
