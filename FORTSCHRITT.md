@@ -256,3 +256,17 @@
 - Governance note: the protected shared validator extension is `ONE_TIME_CHANGE_SPECIFIC` — exactly one successor event, exactly one registry record, every field pinned; it does not authorize future event numbers, arbitrary registry growth, S1 use, or general ownership.
 - Commits: substantive `24576ec333f3567c36b46f42ed30c718788ea601` + one metadata-only sync commit (`docs: sync S0 evidence preservation state`). PR: none (remote permission NONE). Merge: pending human.
 - Next gate: `MERGE_S0_INTO_MAIN` (push → PR → normal merge → verify new main SHA); then post-S0 S1 integration (regenerate S1 provisional `ANOX-EVENT-0054`); `S2`/`S3`/`S4` NOT_STARTED; B-004/B-005 remain NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0054 -->
+## S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001 — 2026-09-23 (metadata-only continuity seal under still-sealed ANOX-EVENT-0054)
+
+- Branch: `integration/s1-fresh-after-s0-001`
+- Substantive commit (pre-existing delivery, unchanged by this transition): `62b07a171bc94776695432de60134919bc49b07c` (`security: complete S1 build provenance and precommit hardening`)
+- Canonical base SHA: `29a6643189242a47c4a79c38acd04c1eca748787` (`main` after `MERGE_S0_INTO_MAIN`, PR #36 via `integration/s0-after-ci-hotfix-001`; includes `6b363ee` CI-hotfix integration merge)
+- Task ID: `ANOX-TASK-S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001`
+- Result: `Ready For Remote` — continuity/current-state/handoff surfaces aligned to the committed S1 delivery; canonical event sealing deferred to integration.
+- Purpose: align canonical current-state / continuity / handoff / workforce delivery metadata with the committed `REMEDIATION_SESSION_S1` clean-rebuild delivery after `MERGE_S0_INTO_MAIN` completed on `main`.
+- No new canonical Project Memory event sealed: `ANOX-EVENT-0054` remains the last sealed ledger event — its tail position is pinned by `validate_s0_evidence_preservation.py` (PASS, untouched) and by the protected shared evidence validator (`R-009` `DEFERRED / NON_BLOCKING`, byte-identical SHA-256 `89c7358f…`); every prior event append required a human-ratified validator extension (`grants_future_event_numbers=false`), so the canonical S1 event identity is regenerated at integration.
+- State carried forward truthfully: `MSC OPEN = 42`, `MSC CLOSED = 0`; `B004/B005 = NOT_STARTED`; `S2/S3/S4 = NOT_STARTED`; `PRODUCT = BLOCKED_PENDING_FINAL_AUDIT`; `x86_64 runtime = UNVERIFIED_PENDING_REAL_CI`; `arm64 runtime = UNVERIFIED_PENDING_REAL_CI`; S1 pending human merge — no merge/PR/push performed; no CI run claimed; no runtime success claimed.
+- Files changed (metadata only): `docs/continuity/CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `docs/workforce/WORKFORCE_STATE.json`, `docs/workforce/registries/tasks.jsonl`.
+- Commit: one metadata-only commit (`docs: seal S1 clean rebuild continuity state`); remote mutation NONE.
