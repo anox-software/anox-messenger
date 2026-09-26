@@ -154,7 +154,22 @@ def read_text(rel):
 
 
 def has_git():
-    return (REPO_ROOT / ".git").is_dir()
+    """Git-native worktree detection (linked worktrees carry ``.git`` as a
+    pointer FILE, not a directory). True only when Git itself resolves
+    REPO_ROOT as a working-tree root."""
+    proc = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree", "--show-toplevel"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        return False
+    lines = proc.stdout.splitlines()
+    if len(lines) < 2 or lines[0].strip() != "true":
+        return False
+    try:
+        return Path(lines[1].strip()).resolve() == REPO_ROOT.resolve()
+    except OSError:
+        return False
 
 
 def check_source_reports(errors):
@@ -226,6 +241,9 @@ def check_delivery_topology(errors):
                      or p.endswith(".sql") or p.endswith(".so") or p in S1_OWNED_FILES))
         if bad:
             fail(f"S0 delivery changed product/S1-owned paths: {bad}", errors)
+    elif (REPO_ROOT / ".git").exists():
+        fail("Git metadata present but Git cannot resolve REPO_ROOT as a worktree root — "
+             "topology checks must not be silently skipped", errors)
     else:
         print("  SKIP git topology checks (no .git — fixture mode)")
     if len(errors) == before:

@@ -22,13 +22,31 @@
 
 ## Dependencies
 
-- `Cargo.lock` and Gradle lockfiles are retained in version control.
+- `Cargo.lock` is retained in version control and all Rust builds run with `--locked`.
 - Dependencies are pinned or versioned responsibly.
+- Rust toolchain, Android NDK, and cargo-ndk are pinned exactly
+  (`crypto/rust/rust-toolchain.toml`; asserted by `tools/security/native_build.py check-toolchain`).
 
 ## Generated artifacts
 
-- Native `.so` libraries are currently committed because the project does not yet have a reproducible `cargo-ndk` CI pipeline.
-- When a CI build pipeline is added, native artifacts should be produced in CI and removed from the repository.
+- Native `.so` libraries are NEVER committed. The authoritative producer is
+  `tools/security/native_build.py` (cargo-ndk, `--locked`, deterministic path
+  remapping), which emits `build/native/jniLibs/{arm64-v8a,x86_64}/libanox_crypto.so`
+  plus `build/native/native-manifest.json` binding source SHA, Cargo.lock hash,
+  toolchain, per-artifact SHA-256 and the JNI export fingerprint.
+- A two-clean-build reproducibility attestation (`native_build.py rebuild-compare`)
+  is required before any manifest is accepted; APKs are bound to the manifest by
+  `tools/security/validate_apk_contents.py --native-manifest` (hash + ABI + ELF
+  machine match + ACTUAL packaged-binary JNI export surface vs source, anchored
+  to an expected source SHA, fail-closed).
+- Gradle never packages unverified native input: every `merge*JniLibFolders` /
+  `merge*NativeLibs` / `strip*Symbols` / `package*` / `bundle*` task depends on
+  `verifyNativeArtifacts`, an `Exec` of `native_build.py verify` (fail-closed);
+  `src/main/jniLibs` is not a jniLibs source (`setSrcDirs` replaces the default).
+- Packaged APK members (binary members included) are scanned for private-key
+  markers AND the same material token classes as the repository secret scan
+  (AWS / GitHub / Slack / Supabase keys, generic `*_secret`/`service_role_key`
+  assignments). This is byte-pattern scanning of members, not entropy analysis.
 - `target/`, `build/`, `.gradle/`, and `.kotlin/` are not committed.
 
 ## Review policy

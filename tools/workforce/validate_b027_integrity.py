@@ -131,9 +131,33 @@ class B027CIntegrityValidator:
         except Exception:
             return None
 
+    def _is_git_worktree(self):
+        """Return True only when Git itself resolves REPO_ROOT as a working-tree root.
+
+        Linked worktrees expose .git as a pointer file rather than a directory,
+        so a filesystem check is insufficient. Asking Git natively keeps this
+        fail-closed: non-Git directories, fake .git files and directories that
+        merely live inside an unrelated repository all return False.
+        """
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "--is-inside-work-tree", "--show-toplevel"],
+                cwd=str(REPO_ROOT),
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                return False
+            lines = result.stdout.strip().splitlines()
+            if len(lines) < 2 or lines[0].strip() != "true":
+                return False
+            return Path(lines[1].strip()).resolve() == REPO_ROOT.resolve()
+        except Exception:
+            return False
+
     def _git_diff_names(self, base="main"):
         """Return list of paths changed relative to base, or empty if no .git."""
-        if not (REPO_ROOT / ".git").is_dir():
+        if not self._is_git_worktree():
             return []
         try:
             result = subprocess.run(
@@ -150,7 +174,7 @@ class B027CIntegrityValidator:
 
     def _ancestor_or_equal(self, sha_a, sha_b):
         """Return True if sha_a is an ancestor of or equal to sha_b."""
-        if not (REPO_ROOT / ".git").is_dir():
+        if not self._is_git_worktree():
             return sha_a == sha_b
         if sha_a == sha_b:
             return True
