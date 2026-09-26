@@ -133,3 +133,6 @@ __MACOSX/
 # Generated handoff packages
 artifacts/handoff/*.zip
 artifacts/
+# Committed native binaries are prohibited (MSC-UNIT-001): the APK consumes
+# only artifacts produced by tools/security/native_build.py.
+android/src/main/jniLibs/

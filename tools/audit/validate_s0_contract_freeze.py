@@ -20,7 +20,9 @@ The validator is structural: it parses clause identifiers ``[S0-uuu-nn]`` and
 section headings, cross-references them with the manifest, the SC/CC/S maps,
 the authority index and the freeze registry, and only then applies per-clause
 invariant regexes.  Set ``S0_CONTRACT_FREEZE_REPO`` to validate an alternate
-tree (test fixtures); git-dependent checks are skipped without ``.git``.
+tree (test fixtures); git-dependent checks are skipped only when ``.git`` is
+absent entirely — Git-native detection accepts linked worktrees and fails
+closed on malformed Git metadata.
 
 This file is S0-owned (distinct from the S1-owned validators and from
 ``validate_security_audit_evidence_preservation.py``).
@@ -63,7 +65,47 @@ S1_OWNED_FILES = (
 # not an ancestor of HEAD is a VALIDATION FAILURE, never a silent SKIP.
 # ---------------------------------------------------------------------------
 AUTHORIZED_S0_BASE_SHA = "0f932520393feee6d479cc099f179f5766323125"
+# Era-precision: the scope property is about S0's OWN delivery. The pinned
+# corrected S0 final head bounds the range that must not touch product /
+# S1-owned paths; evaluating base..worktree would conflate S0 with every
+# later authorized delivery (e.g. the S1 integration, which legitimately
+# changes S1-owned files). The same pin is independently recorded as
+# s0_corrected_final_head_sha in the S0 evidence-preservation registry.
+AUTHORIZED_S0_FINAL_HEAD_SHA = "0be57335adaa25ad584357dde74666eb97339a01"
 SHA1_RE = re.compile(r"^[0-9a-f]{40}$")
+
+
+def _resolve_git_context():
+    """Fail-closed, Git-native repository detection for the scope gate.
+
+    A legitimate linked worktree carries ``.git`` as a pointer FILE, not a
+    directory, so filesystem-shape checks (``is_dir()``) are wrong. Git itself
+    is asked to resolve REPO_ROOT as a working-tree root. Returns
+    (state, reason):
+
+      * ("worktree", None) — Git resolves REPO_ROOT as a working-tree root;
+      * ("absent",  None)  — no .git at all (test-fixture/archive mode; the
+        documented skip seam);
+      * ("broken",  why)   — .git exists but Git cannot resolve it as this
+        repository's root (fake pointer file, malformed metadata, missing git
+        binary): a hard failure, never a silent skip.
+    """
+    proc = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree", "--show-toplevel"],
+        cwd=REPO_ROOT, capture_output=True, text=True,
+    )
+    if proc.returncode == 0:
+        lines = proc.stdout.splitlines()
+        if len(lines) >= 2 and lines[0].strip() == "true":
+            try:
+                if Path(lines[1].strip()).resolve() == REPO_ROOT.resolve():
+                    return "worktree", None
+            except OSError:
+                pass
+    if not (REPO_ROOT / ".git").exists():
+        return "absent", None
+    detail = (proc.stderr or proc.stdout or "").strip() or "no output"
+    return "broken", f"Git does not resolve REPO_ROOT as a worktree root ({detail})"
 
 # ---------------------------------------------------------------------------
 # F-03 — protected shared governance files. These are NOT S0-owned. A change is
@@ -1230,8 +1272,13 @@ def check_scope(man, errors):
         fail(f"manifest base_sha {base[:12]} is not the authorized S0 base "
              f"{AUTHORIZED_S0_BASE_SHA[:12]} — scope base may not be redeclared", errors)
         return
-    if not (REPO_ROOT / ".git").is_dir():
+    git_state, git_why = _resolve_git_context()
+    if git_state == "absent":
         print("  SKIP git-diff checks (no .git — fixture mode); authorized base pinned")
+        return
+    if git_state != "worktree":
+        fail(f"Git metadata unusable ({git_why}) — the S0 scope gate cannot be evaluated "
+             f"and must not be skipped", errors)
         return
     exists = subprocess.run(["git", "cat-file", "-e", f"{base}^{{commit}}"], cwd=REPO_ROOT, capture_output=True)
     if exists.returncode != 0:
@@ -1242,12 +1289,39 @@ def check_scope(man, errors):
         fail(f"authorized S0 base {base[:12]} is not an ancestor of HEAD — "
              f"the S0 scope gate cannot be evaluated and must not be skipped", errors)
         return
-    out = subprocess.run(["git", "diff", "--name-only", base], cwd=REPO_ROOT, capture_output=True, text=True)
+    # The S0 scope property covers S0's own delivery range only: the pinned
+    # corrected S0 final head must exist, descend from the authorized base and
+    # be an ancestor of HEAD; base..final_head must not touch product/S1-owned
+    # paths. A moving worktree diff would wrongly conflate later authorized
+    # deliveries (S1 legitimately changes S1-owned files) with S0 scope.
+    fin = subprocess.run(["git", "cat-file", "-e", f"{AUTHORIZED_S0_FINAL_HEAD_SHA}^{{commit}}"],
+                         cwd=REPO_ROOT, capture_output=True)
+    if fin.returncode != 0:
+        fail(f"pinned corrected S0 final head {AUTHORIZED_S0_FINAL_HEAD_SHA[:12]} does not exist "
+             f"in this repository", errors)
+        return
+    if subprocess.run(["git", "merge-base", "--is-ancestor", AUTHORIZED_S0_FINAL_HEAD_SHA, "HEAD"],
+                      cwd=REPO_ROOT, capture_output=True).returncode != 0:
+        fail(f"pinned corrected S0 final head {AUTHORIZED_S0_FINAL_HEAD_SHA[:12]} is not an ancestor "
+             f"of HEAD — S0 delivery lineage broken", errors)
+        return
+    if subprocess.run(["git", "merge-base", "--is-ancestor", base, AUTHORIZED_S0_FINAL_HEAD_SHA],
+                      cwd=REPO_ROOT, capture_output=True).returncode != 0:
+        fail("pinned S0 final head does not descend from the authorized S0 base", errors)
+        return
+    out = subprocess.run(["git", "diff", "--name-only", base, AUTHORIZED_S0_FINAL_HEAD_SHA],
+                         cwd=REPO_ROOT, capture_output=True, text=True)
     changed = [p for p in out.stdout.splitlines() if p.strip()]
     bad = sorted(p for p in changed if p.startswith(FORBIDDEN_PRODUCT_PREFIXES) or p.endswith(".sql") or p.endswith(".so")
                  or p in S1_OWNED_FILES)
     if bad:
         fail(f"S0 changed product/S1-owned paths: {bad}", errors)
+    # Protected shared files are also checked at their CURRENT content (F-03
+    # and the ratification scan below), so a later unratified modification of
+    # a protected file is caught regardless of the pinned range.
+    head_changed = subprocess.run(["git", "diff", "--name-only", base], cwd=REPO_ROOT,
+                                  capture_output=True, text=True).stdout.splitlines()
+    changed = sorted(set(changed) | {p for p in head_changed if p in PROTECTED_SHARED_FILES})
     def _protected_change_ratified(rel):
         digest = hashlib.sha256((REPO_ROOT / rel).read_bytes()).hexdigest() if (REPO_ROOT / rel).exists() else None
         spec = PROTECTED_SHARED_FILES[rel]
@@ -1261,8 +1335,9 @@ def check_scope(man, errors):
     if unratified:
         fail(f"S0 changed protected shared governance file(s) without Human ratification: {unratified}", errors)
     if len(errors) == before:
-        ok(f"no product, SQL, native, CI or S1-owned paths changed since {base[:12]}; "
-           f"protected shared changes ratified")
+        ok(f"no product, SQL, native, CI or S1-owned paths in the pinned S0 range "
+           f"{base[:12]}..{AUTHORIZED_S0_FINAL_HEAD_SHA[:12]}; "
+           f"protected shared changes ratified at current content")
 
 
 def run():

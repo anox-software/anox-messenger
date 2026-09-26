@@ -92,7 +92,7 @@ def parse_args():
 def select_mode(args):
     if args.mode != "auto":
         return args.mode
-    if (REPO_ROOT / ".git").is_dir():
+    if git_is_worktree():
         return "live"
     if args.archive and args.archive.exists():
         return "archive"
@@ -113,6 +113,27 @@ def run_git(args, cwd=None, check=False):
         return result.stdout.strip(), result.stderr.strip(), result.returncode
     except FileNotFoundError:
         return None, None, -1
+
+
+def git_is_worktree(cwd=None):
+    """Return True only when Git itself resolves `cwd` as a working-tree root.
+
+    Linked worktrees expose .git as a pointer file rather than a directory,
+    so a filesystem check is insufficient. Asking Git natively keeps this
+    fail-closed: non-Git directories, fake .git files and directories that
+    merely live inside an unrelated repository all return False.
+    """
+    root = cwd if cwd is not None else REPO_ROOT
+    out, _, code = run_git(["rev-parse", "--is-inside-work-tree", "--show-toplevel"], cwd=root)
+    if code != 0 or not out:
+        return False
+    lines = out.splitlines()
+    if len(lines) < 2 or lines[0].strip() != "true":
+        return False
+    try:
+        return Path(lines[1].strip()).resolve() == Path(root).resolve()
+    except OSError:
+        return False
 
 
 def git_status(cwd=None):
@@ -1112,7 +1133,7 @@ def _compute_memory_freshness_status(events, state, live_branch, live_head, mode
         start_kind = _classify_event_sha_value(start_val)
         if start_kind in ("full", "abbreviated") and _sha_matches_live(start_val, start_kind, cm_sha):
             # In live mode with git, confirm live_head is actually ahead of the canonical merge.
-            if mode == "live" and (root / ".git").is_dir() and live_head:
+            if mode == "live" and git_is_worktree(cwd=root) and live_head:
                 cm_obj = _resolve_git_object(cm_sha, cwd=root)
                 if cm_obj and git_is_ancestor(cm_obj, live_head, cwd=root):
                     return "FAIL — SECOND CHECKPOINT BEFORE SEALING PRIOR MERGE"
@@ -1127,7 +1148,7 @@ def _compute_memory_freshness_status(events, state, live_branch, live_head, mode
     # must be a metadata-only synchronization; the caller's described_head / lifecycle
     # validation already enforces that product/authority/CI/tool changes are recorded.
     if not is_pending and last_sealed_sha:
-        if mode == "live" and (root / ".git").is_dir() and live_head:
+        if mode == "live" and git_is_worktree(cwd=root) and live_head:
             last_obj = _resolve_git_object(last_sealed_sha, cwd=root)
             if last_obj and git_is_ancestor(last_obj, live_head, cwd=root):
                 return "PASS — SEALED EVENT SYNCHRONIZED; METADATA-ONLY ADVANCE"
@@ -2364,7 +2385,7 @@ def validate_archive_surface_consistency(archive_root, all_ok):
 def live_validation():
     all_ok = True
 
-    if not (REPO_ROOT / ".git").is_dir():
+    if not git_is_worktree():
         print("FAIL: .git not available; live mode requires a Git repository")
         return 1
 

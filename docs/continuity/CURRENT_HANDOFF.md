@@ -1,21 +1,31 @@
 # CURRENT_HANDOFF — anoX V1
 
-**Event:** `ANOX-EVENT-0054` — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001
-**Delivery branch:** `governance/security-remediation-s0-evidence-preservation-001`
-**Substantive HEAD:** `24576ec333f3567c36b46f42ed30c718788ea601`
-**Main baseline:** `0be57335adaa25ad584357dde74666eb97339a01` (corrected S0 final head on `security/remediation-s0-contract-freeze-001`; `main` = `0f932520393feee6d479cc099f179f5766323125`)
-**Effective gate:** `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+**Event:** `ANOX-EVENT-0054` — SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 (last sealed canonical Project Memory event; the committed S1 clean-rebuild delivery is recorded in current state and awaits canonical event sealing at integration — the ledger tail is pinned to `ANOX-EVENT-0054` by the S0-era preservation validators until a human-ratified extension)
+**Delivery branch:** `integration/s1-fresh-after-s0-001`
+**Substantive HEAD:** `62b07a171bc94776695432de60134919bc49b07c` (committed S1 clean-rebuild delivery: `security: complete S1 build provenance and precommit hardening`)
+**Main baseline:** `29a6643189242a47c4a79c38acd04c1eca748787` (S0 remediation evidence chain merged to `main` via PR #36 `integration/s0-after-ci-hotfix-001`; `main` has since advanced through post-merge continuity seals `ANOX-EVENT-0056`/`0057`/`0059` — the earlier `integration/s1-after-s0-001` attempt is recorded as superseded; previous merge baseline `ea838fa5803f5088a1ce39d6ac026f8295a281a6`)
+**Effective gate:** `S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001 — REMEDIATION_SESSION_S1 CLEAN REBUILD COMMITTED DELIVERY 62b07a171bc9 ON integration/s1-fresh-after-s0-001 (S1 build provenance + PRE-COMMIT gate hardening committed; S1CRC-R-001/S1CRC-R-002 remediated and verified — 212 targeted tests, secret_scan PASS, CI pipeline validator PASS, human precommit check PASS; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; shared-validator continuity R-009 DEFERRED/NON_BLOCKING; MSC OPEN=42 / CLOSED=0; x86_64 runtime UNVERIFIED_PENDING_REAL_CI; arm64 runtime UNVERIFIED_PENDING_REAL_CI; awaiting human S1 merge/integration decision — canonical S1 event identity sealed at integration)`
 
-Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
+Described HEAD: 62b07a171bc94776695432de60134919bc49b07c
 
 ## Pre-merge gate
 
-`SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001 — PRESERVE S0 REMEDIATION + INDEPENDENT RETEST + CORRECTION RETEST EVIDENCE (Ready For Remote; S0 evidence chain preserved; S0_MERGE_READINESS=READY; awaiting human merge into main)`
+`S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001 — REMEDIATION_SESSION_S1 CLEAN REBUILD COMMITTED DELIVERY 62b07a171bc9 ON integration/s1-fresh-after-s0-001 (S1 build provenance + PRE-COMMIT gate hardening committed; S1CRC-R-001/S1CRC-R-002 remediated and verified — 212 targeted tests, secret_scan PASS, CI pipeline validator PASS, human precommit check PASS; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; shared-validator continuity R-009 DEFERRED/NON_BLOCKING; MSC OPEN=42 / CLOSED=0; x86_64 runtime UNVERIFIED_PENDING_REAL_CI; arm64 runtime UNVERIFIED_PENDING_REAL_CI; awaiting human S1 merge/integration decision — canonical S1 event identity sealed at integration)`
+
+- The S0 remediation evidence chain (`ANOX-EVENT-0054`) is merged into `main` at `29a6643189242a47c4a79c38acd04c1eca748787` (PR #36, branch `integration/s0-after-ci-hotfix-001`, with the earlier CI hotfix merge `6b363ee`); `S0_MERGE_READINESS=READY` was satisfied and the merge is now committed canonical history.
+- `REMEDIATION_SESSION_S1` is delivered as a committed clean rebuild on `integration/s1-fresh-after-s0-001` at `62b07a171bc94776695432de60134919bc49b07c`: tracked `.so` binaries removed, Gradle packaging bound to toolchain-verified build outputs, APK content validation, executable-position CI mandatory-step enforcement, and PRE-COMMIT gate hardening.
+- Independent correction retest `INDEPENDENT-S1-CLEAN-REBUILD-CORRECTION-RETEST-001` verified S1CR-R-001…R-007 scopes fixed and found two new PRE-COMMIT blockers: `S1CRC-R-001` (fully markup-prefixed PEM blocks evaded `secret_scan.py`) and `S1CRC-R-002` (non-executing `echo` decoy satisfied the CI mandatory-step validator). `REMEDIATION-SESSION-S1-PRECOMMIT-GATE-HARDENING-001` fixed both; targeted results: `test_s1_gate_hardening.py` 212 tests OK, `secret_scan.py` PASS, `validate_ci_pipeline.py` PASS (32 mandatory steps / 8 required jobs), `git diff --check` clean, human S1 precommit check PASS.
+- `S1CRC-R-003` (native verify does not inventory foreign `Java_*` exports) = `DEFERRED_NON_BLOCKING_MILESTONE_SECURITY`; `tools/security/native_build.py` untouched.
+- Protected shared-validator continuity `R-009` = `DEFERRED / NON_BLOCKING` — `tools/audit/validate_security_audit_evidence_preservation.py` remains byte-identical (SHA-256 `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7`) and is era-pinned to the S0 chain; its expected failures on the S1 tree are deferred to the integration-time human-ratified extension.
+- `MSC OPEN = 42`, `MSC CLOSED = 0`; no MSC unit closed by S1.
+- Runtime truth: `x86_64 = UNVERIFIED_PENDING_REAL_CI`; `arm64 = UNVERIFIED_PENDING_REAL_CI`; no local JDK/Gradle runtime verification performed; no CI run claimed.
 
 - Preserved the complete corrected S0 evidence chain as canonical repository evidence: `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (implementation PASS), `INDEPENDENT-ARCHITECTURE-RETEST-S0-001` (`PASS_WITH_FINDINGS`, F-01…F-10 — `PROVENANCE_MARKED_CANONICAL_RECONSTRUCTION`, human-authorized; verbatim transcript unavailable), `REMEDIATION-SESSION-S0-CORRECTION-001` (PASS) and `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` (`PASS_WITH_FINDINGS`, merge blockers 0). Final dispositions: F-01 `RATIFIED_DISCLOSED_FILE_OWNERSHIP_DEVIATION`; F-02…F-10 `FIXED` (9/9). Residual LOW follow-ups (2, non-blocking, open): `S0-RESIDUAL-LOW-F05-UNANCHORED-CC-CLAUSES`, `S0-RESIDUAL-LOW-F08-AUTHORITY-HOME-FREETEXT`.
 - Human decision `ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001` (`HUMAN_RATIFIED_CHANGE_SPECIFIC_SHARED_VALIDATOR_EXTENSION`, `ONE_TIME_CHANGE_SPECIFIC`) authorized the pinned lifecycle extension of `tools/audit/validate_security_audit_evidence_preservation.py` — exactly `ANOX-EVENT-0054` after `ANOX-EVENT-0053`, and exactly one `SEC-AUDIT-REG-0013` `SECURITY_REMEDIATION_EVIDENCE` record (registry 12 → 13). No generic future-event support, no arbitrary registry growth, no S1 use.
 - Evidence layer: registry `SEC-AUDIT-REG-0013` + `s0_unit_evidence` (13), `s0_finding_disposition` (10), `s0_residual_low_followup` (2), `s0_preservation_summary`, `validator_lifecycle` traceability records; `evidence_hashes.json` extended; `AUDIT_EVIDENCE_INDEX.md` updated; dedicated validator `tools/audit/validate_s0_evidence_preservation.py` + 40 adversarial tests; central suite 277 tests.
-- **S0_MERGE_READINESS = READY** — next canonical action `MERGE_S0_INTO_MAIN` (push branch → PR → normal merge → verify new main SHA).
+- S0 merge completed: `MERGE_S0_INTO_MAIN` executed by human remote action — `29a6643189242a47c4a79c38acd04c1eca748787` (PR #36) is the canonical merge carrying the preserved S0 evidence chain (`24576ec333f3` substantive + metadata seals) onto `main`; `6b363ee` integrated the S0 remediation evidence after the CI hotfix.
+
+<details><summary>Historical S0 delivery detail (merged — preserved for provenance)</summary>
 
 - Executed `REMEDIATION_SESSION_S0` (`ARCHITECTURE_FREEZE`) — the first authorized security remediation session under `HUMAN-PRE-REMEDIATION-DECISIONS-001` (`SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER`, wave `S0 ∥ S1`; S1 stays authorized/parallel and was **not** executed by this task). **Security remediation is now `IN_PROGRESS`.**
 - Froze every Pre-B004 cross-component security contract in canonical authority `docs/authority/B025_MANDATORY_AMENDMENTS_V1_4.md` (contract version `S0-CONTRACT-FREEZE v1`, 124 identified clauses `[S0-…]`): MSC-040 schema authority single source of truth (`DB-SCHEMA-V1-FROZEN` one home; `docs/current` schema docs defer — ARCH-004), MSC-028 device/JKT/account binding (global `UNIQUE(public_key)`+`UNIQUE(jkt)` incl. `REVOKED`, known-key rejection, immutable JKT→device→account, one active device / one wins, `identity_public_keys` immutable — S1/S2/S3/S16), MSC-026 server verifier (idempotency on `(registration_id, jkt)`, mandatory JKT binding, mandatory `ath`, shared atomic `(jkt, jti)` replay store, iat-keyed rollback-safe retention, transient/permanent rejection taxonomy — S4/S7/S8/S10/S11/S12/S17), MSC-022/026 HTU/HTM (raw encoded path; `%2F/%3F/%23/%00/%2520` distinct; no userinfo), MSC-025 nonce lifecycle (required, not optional; S9), MSC-027 typed `RegistrationPoP v1` at all three phases with JWK equality (S5), MSC-033 marker states + fail-closed first-run resolver with Keystore-alias cross-check + typed store taxonomy, MSC-018 `RejectedAfterArm` + explicit-reset order (alias before marker), MSC-032 wipe/logout/delete/reset/revocation domain matrix with truthful outcomes and marker-last order (S18), MSC-034 backup/restore/reinstall/profile/rollback expected state with assumption classes (S15 carrier), MSC-020 monotonic server `publication_epoch` (S15), MSC-042 hardware trust (V1: no remote attestation; self-report informational only; residual risk documented).
@@ -26,9 +36,11 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 - Task record `docs/reports/security/remediation/REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001.md`. MSC lifecycle: 11 primary S0 contract units proposed `IMPLEMENTED (FROZEN_IN_AUTHORITY)` → `AUTOMATED_TESTED (CONTRACT_VALIDATOR_PASS)` + one supporting `MSC-022` contract entry (not staged, not closed); `CLOSED_BY_S0 = 0`; 42 MSC units remain open; targeted independent retest pending.
 - Preserved: `ROOT-013` `MEDIUM`/`OPEN`; `ROOT-016` `REJECTED_NOT_A_FINDING` (not revived); `ANOX-SECURITY-ARCH-010` `Open`/`INFO` `RETIRE_AT_B004_START`; MSC-039 not reopened. `B-004`/`B-005` `NOT_STARTED`; backend `NOT_IMPLEMENTED`; no product/CI/SQL/native/S1-owned change; remote mutation NONE.
 
+</details>
+
 ## Post-merge gate
 
-`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED (READY for merge) ∥ REMEDIATION_SESSION_S1 isolated/implementation-complete/not-integrated (wave-completion Candidate; security remediation IN_PROGRESS; next: MERGE S0 INTO MAIN → post-S0 S1 integration with regenerated event identity)`
+`SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED merged to main (29a6643, PR #36 via integration/s0-after-ci-hotfix-001) ∥ REMEDIATION_SESSION_S1 committed local delivery awaiting human merge into main (canonical S1 event identity regenerated at integration under human-ratified validator extension); next: S1 MERGE → canonical event reseal → S2 ∥ S3 → S4; MSC OPEN=42 / CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT`
 
 ## Preserved audit outcomes
 
@@ -53,18 +65,20 @@ Described HEAD: 24576ec333f3567c36b46f42ed30c718788ea601
 
 ## Remediation state
 
-- `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`): `RETESTED_AND_EVIDENCE_PRESERVED` — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`; validator PASS; 98 adversarial tests; targeted independent retest `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking); evidence chain preserved under `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0054`, registry `SEC-AUDIT-REG-0013`); 0 MSC units closed. `S0_MERGE_READINESS = READY`.
-- `REMEDIATION_SESSION_S1`: `ISOLATED / IMPLEMENTATION_COMPLETE / NOT_INTEGRATED` (independent repository `anoX-s1`; its provisional `ANOX-EVENT-0054` is not canonical main-line history and will be regenerated/renumbered at post-S0 integration).
+- `REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001` (`REMEDIATION_SESSION_S0`): `RETESTED_AND_EVIDENCE_PRESERVED` — contracts frozen in `B025_MANDATORY_AMENDMENTS_V1_4.md`; validator PASS; 98 adversarial tests; targeted independent retest `TARGETED-INDEPENDENT-RETEST-S0-CORRECTIONS-001` = `PASS_WITH_FINDINGS` (F-01 `RATIFIED`; F-02…F-10 `FIXED`; merge blockers 0; 2 residual LOW non-blocking); evidence chain preserved under `SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001` (`ANOX-EVENT-0054`, registry `SEC-AUDIT-REG-0013`); 0 MSC units closed. `S0_MERGE_READINESS = READY` → **MERGED to `main` at `29a6643` (PR #36)**.
+- `REMEDIATION_SESSION_S1`: `COMMITTED_LOCAL_DELIVERY_PENDING_HUMAN_MERGE` — clean rebuild on `integration/s1-fresh-after-s0-001` at `62b07a171bc94776695432de60134919bc49b07c` (S1 build provenance + PRE-COMMIT gate hardening; `S1CRC-R-001`/`S1CRC-R-002` remediated; `S1CRC-R-003` `DEFERRED_NON_BLOCKING_MILESTONE_SECURITY`; `R-009` protected shared-validator continuity `DEFERRED/NON_BLOCKING`; canonical S1 event identity regenerated at integration).
 - `S2`/`S3`/`S4`: `NOT_STARTED`.
 
 ## Product state
 
 - `PRODUCT_DEVELOPMENT = BLOCKED_PENDING_FINAL_AUDIT`
+- `MSC OPEN = 42`; `MSC CLOSED = 0` (S1 closed no units)
+- `x86_64 runtime = UNVERIFIED_PENDING_REAL_CI`; `arm64 runtime = UNVERIFIED_PENDING_REAL_CI`
 - `B004 = NOT_STARTED`
 - `B005 = NOT_STARTED`
 - `SECURITY-REMEDIATION-COVERAGE-GATE = EXECUTED_AND_PRESERVED (PASS — coverage only, NOT a remediation authorization)`
 - `HUMAN_PRE_REMEDIATION_DECISIONS_AND_AUTHORIZATION = EXECUTED_AND_PRESERVED (decided; SECURITY_REMEDIATION_START_AUTHORIZATION = GRANTED_BY_HUMAN_OWNER)`
-- `SECURITY REMEDIATION = IN_PROGRESS` (S0 corrected pending targeted independent retest; S1 authorized/not executed)
-- `SECURITY_REMEDIATION_WAVE_1 (REMEDIATION_SESSION_S0 ∥ S1) = IN_PROGRESS — S0 CORRECTED_PENDING_TARGETED_INDEPENDENT_RETEST; S1 NOT_EXECUTED; wave completion Candidate`
+- `SECURITY REMEDIATION = IN_PROGRESS` (S0 evidence chain merged to `main` at `29a6643`; S1 committed local delivery awaiting human merge/integration decision)
+- `SECURITY_REMEDIATION_WAVE_1 (REMEDIATION_SESSION_S0 ∥ S1) = IN_PROGRESS — S0 MERGED; S1 COMMITTED_LOCAL_PENDING_HUMAN_MERGE; wave completion Candidate`
 - `FINAL-OPERATIONAL-HANDOFF-BOOTSTRAP-ACCEPTANCE = PENDING / NOT_EXECUTED`
 - `Human final product gate = NOT_EXECUTED`

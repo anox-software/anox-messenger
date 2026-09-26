@@ -3468,5 +3468,117 @@ class TestProjectMemoryFreshness(unittest.TestCase):
         self.assertIn("PASS", status)
 
 
+class TestGitWorktreeDetection(unittest.TestCase):
+    """Linked-worktree compatibility: repository detection must ask Git itself.
+
+    Regression coverage for the defect where `.git` was required to be a
+    directory, which broke legitimate linked worktrees (`.git` is a file).
+    """
+
+    def _init_repo(self, root):
+        def run(*cmd):
+            return subprocess.run(["git", *cmd], cwd=str(root), capture_output=True, text=True)
+        root.mkdir(parents=True, exist_ok=True)
+        run("init")
+        run("config", "user.email", "test@anox.local")
+        run("config", "user.name", "Test")
+        (root / "file.txt").write_text("base\n", encoding="utf-8")
+        run("add", ".")
+        run("commit", "-m", "init")
+        return run
+
+    def test_git_is_worktree_normal_repo(self):
+        """A normal repository root (.git directory) is accepted."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_wt_normal_"))
+        try:
+            self._init_repo(tmp)
+            self.assertTrue((tmp / ".git").is_dir())
+            self.assertTrue(vc.git_is_worktree(cwd=tmp))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_git_is_worktree_linked_worktree(self):
+        """A linked worktree root (.git pointer FILE) is accepted."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_wt_linked_"))
+        try:
+            repo = tmp / "repo"
+            run = self._init_repo(repo)
+            wt = tmp / "linked"
+            r = run("worktree", "add", str(wt), "-b", "linked-test", "HEAD")
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertTrue((wt / ".git").is_file())
+            self.assertTrue(vc.git_is_worktree(cwd=wt))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_git_is_worktree_non_git_dir(self):
+        """A plain directory is rejected."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_wt_nongit_"))
+        try:
+            self.assertFalse(vc.git_is_worktree(cwd=tmp))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_git_is_worktree_fake_dotgit_file(self):
+        """A fake .git file must not be accepted merely because it exists."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_wt_fakegit_"))
+        try:
+            (tmp / ".git").write_text("gitdir: /nonexistent/fake\n", encoding="utf-8")
+            self.assertFalse(vc.git_is_worktree(cwd=tmp))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_git_is_worktree_repo_subdirectory(self):
+        """A subdirectory inside a repo is not itself a working-tree root."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_wt_subdir_"))
+        try:
+            self._init_repo(tmp)
+            sub = tmp / "sub" / "dir"
+            sub.mkdir(parents=True)
+            self.assertFalse(vc.git_is_worktree(cwd=sub))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_live_mode_runs_in_linked_worktree(self):
+        """--mode live must proceed in a linked worktree; the old .git failure is gone."""
+        f = LiveFixture()
+        wt_parent = Path(tempfile.mkdtemp(prefix="anox_livewt_parent_"))
+        try:
+            wt = wt_parent / "wt"
+            r = f._run(["git", "worktree", "add", str(wt), "-b", "linked-live-test", "HEAD"])
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertTrue((wt / ".git").is_file())
+            r = subprocess.run(
+                [sys.executable, "tools/continuity/validate_continuity.py", "--mode", "live"],
+                cwd=str(wt), capture_output=True, text=True,
+            )
+            out = r.stdout + r.stderr
+            self.assertIn("LIVE REPOSITORY MODE", out)
+            self.assertNotIn(".git not available; live mode requires a Git repository", out)
+            self.assertIn("RESULT:", out)
+        finally:
+            f.cleanup()
+            shutil.rmtree(wt_parent, ignore_errors=True)
+
+    def test_live_mode_rejects_non_git_dir(self):
+        """--mode live still fails closed in a directory that is not a Git repo."""
+        tmp = Path(tempfile.mkdtemp(prefix="anox_live_nongit_"))
+        try:
+            tools_dir = tmp / "tools" / "continuity"
+            tools_dir.mkdir(parents=True)
+            (tools_dir / "validate_continuity.py").write_text(
+                (REPO_ROOT / "tools" / "continuity" / "validate_continuity.py").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            r = subprocess.run(
+                [sys.executable, "tools/continuity/validate_continuity.py", "--mode", "live"],
+                cwd=str(tmp), capture_output=True, text=True,
+            )
+            self.assertEqual(r.returncode, 1)
+            self.assertIn(".git not available", r.stdout + r.stderr)
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
 if __name__ == "__main__":
     unittest.main()
