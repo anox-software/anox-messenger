@@ -12,7 +12,7 @@
 - **Previous baseline:** `29a6643189242a47c4a79c38acd04c1eca748787` (S0 remediation evidence merge, PR #36)
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 2dc6b7453ef292c30f32c02e0eb213e1ef5496cb
+Described HEAD: 70ad8a65d90d01c56237d1ec8b2db99becfed35b
 
 ## Pre-merge gate
 

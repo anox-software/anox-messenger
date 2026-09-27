@@ -7,7 +7,7 @@
  "canonical_branch": "main",
  "delivery_branch": "governance/s1-post-merge-continuity-finalization-001",
  "baseline_branch": "main",
- "described_head": "2dc6b7453ef292c30f32c02e0eb213e1ef5496cb",
+ "described_head": "70ad8a65d90d01c56237d1ec8b2db99becfed35b",
  "baseline_tag": "v1-foundation-baseline",
  "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
  "latest_merge_to_baseline": "2dc6b7453ef292c30f32c02e0eb213e1ef5496cb",

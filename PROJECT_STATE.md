@@ -43,7 +43,7 @@
 ## Repository truth
 
 - Branch: `governance/s1-post-merge-continuity-finalization-001`
-- **Current HEAD:** `2dc6b7453ef292c30f32c02e0eb213e1ef5496cb` (`Merge pull request #38 from anox-software/integration/s1-fresh-after-s0-001` — canonical merge of REMEDIATION_SESSION_S1 into `main`; local post-merge continuity synchronization is metadata-only, uncommitted)
+- **Current HEAD:** `70ad8a65d90d01c56237d1ec8b2db99becfed35b` (`docs: finalize S1 post-merge continuity state` — reviewed PR #39 metadata-only delivery on `governance/s1-post-merge-continuity-finalization-001`; canonical `main` merge remains `2dc6b745` until PR #39 is merged)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - **Canonical branch:** `main`
