@@ -40,6 +40,10 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0053 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0054 -->
 
+## Active delivery — S2 bootstrap (2026-09-27)
+
+`S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001` is the Human-authorized governance/scope task on `remediation/s2-lifetime-and-scope-001`, based on clean canonical `main`/`origin/main` at `cb9aee039bd2816c38c11a5e9084be56aa8cde15` (PR #39 merged; PR #38 also in ancestry). It installs the two lifetime policies in `DEVELOPMENT_SECURITY_WORKFLOW_V1.md` and a reusable offline synthetic-merge helper; no product remediation is implemented. Scope-freeze/final continuity seal is pending the second local commit. T2 governance/tooling; no new ledger event (sealed tail remains ANOX-EVENT-0054). `HANDOFF_REQUESTED=NO`; `HANDOFF_PACKAGE_GENERATION=NOT_EXECUTED`; no push/PR/real merge.
+
 ## Repository truth
 
 - Branch: `governance/s1-post-merge-continuity-finalization-001`

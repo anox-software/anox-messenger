@@ -2,9 +2,13 @@
 
 **Authority:** B-026
 
-## Normal handoff lifecycle
+## Live continuity and on-demand export
 
-1. Chat A becomes slow or context too large.
+Apply the canonical [ON-DEMAND HANDOFF GENERATION](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation) and [MERGE-SAFE DELIVERY FINALIZATION INVARIANT](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#merge-safe-delivery-finalization-invariant). `CURRENT_HANDOFF.md` is live continuity, not a generated package. Keep live state current when it changes. Default: `HANDOFF_REQUESTED = NO`, `HANDOFF_PACKAGE_GENERATION = NOT_EXECUTED`; normal development and repository bootstrap need no ZIP.
+
+## Human-requested handoff lifecycle
+
+1. Human explicitly requests `GENERATE CURRENT HANDOFF` or `GENERATE FINAL HANDOFF` (for example, when Chat A becomes slow or context too large).
 2. Finish the current Devin task cleanly.
 3. Ensure the working tree is clean and the state is documented.
 4. Update current-state surfaces:

@@ -28,10 +28,15 @@ Report the mode you used and clearly distinguish `STATE VERIFIED AGAINST LIVE SO
    - `docs/authority/B025/ULTIMATE_MAIN_ARCHITECTURE_B025.md`
    (The canonical precedence list is always `AUTHORITY_INDEX.md`. If another document appears to
    define a competing precedence, `AUTHORITY_INDEX.md` wins.)
+   Follow the index's development-governance reference and read its canonical lifetime rules before current state:
+   - [MERGE-SAFE DELIVERY FINALIZATION INVARIANT](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#merge-safe-delivery-finalization-invariant)
+   - [ON-DEMAND HANDOFF GENERATION](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation)
+   Report both rules and their canonical source in the bootstrap audit. Direct repository access is sufficient in LIVE SOURCE MODE; no generated handoff ZIP or prior chat history is required.
 3. Read the current state in this order:
    - `docs/continuity/CURRENT_HANDOFF.md`
    - `docs/continuity/CURRENT_GIT_STATE.md`
    - `docs/continuity/CURRENT_STATE.json`
+   - `docs/workforce/WORKFORCE_STATE.json` and its current authorized task package
    - `PROJECT_STATE.md`
    - `FORTSCHRITT.md`
    - `DEVIN_PROMPT_OUTPUT_ARCHIV.md`

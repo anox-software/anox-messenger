@@ -298,6 +298,51 @@ Do **NOT** implement B-017-Lite in this task.
 
 ---
 
+## MERGE-SAFE DELIVERY FINALIZATION INVARIANT
+
+Human Product & Security Owner authorization: `S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001` (2026-09-27). This is the single canonical lifetime delivery-finalization rule, consumed by B026. It is additive process governance, not a change to Product/security invariants, finding closure, remote-write authority, or canonical event authorization.
+
+Every delivery follows:
+
+```text
+IMPLEMENT
+→ DELIVERY VALIDATION
+→ FINAL DELIVERY FINALIZATION
+→ SYNTHETIC NORMAL MERGE AGAINST CURRENT origin/main
+→ SYNTHETIC POST-MERGE VALIDATION
+→ PUSH
+→ PR / REQUIRED CI
+→ HUMAN MERGE AUTHORIZATION
+→ NORMAL --merge
+→ SHORT POST-MERGE VERIFICATION
+```
+
+Push readiness requires all of `DELIVERY_BRANCH_VALIDATION = PASS`, `SYNTHETIC_POST_MERGE_VALIDATION = PASS`, `MERGE_SAFE_METADATA_STATE = PASS`, `AUTHORIZED_SCOPE_ONLY = PASS`, and `WORKING_TREE = CLEAN`. Delivery-branch validation alone is insufficient. Readiness is technical evidence, never permission to push or merge: existing Human-controlled remote-write and review/CI gates remain binding. A changed delivery tip or changed `origin/main` invalidates the result. Refresh the remote-tracking base through an authorized fetch before final preflight; the offline helper cannot attest remote freshness.
+
+The final delivery task MUST inspect validator semantics and automatically correct deterministic continuity/lifecycle inconsistencies inside its already-authorized metadata scope before push. This includes coherent described-checkpoint, delivery-branch, lifecycle/checkpoint, effective-gate/placeholder, merge-topology and transaction-anchor synchronization where their existing semantics require it. Never predict a future commit SHA or mark an unperformed Human action complete. Use an existing substantive checkpoint followed by a finite metadata seal; historical evidence remains unchanged. Rerun delivery-context AND synthetic post-merge validation after every correction; if either fails, STOP. Do not modify a validator merely to turn a failure green.
+
+Automatic correction is permitted only with a deterministic cause, no Product/crypto behavior or security-invariant change, no new Authority/Human decision, no canonical finding/MSC closure or severity mutation, and no new event authorization. STOP for Human authorization for Product scope expansion, crypto/backend/Supabase/schema/migration behavior, security invariants, new policy, canonical finding mutation, MSC closure, severity, new events, protected historical evidence, force-push/rebase/history rewrite, CI bypass, validator weakening, or required-check removal. A path allowlist alone does not authorize a semantic change.
+
+`tools/continuity/validate_delivery_lifecycle.py --task-id <authorized-task-id>` is the reusable offline preflight. It resolves the canonical base from `refs/remotes/origin/<canonical_branch>`, checks the committed delivery/task scope and continuity/workforce anchors, and runs the unmodified live continuity validator in both delivery and canonical contexts. The synthetic normal two-parent `--no-ff` merge occurs only in an independently initialized disposable local repository with its own objects, refs and index, no configured remote and no linked worktree. It never pushes, fetches from a network remote, merges real main, rewrites history, or creates a handoff package. It removes only its own temporary state and fails closed on conflicts, missing evidence, unexpected topology or changed source state.
+
+`--finalize-metadata` additionally handles the narrow mechanical case of a stale concrete current gate matching an already-recorded pre/post gate: it restores the runtime placeholder only after task-scope and workforce agreement checks, validates the correction in both disposable contexts, then applies only that metadata correction locally. The working tree is then DIRTY and push readiness remains BLOCKED until the authorized metadata commit and a complete rerun. Other finalization corrections remain the delivery executor's responsibility under the boundary above; ambiguous corrections are never guessed.
+
+Focused regression suite: `python3 -m unittest discover -s tools/continuity -p test_delivery_lifecycle.py`. Run the full continuity suite when continuity tooling changes. After an authorized normal Human merge, perform a short verification of real merge parents, reviewed payload, effective continuity/workforce gate and global state; no automatic new handoff export.
+
+## ON-DEMAND HANDOFF GENERATION
+
+Human Product & Security Owner authorization: the same 2026-09-27 task above. This is the single canonical lifetime distinction between live continuity and generated handoff artifacts, consumed by B026.
+
+**LIVE CONTINUITY / PROJECT STATE** is maintained when represented project state materially changes. `CURRENT_HANDOFF.md` remains a live continuity/recovery surface used by validators; do not rename, remove or treat it as an archive export. Normal development continues from the repository and its bootstrap chain without a ZIP.
+
+**GENERATED HANDOFF PACKAGE** is an explicit snapshot/export (including `ANOX_HANDOFF_*.zip`, generated handoff reports, archive packages and handoff SHA reports). It is generated only on explicit Human command such as `GENERATE CURRENT HANDOFF` or `GENERATE FINAL HANDOFF`. Completing a workstep/session, committing, opening a PR, passing CI or merging never independently triggers or requires one. Absence of a generated package MUST NOT block normal development. Default `HANDOFF_REQUESTED = NO` and `HANDOFF_PACKAGE_GENERATION = NOT_EXECUTED` is valid and non-blocking.
+
+The existing explicitly documented emergency/dirty recovery mechanism remains available; it does not create an automatic normal-completion trigger. Final operational acceptance remains a separate Human-gated activity: when an export is needed for its snapshot tests, the Human explicitly requests it. Disposable archive fixtures for isolated tests are not current project state and must be cleaned up.
+
+New chats read `CURRENT_CHAT_BOOTSTRAP_PROMPT.md` → `AUTHORITY_INDEX.md` → this canonical development governance (both lifetime rules) → current continuity/workforce state. Consumers link here rather than duplicating the rules. Bootstrap regression tests verify these actual references and section targets.
+
+---
+
 ## Cold-chat reconstruction quick reference
 
 These one-line answers are provided so a brand-new session can determine the current governance without previous chat memory.

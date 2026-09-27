@@ -22,10 +22,10 @@ emergency/degraded process.
 
 Provide only:
 
-- `artifacts/handoff/ANOX_HANDOFF_*.zip` (latest generated package)
 - Canonical repository: `https://github.com/anox-software/anox-messenger` (SSH: `git@github.com:anox-software/anox-messenger.git`)
+- Optionally, an already Human-requested `artifacts/handoff/ANOX_HANDOFF_*.zip` snapshot.
 
-The new AI reads the live repository and the handoff package.
+The new AI reads the live repository and `CURRENT_CHAT_BOOTSTRAP_PROMPT.md`; no ZIP is required. Any supplied snapshot is historical until reconciled with live source. Generation follows [ON-DEMAND HANDOFF GENERATION](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation), never normal task completion.
 
 ### If the new AI does NOT have direct repository access
 
