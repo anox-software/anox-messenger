@@ -2,16 +2,20 @@
  "schema_version": "B027C-v1.1",
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
- "delivery_branch": "governance/s1-post-merge-continuity-finalization-001",
- "described_head": "70ad8a65d90d01c56237d1ec8b2db99becfed35b",
- "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED merged to main (29a6643, PR #36 via integration/s0-after-ci-hotfix-001) ∥ REMEDIATION_SESSION_S1 MERGED_INTO_MAIN (canonical merge 2dc6b7453ef292c30f32c02e0eb213e1ef5496cb, PR #38 via integration/s1-fresh-after-s0-001 — now a HISTORICAL DELIVERY BRANCH; integrated delivery tip 3ed46b717172d512f75672c83d58327a52ac3c61 = implementation 62b07a1 + continuity seal 69279ce + ARM64 CI disposition; PR #38 CI 8/8 jobs SUCCESS — x86_64 instrumented tests EXECUTED_AND_PASS, arm64 runtime RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED / INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION — disposition gate only, real ARM64 runtime evidence still required); S1 continuity POST_MERGE_SYNCHRONIZED — lifecycle finalized (HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED); canonical ledger tail remains ANOX-EVENT-0054 (no new event); wave completion remains Candidate pending retest evidence; next: SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE — select the next OPEN MSC remediation wave from canonical audit evidence (none selected or started); MSC OPEN=42 / CLOSED=0; B004/B005 NOT_STARTED; S2/S3/S4 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT",
+ "delivery_branch": "remediation/s2-lifetime-and-scope-001",
+ "described_head": "60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a",
+ "current_gate": "S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001 — LOCAL_DELIVERY_AWAITING_REVIEW; lifetime governance installed; S2 scope FROZEN_REPOSITORY_VERIFIED; no remediation implementation; remote permission NONE; no handoff generated",
  "active_roles": [
   "ROLE-003",
   "ROLE-009"
  ],
  "blocked_tasks": [],
- "authorized_tasks": [],
- "current_writer": null,
+ "authorized_tasks": ["ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001"],
+ "current_writer": {
+  "task_id": "ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001",
+  "role_id": "ROLE-009",
+  "branch": "remediation/s2-lifetime-and-scope-001"
+ },
  "pending_human_remote_actions": [],
  "latest_decision_id": "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001",
  "latest_finding_id": "ANOX-SECURITY-ARCH-010",
@@ -68,23 +72,23 @@
   "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED + MERGED to main at 29a6643 (F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); REMEDIATION_SESSION_S1 MERGED_INTO_MAIN at 2dc6b745 via PR #38 (integrated delivery tip 3ed46b7 = 62b07a1 + 69279ce + ARM64 CI disposition; S1CRC-R-001/R-002 remediated; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; R-009 DEFERRED/NON_BLOCKING; 0 MSC units closed)"
  },
  "pre_merge_state": {
-  "described_head": "62b07a171bc94776695432de60134919bc49b07c",
-  "current_gate": "S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001 — REMEDIATION_SESSION_S1 CLEAN REBUILD COMMITTED DELIVERY 62b07a171bc9 ON integration/s1-fresh-after-s0-001 (S1 build provenance + PRE-COMMIT gate hardening committed; S1CRC-R-001/S1CRC-R-002 remediated and verified — 212 targeted tests, secret_scan PASS, CI pipeline validator PASS, human precommit check PASS; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; shared-validator continuity R-009 DEFERRED/NON_BLOCKING; MSC OPEN=42 / CLOSED=0; x86_64 runtime UNVERIFIED_PENDING_REAL_CI; arm64 runtime UNVERIFIED_PENDING_REAL_CI; awaiting human S1 merge/integration decision — canonical S1 event identity sealed at integration)",
+  "described_head": "60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a",
+  "current_gate": "S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001 — LOCAL_DELIVERY_AWAITING_REVIEW; lifetime governance installed; S2 scope FROZEN_REPOSITORY_VERIFIED; no remediation implementation; remote permission NONE; no handoff generated",
   "current_writer": {
-   "task_id": "ANOX-TASK-S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001",
+   "task_id": "ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001",
    "role_id": "ROLE-009",
-   "branch": "integration/s1-fresh-after-s0-001"
+   "branch": "remediation/s2-lifetime-and-scope-001"
   },
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "ANOX-TASK-S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001",
-  "active_task": "ANOX-TASK-S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001"
+  "current_task": "ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001",
+  "active_task": "ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001"
  },
  "post_merge_state": {
-  "described_head": "70ad8a65d90d01c56237d1ec8b2db99becfed35b",
-  "current_gate": "SECURITY_REMEDIATION_WAVE_1 — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED merged to main (29a6643, PR #36 via integration/s0-after-ci-hotfix-001) ∥ REMEDIATION_SESSION_S1 MERGED_INTO_MAIN (canonical merge 2dc6b7453ef292c30f32c02e0eb213e1ef5496cb, PR #38 via integration/s1-fresh-after-s0-001 — now a HISTORICAL DELIVERY BRANCH; integrated delivery tip 3ed46b717172d512f75672c83d58327a52ac3c61 = implementation 62b07a1 + continuity seal 69279ce + ARM64 CI disposition; PR #38 CI 8/8 jobs SUCCESS — x86_64 instrumented tests EXECUTED_AND_PASS, arm64 runtime RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED / INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION — disposition gate only, real ARM64 runtime evidence still required); S1 continuity POST_MERGE_SYNCHRONIZED — lifecycle finalized (HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED); canonical ledger tail remains ANOX-EVENT-0054 (no new event); wave completion remains Candidate pending retest evidence; next: SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE — select the next OPEN MSC remediation wave from canonical audit evidence (none selected or started); MSC OPEN=42 / CLOSED=0; B004/B005 NOT_STARTED; S2/S3/S4 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT",
+  "described_head": "60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a",
+  "current_gate": "S2-IMPLEMENTATION-001 — S2 scope FROZEN_REPOSITORY_VERIFIED; separate authorized task and predecessor/provenance evidence required before execution; S2/S3/S4 remediation NOT_STARTED; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": null,
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "S1-POST-MERGE-CONTINUITY-SYNC-001 COMPLETE — REMEDIATION_SESSION_S1 merged to main at 2dc6b745 via PR #38 (delivery branch integration/s1-fresh-after-s0-001 now historical); post-merge continuity synchronized metadata-only and lifecycle-finalized (HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED); next: SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE — next OPEN MSC remediation wave selection from canonical audit evidence (none selected or started); S2/S3/S4 NOT_STARTED; x86_64 instrumented CI EXECUTED_AND_PASS; arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME (INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION)",
+  "current_task": "S2-IMPLEMENTATION-001 — separate authorized task required; S2 scope frozen, remediation NOT_STARTED",
   "active_task": null
  },
  "previous_merges": [
@@ -379,5 +383,5 @@
  "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
  "legacy_audit_set_status": "6/6 COMPLETE",
  "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
- "last_sync": "2026-09-27 — S1-POST-MERGE-CONTINUITY-SYNC-001 + S1-POST-MERGE-LIFECYCLE-FINALIZATION-001 (S1 merged to main at 2dc6b745 via PR #38; described_head 3ed46b7; ledger tail remains ANOX-EVENT-0054; HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED; lifecycle finalized — next: SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE)"
+ "last_sync": "2026-09-27 — S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001; base cb9aee039bd2 (PR #39 merged); described checkpoint 60f42b0ac99c; local delivery Awaiting Review; S2 scope FROZEN_REPOSITORY_VERIFIED in CURRENT_NEXT_DEVIN_TASK.md; separate S2-IMPLEMENTATION-001 next; no remediation implemented, no new event (tail ANOX-EVENT-0054), no handoff package, no remote mutation; prior notes/merges remain historical"
 }
