@@ -270,3 +270,28 @@
 - State carried forward truthfully: `MSC OPEN = 42`, `MSC CLOSED = 0`; `B004/B005 = NOT_STARTED`; `S2/S3/S4 = NOT_STARTED`; `PRODUCT = BLOCKED_PENDING_FINAL_AUDIT`; `x86_64 runtime = UNVERIFIED_PENDING_REAL_CI`; `arm64 runtime = UNVERIFIED_PENDING_REAL_CI`; S1 pending human merge — no merge/PR/push performed; no CI run claimed; no runtime success claimed.
 - Files changed (metadata only): `docs/continuity/CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `docs/workforce/WORKFORCE_STATE.json`, `docs/workforce/registries/tasks.jsonl`.
 - Commit: one metadata-only commit (`docs: seal S1 clean rebuild continuity state`); remote mutation NONE.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0054 -->
+## S1-POST-MERGE-CONTINUITY-SYNC-001 — 2026-09-27 (metadata-only post-merge synchronization under still-sealed ANOX-EVENT-0054)
+
+- Branch: `main`
+- Canonical HEAD: `2dc6b7453ef292c30f32c02e0eb213e1ef5496cb` (`Merge pull request #38 from anox-software/integration/s1-fresh-after-s0-001`; canonical parent `29a6643`, delivery parent `3ed46b7`)
+- Described HEAD (integrated S1 delivery tip): `3ed46b717172d512f75672c83d58327a52ac3c61` (implementation `62b07a1` + continuity seal `69279ce` + ARM64 CI disposition `3ed46b7`)
+- Task ID: `ANOX-TASK-S1-POST-MERGE-CONTINUITY-SYNC-001`
+- Result: `Ready For Remote` — live continuity/handoff/workforce surfaces synchronized to post-merge truth; `REMEDIATION_SESSION_S1 = MERGED_INTO_MAIN / INTEGRATED`; `integration/s1-fresh-after-s0-001` recorded as HISTORICAL DELIVERY BRANCH; PR #38 = MERGED (human remote action).
+- No new canonical Project Memory event sealed: `ANOX-EVENT-0054` remains the last sealed ledger event — its tail position is pinned by `validate_s0_evidence_preservation.py` and the protected shared evidence validator (`grants_future_event_numbers=false`); the S1 merge is recorded as a metadata-only advance, not a new event. Event numbers `0055`–`0059` on the archived local line `archive/local-main-pre-pr38-20260926` are superseded historical evidence only and are not canonical.
+- ARM64 truth preserved: PR #38 CI 8/8 jobs SUCCESS — `x86_64` instrumented tests `EXECUTED_AND_PASS` (run `36275286174`); `arm64` runtime `UNVERIFIED_PENDING_REAL_ARM64_RUNTIME` — `INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION` / `RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED` (emulator/test steps skipped; infrastructure-disposition step ran). No ARM64 runtime pass/verification claimed.
+- State carried forward truthfully: `MSC OPEN = 42`, `MSC CLOSED = 0`; `B004/B005 = NOT_STARTED`; `S2/S3/S4 = NOT_STARTED`; `PRODUCT = BLOCKED_PENDING_FINAL_AUDIT`; B027-D employee runtime router `DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED` (Human Owner decision — not implemented here).
+- Files changed (metadata only, uncommitted): `docs/continuity/CURRENT_STATE.json`, `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_IMPLEMENTATION_STATE.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_OPEN_WORK.md`, `PROJECT_STATE.md`, `FORTSCHRITT.md`, `docs/workforce/WORKFORCE_STATE.json`, `docs/workforce/registries/tasks.jsonl`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md`, `docs/continuity/PROJECT_MEMORY_SURFACE_INDEX.md`.
+- Commit: none (left uncommitted for human review); remote mutation NONE.
+- Next gate: `HUMAN-S1-POST-MERGE-CONTINUITY-CHECK` — human review/acceptance of this synchronization; then select the next OPEN MSC remediation / implementation wave from canonical audit evidence.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0054 -->
+## S1-POST-MERGE-LIFECYCLE-FINALIZATION-001 — 2026-09-27 (metadata-only lifecycle finalization under still-sealed ANOX-EVENT-0054)
+
+- Human gate `HUMAN-S1-POST-MERGE-CONTINUITY-CHECK` completed: **PASS / ACCEPTED** — the uncommitted post-merge continuity synchronization was reviewed and accepted as-is.
+- Lifecycle finalized: `WORKFORCE_STATE.json` `current_writer` → `null`, `authorized_tasks` → `[]`, `pending_human_remote_actions` → `[]`; `post_merge_state.current_writer`/`active_task` remain `null`; `ANOX-TASK-S1-POST-MERGE-CONTINUITY-SYNC-001` moved `Ready For Remote` → `Merged`.
+- Gate texts updated in `CURRENT_STATE.json` (`post_merge_gate`), `WORKFORCE_STATE.json` (`current_gate` + `post_merge_state.current_gate`), `CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`: `HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED`; next = `SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE` — select the next OPEN MSC remediation wave from canonical audit evidence (none selected or started).
+- Preserved unchanged: `MSC OPEN = 42`, `MSC CLOSED = 0`; `B004/B005 = NOT_STARTED`; `S2/S3/S4 = NOT_STARTED`; `PRODUCT = BLOCKED_PENDING_FINAL_AUDIT`; `next_phase = SECURITY_REMEDIATION_WAVE_1` (Candidate pending retest evidence); ledger tail `ANOX-EVENT-0054` (no new canonical event); `arm64` runtime `UNVERIFIED_PENDING_REAL_ARM64_RUNTIME` (`INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION`); B027-D `DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED`.
+- Delivery vehicle: `governance/s1-post-merge-continuity-finalization-001` → PR to `main` (human gate `HUMAN-S1-FINAL-METADATA-COMMIT`); `delivery_branch` advanced accordingly — the merged `integration/s1-fresh-after-s0-001` is HISTORICAL.
+- Next gate: `HUMAN-S1-FINAL-METADATA-COMMIT` — human commit of the accepted post-merge metadata state.
