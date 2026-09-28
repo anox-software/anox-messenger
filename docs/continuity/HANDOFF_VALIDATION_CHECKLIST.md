@@ -2,6 +2,8 @@
 
 **Authority:** B-026
 
+This checklist governs a Human-requested export under [ON-DEMAND HANDOFF GENERATION](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation). Live continuity checks still apply during ordinary development; archive-generation checks apply only to an explicitly requested package (or documented emergency recovery). No package is required solely by task/session completion, commit, PR, CI or merge.
+
 ## Pre-generation live validation (requires `.git`)
 
 - [ ] `PROJECT_STATE.md` is current

@@ -132,9 +132,18 @@ And exactly one of:
 
 ---
 
+## Lifetime delivery and handoff governance
+
+The Human-authorized 2026-09-27 lifetime amendment is defined once in the additive development-workflow Authority:
+
+- [MERGE-SAFE DELIVERY FINALIZATION INVARIANT](DEVELOPMENT_SECURITY_WORKFLOW_V1.md#merge-safe-delivery-finalization-invariant)
+- [ON-DEMAND HANDOFF GENERATION](DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation)
+
+B026 consumes these rules. They supersede milestone/completion-triggered export language below, not Product/security semantics, emergency recovery, archive-integrity checks, or Human remote authorization. Live continuity remains mandatory when state changes; a generated package is not a normal-development prerequisite.
+
 ## Handoff workflow
 
-The frozen lifecycle is:
+The Human-requested snapshot lifecycle is:
 
 Chat A becomes slow / context too large  
 → finish current Devin task  
@@ -178,14 +187,7 @@ Update other `docs/continuity/` files only when their represented state actually
 
 ### When to generate a handoff ZIP
 
-A handoff ZIP may be generated only when:
-
-- a ChatGPT chat handoff is actually requested;
-- an explicitly defined architecture or release milestone is reached;
-- the architect or user explicitly requests one;
-- a recovery or emergency handoff is required.
-
-The expensive full handoff/parity/cold-bootstrap process is therefore event-driven, not mandatory after every task.
+Generation triggers are exclusively defined by [ON-DEMAND HANDOFF GENERATION](DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation). A reached milestone alone is not a trigger; the preserved emergency/recovery path remains explicit. Full handoff/parity/cold-bootstrap export validation is not mandatory after every task.
 
 ### ZIP retention and cleanup
 
@@ -321,7 +323,7 @@ Preferred future handoff workflow:
 - **UPLOAD A:** latest generated `ANOX_HANDOFF_*.zip`
 - **UPLOAD B:** latest repository snapshot only if direct repository access is unavailable
 
-If the new AI can directly inspect the current repository, the handoff package plus repository access is sufficient.
+If the new AI can directly inspect the current repository, repository access and the current bootstrap prompt are sufficient; the package is optional under the canonical on-demand rule.
 
 ---
 

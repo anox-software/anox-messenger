@@ -51,6 +51,24 @@ Do not conflate these.
 
 ---
 
+## Pre-push merge readiness and handoff fields
+
+Apply the canonical [delivery rule](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#merge-safe-delivery-finalization-invariant) and [handoff rule](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation). Every final delivery reports:
+
+```text
+PRE-PUSH MERGE READINESS
+DELIVERY_BRANCH_VALIDATION: PASS / FAIL
+SYNTHETIC_POST_MERGE_VALIDATION: PASS / FAIL
+MERGE_SAFE_METADATA_STATE: PASS / FAIL
+AUTHORIZED_SCOPE_ONLY: PASS / FAIL
+WORKING_TREE: CLEAN / DIRTY
+PUSH_READINESS: READY / BLOCKED
+HANDOFF_REQUESTED: YES / NO
+HANDOFF_PACKAGE_GENERATION: EXECUTED / NOT_EXECUTED
+```
+
+Report the validated delivery tip and canonical base. A check not executed cannot establish PASS: report FAIL for readiness and explain NOT_EXECUTED in the test details. READY never authorizes remote mutation. NO / NOT_EXECUTED is the normal, non-blocking handoff state; generated artifacts are not required by this output contract.
+
 ## Final result line
 
 Exactly one of:
