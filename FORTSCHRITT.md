@@ -318,3 +318,14 @@
 - The anchor is inert until this governance delivery passes its own repository validation and the Human remote/merge gate to `main`. `remediation/s2-correction-001` remains blocked; the C-01 validator correction is the pending next step and must consume the canonical record, not any self-minted copy.
 - Preserved unchanged: `MSC OPEN = 42`, `MSC CLOSED = 0`; `B004/B005 = NOT_STARTED`; `S2/S3/S4` remediation not closed; `PRODUCT = BLOCKED_PENDING_FINAL_AUDIT`; ledger tail `ANOX-EVENT-0054`; `arm64` `UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`; B027-D `DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED`.
 - Next gate: Human review/merge of this governance delivery to canonical `main`; then the C-01 validator correction on `remediation/s2-correction-001`.
+
+<!-- ANOX_EVENT: ANOX-EVENT-0066 -->
+## POST-0054-LEDGER-CANONICALIZATION-001 — 2026-09-30 (one-time canonical ledger canonicalization; ANOX-EVENT-0060…0066)
+
+- Start: verified clean `main` = `origin/main` = `270cdb92762965eea3236177710c88c259d4b33f` (PR #41 merge of the S2 C-01 pre-authorization anchor). Branch: `governance/post-0054-ledger-canonicalization-001`.
+- Authority: Human Product & Security Owner decision `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001` (ONE_TIME_CHANGE_SPECIFIC), recorded in `decisions.jsonl`; canonical record `docs/reports/security/decisions/POST-0054-LEDGER-CANONICALIZATION-001.md`.
+- Purpose: fix the post-PR-#41 FINAL HANDOFF blocker `PROJECT_MEMORY_FRESHNESS: FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT`. Canonical reconstruction found six unrecorded real merges after `ANOX-EVENT-0054` (PR #35 `ea838fa5`, PR #36 `29a6643`, PR #38 `2dc6b745`, PR #39 `cb9aee0`, PR #40 `02179ecd`, PR #41 `270cdb92`) — now recorded as `ANOX-EVENT-0060…0065`; `ANOX-EVENT-0066` seals substantive checkpoint `978b7d03`. Event ids `0055–0059` reserved to the non-canonical archived line, not reused.
+- Minimal pinned validator extension: `validate_security_audit_evidence_preservation.py` accepts only the exact `0060…0066` chain (new ratified hash `adde793e…`); `validate_s0_evidence_preservation.py` accepts the chain only with the canonicalization decision/report; `validate_s0_contract_freeze.py` ratifies the new digest. No generic future-event authorization; S0 evidence and `ANOX-EVENT-0054` unchanged.
+- Scope discipline: validator/test/registries/continuity surfaces only; no product/crypto/android/backend/CI change; no finding/MSC closure; remote mutation NONE; HANDOFF_REQUESTED=NO; HANDOFF_PACKAGE_GENERATION=NOT_EXECUTED.
+- Preserved unchanged: `MSC OPEN=42`, `MSC CLOSED=0`; `B004/B005=NOT_STARTED`; `PRODUCT=BLOCKED_PENDING_FINAL_AUDIT`; `arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`; B027-D `DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED`; C-01/R09 not fixed.
+- Next gate: Human review/merge of this delivery to `main`; then the authorized C-01 validator correction on `remediation/s2-correction-001`.

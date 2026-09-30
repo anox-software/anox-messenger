@@ -1,6 +1,14 @@
 # CURRENT_NEXT_DEVIN_TASK — anoX V1
 
-## S2-C01 pre-authorization anchor — S2-C01-PREAUTHORIZATION-001 (2026-09-30)
+## Post-0054 ledger canonicalization — POST-0054-LEDGER-CANONICALIZATION-001 (2026-09-30)
+
+**Delivery:** `governance/post-0054-ledger-canonicalization-001`, canonical base `270cdb92762965eea3236177710c88c259d4b33f` (verified `main` = `origin/main`; PR #41 merge).
+**Decision:** `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001` — Human Product & Security Owner, ONE_TIME_CHANGE_SPECIFIC, recorded in `docs/workforce/registries/decisions.jsonl`; canonical record `docs/reports/security/decisions/POST-0054-LEDGER-CANONICALIZATION-001.md`.
+**Purpose:** resolve the post-PR-#41 final-handoff blocker `PROJECT_MEMORY_FRESHNESS: FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT` by recording the six real canonical merges after `ANOX-EVENT-0054` as `ANOX-EVENT-0060…0065` and sealing substantive checkpoint `978b7d03273b` as `ANOX-EVENT-0066`. Event ids `0055–0059` are reserved to the non-canonical archived line and were not reused. Pinned fail-closed validator extension (shared validator hash `adde793e…` ratified); no generic future-event authorization.
+**Next task:** the authorized C-01 validator correction on `remediation/s2-correction-001` — bind the protected-Rust authorization in `tools/audit/validate_s1_build_provenance.py` to the canonical `ANOX-TASK-S2-CORRECTION-001` anchor. Effective only after this governance delivery passes review and the Human remote/merge gate to `main`. No implementation, no remote mutation here.
+**Event:** `ANOX-EVENT-0066` is the last sealed canonical event.
+
+## S2-C01 pre-authorization anchor — S2-C01-PREAUTHORIZATION-001 (2026-09-30) — MERGED via PR #41 (`270cdb92…`; anchor now canonical on `main`; C-01/R09 prerequisite satisfied, not fixed)
 
 **Delivery:** `governance/s2-c01-preauthorization-001`, canonical base `02179ecd34fde81a0cc8866a09653cab8ff40f38` (verified `main` = `origin/main`; PR #40 merge).
 **Decision:** `ANOX-DECISION-S2-C01-PREAUTHORIZATION-001` — Human Product & Security Owner, ONE_TIME_CHANGE_SPECIFIC, recorded in `docs/workforce/registries/decisions.jsonl`.
