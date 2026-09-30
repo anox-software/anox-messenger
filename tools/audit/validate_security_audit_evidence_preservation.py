@@ -133,6 +133,119 @@ def _is_s0_preservation_event(ev):
         and S0_PRESERVATION_EVENT["ref"] in (ev.get("refs") or [])
     )
 
+
+# Post-0054 ledger canonicalization (Human decision
+# ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001,
+# ONE_TIME_CHANGE_SPECIFIC — not generic future-event support). The six merges
+# that actually became canonical main after ANOX-EVENT-0054 was sealed
+# (PR #35/#36/#38/#39/#40/#41) plus this correction's sealed delivery checkpoint
+# are the sole admissible events after ANOX-EVENT-0054, exactly in this order
+# with every identifying field pinned; any other appended event fails closed.
+# Event-ids 0055–0059 are reserved for the non-canonical local history line
+# archive/local-main-pre-pr38-20260926 and must never be allocated canonically.
+POST_0054_CANONICALIZATION_CHAIN = (
+    {
+        "event_id": "ANOX-EVENT-0060",
+        "type": "canonical_merge",
+        "task": "hotfix/ci-android-sdk-packages-001",
+        "start_head": "0f932520393feee6d479cc099f179f5766323125",
+        "end_head": "ea838fa5803f5088a1ce39d6ac026f8295a281a6",
+        "merge_head": "ea838fa5803f5088a1ce39d6ac026f8295a281a6",
+        "status": "merged",
+    },
+    {
+        "event_id": "ANOX-EVENT-0061",
+        "type": "canonical_merge",
+        "task": "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001",
+        "start_head": "ea838fa5803f5088a1ce39d6ac026f8295a281a6",
+        "end_head": "29a6643189242a47c4a79c38acd04c1eca748787",
+        "merge_head": "29a6643189242a47c4a79c38acd04c1eca748787",
+        "status": "merged",
+    },
+    {
+        "event_id": "ANOX-EVENT-0062",
+        "type": "canonical_merge",
+        "task": "ANOX-TASK-S1-CLEAN-REBUILD-CONTINUITY-TRANSITION-001",
+        "start_head": "29a6643189242a47c4a79c38acd04c1eca748787",
+        "end_head": "2dc6b7453ef292c30f32c02e0eb213e1ef5496cb",
+        "merge_head": "2dc6b7453ef292c30f32c02e0eb213e1ef5496cb",
+        "status": "merged",
+    },
+    {
+        "event_id": "ANOX-EVENT-0063",
+        "type": "canonical_merge",
+        "task": "ANOX-TASK-S1-POST-MERGE-CONTINUITY-SYNC-001",
+        "start_head": "2dc6b7453ef292c30f32c02e0eb213e1ef5496cb",
+        "end_head": "cb9aee039bd2816c38c11a5e9084be56aa8cde15",
+        "merge_head": "cb9aee039bd2816c38c11a5e9084be56aa8cde15",
+        "status": "merged",
+    },
+    {
+        "event_id": "ANOX-EVENT-0064",
+        "type": "canonical_merge",
+        "task": "ANOX-TASK-S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001",
+        "start_head": "cb9aee039bd2816c38c11a5e9084be56aa8cde15",
+        "end_head": "02179ecd34fde81a0cc8866a09653cab8ff40f38",
+        "merge_head": "02179ecd34fde81a0cc8866a09653cab8ff40f38",
+        "status": "merged",
+    },
+    {
+        "event_id": "ANOX-EVENT-0065",
+        "type": "canonical_merge",
+        "task": "ANOX-TASK-S2-C01-PREAUTHORIZATION-001",
+        "start_head": "02179ecd34fde81a0cc8866a09653cab8ff40f38",
+        "end_head": "270cdb92762965eea3236177710c88c259d4b33f",
+        "merge_head": "270cdb92762965eea3236177710c88c259d4b33f",
+        "status": "merged",
+    },
+    {
+        # The canonicalization delivery seals its own substantive checkpoint
+        # (end_head = the delivery's substantive commit, written by the
+        # following seal commit — identical convention to ANOX-EVENT-0054,
+        # whose end_head could not be pinned here either because the commit is
+        # created by the delivery itself). Every other field is pinned.
+        "event_id": "ANOX-EVENT-0066",
+        "type": "post_0054_ledger_canonicalization",
+        "task": "ANOX-TASK-POST-0054-LEDGER-CANONICALIZATION-001",
+        "start_head": "270cdb92762965eea3236177710c88c259d4b33f",
+        "status": "READY_FOR_REMOTE",
+        "ref": "docs/reports/security/decisions/POST-0054-LEDGER-CANONICALIZATION-001.md",
+    },
+)
+
+
+def _is_post_0054_chain_event(ev, spec):
+    """True when a ledger event carries exactly the pinned identifying fields."""
+    for key, want in spec.items():
+        if key == "ref":
+            if want not in (ev.get("refs") or []):
+                return False
+        elif ev.get(key) != want:
+            return False
+    return True
+
+
+def _post_0054_tail_ok(ledger):
+    """True when the ledger tail is exactly the pinned post-0054 chain.
+
+    The chain must directly follow the pinned ANOX-EVENT-0054 preservation
+    event, which must directly follow the pinned ANOX-EVENT-0053 successor,
+    which must directly follow LEDGER_EVENT (ANOX-EVENT-0052). A partial,
+    reordered, duplicated or otherwise different tail fails closed.
+    """
+    n = len(POST_0054_CANONICALIZATION_CHAIN)
+    if len(ledger) < n + 3:
+        return False
+    tail = ledger[-n:]
+    if not all(_is_post_0054_chain_event(ev, spec)
+               for ev, spec in zip(tail, POST_0054_CANONICALIZATION_CHAIN)):
+        return False
+    return (
+        _is_s0_preservation_event(ledger[-n - 1])
+        and _is_s0_successor_event(ledger[-n - 2])
+        and ledger[-n - 3].get("event_id") == LEDGER_EVENT
+    )
+
 # ---------------------------------------------------------------------------
 # HUMAN-PRE-REMEDIATION-DECISIONS-001 expectations
 # ---------------------------------------------------------------------------
@@ -3235,10 +3348,16 @@ def validate_project_memory(errors):
               f"(S0 evidence-preservation successor of {S0_SUCCESSOR_EVENT['event_id']})")
     elif _is_s0_successor_event(latest) and len(ledger) >= 2 and ledger[-2].get("event_id") == LEDGER_EVENT:
         print(f"  OK   Project Memory synced to {latest.get('event_id')} (REMEDIATION_SESSION_S0 successor of {LEDGER_EVENT})")
+    elif _post_0054_tail_ok(ledger):
+        print(f"  OK   Project Memory synced to {latest.get('event_id')} "
+              f"(pinned post-0054 canonicalization chain "
+              f"{POST_0054_CANONICALIZATION_CHAIN[0]['event_id']}…{POST_0054_CANONICALIZATION_CHAIN[-1]['event_id']} "
+              f"after {S0_PRESERVATION_EVENT['event_id']})")
     else:
         fail(f"last ledger event must be {LEDGER_EVENT} (or its recorded REMEDIATION_SESSION_S0 successor "
              f"{S0_SUCCESSOR_EVENT['event_id']}, or its recorded S0 evidence-preservation successor "
-             f"{S0_PRESERVATION_EVENT['event_id']}), got {latest.get('event_id')}", errors)
+             f"{S0_PRESERVATION_EVENT['event_id']}, or the pinned post-0054 canonicalization chain ending at "
+             f"{POST_0054_CANONICALIZATION_CHAIN[-1]['event_id']}), got {latest.get('event_id')}", errors)
     raw = ledger_path.read_bytes().splitlines()
     overlong = [i + 1 for i, line in enumerate(raw) if len(line) > LEDGER_MAX_LINE_BYTES]
     if overlong:

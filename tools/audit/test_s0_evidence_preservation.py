@@ -34,10 +34,12 @@ MANIFEST = "docs/authority/contracts/S0_CONTRACT_FREEZE_MANIFEST.json"
 FIXTURE_FILES = [
     IMPL, RETEST_B, RETEST_D, PRES, DECISION,
     "docs/reports/security/decisions/S0-F01-FILE-OWNERSHIP-RATIFICATION-001.md",
+    "docs/reports/security/decisions/POST-0054-LEDGER-CANONICALIZATION-001.md",
     REGISTRY, TRACE, HASHES, LEDGER, STATE, DECISIONS, FINDINGS, MANIFEST,
     "tools/audit/test_s0_contract_freeze.py",
     "tools/audit/test_security_audit_evidence_preservation.py",
     "tools/audit/test_s0_evidence_preservation.py",
+    "tools/audit/test_post_0054_ledger_canonicalization.py",
 ]
 
 PRES_ID = "SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
