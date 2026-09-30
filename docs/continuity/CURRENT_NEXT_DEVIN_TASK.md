@@ -1,14 +1,21 @@
 # CURRENT_NEXT_DEVIN_TASK — anoX V1
 
+## S2-C01 pre-authorization anchor — S2-C01-PREAUTHORIZATION-001 (2026-09-30)
+
+**Delivery:** `governance/s2-c01-preauthorization-001`, canonical base `02179ecd34fde81a0cc8866a09653cab8ff40f38` (verified `main` = `origin/main`; PR #40 merge).
+**Decision:** `ANOX-DECISION-S2-C01-PREAUTHORIZATION-001` — Human Product & Security Owner, ONE_TIME_CHANGE_SPECIFIC, recorded in `docs/workforce/registries/decisions.jsonl`.
+**Anchor:** `ANOX-TASK-S2-CORRECTION-001` is canonically registered in `docs/workforce/registries/tasks.jsonl` on this delivery, binding `remediation/s2-correction-001`, `start_sha 02179ecd…` and its reviewed allowed/forbidden path scope. This is the non-self-mintable pre-delivery authorization anchor required to close review finding C-01/R09.
+**Next task:** the authorized C-01 correction on `remediation/s2-correction-001` — bind the protected-Rust authorization in `tools/audit/validate_s1_build_provenance.py` to this pre-delivery canonical evidence. Effective only after this governance delivery passes review and the Human remote/merge gate to `main`. No implementation, no validator change, no remote mutation here.
+**Event:** `ANOX-EVENT-0054` remains the last sealed canonical event. This record does not append an event.
+
+The S2 scope freeze below remains the canonical scope-freeze record from `S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001` (merged via PR #40). It is derived planning/continuity metadata, not a competing security Authority or a mutation of preserved audits/findings. Security semantics defer to `docs/authority/AUTHORITY_INDEX.md` and its indexed Authorities (including V1.4 for S0 contracts).
+
 ## S2 scope freeze — S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001
 
 **S2_SCOPE_SELECTION = FROZEN — REPOSITORY_VERIFIED** (2026-09-27).
 **Verification base:** `cb9aee039bd2816c38c11a5e9084be56aa8cde15`, verified clean `main` = `origin/main`, normal PR #38/#39 merges in ancestry.
-**Delivery:** `remediation/s2-lifetime-and-scope-001`; governance checkpoint `60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a`.
-**Next task:** `S2-IMPLEMENTATION-001` — a separate authorized implementation task, not executed here.
+**Delivery:** `remediation/s2-lifetime-and-scope-001`; governance checkpoint `60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a` (merged via PR #40 at `02179ecd34fde81a0cc8866a09653cab8ff40f38`).
 **Event:** `ANOX-EVENT-0054` remains the last sealed canonical event. This freeze does not append an event or relabel the historical event as S2.
-
-This existing next-task surface is the canonical scope-freeze record for this delivery. It is derived planning/continuity metadata, not a competing security Authority or a mutation of preserved audits/findings. Keeping it here permits the existing finite substantive-checkpoint → metadata-seal model without expanding the metadata allowlist. Historical versions remain in Git. Security semantics defer to `docs/authority/AUTHORITY_INDEX.md` and its indexed Authorities (including V1.4 for S0 contracts).
 
 ## Selection and execution boundaries
 

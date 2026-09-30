@@ -3,35 +3,34 @@
 This is a **live continuity/recovery surface**, not a generated handoff report/package. Follow [ON-DEMAND HANDOFF GENERATION](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#on-demand-handoff-generation) and [MERGE-SAFE DELIVERY FINALIZATION INVARIANT](../authority/DEVELOPMENT_SECURITY_WORKFLOW_V1.md#merge-safe-delivery-finalization-invariant), via `docs/authority/AUTHORITY_INDEX.md`.
 
 **Event:** `ANOX-EVENT-0054` remains the last sealed canonical Project Memory event. No new event authorized/appended.
-**Delivery branch:** `remediation/s2-lifetime-and-scope-001`
-**Substantive checkpoint:** `60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a`
-**Canonical base:** `cb9aee039bd2816c38c11a5e9084be56aa8cde15` (PR #39 normal merge; PR #38 in ancestry).
-**Effective gate:** `S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001 — LOCAL_DELIVERY_AWAITING_REVIEW; lifetime governance installed; S2 scope FROZEN_REPOSITORY_VERIFIED; no remediation implementation; remote permission NONE; no handoff generated`
+**Delivery branch:** `governance/s2-c01-preauthorization-001`
+**Substantive checkpoint:** `7caa2ad0ef5fe2773571644ebbfe64601c3f76a5`
+**Canonical base:** `02179ecd34fde81a0cc8866a09653cab8ff40f38` (PR #40 normal merge; PR #38/#39 in ancestry).
+**Effective gate:** `S2-C01-PREAUTHORIZATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; canonical pre-authorization anchor for ANOX-TASK-S2-CORRECTION-001 recorded (ANOX-DECISION-S2-C01-PREAUTHORIZATION-001); metadata-only governance; remote permission NONE; no handoff generated`
 
-Described HEAD: 60f42b0ac99c62e71a0bacd69a294a7eb2bc3c3a
+Described HEAD: 7caa2ad0ef5fe2773571644ebbfe64601c3f76a5
 
 ## Pre-merge gate
 
-`S2-BOOTSTRAP-LIFETIME-GOVERNANCE-AND-SCOPE-FREEZE-001 — LOCAL_DELIVERY_AWAITING_REVIEW; lifetime governance installed; S2 scope FROZEN_REPOSITORY_VERIFIED; no remediation implementation; remote permission NONE; no handoff generated`
+`S2-C01-PREAUTHORIZATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; canonical pre-authorization anchor for ANOX-TASK-S2-CORRECTION-001 recorded (ANOX-DECISION-S2-C01-PREAUTHORIZATION-001); metadata-only governance; remote permission NONE; no handoff generated`
 
 ## Post-merge gate (conditional; real merge NOT_EXECUTED)
 
-`S2-IMPLEMENTATION-001 — S2 scope FROZEN_REPOSITORY_VERIFIED; separate authorized task and predecessor/provenance evidence required before execution; S2/S3/S4 remediation NOT_STARTED; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
+`S2-CORRECTION-001 — canonical pre-authorization anchor MERGED_TO_MAIN for ANOX-TASK-S2-CORRECTION-001 (ANOX-DECISION-S2-C01-PREAUTHORIZATION-001); C-01 validator correction and lifecycle reconciliation still pending on remediation/s2-correction-001; S2/S3/S4 remediation not closed; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
 
 ## Current delivery and source reconstruction
 
-- S2 bootstrap installs the two lifetime process policies, an offline normal-merge preflight/helper and focused regressions. `CURRENT_NEXT_DEVIN_TASK.md` is the repository-verified scope-freeze record: primary 005–011 plus only the assigned 012/013/014/015/016/019 code slices. No actual S2 remediation is implemented.
-- Source reports in `docs/security/audit-evidence/audit_registry.jsonl` all rehashed PASS (13 top-level records plus nested S0 sources). Use `AUDIT_EVIDENCE_INDEX.md`, `audit_traceability.jsonl`, workforce findings and the MSC overlay; the scope freeze records exact sources, supersessions, test/closure requirements and exclusions. Preserved audits are immutable historical inputs, not fresh audit results.
-- S0 corrected contracts/evidence merged at `29a6643189242a47c4a79c38acd04c1eca748787` (PR #36); independent targeted retest PASS_WITH_FINDINGS (zero merge blockers; two residual LOW follow-ups). Source chain remains under SEC-AUDIT-REG-0013 / ANOX-EVENT-0054.
-- S1 implementation COMPLETE/MERGED_INTO_MAIN at `2dc6b7453ef292c30f32c02e0eb213e1ef5496cb` (PR #38; integrated delivery `3ed46b717172d512f75672c83d58327a52ac3c61`); S1 continuity finalized and merged via PR #39. HUMAN-S1-POST-MERGE-CONTINUITY-CHECK remains PASS/ACCEPTED. Both S1 delivery branches are historical.
-- PR #38 CI run `36275286174`: x86_64 instrumented CI EXECUTED_AND_PASS; ARM64 runtime UNVERIFIED_PENDING_REAL_ARM64_RUNTIME (INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION / RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED). A passing disposition is not ARM64 runtime evidence. S1 MSC stage-overlay runtime/retest/closure obligations remain pending; no closure granted.
-- Protected shared validator `tools/audit/validate_security_audit_evidence_preservation.py` unchanged; hash `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7`. Its S0-era lifecycle pin / R-009 remains DEFERRED/NON_BLOCKING; future extension needs Human ratification. S1CRC-R-003 foreign-export inventory stays DEFERRED_NON_BLOCKING_MILESTONE_SECURITY.
+- This metadata-only governance delivery records Human decision `ANOX-DECISION-S2-C01-PREAUTHORIZATION-001` in `docs/workforce/registries/decisions.jsonl` and canonically registers `ANOX-TASK-S2-CORRECTION-001` in `docs/workforce/registries/tasks.jsonl` (branch `remediation/s2-correction-001`, start SHA `02179ecd…`, its reviewed allowed/forbidden path scope). It establishes the non-self-mintable pre-delivery authorization anchor required to close review finding C-01/R09 in `tools/audit/validate_s1_build_provenance.py`. It does not change any validator, code, CI or product surface, and it becomes a valid trust anchor only after its own review plus the Human remote/merge gate to canonical `main`.
+- The S2 correction branch `remediation/s2-correction-001` remains blocked: the corrected S1 provenance validator (pending the C-01 fix task) must consume this anchor from canonical main, not from the delivery's own registry writes.
+- Source reports in `docs/security/audit-evidence/audit_registry.jsonl` remain preserved historical inputs. S0 corrected contracts/evidence merged at `29a6643189242a47c4a79c38acd04c1eca748787` (PR #36); S1 implementation merged at `2dc6b7453ef292c30f32c02e0eb213e1ef5496cb` (PR #38); S1 post-merge continuity merged via PR #39; S2 scope freeze + lifetime governance merged via PR #40 (`02179ecd…`).
+- PR #38 CI run `36275286174`: x86_64 instrumented CI EXECUTED_AND_PASS; ARM64 runtime UNVERIFIED_PENDING_REAL_ARM64_RUNTIME (INFRASTRUCTURE_BLOCKED_GITHUB_HOSTED_NESTED_VIRTUALIZATION / RUNTIME_NOT_EXECUTED_INFRASTRUCTURE_BLOCKED).
+- Protected shared validator `tools/audit/validate_security_audit_evidence_preservation.py` unchanged; hash `89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7`.
 
 ## Global truth
 
-MSC OPEN=42, CLOSED=0; finding closure delta=0. B004/B005 NOT_STARTED; actual S2/S3/S4 remediation NOT_STARTED. Product BLOCKED_PENDING_FINAL_AUDIT; PHYSICAL_P1..P17 NOT_EXECUTED; final operational acceptance and Human final Product gate remain pending. B027-D EMPLOYEE RUNTIME ROUTER = DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED. Ledger tail ANOX-EVENT-0054; no historical event rewrite.
+MSC OPEN=42, CLOSED=0; finding closure delta=0. B004/B005 NOT_STARTED; actual S2/S3/S4 remediation not closed. Product BLOCKED_PENDING_FINAL_AUDIT; PHYSICAL_P1..P17 NOT_EXECUTED; final operational acceptance and Human final Product gate remain pending. B027-D EMPLOYEE RUNTIME ROUTER = DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED. Ledger tail ANOX-EVENT-0054; no historical event rewrite.
 
 HANDOFF_REQUESTED = NO
 HANDOFF_PACKAGE_GENERATION = NOT_EXECUTED
 
-No current full handoff, archive, SHA report, push, PR or real merge generated by this task. Temporary test archives are disposable fixtures only. Next separate task: `S2-IMPLEMENTATION-001`, bound to fresh canonical ancestry and required predecessor evidence, after this delivery's review/acceptance.
+No current full handoff, archive, SHA report, push, PR or real merge generated by this task. Temporary test archives are disposable fixtures only. Next work after this delivery's review/merge: the authorized C-01 validator correction on `remediation/s2-correction-001` consuming this canonical anchor.
