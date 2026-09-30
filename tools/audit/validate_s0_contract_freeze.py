@@ -120,6 +120,9 @@ S0_TASK_ID = "ANOX-TASK-REMEDIATION-SESSION-S0-CONTRACT-FREEZE-001"
 PRESERVATION_RATIFICATION_DECISION_ID = "ANOX-DECISION-S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001"
 PRESERVATION_RATIFICATION_REPORT = "docs/reports/security/decisions/S0-PRESERVATION-SHARED-VALIDATOR-RATIFICATION-001.md"
 PRESERVATION_TASK_ID = "ANOX-TASK-SECURITY-REMEDIATION-S0-EVIDENCE-PRESERVATION-001"
+CANONICALIZATION_RATIFICATION_DECISION_ID = "ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001"
+CANONICALIZATION_RATIFICATION_REPORT = "docs/reports/security/decisions/POST-0054-LEDGER-CANONICALIZATION-001.md"
+CANONICALIZATION_TASK_ID = "ANOX-TASK-POST-0054-LEDGER-CANONICALIZATION-001"
 PROTECTED_SHARED_FILES = {
     "tools/audit/validate_security_audit_evidence_preservation.py": {
         "classification": "PROTECTED_SHARED_GOVERNANCE_FILE",
@@ -137,6 +140,14 @@ PROTECTED_SHARED_FILES = {
         "preservation_ratified_change": "S0_PRESERVATION_LIFECYCLE_EXTENSION",
         "preservation_authorized_sha256": "89c7358fbbe61c71c8fcde114ffc8a83aa33f52bd3fb763417e00f4131d84bb7",
         "preservation_record_path": PRESERVATION_RATIFICATION_REPORT,
+        # Third Human-ratified content: the post-0054 ledger canonicalization
+        # (pinned chain ANOX-EVENT-0060…0066 after ANOX-EVENT-0054), ratified
+        # separately under ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001.
+        "canonicalization_decision_id": CANONICALIZATION_RATIFICATION_DECISION_ID,
+        "canonicalization_ratified_task": CANONICALIZATION_TASK_ID,
+        "canonicalization_ratified_change": "POST_0054_LEDGER_CANONICALIZATION",
+        "canonicalization_authorized_sha256": "adde793ed921c02d2c741826e0a8beca144e78a14cb5e4cd06d76702b2687879",
+        "canonicalization_record_path": CANONICALIZATION_RATIFICATION_REPORT,
         "base_sha256": "2ab59295301e65ed17a7b7256209530bd69e3aeaa57364b0db68aaa0af90bcc9",
         "s1_prohibited_before_integration": True,
     },
@@ -1221,15 +1232,66 @@ def _preservation_ratification(errors):
     return rec
 
 
+def _canonicalization_ratification(errors):
+    """Locate and validate the Human post-0054 ledger-canonicalization shared-
+    validator ratification record.  Mirrors _preservation_ratification; separate
+    authority, same fail-closed pinning discipline (ONE_TIME_CHANGE_SPECIFIC, no
+    blanket grants, no future event numbers)."""
+    recs = load_jsonl(DECISIONS_PATH)
+    rec = next((r for r in recs if r.get("decision_id") == CANONICALIZATION_RATIFICATION_DECISION_ID), None)
+    if rec is None:
+        fail(f"post-0054 canonicalization ratification {CANONICALIZATION_RATIFICATION_DECISION_ID} missing from "
+             f"{DECISIONS_PATH} — a PROTECTED_SHARED_GOVERNANCE_FILE change requires an explicit "
+             f"Human ratification", errors)
+        return None
+    actor = str(rec.get("authority_actor", ""))
+    if "Human Product & Security Owner" not in actor:
+        fail(f"post-0054 canonicalization ratification authority_actor must be the Human Product & Security "
+             f"Owner, got {actor!r}", errors)
+    if rec.get("ratified_task") != CANONICALIZATION_TASK_ID:
+        fail(f"post-0054 canonicalization ratification ratified_task must be {CANONICALIZATION_TASK_ID}, "
+             f"got {rec.get('ratified_task')!r}", errors)
+    files = rec.get("ratified_files") or []
+    if list(files) != list(PROTECTED_SHARED_FILES):
+        fail(f"post-0054 canonicalization ratification ratified_files must be exactly "
+             f"{sorted(PROTECTED_SHARED_FILES)}, got {files!r}", errors)
+    if rec.get("ratified_change") != "POST_0054_LEDGER_CANONICALIZATION":
+        fail(f"post-0054 canonicalization ratification ratified_change must be "
+             f"POST_0054_LEDGER_CANONICALIZATION, got {rec.get('ratified_change')!r}", errors)
+    if rec.get("scope") != "ONE_TIME_CHANGE_SPECIFIC":
+        fail("post-0054 canonicalization ratification scope must be ONE_TIME_CHANGE_SPECIFIC", errors)
+    for flag in ("grants_general_ownership", "grants_s1_permission", "grants_future_sessions",
+                 "grants_future_event_numbers", "grants_arbitrary_registry_growth"):
+        if rec.get(flag) is not False:
+            fail(f"post-0054 canonicalization ratification must record {flag}=false (no blanket grant), "
+                 f"got {rec.get(flag)!r}", errors)
+    if rec.get("s1_prohibited_before_integration") is not True:
+        fail("post-0054 canonicalization ratification must record s1_prohibited_before_integration=true", errors)
+    digests = rec.get("ratified_sha256") or {}
+    for rel, spec in PROTECTED_SHARED_FILES.items():
+        if digests.get(rel) != spec["canonicalization_authorized_sha256"]:
+            fail(f"post-0054 canonicalization ratification ratified_sha256[{rel}] must pin the ratified content "
+                 f"{spec['canonicalization_authorized_sha256'][:16]}…, got {str(digests.get(rel))[:16]!r}", errors)
+    if CANONICALIZATION_RATIFICATION_REPORT not in str(rec.get("record_path", "")):
+        fail(f"post-0054 canonicalization ratification must reference its canonical record "
+             f"{CANONICALIZATION_RATIFICATION_REPORT}", errors)
+    if read_text(CANONICALIZATION_RATIFICATION_REPORT) is None:
+        fail(f"post-0054 canonicalization ratification canonical record "
+             f"{CANONICALIZATION_RATIFICATION_REPORT} missing", errors)
+    return rec
+
+
 def check_protected_shared_files(errors):
     """F-03 — protected shared governance files are content-pinned to Human-ratified
-    changes only; any other content fails closed.  Two ratified contents exist:
-    S0_SUCCESSOR_EVENT_SUPPORT (F-01) and S0_PRESERVATION_LIFECYCLE_EXTENSION
-    (preservation decision); the preservation content requires both records."""
+    changes only; any other content fails closed.  Three ratified contents exist:
+    S0_SUCCESSOR_EVENT_SUPPORT (F-01), S0_PRESERVATION_LIFECYCLE_EXTENSION
+    (preservation decision) and POST_0054_LEDGER_CANONICALIZATION
+    (canonicalization decision)."""
     print("\n[S0-CONTRACT] Protected shared governance files (F-03)")
     before = len(errors)
     ratified = _f01_ratification(errors)
     pres_ratified = _preservation_ratification(errors)
+    canon_ratified = _canonicalization_ratification(errors)
     for rel, spec in PROTECTED_SHARED_FILES.items():
         p = REPO_ROOT / rel
         if not p.exists():
@@ -1244,11 +1306,16 @@ def check_protected_shared_files(errors):
             if pres_ratified is None:
                 fail(f"{rel} carries the S0 preservation lifecycle extension but no valid Human ratification exists", errors)
             continue
+        if digest == spec["canonicalization_authorized_sha256"]:
+            if canon_ratified is None:
+                fail(f"{rel} carries the post-0054 ledger canonicalization but no valid Human ratification exists", errors)
+            continue
         if digest == spec["base_sha256"]:
             fail(f"{rel} is at its pre-S0 content — the ratified S0 successor-support change is absent", errors)
             continue
         fail(f"{rel} content {digest[:16]}… is neither the pre-S0 baseline nor a Human-ratified "
-             f"change ({spec['authorized_sha256'][:16]}… / {spec['preservation_authorized_sha256'][:16]}…) — "
+             f"change ({spec['authorized_sha256'][:16]}… / {spec['preservation_authorized_sha256'][:16]}… / "
+             f"{spec['canonicalization_authorized_sha256'][:16]}…) — "
              f"unauthorized modification of a {spec['classification']}; a new Human ratification is required", errors)
     if len(errors) == before:
         ok(f"{len(PROTECTED_SHARED_FILES)} protected shared file(s) pinned to the ratified change(s); "
@@ -1329,6 +1396,8 @@ def check_scope(man, errors):
             return _f01_ratification([]) is not None
         if digest == spec["preservation_authorized_sha256"]:
             return _preservation_ratification([]) is not None
+        if digest == spec["canonicalization_authorized_sha256"]:
+            return _canonicalization_ratification([]) is not None
         return False
     unratified = sorted(p for p in changed
                         if p in PROTECTED_SHARED_FILES and not _protected_change_ratified(p))

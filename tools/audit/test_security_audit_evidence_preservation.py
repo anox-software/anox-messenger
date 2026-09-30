@@ -2264,6 +2264,14 @@ class S0PreservationEventAdversarialTests(unittest.TestCase):
             dst = self.root / rel
             dst.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dst)
+        # These tests exercise the preservation-event acceptance path in which
+        # the ledger ends at ANOX-EVENT-0054; drop any later canonicalization
+        # events and resync the state pointer so the fixture is that state.
+        recs = _load_jsonl(self.root / self.LEDGER)
+        while recs and recs[-1].get("event_id") != self.EVENT:
+            recs.pop()
+        _write_jsonl(self.root / self.LEDGER, recs)
+        self._sync_latest(self.EVENT)
 
     def tearDown(self):
         self.tmp.cleanup()
