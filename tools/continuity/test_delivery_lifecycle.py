@@ -50,6 +50,80 @@ class DeliveryFixture(CMLFixture):
         self.commit_meta("state mutation")
 
 
+class ResyncDeliveryFixture(DeliveryFixture):
+    """Delivery branched from canonical AFTER a post-start_sha authority merge.
+
+    Mirrors the B026 controlled-resynchronization shape: task.start_sha anchors
+    the authorized lineage; the Human-authorized Task/Decision records are then
+    merged into canonical (authority_base); the delivery forks from that head.
+    With post_authority=False the delivery forks from the pre-authority base
+    instead and must mint its own registry record (the C-01 pattern).
+    """
+
+    def __init__(self, post_authority=True):
+        super(DeliveryFixture, self).__init__()
+        self.checkout("main")
+        self.task = {
+            "task_id": "ANOX-TASK-RESYNC-FIXTURE", "branch": "delivery",
+            "start_sha": self.base, "status": "Awaiting Review",
+            "allowed_paths": [
+                "docs/continuity/", "docs/workforce/WORKFORCE_STATE.json",
+                "tools/audit/", "crypto/rust/", "PROJECT_STATE.md", "FORTSCHRITT.md",
+            ],
+            "forbidden_paths": [
+                "docs/workforce/registries/tasks.jsonl",
+                "docs/workforce/registries/decisions.jsonl",
+                "android/**",
+            ],
+        }
+        decision = {
+            "decision_id": "ANOX-DECISION-RESYNC-FIXTURE",
+            "ratified_task": self.task["task_id"],
+            "authority_actor": "Human Product & Security Owner",
+        }
+        self._write("docs/workforce/registries/tasks.jsonl", json.dumps(self.task) + "\n")
+        self._write("docs/workforce/registries/decisions.jsonl", json.dumps(decision) + "\n")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "canonical authority merge"])
+        self.authority_base = self.head("main")
+        self._run(["git", "update-ref", "refs/remotes/origin/main", self.authority_base])
+
+        fork = self.authority_base if post_authority else self.base
+        self._run(["git", "checkout", "-B", "delivery", fork])
+        self._write("docs/continuity/CML_SUBSTANTIVE.md", "# Canonical merge lifecycle\n")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "delivery substantive payload"])
+        self.described = self.head("delivery")
+        self._write_state()
+        self._write_git_state_md()
+        self._write_handoff_md()
+        self._write_project_state_md("delivery")
+        self._write("docs/workforce/WORKFORCE_STATE.json", json.dumps({
+            "canonical_branch": "main", "delivery_branch": "delivery",
+            "described_head": self.described,
+            "current_gate": self.pre_merge_gate,
+            "current_writer": {"task_id": self.task["task_id"], "role_id": "ROLE-004",
+                               "branch": "delivery"},
+            "pre_merge_state": {"described_head": self.described, "current_gate": self.pre_merge_gate},
+            "post_merge_state": {"described_head": self.described, "current_gate": self.post_merge_gate,
+                                 "current_writer": None, "active_task": None},
+        }))
+        if not post_authority:
+            # No canonical authority on this line: the delivery mints its own
+            # task record — a forbidden registry write that must be caught.
+            self._write("docs/workforce/registries/tasks.jsonl", json.dumps(self.task) + "\n")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", "delivery state sync"])
+        self.delivery_head = self.head("delivery")
+
+    def mutate_registry(self, rel):
+        path = self.root / rel
+        path.write_text(path.read_text(encoding="utf-8")
+                        + json.dumps({"forged": True}) + "\n", encoding="utf-8")
+        self._run(["git", "add", "."])
+        self._run(["git", "commit", "-m", f"delivery writes {rel}"])
+
+
 class DeliveryLifecycleTests(unittest.TestCase):
     def setUp(self):
         self.fixture = DeliveryFixture()
@@ -140,6 +214,61 @@ class DeliveryLifecycleTests(unittest.TestCase):
         self.fixture._run(["git", "update-ref", "refs/remotes/origin/main", self.fixture.head("main")])
         self.fixture.checkout("delivery")
         self.assertEqual(self.fixture.check()["SYNTHETIC_POST_MERGE_VALIDATION"], "FAIL")
+
+
+class ResyncAuthorityScopeTests(unittest.TestCase):
+    """Scope is measured from the delivery fork point, not task.start_sha."""
+
+    def setUp(self):
+        self.fixture = ResyncDeliveryFixture()
+        self.addCleanup(self.fixture.cleanup)
+
+    def test_canonical_pre_delivery_authority_not_delivery_mutation(self):
+        result = self.fixture.check()
+        self.assertEqual(result["delivery_scope_base"], self.fixture.authority_base)
+        self.assertEqual(result["AUTHORIZED_SCOPE_ONLY"], "PASS", result)
+        self.assertEqual(result["PUSH_READINESS"], "READY", result)
+
+    def test_delivery_tasks_registry_mutation_fails(self):
+        self.fixture.mutate_registry("docs/workforce/registries/tasks.jsonl")
+        result = self.fixture.check()
+        self.assertEqual(result["AUTHORIZED_SCOPE_ONLY"], "FAIL", result)
+
+    def test_delivery_decisions_registry_mutation_fails(self):
+        self.fixture.mutate_registry("docs/workforce/registries/decisions.jsonl")
+        result = self.fixture.check()
+        self.assertEqual(result["AUTHORIZED_SCOPE_ONLY"], "FAIL", result)
+
+    def test_allowed_payload_change_after_branch_point_passes(self):
+        self.fixture._write("tools/audit/resync_tool.py", "# authorized tooling\n")
+        self.fixture._run(["git", "add", "."])
+        self.fixture._run(["git", "commit", "-m", "allowed tooling payload"])
+        result = self.fixture.check()
+        self.assertEqual(result["AUTHORIZED_SCOPE_ONLY"], "PASS", result)
+
+    def test_start_sha_must_anchor_lineage(self):
+        empty_tree = self.fixture._run(["git", "mktree"], input="").stdout.strip()
+        orphan = self.fixture._run(
+            ["git", "commit-tree", empty_tree, "-m", "unrelated root"]).stdout.strip()
+        path = self.fixture.root / delivery.TASKS_PATH
+        records = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+        records[0]["start_sha"] = orphan
+        path.write_text("\n".join(json.dumps(r) for r in records) + "\n")
+        self.fixture._run(["git", "add", "."])
+        self.fixture._run(["git", "commit", "-m", "rebind start sha"])
+        result = self.fixture.check()
+        self.assertEqual(result["PUSH_READINESS"], "BLOCKED", result)
+        self.assertIn("merge-base", result["reason"])
+
+    def test_delivery_minted_authority_still_fails(self):
+        # Canonical-drift protection: a delivery forked BEFORE the authority
+        # merge cannot mint its own Task authority — the registry write remains
+        # inside its true scope base and stays forbidden.
+        stale = ResyncDeliveryFixture(post_authority=False)
+        self.addCleanup(stale.cleanup)
+        result = stale.check()
+        self.assertEqual(result["AUTHORIZED_SCOPE_ONLY"], "FAIL", result)
+        self.assertIn("tasks.jsonl", result["reason"])
 
 
 class BootstrapDiscoveryTests(unittest.TestCase):

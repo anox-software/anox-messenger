@@ -144,7 +144,12 @@ def validate(root, task_id, finalize=False):
         require(continuity.is_valid_sha(start), "task start SHA is unbound")
         git(root, "merge-base", "--is-ancestor", start, tip)
         git(root, "merge-base", "--is-ancestor", start, base)
-        paths = changed_paths(root, start, tip)
+        # start_sha remains the authority/lineage anchor above; writer scope is
+        # measured from the actual fork point so canonical pre-delivery commits
+        # (e.g. merged Task/Decision authority) are not counted as delivery writes.
+        scope_base = git(root, "merge-base", base, tip)
+        result["delivery_scope_base"] = scope_base
+        paths = changed_paths(root, scope_base, tip)
         enforcement = check_path_enforcement(paths, task)
         require(enforcement["result"] == "ALLOWED", f"STOP — unauthorized path / scope expansion: {enforcement}")
         result["AUTHORIZED_SCOPE_ONLY"] = "PASS"
