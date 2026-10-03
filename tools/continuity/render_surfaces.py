@@ -27,6 +27,7 @@ KNOWN_MARKERS = (
     "__HANDOFF_HEAD__",
     "__WORKING_TREE__",
     "__CANONICAL_BASE__",
+    "__CANONICAL_BRANCH__",
     "__DESCRIBED_HEAD__",
     "__DELIVERY_BRANCH__",
     "__LATEST_EVENT__",
@@ -36,6 +37,25 @@ KNOWN_MARKERS = (
 
 # Markers whose values come from live Git rather than state files.
 RUNTIME_MARKERS = {"__HANDOFF_BRANCH__", "__HANDOFF_HEAD__", "__WORKING_TREE__"}
+
+# Derivable JSON fields: field name -> the marker that stands for its value.
+# In --check mode a JSON surface must carry either the placeholder or the
+# resolved value for each of these fields that is present — anything else is
+# semantic drift (e.g. a stale described_head) and fails closed.
+JSON_FIELD_MARKERS = {
+    "handoff_head": "__HANDOFF_HEAD__",
+    "working_tree": "__WORKING_TREE__",
+    "handoff_branch": "__HANDOFF_BRANCH__",
+    "current_gate": "__EFFECTIVE_GATE__",
+    "described_head": "__DESCRIBED_HEAD__",
+    "delivery_branch": "__DELIVERY_BRANCH__",
+    "canonical_branch": "__CANONICAL_BRANCH__",
+    "latest_merge_to_baseline": "__CANONICAL_BASE__",
+    "main_baseline_head": "__CANONICAL_BASE__",
+    "latest_material_event_id": "__LATEST_EVENT__",
+    "pre_merge_gate": "__PRE_MERGE_GATE__",
+    "post_merge_gate": "__POST_MERGE_GATE__",
+}
 
 
 class RenderError(Exception):
@@ -105,6 +125,7 @@ def resolve_markers(root, state=None, workforce=None, live_git=True):
         "__HANDOFF_HEAD__": head,
         "__WORKING_TREE__": ("CLEAN" if dirty is False else ("DIRTY" if dirty else "UNKNOWN")),
         "__CANONICAL_BASE__": base or "UNRESOLVED",
+        "__CANONICAL_BRANCH__": canonical,
         "__DESCRIBED_HEAD__": described,
         "__DELIVERY_BRANCH__": delivery,
         "__LATEST_EVENT__": state.get("latest_material_event_id", "UNKNOWN"),
@@ -128,7 +149,39 @@ def render_text(text, markers):
     return text
 
 
-def process_file(root, rel, markers, write=False):
+def check_json_fields(original, markers):
+    """Verify derivable JSON fields against the resolved marker set.
+
+    For each known derivable field present in the JSON, the value must be
+    either the field's placeholder marker or the resolved marker value —
+    anything else is drift that placeholder substitution alone cannot see.
+    Returns a list of problems (empty = consistent)."""
+    try:
+        data = json.loads(original)
+    except ValueError:
+        return []  # not JSON — text-only surface, no field-level check
+    if not isinstance(data, dict):
+        return []
+    problems = []
+    for field, marker in JSON_FIELD_MARKERS.items():
+        if field not in data:
+            continue
+        value = data[field]
+        expected = markers.get(marker)
+        if value == marker:
+            continue  # canonical placeholder form
+        if expected and value == expected:
+            continue  # concrete resolved value
+        if expected is None:
+            problems.append(f"field '{field}': marker {marker} not derivable")
+        else:
+            problems.append(
+                f"field '{field}': stale/divergent value "
+                f"{str(value)[:60]!r} (expected {str(expected)[:60]!r} or {marker})")
+    return problems
+
+
+def process_file(root, rel, markers, write=False, strict=False):
     path = root / rel
     try:
         original = path.read_text(encoding="utf-8")
@@ -140,6 +193,16 @@ def process_file(root, rel, markers, write=False):
         return rel, "FAIL", str(exc)
     if rendered == original:
         return rel, "MATCH", "deterministic fields already rendered"
+    # Marker substitution is tautological on placeholder files — the
+    # substantive drift check is field-level: derivable JSON fields must
+    # carry the placeholder or the resolved value, never a stale third
+    # value. --strict additionally requires the fully rendered form
+    # (archive verification).
+    if not write and not strict:
+        problems = check_json_fields(original, markers)
+        if problems:
+            return rel, "DRIFT", "; ".join(problems)
+        return rel, "MATCH", "consistent modulo placeholder representation"
     if write:
         try:
             path.write_text(rendered, encoding="utf-8")
@@ -158,6 +221,8 @@ def main(argv=None):
     parser.add_argument("--write", action="store_true", help="rewrite surfaces")
     parser.add_argument("--offline", action="store_true",
                         help="no live Git; runtime markers resolve to declared state")
+    parser.add_argument("--strict", action="store_true",
+                        help="check requires the fully rendered form (archive verification)")
     parser.add_argument("--root", default=None)
     args = parser.parse_args(argv)
     if args.check == args.write:
@@ -172,7 +237,8 @@ def main(argv=None):
 
     failures = 0
     for rel in args.files:
-        rel, status, detail = process_file(root, rel, markers, write=args.write)
+        rel, status, detail = process_file(root, rel, markers, write=args.write,
+                                           strict=args.strict)
         print(f"{status}: {rel} — {detail}")
         if status in ("FAIL", "DRIFT"):
             failures += 1

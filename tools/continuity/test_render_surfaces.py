@@ -118,9 +118,41 @@ class DriftTests(unittest.TestCase):
         _, status, _ = render_surfaces.process_file(self.root, rel, markers, write=False)
         self.assertIn(status, ("MATCH", "DRIFT", "RENDERED", "FAIL"))
         # "STALE VALUE" contains no marker -> identical render -> MATCH.
+    def test_placeholder_form_matches_in_check_mode(self):
+        # Live surfaces keep markers as canonical form: a pure-marker file
+        # is consistent with derived truth (it resolves live), not drift.
         self.surface.write_text("gate: __EFFECTIVE_GATE__")
-        _, status, detail = render_surfaces.process_file(self.root, rel, markers, write=False)
+        markers = {"__EFFECTIVE_GATE__": "PRE GATE TEXT"}
+        _, status, detail = render_surfaces.process_file(
+            self.root, "SURFACE.md", markers, write=False)
+        self.assertEqual(status, "MATCH", detail)
+
+    def test_stale_concrete_value_still_drifts(self):
+        # JSON surfaces are field-checkable: a stale described_head is
+        # semantic drift even though it contains no marker.
+        self.surface.write_text(
+            '{"described_head": "deadbeef", "current_gate": "__EFFECTIVE_GATE__"}')
+        markers = {"__EFFECTIVE_GATE__": "PRE GATE TEXT",
+                   "__HANDOFF_HEAD__": "abc123",
+                   "__DESCRIBED_HEAD__": "abc123"}
+        _, status, detail = render_surfaces.process_file(
+            self.root, "SURFACE.md", markers, write=False)
         self.assertEqual(status, "DRIFT", detail)
+        self.assertIn("described_head", detail)
+
+    def test_json_field_accepts_resolved_value(self):
+        self.surface.write_text('{"described_head": "abc123"}')
+        markers = {"__DESCRIBED_HEAD__": "abc123"}
+        _, status, _ = render_surfaces.process_file(
+            self.root, "SURFACE.md", markers, write=False)
+        self.assertEqual(status, "MATCH")
+
+    def test_strict_requires_rendered_form(self):
+        self.surface.write_text("gate: __EFFECTIVE_GATE__")
+        markers = {"__EFFECTIVE_GATE__": "PRE GATE TEXT"}
+        _, status, _ = render_surfaces.process_file(
+            self.root, "SURFACE.md", markers, write=False, strict=True)
+        self.assertEqual(status, "DRIFT")
 
     def test_write_mode_rewrites(self):
         self.surface.write_text("gate: __EFFECTIVE_GATE__")
