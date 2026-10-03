@@ -88,3 +88,14 @@ Surface updates in this event (ANOX-EVENT-0060…0066 — POST-0054-LEDGER-CANON
 - `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` (ANOX-EVENT-0066)
 - `docs/workforce/WORKFORCE_STATE.json` (described_head sealed; next_phase SECURITY_REMEDIATION_WAVE_1 (in progress)) (ANOX-EVENT-0066)
 - Event ids `0055–0059` remain reserved to the non-canonical archived line `archive/local-main-pre-pr38-20260926`; not reused.
+## Delivery surface updates — `B028-SCALABLE-GOVERNANCE-FOUNDATION-001`
+
+- `docs/continuity/CURRENT_STATE.json` — delivery branch `governance/b028-foundation-001`; described checkpoint `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f`; canonical base `32c729ceb6991447698c7ec8deee7278e36d333d` (PR #45 merged); latest merge to baseline = `32c729c`; no new ledger event.
+- `docs/workforce/WORKFORCE_STATE.json` — same delivery fields; `previous_merges` synchronized for canonical merges `cb9aee0`/`02179ecd`/`270cdb92`/`3414fb2`/`d59ef474`/`fce371b`/`32c729c` (carried verbatim from reviewed S2 delivery surfaces); `current_writer` = ROLE-003 foundation task; `latest_decision_id` = `ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001`.
+- `docs/continuity/CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_IMPLEMENTATION_STATE.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md` — updated for the B-028 foundation local delivery awaiting review; POST-0054-LEDGER-CANONICALIZATION-001 marked merged via PR #42.
+- `docs/reports/security/decisions/B028-SCALABLE-GOVERNANCE-FOUNDATION-001.md` — new decision report.
+- `docs/workforce/registries/decisions.jsonl` — appended `ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001` (PROGRAM_FOUNDATION).
+- `docs/workforce/registries/tasks.jsonl` — appended `ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001` (Authorized) + `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` (Candidate, unbound).
+- `docs/workforce/registries/prompts.jsonl` — first record `ANOX-PROMPT-B028F001` bound to this delivery.
+- `docs/authority/B028_SCALABLE_GOVERNANCE.md`, `B_FREEZE_REGISTRY.md`, `AUTHORITY_INDEX.md` — B-028 registered as additive Candidate authority (§J cutover contract).
+- No ledger event appended; `ANOX-EVENT-0066` remains the sealed tail.

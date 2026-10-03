@@ -1,5 +1,13 @@
 # CURRENT_NEXT_DEVIN_TASK — anoX V1
 
+## B-028 scalable governance foundation — B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (2026-10-02)
+
+**Delivery:** `governance/b028-foundation-001`, canonical base `32c729ceb6991447698c7ec8deee7278e36d333d` (verified `main` = `origin/main`; PR #45 merge; PR #42/#43/#44 in ancestry).
+**Decision:** `ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001` — Human Product & Security Owner, PROGRAM_FOUNDATION, recorded in `docs/workforce/registries/decisions.jsonl`; canonical record `docs/reports/security/decisions/B028-SCALABLE-GOVERNANCE-FOUNDATION-001.md`.
+**Purpose:** establish the B-028 additive governance track — transitions verified by construction (hash-chained events, generated surfaces, manifest-driven session ingest, canonical-run CI verdicts, deterministic risk tiering, next-step resolution, prompt validation) while artifacts remain hash-pinned and pinned validators stay the acceptance authority. Delivered advisory-only: B-028 authority doc + `session.schema.json` + `domain_tiers.json` (CONTROL_SURFACE → SEC-C) + `test_map.jsonl` + `ci_verdicts.jsonl` + `prompts.jsonl` activation + seven fail-closed tools + canonical coordinator rules + 98 adversarial tests.
+**Next task:** apply ROLE-002 review verdict to this delivery; then Human selects the next gate — the pending ROLE-002 delta review of `remediation/s2-c01-resync-correction-002` continues independently; `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` (Candidate, `start_sha NOT YET BOUND`) becomes executable only after this foundation merges, real advisory dual-run parity exists, and a separate human cutover decision is recorded. No implementation beyond this delivery, no remote mutation.
+**Event:** `ANOX-EVENT-0066` remains the last sealed canonical event. This delivery does not append an event.
+
 ## Post-0054 ledger canonicalization — POST-0054-LEDGER-CANONICALIZATION-001 (2026-09-30)
 
 **Delivery:** `governance/post-0054-ledger-canonicalization-001`, canonical base `270cdb92762965eea3236177710c88c259d4b33f` (verified `main` = `origin/main`; PR #41 merge).

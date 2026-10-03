@@ -1,0 +1,28 @@
+{
+  "schema_version": "B028-SES-v1",
+  "session_id": "REMEDIATION-SESSION-EXAMPLE-001",
+  "security_class": "S2",
+  "authorized_task_id": "ANOX-TASK-EXAMPLE-001",
+  "covered_units": ["MSC-UNIT-001"],
+  "artifacts": [
+    {
+      "path": "docs/reports/security/remediation/EXAMPLE.md",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "kind": "report"
+    }
+  ],
+  "required_retests": [
+    {
+      "unit": "MSC-UNIT-001",
+      "level": "E3",
+      "binding": "independent_retest",
+      "satisfied_by": "",
+      "status": "PENDING"
+    }
+  ],
+  "provenance": {
+    "base_sha": "0000000000000000000000000000000000000000",
+    "delivery_branch": "remediation/example-001"
+  },
+  "notes": "Template only — not a real session record. Real manifests live in docs/workforce/sessions/<session-id>.json and are consumed by tools/audit/validate_session_evidence.py."
+}
