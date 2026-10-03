@@ -401,7 +401,7 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0068 -->
 ## HANDOFF-UNSEALED-EXCEPTION-001 BOUNDED CORRECTION — 2026-10-03 (ROLE-002 verdict BLOCKED → correction applied; delta review pending)
 
-- Trigger: ROLE-002 independent review (`ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001`, read-only) returned `BLOCKED — CORRECTION REQUIRED` with findings `ANOX-ROLE002-HANDOFF-UNSEALED-001` (MEDIUM), `-002`/`-003` (LOW).
+- Trigger: ROLE-002 independent review (`ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001`, read-only) returned `BLOCKED — CORRECTION REQUIRED` with findings `ANOX-FINDING-ROLE002-HANDOFF-UNSEALED-001` (MEDIUM), `-002`/`-003` (LOW).
 - Corrected (substantive checkpoint `28e92be`): `_read_handoff_seal_stamp()` rewritten — ANY `SEAL_*` field = stamp present; complete triple (`SEAL_STATUS` + `SEAL_DESCRIBED_HEAD` + `SEAL_LAST_SEALED`) required exactly-once; missing/unknown/duplicate/contradictory fields → `__malformed__` → `FAIL — SEAL_* STAMP PARTIAL OR CONTRADICTORY`; no last-value-wins (`-001` → Closed).
 - Corrected: `LiveFixture._run`/`CMLFixture._run`/`ArchiveFixture.validate` set `PYTHONDONTWRITEBYTECODE=1` internally — fixture hermeticity, suite passes under plain invocation (`-002` → Closed).
 - Corrected: stale live-state task references synced — `WORKFORCE_STATE` pre/post-merge anchors now name this task (was finalization task), `CURRENT_STATE.current_task` verified correct (`-003` → Closed).
