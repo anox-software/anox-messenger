@@ -7,7 +7,7 @@
  "canonical_branch": "main",
  "delivery_branch": "governance/handoff-unsealed-exception-001",
  "baseline_branch": "main",
- "described_head": "b8248b5b66ad7535921bef69769f2645a06c8ce7",
+ "described_head": "af3174cabfc081490306b232f6299f170373aae2",
  "baseline_tag": "v1-foundation-baseline",
  "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
  "latest_merge_to_baseline": "b4e10e70811ae2e567a2289410c490c347fe3e6e",

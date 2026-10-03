@@ -56,7 +56,7 @@
 ## Repository truth
 
 - Branch: `governance/handoff-unsealed-exception-001` (created from PR #48 merge `b4e10e7`)
-- **Described HEAD:** `b8248b5b66ad7535921bef69769f2645a06c8ce7` (pending advance to this delivery's substantive checkpoint at commit time — delivery lifecycle model; merged finalization checkpoint `b8248b5` sealed as `ANOX-EVENT-0068` `end_head` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
+- **Described HEAD:** `af3174cabfc081490306b232f6299f170373aae2` (this delivery's own substantive checkpoint — the SEC-C tools + registries commit; **unsealed** — the declared-unsealed exception covers handoff generation; merged finalization checkpoint `b8248b5` sealed as `ANOX-EVENT-0068` `end_head` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
 - **Canonical base:** `b4e10e70811ae2e567a2289410c490c347fe3e6e` (verified `main` = `origin/main` — PR #48 merge)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)

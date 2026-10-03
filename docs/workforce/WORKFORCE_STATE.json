@@ -3,7 +3,7 @@
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
  "delivery_branch": "governance/handoff-unsealed-exception-001",
- "described_head": "b8248b5b66ad7535921bef69769f2645a06c8ce7",
+ "described_head": "af3174cabfc081490306b232f6299f170373aae2",
  "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
  "active_roles": [
   "ROLE-002",
