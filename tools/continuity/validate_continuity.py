@@ -193,6 +193,12 @@ METADATA_ONLY_ALLOWLIST = frozenset(
         "tools/audit/test_workforce_fix02.py",
         "tools/audit/test_workforce_continuity_sync_fix01.py",
         "tools/continuity/validate_continuity.py",
+        # Declared-unsealed handoff exception tooling is governance/audit
+        # metadata, not product code (ANOX-TASK-HANDOFF-UNSEALED-EXCEPTION-001).
+        "tools/continuity/generate_handoff.py",
+        "tools/continuity/test_handoff_unsealed.py",
+        # EVENT-0068 decision registration is governance metadata.
+        "docs/workforce/registries/decisions.jsonl",
     }
 )
 
