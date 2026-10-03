@@ -128,6 +128,26 @@ class TestUnsealedHandoffException(unittest.TestCase):
         lines += ["", "GIT_SNAPSHOT.txt", "MANIFEST.txt", "SHA256_MANIFEST.txt"]
         self._write("MANIFEST.txt", "\n".join(lines) + "\n")
 
+    def _write_manifest_seal_lines(self, seal_lines):
+        """Manifest carrying caller-controlled raw SEAL_* lines — used to
+        build partial, duplicated and contradictory stamps (F-001 cases)."""
+        lines = [
+            "# ANOX V1 Handoff Manifest",
+            "# Date: 2026-10-03 00:00:00",
+            "# Handoff branch: delivery",
+            f"# Handoff HEAD: {self.SHA_D}",
+            "# Baseline branch: main",
+            f"# Baseline HEAD: {self.SHA_A}",
+            "# Status: clean",
+            "# File count: 3",
+            *seal_lines,
+            "",
+            "GIT_SNAPSHOT.txt",
+            "MANIFEST.txt",
+            "SHA256_MANIFEST.txt",
+        ]
+        self._write("MANIFEST.txt", "\n".join(lines) + "\n")
+
     def _call(self, described=None):
         state = json.loads((self.root / "docs/continuity/CURRENT_STATE.json").read_text(encoding="utf-8"))
         if described is not None:
@@ -170,7 +190,7 @@ class TestUnsealedHandoffException(unittest.TestCase):
         self._write_manifest("UNSEALED_AT_GENERATION")
         all_ok, status = self._call()
         self.assertFalse(all_ok)
-        self.assertIn("SEAL_STATUS STAMP", status)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
 
     def test_unsealed_unknown_status_value_FAIL(self):
         """A SEAL_STATUS value other than UNSEALED_AT_GENERATION fails closed."""
@@ -193,6 +213,96 @@ class TestUnsealedHandoffException(unittest.TestCase):
         all_ok, status = self._call()
         self.assertFalse(all_ok)
         self.assertIn("tamper", status.lower())
+
+    # --- ANOX-ROLE002-HANDOFF-UNSEALED-001: partial / contradictory stamps ---
+
+    def test_sealed_stray_described_head_FAIL(self):
+        """Sealed package + stray SEAL_DESCRIBED_HEAD without SEAL_STATUS is a
+        partial stamp and must FAIL (previously silently passed)."""
+        self._write_state(**self._state_overrides(described=self.SHA_B))
+        self._write_manifest_seal_lines([f"# SEAL_DESCRIBED_HEAD: {self.SHA_B}"])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_sealed_stray_last_sealed_FAIL(self):
+        """Sealed package + stray SEAL_LAST_SEALED without SEAL_STATUS — FAIL."""
+        self._write_state(**self._state_overrides(described=self.SHA_B))
+        self._write_manifest_seal_lines([f"# SEAL_LAST_SEALED: {self.SHA_B}"])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_sealed_both_heads_without_status_FAIL(self):
+        """Sealed package + both head fields but no SEAL_STATUS — partial stamp
+        must FAIL (was the reported reproduction that passed)."""
+        self._write_state(**self._state_overrides(described=self.SHA_B))
+        self._write_manifest_seal_lines([
+            f"# SEAL_DESCRIBED_HEAD: {self.SHA_B}",
+            f"# SEAL_LAST_SEALED: {self.SHA_B}",
+        ])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("FAIL", status)
+
+    def test_unsealed_partial_stamp_fields_FAIL(self):
+        """On an unsealed package a stray head field without SEAL_STATUS is a
+        partial stamp — must FAIL, not be treated as 'no declaration'."""
+        self._write_manifest_seal_lines([f"# SEAL_DESCRIBED_HEAD: {self.SHA_C}"])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
+
+    def test_duplicate_seal_status_FAIL(self):
+        """Contradictory duplicate SEAL_STATUS (UNKNOWN then valid) — the
+        last-value-wins behaviour must not rescue the forged declaration."""
+        self._write_manifest_seal_lines([
+            "# SEAL_STATUS: UNKNOWN",
+            f"# SEAL_DESCRIBED_HEAD: {self.SHA_C}",
+            f"# SEAL_LAST_SEALED: {self.SHA_B}",
+            "# SEAL_STATUS: UNSEALED_AT_GENERATION",
+        ])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
+
+    def test_duplicate_described_head_FAIL(self):
+        """Duplicate SEAL_DESCRIBED_HEAD where the last (correct) value would
+        otherwise pass — duplicates themselves must FAIL."""
+        self._write_manifest_seal_lines([
+            "# SEAL_STATUS: UNSEALED_AT_GENERATION",
+            f"# SEAL_DESCRIBED_HEAD: {'e' * 40}",
+            f"# SEAL_LAST_SEALED: {self.SHA_B}",
+            f"# SEAL_DESCRIBED_HEAD: {self.SHA_C}",
+        ])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
+
+    def test_duplicate_last_sealed_FAIL(self):
+        """Duplicate SEAL_LAST_SEALED with contradictory values — FAIL."""
+        self._write_manifest_seal_lines([
+            "# SEAL_STATUS: UNSEALED_AT_GENERATION",
+            f"# SEAL_DESCRIBED_HEAD: {self.SHA_C}",
+            f"# SEAL_LAST_SEALED: {'f' * 40}",
+            f"# SEAL_LAST_SEALED: {self.SHA_B}",
+        ])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
+
+    def test_unknown_seal_field_FAIL(self):
+        """An unknown SEAL_* field alongside a complete valid stamp — the stamp
+        is malformed as a whole and must FAIL."""
+        self._write_manifest_seal_lines([
+            "# SEAL_STATUS: UNSEALED_AT_GENERATION",
+            f"# SEAL_DESCRIBED_HEAD: {self.SHA_C}",
+            f"# SEAL_LAST_SEALED: {self.SHA_B}",
+            "# SEAL_FUTURE_FIELD: forged",
+        ])
+        all_ok, status = self._call()
+        self.assertFalse(all_ok)
+        self.assertIn("PARTIAL OR CONTRADICTORY", status)
 
 
 class TestUnsealedHandoffE2E(unittest.TestCase):

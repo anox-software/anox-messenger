@@ -1075,12 +1075,27 @@ def _event_marker_re(event_id):
     return re.compile(r"<!--\s*ANOX_EVENT:\s*" + re.escape(event_id) + r"\s*-->")
 
 
+_SEAL_STAMP_FIELD_RE = re.compile(
+    r"^#\s*SEAL_(STATUS|DESCRIBED_HEAD|LAST_SEALED):\s*(\S+)\s*$"
+)
+_SEAL_ANY_FIELD_RE = re.compile(r"^#\s*SEAL_[A-Z0-9_]+\s*:")
+
+
 def _read_handoff_seal_stamp(root):
     """Parse the SEAL_* stamp block from MANIFEST.txt in an archive root.
 
-    Returns a dict with keys ``status``, ``described_head``, ``last_sealed`` when a
-    ``# SEAL_STATUS:`` line exists, else None. Fail-closed: an unreadable manifest
-    yields None (treated as "no declaration").
+    Returns:
+    - ``None`` when no ``SEAL_*`` field exists at all (the legacy sealed-package
+      form — "no declaration").
+    - ``{"__malformed__": True}`` when any ``SEAL_*`` metadata exists but the
+      stamp is partial (missing required fields), duplicated (any field appears
+      more than once), or contains unknown/malformed ``SEAL_*`` fields.
+    - ``{"status", "described_head", "last_sealed"}`` for a complete,
+      well-formed stamp.
+
+    Fail-closed (ANOX-ROLE002-HANDOFF-UNSEALED-001): ANY ``SEAL_*`` field makes
+    the stamp "present" — a partial or contradictory stamp must never be
+    silently ignored as "no declaration". An unreadable manifest yields None.
     """
     manifest_path = root / "MANIFEST.txt" if root else None
     if not manifest_path or not manifest_path.exists():
@@ -1090,11 +1105,26 @@ def _read_handoff_seal_stamp(root):
     except OSError:
         return None
     stamp = {}
+    seen_any = False
+    malformed = False
     for line in text.splitlines():
-        m = re.match(r"^#\s*SEAL_(STATUS|DESCRIBED_HEAD|LAST_SEALED):\s*(\S+)\s*$", line)
-        if m:
-            stamp[m.group(1).lower()] = m.group(2)
-    return stamp if "status" in stamp else None
+        if not _SEAL_ANY_FIELD_RE.match(line):
+            continue
+        seen_any = True
+        m = _SEAL_STAMP_FIELD_RE.match(line)
+        if not m:
+            malformed = True
+            continue
+        key = m.group(1).lower()
+        if key in stamp:
+            malformed = True
+            continue
+        stamp[key] = m.group(2)
+    if not seen_any:
+        return None
+    if malformed or len(stamp) != 3:
+        return {"__malformed__": True}
+    return stamp
 
 
 def _compute_memory_freshness_status(events, state, live_branch, live_head, mode, last_sealed_event, last_event, root):
@@ -1212,6 +1242,11 @@ def _compute_memory_freshness_status(events, state, live_branch, live_head, mode
                     return "FAIL — SEAL_STATUS STAMP DECLARED ON SEALED PACKAGE (tamper)"
                 return "PASS — SEALED EVENT SYNCHRONIZED; METADATA-ONLY ADVANCE (archive)"
             if stamp is not None:
+                if stamp.get("__malformed__"):
+                    return (
+                        "FAIL — SEAL_* STAMP PARTIAL OR CONTRADICTORY "
+                        "(partial/duplicate/unknown seal metadata)"
+                    )
                 if (
                     stamp.get("status") == "UNSEALED_AT_GENERATION"
                     and stamp.get("described_head") == described_head

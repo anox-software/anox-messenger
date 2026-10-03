@@ -183,6 +183,10 @@ class LiveFixture:
         kw.setdefault("cwd", str(self.root))
         kw.setdefault("capture_output", True)
         kw.setdefault("text", True)
+        # ANOX-ROLE002-HANDOFF-UNSEALED-002: keep fixtures hermetic — python
+        # subprocesses inside the fixture must not write __pycache__ into the
+        # fixture tree (a dirty tree then fails the generator's clean check).
+        kw.setdefault("env", {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
         return subprocess.run(cmd, **kw)
 
     def validate(self, mode="live"):
@@ -228,6 +232,7 @@ class ArchiveFixture:
             cwd=str(self.root),
             capture_output=True,
             text=True,
+            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
 
     def cleanup(self):
@@ -1429,6 +1434,9 @@ class CMLFixture:
         kw.setdefault("cwd", str(self.root))
         kw.setdefault("capture_output", True)
         kw.setdefault("text", True)
+        # ANOX-ROLE002-HANDOFF-UNSEALED-002: fixture hermeticity — no bytecode
+        # pollution inside the temp git repo (dirty tree breaks generation).
+        kw.setdefault("env", {**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
         return subprocess.run(cmd, **kw)
 
     def commit_meta(self, msg, rel="FORTSCHRITT.md", text="metadata update\n"):
