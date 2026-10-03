@@ -397,3 +397,14 @@
 - Boundary: SEC-C governance tooling only; no ledger/seal semantics change; no product/crypto/android/backend/CI/secret/authority change; no finding/MSC/severity mutation; no B-028 cutover; remote mutation NONE.
 - Result: `ANOX-RUN-HANDOFF-UNSEALED-EXCEPTION-001`; live + archive validation PASS; handoff package generated under `artifacts/handoff/`.
 - Global truth unchanged: MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; S2/S3/S4 remediation not closed; product BLOCKED_PENDING_FINAL_AUDIT; arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME; B027-D DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED; S2 C-01 resync delivery continues independently.
+
+## HANDOFF-UNSEALED-EXCEPTION-001 BOUNDED CORRECTION — 2026-10-03 (ROLE-002 verdict BLOCKED → correction applied; delta review pending)
+
+- Trigger: ROLE-002 independent review (`ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001`, read-only) returned `BLOCKED — CORRECTION REQUIRED` with findings `ANOX-ROLE002-HANDOFF-UNSEALED-001` (MEDIUM), `-002`/`-003` (LOW).
+- Corrected (substantive checkpoint `28e92be`): `_read_handoff_seal_stamp()` rewritten — ANY `SEAL_*` field = stamp present; complete triple (`SEAL_STATUS` + `SEAL_DESCRIBED_HEAD` + `SEAL_LAST_SEALED`) required exactly-once; missing/unknown/duplicate/contradictory fields → `__malformed__` → `FAIL — SEAL_* STAMP PARTIAL OR CONTRADICTORY`; no last-value-wins (`-001` → Closed).
+- Corrected: `LiveFixture._run`/`CMLFixture._run`/`ArchiveFixture.validate` set `PYTHONDONTWRITEBYTECODE=1` internally — fixture hermeticity, suite passes under plain invocation (`-002` → Closed).
+- Corrected: stale live-state task references synced — `WORKFORCE_STATE` pre/post-merge anchors now name this task (was finalization task), `CURRENT_STATE.current_task` verified correct (`-003` → Closed).
+- Registry: `ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001` minted (ROLE-002, `Awaiting Review` for the delta); `ANOX-PROMPT-REVIEWHU001` retro-registered (snapshot-mode coordinator issue; reviewer-binding gap flagged as derived-work candidate); task `required_evidence` raised `E2→E3`; scope reconciled (`findings.jsonl`/`prompts.jsonl`/`test_handoff_and_validator.py` moved into allowed paths under the human-authorized correction — ledger-precedent pattern).
+- Tests: `test_handoff_unsealed.py` 19/19 PASS under plain invocation (8 new partial/duplicate/unknown-stamp negatives); `test_handoff_and_validator.py` 178/178 PASS; battery re-run (live validation, archive DECLARED_UNSEALED, B027-A/B/C, render_surfaces --check, seal_event --verify).
+- Boundary preserved: no ledger event appended (tail `ANOX-EVENT-0068`); no product/crypto/backend/CI/authority/decision change; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.
+- Next: ROLE-002 delta review of this bounded correction; on PASS → Human remote decision (push/PR/merge).

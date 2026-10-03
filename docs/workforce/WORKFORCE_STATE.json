@@ -3,7 +3,7 @@
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
  "delivery_branch": "governance/handoff-unsealed-exception-001",
- "described_head": "af3174cabfc081490306b232f6299f170373aae2",
+ "described_head": "28e92beb68b5e958abd54636ba3650014149290c",
  "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
  "active_roles": [
   "ROLE-002",
@@ -72,23 +72,23 @@
   "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED + MERGED to main at 29a6643 (F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); REMEDIATION_SESSION_S1 MERGED_INTO_MAIN at 2dc6b745 via PR #38 (integrated delivery tip 3ed46b7 = 62b07a1 + 69279ce + ARM64 CI disposition; S1CRC-R-001/R-002 remediated; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; R-009 DEFERRED/NON_BLOCKING; 0 MSC units closed)"
  },
  "pre_merge_state": {
-  "described_head": "af3174cabfc081490306b232f6299f170373aae2",
+  "described_head": "28e92beb68b5e958abd54636ba3650014149290c",
   "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": {
-   "task_id": "ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001",
-   "role_id": "ROLE-003",
-   "branch": "continuity/b028-sync-lifecycle-finalization-001"
+   "task_id": "ANOX-TASK-HANDOFF-UNSEALED-EXCEPTION-001",
+   "role_id": "ROLE-004",
+   "branch": "governance/handoff-unsealed-exception-001"
   },
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001",
-  "active_task": "ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001"
+  "current_task": "ANOX-TASK-HANDOFF-UNSEALED-EXCEPTION-001",
+  "active_task": "ANOX-TASK-HANDOFF-UNSEALED-EXCEPTION-001"
  },
  "post_merge_state": {
-  "described_head": "af3174cabfc081490306b232f6299f170373aae2",
+  "described_head": "28e92beb68b5e958abd54636ba3650014149290c",
   "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": null,
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
-  "current_task": "B028-SYNC-LIFECYCLE-FINALIZATION-001 merged; post-merge sync lifecycle finalized (sync task Merged, writer end-state null); canonical base advanced to c1a7ebf (PR #47); next: human selection — S2 C-01 delta review continues; B-028 dual-run cutover remains Candidate pending parity evidence + separate human decision",
+  "current_task": "HANDOFF-UNSEALED-EXCEPTION-001 merged; declared-unsealed handoff exception canonical (strict fail-closed stamp parsing; sealing remains recommended); next: human selection — S2 C-01 delta review continues; B-028 dual-run cutover remains Candidate pending parity evidence + separate human decision",
   "active_task": null
  },
  "previous_merges": [
@@ -612,7 +612,8 @@
   "2026-10-03: B028-SYNC-LIFECYCLE-FINALIZATION-001 — lifecycle finalization after post-merge sync merged to main at c1a7ebf (PR #47): sync task -> Merged; review-window writer = this task (delivery-model per 2026-10-03 human adjudication for post-merge-sync delivery type); post-merge writer null; previous_merges += c1a7ebf; gate unchanged; no ledger event; remote NONE.",
   "2026-10-03: EVENT-0067-HANDOFF-SEAL-001 — under Human command CREATE CURRENT HANDOFF, ANOX-EVENT-0067 (governance_transition) sealed via seal_event.py --seal: end_head = finalization checkpoint 8f2922c (= described_head), start_head = canonical merge c1a7ebf, first hash-chained record over ANOX-EVENT-0066; decision ref ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001 (decisions.jsonl registration pending — outside metadata-only seal scope). Resolves archive-mode PROJECT_MEMORY_FRESHNESS for the handoff package. Pinned S0-era validators keep their ratified 0060-0066 tail and need a separate human-ratified extension to admit 0067 on demand. Metadata-only; gate unchanged; remote NONE.",
   "2026-10-03: EVENT-0068-HANDOFF-SEAL-001 — under the second Human handoff command on post-merge branch governance/handoff-unsealed-exception-001 (from PR #48 merge b4e10e7), ANOX-EVENT-0068 (governance_transition) sealed via seal_event.py --seal: end_head = decision-registration checkpoint b8248b5 (= described_head), start_head = 8f2922c, hash-chained over ANOX-EVENT-0067; decision ref ANOX-DECISION-EVENT-0068-HANDOFF-SEAL-001 (canonically registered in decisions.jsonl in the same commit). Resolves archive-mode PROJECT_MEMORY_FRESHNESS for the post-merge handoff package. Pinned S0-era validators keep their ratified 0060-0066 tail and need a separate human-ratified extension to admit 0067/0068 on demand. Metadata-only; gate unchanged; remote NONE.",
-  "2026-10-03: HANDOFF-UNSEALED-EXCEPTION-001 — SEC-C governance-tool delivery (ROLE-004) under ANOX-DECISION-HANDOFF-UNSEALED-EXCEPTION-001 on governance/handoff-unsealed-exception-001: generate_handoff.py --allow-unsealed stamps MANIFEST (SEAL_STATUS=UNSEALED_AT_GENERATION + described_head + last_sealed); validate_continuity --mode archive accepts DECLARED_UNSEALED packages (forged/absent stamp still FAIL); sealing remains recommended — ANOX-EVENT-0068 seal executed under the separate finalization-task extension is bundled in the same commit (all paths allowlisted). current_writer = this task; remote NONE."
+  "2026-10-03: HANDOFF-UNSEALED-EXCEPTION-001 — SEC-C governance-tool delivery (ROLE-004) under ANOX-DECISION-HANDOFF-UNSEALED-EXCEPTION-001 on governance/handoff-unsealed-exception-001: generate_handoff.py --allow-unsealed stamps MANIFEST (SEAL_STATUS=UNSEALED_AT_GENERATION + described_head + last_sealed); validate_continuity --mode archive accepts DECLARED_UNSEALED packages (forged/absent stamp still FAIL); sealing remains recommended — ANOX-EVENT-0068 seal executed under the separate finalization-task extension is bundled in the same commit (all paths allowlisted). current_writer = this task; remote NONE.",
+  "2026-10-03: HANDOFF-UNSEALED-EXCEPTION-001 BOUNDED CORRECTION — ROLE-002 verdict BLOCKED applied: strict SEAL_* stamp parsing (any SEAL_* = stamp present; complete triple exactly-once; partial/duplicate/unknown fail closed), fixture hermeticity (internal PYTHONDONTWRITEBYTECODE), stale live-state writer references synced to this task; findings ANOX-ROLE002-HANDOFF-UNSEALED-001..003 Closed; ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001 + ANOX-PROMPT-REVIEWHU001 retro-registered; required_evidence E2->E3; described_head advanced to 28e92be; awaiting ROLE-002 delta review; remote NONE."
  ],
  "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
  "next_phase": "SECURITY_REMEDIATION_WAVE_1",

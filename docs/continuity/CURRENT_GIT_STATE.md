@@ -12,7 +12,7 @@
 - **Previous baseline:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (PR #47 merge).
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: af3174cabfc081490306b232f6299f170373aae2
+Described HEAD: 28e92beb68b5e958abd54636ba3650014149290c
 
 ## Pre-merge gate
 
