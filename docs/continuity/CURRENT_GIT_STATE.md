@@ -8,11 +8,11 @@
 - **Canonical branch:** `main`
 - **Canonical base:** `32c729ceb6991447698c7ec8deee7278e36d333d` (verified main/origin/main; normal PR #45 merge of `governance/delivery-lifecycle-scope-base-001` with parents `fce371bfbfddfc26c6432a1d06ef9bbe117dc1d2` and `2efda91`; PR #42 `3414fb2` POST-0054 ledger canonicalization, PR #43 `d59ef47` S2-C01 resync task authorization, PR #44 `fce371b` S2-C01 resync task correction in ancestry).
 - **Delivery branch:** `governance/b028-foundation-001`
-- **Substantive checkpoint:** `1e6272dc092387a20dc3e9b94e10a823ac10fa2f` (B-028 design authority + session/domain/test-map/CI-verdict schemas + seven additive fail-closed tools + canonical coordinator rules + registry records + 98 adversarial tests; the following continuity commit is a finite metadata seal).
+- **Substantive checkpoint:** `d97770db07dd15e670f194b44535ea516b6c359a` (B-028 design authority + schemas + seven additive fail-closed tools + canonical coordinator rules + registry records incl. task-package correction + prompt scope binding + 98 adversarial tests; subsequent commits are finite metadata seals only).
 - **Previous baseline:** `270cdb92762965eea3236177710c88c259d4b33f` (PR #41 merge).
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 1e6272dc092387a20dc3e9b94e10a823ac10fa2f
+Described HEAD: d97770db07dd15e670f194b44535ea516b6c359a
 
 ## Pre-merge gate
 

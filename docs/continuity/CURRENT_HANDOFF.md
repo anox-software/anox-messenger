@@ -4,11 +4,11 @@ This is a **live continuity/recovery surface**, not a generated handoff report/p
 
 **Event:** `ANOX-EVENT-0066` is the last sealed canonical Project Memory event (`ANOX-EVENT-0060…0065` record the six post-0054 canonical merges; `ANOX-EVENT-0066` seals the post-0054 canonicalization checkpoint under `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001`, ONE_TIME_CHANGE_SPECIFIC). This delivery appends no event.
 **Delivery branch:** `governance/b028-foundation-001`
-**Substantive checkpoint:** `1e6272dc092387a20dc3e9b94e10a823ac10fa2f`
+**Substantive checkpoint:** `d97770db07dd15e670f194b44535ea516b6c359a`
 **Canonical base:** `32c729ceb6991447698c7ec8deee7278e36d333d` (PR #45 normal merge; PR #42 `3414fb2`, #43 `d59ef47`, #44 `fce371b` and earlier #35/#36/#38/#39/#40/#41 in ancestry).
 **Effective gate:** `B028-SCALABLE-GOVERNANCE-FOUNDATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; B-028 scalable governance foundation delivered additive/advisory-only (design authority, session schema, domain_tiers, test_map, ci_verdicts, seal_event, render_surfaces, session-evidence ingest, risk classifier, next_step, prompt validator, canonical coordinator rules; 98 adversarial tests) under ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION); no cutover, no ledger event, remote permission NONE; no handoff generated`
 
-Described HEAD: 1e6272dc092387a20dc3e9b94e10a823ac10fa2f
+Described HEAD: d97770db07dd15e670f194b44535ea516b6c359a
 
 ## Pre-merge gate
 
