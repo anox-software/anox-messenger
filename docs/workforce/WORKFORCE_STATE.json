@@ -19,7 +19,7 @@
  "pending_human_remote_actions": [],
  "latest_decision_id": "ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001",
  "latest_finding_id": "ANOX-SECURITY-ARCH-010",
- "latest_run_id": "ANOX-RUN-B028-SYNC-LIFECYCLE-FIN-001",
+ "latest_run_id": "ANOX-RUN-EVENT-0067-HANDOFF-SEAL-001",
  "latest_work_candidate_id": "ANOX-WORK-FINAL-HANDOFF-ACCEPTANCE-001",
  "final_pre_product_audit": {
   "required": true,
@@ -586,7 +586,8 @@
   "2026-10-02: B028-SCALABLE-GOVERNANCE-FOUNDATION-001 authorized by Human decision ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION): B-028 additive governance track (design authority + session/domain/test-map/CI-verdict schemas + 7 fail-closed tools + canonical coordinator rules + prompts.jsonl activation) delivered advisory-only; no cutover, no ledger event, no product/finding/MSC change; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.",
   "2026-10-03: B028-POST-MERGE-CONTINUITY-SYNC-001 — post-merge continuity synchronization after PR #46 (merge 4165e4b): current_gate := pre-formulated post-merge gate, current_writer = sync task during review (post_merge_state keeps null end-state), authorized_tasks cleared (next selection is a human gate), ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 -> Merged, previous_merges += merge record 4165e4b. No ledger event; ANOX-EVENT-0067 sealing requires separate human decision; B-028 cutover remains Candidate.",
   "2026-10-03 adjudication: delivery-lifecycle preflight requires described_head not yet on canonical base and an active delivery writer — incompatible with the contract-literal post-merge-sync fields (described_head=merged checkpoint + writer=null). Human Product & Security Owner decided: apply delivery-model fields (described_head = this sync's own checkpoint commit, current_writer = sync task during review). Contract-deviation documented; semantic intent preserved: surfaces describe merged state, merged checkpoint 6d860103 remains the recorded substantive anchor in previous_merges.",
-  "2026-10-03: B028-SYNC-LIFECYCLE-FINALIZATION-001 — lifecycle finalization after post-merge sync merged to main at c1a7ebf (PR #47): sync task -> Merged; review-window writer = this task (delivery-model per 2026-10-03 human adjudication for post-merge-sync delivery type); post-merge writer null; previous_merges += c1a7ebf; gate unchanged; no ledger event; remote NONE."
+  "2026-10-03: B028-SYNC-LIFECYCLE-FINALIZATION-001 — lifecycle finalization after post-merge sync merged to main at c1a7ebf (PR #47): sync task -> Merged; review-window writer = this task (delivery-model per 2026-10-03 human adjudication for post-merge-sync delivery type); post-merge writer null; previous_merges += c1a7ebf; gate unchanged; no ledger event; remote NONE.",
+  "2026-10-03: EVENT-0067-HANDOFF-SEAL-001 — under Human command CREATE CURRENT HANDOFF, ANOX-EVENT-0067 (governance_transition) sealed via seal_event.py --seal: end_head = finalization checkpoint 8f2922c (= described_head), start_head = canonical merge c1a7ebf, first hash-chained record over ANOX-EVENT-0066; decision ref ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001 (decisions.jsonl registration pending — outside metadata-only seal scope). Resolves archive-mode PROJECT_MEMORY_FRESHNESS for the handoff package. Pinned S0-era validators keep their ratified 0060-0066 tail and need a separate human-ratified extension to admit 0067 on demand. Metadata-only; gate unchanged; remote NONE."
  ],
  "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
  "next_phase": "SECURITY_REMEDIATION_WAVE_1",

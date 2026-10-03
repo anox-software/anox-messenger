@@ -1,6 +1,6 @@
 # CURRENT_GIT_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0066` (last sealed canonical ledger event; `ANOX-EVENT-0060…0065` record the six post-0054 canonical merges; `ANOX-EVENT-0066` seals the post-0054 canonicalization checkpoint under `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001`). This delivery appends no event.
+**Event:** `ANOX-EVENT-0067` (last sealed canonical ledger event — `governance_transition`, sealed 2026-10-03 under Human command `CREATE CURRENT HANDOFF`; `end_head` = this finalization delivery's checkpoint `8f2922c`, `start_head` = canonical merge `c1a7ebf`, first hash-chained record with `prev_event_hash` over `ANOX-EVENT-0066`; `ANOX-EVENT-0060…0065` record the six post-0054 canonical merges; `ANOX-EVENT-0066` seals the post-0054 canonicalization checkpoint under `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001`).
 **Branch (runtime):** `__HANDOFF_BRANCH__`
 **HEAD (runtime):** `__HANDOFF_HEAD__`
 **Working tree (runtime):** `__WORKING_TREE__`

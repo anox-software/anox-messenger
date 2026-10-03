@@ -1,26 +1,26 @@
 # Project Memory Surface Index — anoX V1
 
-**Latest material event:** ANOX-EVENT-0066
-**Latest human history event:** ANOX-EVENT-0066
+**Latest material event:** ANOX-EVENT-0067
+**Latest human history event:** ANOX-EVENT-0067
 
 | Surface | Latest reference |
 |---------|-----------------|
-| CURRENT_STATE.json | ANOX-EVENT-0066 |
-| CURRENT_GIT_STATE.md | ANOX-EVENT-0066 |
-| CURRENT_HANDOFF.md | ANOX-EVENT-0066 |
-| CURRENT_OPEN_WORK.md | ANOX-EVENT-0066 |
-| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0066 |
-| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0066 |
-| PROJECT_STATE.md | ANOX-EVENT-0066 |
-| FORTSCHRITT.md | ANOX-EVENT-0066 |
-| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0066 |
-| WORKFORCE_STATE.json | ANOX-EVENT-0066 |
+| CURRENT_STATE.json | ANOX-EVENT-0067 |
+| CURRENT_GIT_STATE.md | ANOX-EVENT-0067 |
+| CURRENT_HANDOFF.md | ANOX-EVENT-0067 |
+| CURRENT_OPEN_WORK.md | ANOX-EVENT-0067 |
+| CURRENT_NEXT_DEVIN_TASK.md | ANOX-EVENT-0067 |
+| CURRENT_IMPLEMENTATION_STATE.md | ANOX-EVENT-0067 |
+| PROJECT_STATE.md | ANOX-EVENT-0067 |
+| FORTSCHRITT.md | ANOX-EVENT-0067 |
+| DEVIN_PROMPT_OUTPUT_ARCHIV.md | ANOX-EVENT-0067 |
+| WORKFORCE_STATE.json | ANOX-EVENT-0067 |
 | findings.jsonl | ANOX-EVENT-0052 |
-| tasks.jsonl | ANOX-EVENT-0066 |
-| runs.jsonl | ANOX-EVENT-0044 |
+| tasks.jsonl | ANOX-EVENT-0067 |
+| runs.jsonl | ANOX-EVENT-0067 |
 | audits.jsonl | ANOX-EVENT-0044 |
 | decisions.jsonl | ANOX-EVENT-0066 |
-| PROJECT_HISTORY_LEDGER.jsonl | ANOX-EVENT-0066 |
+| PROJECT_HISTORY_LEDGER.jsonl | ANOX-EVENT-0067 |
 | docs/authority/* (AUTHORITY_INDEX, B_FREEZE_REGISTRY, B025_MANDATORY_AMENDMENTS_V1_4, contracts/S0_CONTRACT_FREEZE_MANIFEST.json) | ANOX-EVENT-0053 |
 | docs/current/DATABASE_ARCHITECTURE.md, BACKEND_ARCHITECTURE.md (schema deference) | ANOX-EVENT-0053 |
 | docs/reports/security/remediation/* (S0 task record; S0 preservation task record) | ANOX-EVENT-0054 |
@@ -121,3 +121,14 @@ Surface updates in this event (ANOX-EVENT-0060…0066 — POST-0054-LEDGER-CANON
 - `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` — updated/appended.
 - `docs/workforce/registries/runs.jsonl` — `ANOX-RUN-B028-POSTMERGE-SYNC-001` `end_sha` finalized to `717368a`; appended `ANOX-RUN-B028-SYNC-LIFECYCLE-FIN-001`.
 - No ledger event appended (`ANOX-EVENT-0067` sealing requires a separate human decision); `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` remains Candidate with `start_sha` unbound.
+
+## Event seal — `ANOX-EVENT-0067` (2026-10-03, human command `CREATE CURRENT HANDOFF`; metadata-only)
+
+- `docs/continuity/PROJECT_HISTORY_LEDGER.jsonl` — `ANOX-EVENT-0067` (`governance_transition`, task `ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001` under Human-commanded scope extension, `READY_FOR_REMOTE`, `start_head` = canonical merge `c1a7ebf`, `end_head` = finalization delivery checkpoint `8f2922c` = `described_head`); first hash-chained record (`prev_event_hash` over `ANOX-EVENT-0066`, `chain_anchor` `ANOX-EVENT-0066`); refs `git:8f2922c…`, `git:c1a7ebf…`, `git:e341077…`, `decision:ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001`.
+- Trigger: `generate_handoff.py` fail-closed on `PROJECT_MEMORY_FRESHNESS: FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT`; the Human authorized the seal as the separate decision the surfaces required.
+- `docs/continuity/CURRENT_STATE.json` — `latest_material_event_id`/`latest_human_history_event_id`/`latest_agent_history_event_id` := `ANOX-EVENT-0067`, `latest_material_event_type` := `governance_transition`, `current_task` + `notes` updated.
+- `docs/continuity/CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md` — event pointers/ledger-tail statements synchronized to `0067`.
+- `PROJECT_STATE.md` (`ANOX_EVENT` marker + prose), `FORTSCHRITT.md` (new sealed section + marker), `DEVIN_PROMPT_OUTPUT_ARCHIV.md` (new record section) — updated/appended.
+- `docs/workforce/WORKFORCE_STATE.json` — `notes` += seal record, `latest_run_id` := `ANOX-RUN-EVENT-0067-HANDOFF-SEAL-001`; `docs/workforce/registries/tasks.jsonl` — `ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001` scope extended (ledger path + Human-commanded seal) under the `CREATE CURRENT HANDOFF` instruction; `docs/workforce/registries/runs.jsonl` += `ANOX-RUN-EVENT-0067-HANDOFF-SEAL-001`.
+- `docs/workforce/registries/decisions.jsonl` — intentionally NOT modified (outside the metadata-only seal scope); `ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001` canonical registration pending in a future authorized delivery.
+- Pinned S0-era validators (`validate_security_audit_evidence_preservation.py`, `validate_s0_evidence_preservation.py`) retain their ratified `0060…0066` tail — admitting `0067` requires a separate human-ratified extension; they are outside the handoff-generation and CI gate.
