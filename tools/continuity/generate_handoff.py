@@ -596,6 +596,19 @@ def stage_archive_files(staging, rel_files, state, head, branch, working_tree, r
     return context
 
 
+def last_sealed_event_ref(repo_root):
+    """Return (sha, event_id) of the last sealed canonical ledger event, or ("", "")."""
+    ledger = repo_root / "docs" / "continuity" / "PROJECT_HISTORY_LEDGER.jsonl"
+    try:
+        lines = [l for l in ledger.read_text(encoding="utf-8").splitlines() if l.strip()]
+        if not lines:
+            return "", ""
+        ev = json.loads(lines[-1])
+        return ev.get("end_head") or ev.get("merge_head") or "", ev.get("event_id", "")
+    except (OSError, json.JSONDecodeError):
+        return "", ""
+
+
 def validate_archive_staging(staging):
     """Run the archive-mode continuity validator against the staged tree."""
     validator = REPO_ROOT / "tools" / "continuity" / "validate_continuity.py"
@@ -636,6 +649,14 @@ def main():
         "--emergency",
         action="store_true",
         help="Allow a dirty working tree and label the package as emergency/dirty.",
+    )
+    parser.add_argument(
+        "--allow-unsealed",
+        action="store_true",
+        help="Permit packaging at an unsealed described_head (ANOX-DECISION-HANDOFF-"
+        "UNSEALED-EXCEPTION-001); stamps the manifest SEAL_STATUS=UNSEALED_AT_GENERATION "
+        "plus described_head and last_sealed. Sealing remains recommended for canonical "
+        "anchors; consumer duties are unchanged.",
     )
     args = parser.parse_args()
 
@@ -709,6 +730,21 @@ def main():
         manifest.write(f"# Baseline HEAD: {baseline_head}\n")
         manifest.write(f"# Status: {status_label}\n")
         manifest.write(f"# File count: {len(rel_files) + 3}\n")  # rel_files + GIT_SNAPSHOT + MANIFEST + SHA256
+
+        # Declared-unsealed exception (ANOX-DECISION-HANDOFF-UNSEALED-EXCEPTION-001):
+        # only an explicit --allow-unsealed stamps the manifest; without the flag the
+        # manifest stays byte-identical and archive validation fails closed as before.
+        described_head_value = state.get("described_head", "") or ""
+        last_sealed_sha, last_sealed_id = last_sealed_event_ref(REPO_ROOT)
+        unsealed_state = (
+            bool(described_head_value)
+            and bool(last_sealed_sha)
+            and described_head_value != last_sealed_sha
+        )
+        if unsealed_state and args.allow_unsealed:
+            manifest.write("# SEAL_STATUS: UNSEALED_AT_GENERATION\n")
+            manifest.write(f"# SEAL_DESCRIBED_HEAD: {described_head_value}\n")
+            manifest.write(f"# SEAL_LAST_SEALED: {last_sealed_sha}\n")
         manifest.write("\n")
 
         sha_manifest = io.StringIO()

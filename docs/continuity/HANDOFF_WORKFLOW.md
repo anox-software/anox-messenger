@@ -48,6 +48,51 @@ If a chat must be abandoned mid-task, the handoff package must be labeled `EMERG
 and list all uncommitted and partial changes. The new AI must resolve the dirty state before
 continuing. Live-source reconciliation is required before new write work.
 
+## Unsealed handoff packages (declared exception)
+
+**Authority:** `ANOX-DECISION-HANDOFF-UNSEALED-EXCEPTION-001` (Human Owner, 2026-10-03).
+
+By default `generate_handoff.py` fails closed when the repository-described
+`described_head` is not anchored to the last sealed ledger event — archive
+validation reports `FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT`.
+Sealing the checkpoint via `seal_event.py --seal` (separate human decision)
+remains the recommended path for canonical anchors.
+
+When a package is needed before sealing, an operator may pass:
+
+```bash
+python3 tools/continuity/generate_handoff.py --allow-unsealed
+```
+
+Semantics:
+
+- Without `--allow-unsealed`, behavior is unchanged: unsealed state fails, the
+  manifest carries no seal fields, and no other check is weakened.
+- With the flag on an unsealed state, generation proceeds and `MANIFEST.txt`
+  is stamped with three explicit comment fields:
+  - `# SEAL_STATUS: UNSEALED_AT_GENERATION`
+  - `# SEAL_DESCRIBED_HEAD: <described_head at generation>`
+  - `# SEAL_LAST_SEALED: <last sealed ledger event head at generation>`
+- On a sealed state the flag is a no-op: no stamp is written and the manifest
+  is byte-identical to a run without the flag.
+- Archive-mode validation reads the stamp: a declared package whose stamped
+  values exactly match the packaged `CURRENT_STATE.json` `described_head` and
+  the packaged ledger tail is reported as
+  `PASS — DECLARED_UNSEALED` (`HANDOFF_ARCHIVE_VALIDATION: PASS`).
+- A stamp that is missing required fields, mismatches the packaged state or
+  ledger tail, uses an unknown `SEAL_STATUS` value, or appears on a package
+  that is actually sealed fails closed as tamper. An undeclared unsealed
+  package fails exactly as before.
+
+Consumer duties are unchanged and explicitly include:
+
+- An unsealed package must never be treated as sealed: the declaration records
+  that `described_head` had **no** ledger event at generation time.
+- `HANDOFF SNAPSHOT != LIVE SOURCE` still applies in full; live-source
+  reconciliation is mandatory before any write work.
+- No ledger/seal semantics change; no other continuity, security, placeholder,
+  manifest, or surface check is weakened by the exception.
+
 ## HANDOFF SNAPSHOT INVARIANT
 
 `HANDOFF SNAPSHOT != LIVE SOURCE`

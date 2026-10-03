@@ -1069,6 +1069,28 @@ def _event_marker_re(event_id):
     return re.compile(r"<!--\s*ANOX_EVENT:\s*" + re.escape(event_id) + r"\s*-->")
 
 
+def _read_handoff_seal_stamp(root):
+    """Parse the SEAL_* stamp block from MANIFEST.txt in an archive root.
+
+    Returns a dict with keys ``status``, ``described_head``, ``last_sealed`` when a
+    ``# SEAL_STATUS:`` line exists, else None. Fail-closed: an unreadable manifest
+    yields None (treated as "no declaration").
+    """
+    manifest_path = root / "MANIFEST.txt" if root else None
+    if not manifest_path or not manifest_path.exists():
+        return None
+    try:
+        text = manifest_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+    stamp = {}
+    for line in text.splitlines():
+        m = re.match(r"^#\s*SEAL_(STATUS|DESCRIBED_HEAD|LAST_SEALED):\s*(\S+)\s*$", line)
+        if m:
+            stamp[m.group(1).lower()] = m.group(2)
+    return stamp if "status" in stamp else None
+
+
 def _compute_memory_freshness_status(events, state, live_branch, live_head, mode, last_sealed_event, last_event, root):
     """Determine the PROJECT_MEMORY_FRESHNESS status after basic ledger checks."""
     if not _is_lifecycle_state(state):
@@ -1166,6 +1188,13 @@ def _compute_memory_freshness_status(events, state, live_branch, live_head, mode
             handoff_head = state.get("handoff_head") if state else None
             described_head = state.get("described_head") if state else None
             last_type = last_event.get("type") if last_event else None
+            # Declared-unsealed exception (ANOX-DECISION-HANDOFF-UNSEALED-EXCEPTION-001):
+            # a package generated with --allow-unsealed stamps MANIFEST.txt with
+            # SEAL_STATUS=UNSEALED_AT_GENERATION plus the described_head / last_sealed
+            # values at generation time. A present stamp must match the packaged state
+            # and the packaged ledger tail exactly — any mismatch is a forged or
+            # tampered declaration and fails closed.
+            stamp = _read_handoff_seal_stamp(root)
             if (
                 handoff_head == live_head
                 and is_valid_sha(described_head)
@@ -1173,7 +1202,24 @@ def _compute_memory_freshness_status(events, state, live_branch, live_head, mode
                 and live_head != last_sealed_sha
                 and last_type != "canonical_merge"
             ):
+                if stamp is not None:
+                    return "FAIL — SEAL_STATUS STAMP DECLARED ON SEALED PACKAGE (tamper)"
                 return "PASS — SEALED EVENT SYNCHRONIZED; METADATA-ONLY ADVANCE (archive)"
+            if stamp is not None:
+                if (
+                    stamp.get("status") == "UNSEALED_AT_GENERATION"
+                    and stamp.get("described_head") == described_head
+                    and stamp.get("last_sealed") == last_sealed_sha
+                    and is_valid_sha(described_head)
+                    and described_head != last_sealed_sha
+                ):
+                    return (
+                        "PASS — DECLARED_UNSEALED (SEAL_STATUS=UNSEALED_AT_GENERATION; "
+                        "described_head %s unsealed at generation vs last sealed %s; "
+                        "live-source reconciliation mandatory before write work)"
+                        % (described_head, last_sealed_sha)
+                    )
+                return "FAIL — SEAL_STATUS STAMP MISSING FIELDS OR MISMATCHES PACKAGED STATE"
 
     return "FAIL — AUTHORED MATERIAL CHECKPOINT WITHOUT LEDGER EVENT"
 
@@ -1343,7 +1389,15 @@ def validate_project_memory_freshness(root, all_ok, label, live_branch, live_hea
 
     if freshness_status.startswith("FAIL"):
         all_ok = False
-    elif not memory_enabled and all_ok and not freshness_status.startswith("FAIL"):
+    elif (
+        not memory_enabled
+        and all_ok
+        and not freshness_status.startswith("FAIL")
+        and "DECLARED_UNSEALED" not in freshness_status
+    ):
+        # An explicit UNSEALED_AT_GENERATION package declaration is reported even
+        # when the memory-pointer fields are not configured — it is package truth,
+        # not a memory-pointer check result.
         freshness_status = "NOT CONFIGURED"
 
     return all_ok, freshness_status

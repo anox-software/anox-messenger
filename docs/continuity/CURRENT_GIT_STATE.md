@@ -1,15 +1,15 @@
 # CURRENT_GIT_STATE — anoX V1
 
-**Event:** `ANOX-EVENT-0067` (last sealed canonical ledger event — `governance_transition`, sealed 2026-10-03 under Human command `CREATE CURRENT HANDOFF`; `end_head` = this finalization delivery's checkpoint `8f2922c`, `start_head` = canonical merge `c1a7ebf`, first hash-chained record with `prev_event_hash` over `ANOX-EVENT-0066`; `ANOX-EVENT-0060…0065` record the six post-0054 canonical merges; `ANOX-EVENT-0066` seals the post-0054 canonicalization checkpoint under `ANOX-DECISION-POST-0054-LEDGER-CANONICALIZATION-001`).
+**Event:** `ANOX-EVENT-0068` (last sealed canonical ledger event — `governance_transition`, sealed 2026-10-03 under the second Human handoff command on `governance/handoff-unsealed-exception-001` post-merge; `end_head` = decision-registration checkpoint `b8248b5` = `described_head`, `start_head` = `8f2922c`, hash-chained over `ANOX-EVENT-0067`; `ANOX-EVENT-0060…0065` record the six post-0054 canonical merges; `ANOX-EVENT-0066` seals the post-0054 canonicalization checkpoint; `ANOX-EVENT-0067` seals the finalization checkpoint `8f2922c` under `ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001`).
 **Branch (runtime):** `__HANDOFF_BRANCH__`
 **HEAD (runtime):** `__HANDOFF_HEAD__`
 **Working tree (runtime):** `__WORKING_TREE__`
 
 - **Canonical branch:** `main`
-- **Canonical base:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (verified main/origin/main; normal PR #47 merge of `continuity/b028-post-merge-sync-001` with parents `4165e4bbc6f295b7ee8790d766074848722a14b0` and `717368a0d3ba6592005f58b75fdce4448ba14964`; merge tree identical to the reviewed delivery — zero drift).
-- **Delivery branch:** `continuity/b028-sync-lifecycle-finalization-001`
-- **Substantive checkpoint (merged delivery):** `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` (merged post-merge-sync delivery's described checkpoint — registry authority citation correction; preserved as the semantic anchor in `previous_merges`; the merged B-028 foundation's substantive checkpoint `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` remains recorded in the earlier merge record; this finalization delivery's described HEAD is its own metadata-only delivery checkpoint per the delivery lifecycle model, human-adjudicated 2026-10-03).
-- **Previous baseline:** `4165e4bbc6f295b7ee8790d766074848722a14b0` (PR #46 merge).
+- **Canonical base:** `b4e10e70811ae2e567a2289410c490c347fe3e6e` (verified main/origin/main; normal PR #48 merge of `continuity/b028-sync-lifecycle-finalization-001` with parents `c1a7ebf7d15f29eaf4f698d0680b688224c08865` and `170e88fd499f9c8291caecf034831fe8524c6343`; merge tree identical to the reviewed delivery — zero drift).
+- **Delivery branch:** `governance/handoff-unsealed-exception-001` (created from PR #48 merge `b4e10e7` for `ANOX-TASK-HANDOFF-UNSEALED-EXCEPTION-001`)
+- **Substantive checkpoint (merged delivery):** `b8248b5b66ad7535921bef69769f2645a06c8ce7` (merged finalization delivery's described checkpoint — `ANOX-DECISION-EVENT-0067-HANDOFF-SEAL-001` registration; preserved as the semantic anchor in `previous_merges` and sealed as `ANOX-EVENT-0068` `end_head`; the merged post-merge-sync checkpoint `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` remains recorded in the earlier merge record; this SEC-C delivery's described HEAD is its own substantive checkpoint).
+- **Previous baseline:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (PR #47 merge).
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
 Described HEAD: b8248b5b66ad7535921bef69769f2645a06c8ce7
