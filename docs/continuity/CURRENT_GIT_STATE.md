@@ -20,6 +20,6 @@ Described HEAD: d97770db07dd15e670f194b44535ea516b6c359a
 
 ## Post-merge gate (conditional; real merge NOT_EXECUTED)
 
-`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
+`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
 
 No push, PR, real merge, rebase or history rewrite by this delivery. Synthetic merge validation uses disposable independent state only. Earlier S0/S1 audit/evidence details remain in their preserved reports and Git history. Archived local events 0055–0059 belong to the non-canonical archived line `archive/local-main-pre-pr38-20260926` and are not canonical ledger events.

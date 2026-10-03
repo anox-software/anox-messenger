@@ -16,7 +16,7 @@ Described HEAD: d97770db07dd15e670f194b44535ea516b6c359a
 
 ## Post-merge gate (conditional; real merge NOT_EXECUTED)
 
-`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
+`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
 
 ## Current delivery and source reconstruction
 
