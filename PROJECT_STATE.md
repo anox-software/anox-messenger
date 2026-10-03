@@ -48,15 +48,15 @@
 <!-- ANOX_EVENT: ANOX-EVENT-0065 -->
 <!-- ANOX_EVENT: ANOX-EVENT-0066 -->
 
-## Active delivery — B-028 post-merge continuity synchronization (2026-10-03)
+## Active delivery — B-028 sync lifecycle finalization (2026-10-03)
 
-`B028-POST-MERGE-CONTINUITY-SYNC-001` is the authorized metadata-only sync on `continuity/b028-post-merge-sync-001`, based on canonical merge `4165e4bbc6f295b7ee8790d766074848722a14b0` (PR #46 — `B028-SCALABLE-GOVERNANCE-FOUNDATION-001` merged to `main`). It adopts the pre-formulated post-merge gate (`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN …`): `current_writer = null`, `authorized_tasks` cleared (next selection is a human gate), foundation task `Merged`, `previous_merges += 4165e4b`. `described_head` stays `6d860103` (merged delivery's substantive checkpoint — sync commits are metadata-only). `ANOX-EVENT-0067` not sealed (separate human decision); no B-028 cutover. `HANDOFF_REQUESTED=NO`; `HANDOFF_PACKAGE_GENERATION=NOT_EXECUTED`; no push/PR/real merge by this delivery.
+`B028-SYNC-LIFECYCLE-FINALIZATION-001` is the authorized metadata-only lifecycle finalization on `continuity/b028-sync-lifecycle-finalization-001`, based on canonical merge `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (PR #47 — `B028-POST-MERGE-CONTINUITY-SYNC-001` merged to `main`; parents `4165e4b` + `717368a`; merge tree identical to the reviewed delivery). It finalizes the sync lifecycle: sync task `Merged`, post-merge `current_writer` null, `previous_merges += c1a7ebf`, `runs.jsonl` `end_sha` finalized, surfaces point at `c1a7ebf`. `described_head` = this delivery's own checkpoint (delivery-model per the 2026-10-03 human adjudication for the post-merge-sync delivery type). `ANOX-EVENT-0067` not sealed (separate human decision); no B-028 cutover. `HANDOFF_REQUESTED=NO`; `HANDOFF_PACKAGE_GENERATION=NOT_EXECUTED`; no push/PR/real merge by this delivery.
 
 ## Repository truth
 
-- Branch: `continuity/b028-post-merge-sync-001`
-- **Described HEAD:** `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` (this sync delivery's own checkpoint — delivery lifecycle model; merged B-028 substantive checkpoint `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
-- **Canonical base:** `4165e4bbc6f295b7ee8790d766074848722a14b0` (verified `main` = `origin/main` — PR #46 merge)
+- Branch: `continuity/b028-sync-lifecycle-finalization-001`
+- **Described HEAD:** `__FIN_CHECKPOINT__` (this finalization delivery's own checkpoint — delivery lifecycle model; merged sync checkpoint `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
+- **Canonical base:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (verified `main` = `origin/main` — PR #47 merge)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)
 - No product, backend, SQL, CI, native-artifact, or secret changes; remote mutation NONE; no MSC unit closed; no finding re-severitied; no audit re-run.
