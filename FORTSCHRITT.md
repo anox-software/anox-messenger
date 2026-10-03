@@ -354,6 +354,7 @@
 - Preserved unchanged: `MSC OPEN=42`, `MSC CLOSED=0`; `B004/B005=NOT_STARTED`; `S2/S3/S4` remediation not closed; `PRODUCT=BLOCKED_PENDING_FINAL_AUDIT`; ledger tail `ANOX-EVENT-0066`; `arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`; `B027-D DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED`; S2 C-01 resync delivery on `remediation/s2-c01-resync-correction-002` untouched, pending ROLE-002 delta review.
 - Next gate: Human review/merge of this sync delivery to `main`; then human selection — S2 C-01 delta review continues independently; `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` remains Candidate until real dual-run parity evidence exists.
 
+<!-- ANOX_EVENT: ANOX-EVENT-0066 -->
 ## B028-SYNC-LIFECYCLE-FINALIZATION-001 — 2026-10-03 (lifecycle finalization after sync merge; metadata-only)
 
 - Start: verified `main` = `origin/main` = `c1a7ebf7d15f29eaf4f698d0680b688224c08865` — canonical normal merge of `continuity/b028-post-merge-sync-001` via PR #47 (parents `4165e4b` + `717368a`; merge tree verified identical to the reviewed delivery — zero drift). Branch: `continuity/b028-sync-lifecycle-finalization-001`.
