@@ -330,6 +330,7 @@
 - Preserved unchanged: `MSC OPEN=42`, `MSC CLOSED=0`; `B004/B005=NOT_STARTED`; `PRODUCT=BLOCKED_PENDING_FINAL_AUDIT`; `arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`; B027-D `DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED`; C-01/R09 not fixed.
 - Next gate: Human review/merge of this delivery to `main`; then the authorized C-01 validator correction on `remediation/s2-correction-001`.
 
+<!-- ANOX_EVENT: ANOX-EVENT-0066 -->
 ## B028-SCALABLE-GOVERNANCE-FOUNDATION-001 — 2026-10-02 (B-028 additive governance foundation; advisory-only)
 
 - Start: verified clean `main` = `origin/main` = `32c729ceb6991447698c7ec8deee7278e36d333d` (PR #45 merge; PR #42/#43/#44 in ancestry). Branch: `governance/b028-foundation-001`.
