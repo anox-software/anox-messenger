@@ -7,7 +7,7 @@
  "canonical_branch": "main",
  "delivery_branch": "continuity/b028-sync-lifecycle-finalization-001",
  "baseline_branch": "main",
- "described_head": "__FIN_CHECKPOINT__",
+ "described_head": "8f2922c743fa9ff25b302698ae1ebcac071002d0",
  "baseline_tag": "v1-foundation-baseline",
  "baseline_tag_sha": "7db20fa4df8dc70392afd803fabaaf20c0b50d7d",
  "latest_merge_to_baseline": "c1a7ebf7d15f29eaf4f698d0680b688224c08865",
