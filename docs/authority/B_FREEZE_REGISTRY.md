@@ -44,6 +44,7 @@
 | B-025 | New-Chat Handoff Package | COMPLETE | `docs/authority/B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` |
 | B-026 | Continuous Development Governance | FROZEN | `docs/authority/B026_CONTINUOUS_DEVELOPMENT_GOVERNANCE.md` |
 | B-027 | AI Workforce / Work-Control Governance | FROZEN / IMPLEMENTED (A/B/C); FINAL_PRE_PRODUCT_AUDIT REQUIRED | `docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md` |
+| B-028 | Scalable Governance Architecture | CURRENT (additive governance track; foundation advisory-only under ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001; acceptance cutover requires separate human decisions) | `docs/authority/B028_SCALABLE_GOVERNANCE.md` |
 
 ---
 

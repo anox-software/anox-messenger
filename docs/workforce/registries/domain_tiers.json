@@ -1,0 +1,74 @@
+{
+  "schema_version": "B028-DT-v1",
+  "authority": "docs/authority/B028_SCALABLE_GOVERNANCE.md",
+  "default_tier": "SEC-C",
+  "tier_order": ["SEC-A", "SEC-B", "SEC-C"],
+  "domains": [
+    {
+      "domain": "CONTROL_SURFACE",
+      "tier": "SEC-C",
+      "required_evidence": "E3",
+      "requires_independent_review": true,
+      "globs": [
+        "tools/audit/**",
+        "tools/continuity/**",
+        "tools/workforce/**",
+        "tools/security/**",
+        ".github/**",
+        "docs/workforce/registries/domain_tiers.json",
+        "docs/workforce/schemas/**"
+      ]
+    },
+    {
+      "domain": "TRUST_BOUNDARY",
+      "tier": "SEC-B",
+      "required_evidence": "E3",
+      "requires_independent_review": true,
+      "globs": [
+        "crypto/**",
+        "**/*.rs",
+        "**/keystore/**",
+        "**/auth/**",
+        "**/*jni*",
+        "**/CryptoBridge*",
+        "**/CryptoNative*"
+      ]
+    },
+    {
+      "domain": "CODE",
+      "tier": "SEC-B",
+      "required_evidence": "E2",
+      "requires_independent_review": false,
+      "globs": [
+        "android/**",
+        "*.gradle.kts",
+        "**/build.gradle.kts",
+        "settings.gradle.kts"
+      ]
+    },
+    {
+      "domain": "DOCS_ONLY",
+      "tier": "SEC-A",
+      "required_evidence": "E1",
+      "requires_independent_review": false,
+      "globs": [
+        "docs/**",
+        "*.md",
+        "**/*.md"
+      ]
+    }
+  ],
+  "severity_evidence_floor": {
+    "LOW": "E1",
+    "MEDIUM": "E2",
+    "HIGH": "E3",
+    "CRITICAL": "E3"
+  },
+  "severity_requires_independent": {
+    "LOW": false,
+    "MEDIUM": false,
+    "HIGH": true,
+    "CRITICAL": true
+  },
+  "notes": "This file is itself CONTROL_SURFACE. Any change is SEC-C and requires human authorization. First-listed matching domain does not win; the highest tier across all matching domains wins (max). Unmatched paths classify as UNKNOWN -> SEC-C."
+}

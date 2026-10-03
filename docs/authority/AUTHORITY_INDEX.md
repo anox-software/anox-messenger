@@ -49,6 +49,7 @@ Where B004 (backend), B005 (schema/RLS), or the client sessions S2/S3/S4 need a 
 | `contracts/S0_CONTRACT_FREEZE_MANIFEST.json` | Current (machine index) | Clause registry for V1.4 consumed by `tools/audit/validate_s0_contract_freeze.py`; non-normative |
 | `B025/TRACK_B/B001_MASTER_COMPLETENESS.md` … `B025/TRACK_B/B025_NEW_CHAT_HANDOFF.md` | Frozen | Individual B specifications B-001…B-025 |
 || `B027_AI_WORKFORCE_GOVERNANCE.md` | B027-A implemented / B027-B,C deferred | AI workforce / work-control governance |
+| `B028_SCALABLE_GOVERNANCE.md` | Current (additive track; advisory until human cutover decisions) | Scalable governance: hash-chained ledger, generic session ingest, deterministic audit depth, CI verdict binding, coordinator/prompt binding |
 
 ---
 
