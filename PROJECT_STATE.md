@@ -56,7 +56,7 @@
 ## Repository truth
 
 - Branch: `continuity/b028-sync-lifecycle-finalization-001`
-- **Described HEAD:** `8f2922c743fa9ff25b302698ae1ebcac071002d0` (this finalization delivery's own checkpoint — delivery lifecycle model; merged sync checkpoint `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
+- **Described HEAD:** `b8248b5b66ad7535921bef69769f2645a06c8ce7` (this finalization delivery's own checkpoint — delivery lifecycle model; merged sync checkpoint `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` remains the semantic anchor recorded in `previous_merges`; live HEAD is derived from Git, not predicted in tracked metadata)
 - **Canonical base:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (verified `main` = `origin/main` — PR #47 merge)
 - **Canonical repository:** `https://github.com/anox-software/anox-messenger`
 - **Legacy repository:** `https://github.com/anox-admin/ax-messenger.git` (historical provenance only)

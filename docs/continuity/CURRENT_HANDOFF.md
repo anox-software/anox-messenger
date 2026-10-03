@@ -8,7 +8,7 @@ This is a **live continuity/recovery surface**, not a generated handoff report/p
 **Canonical base:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (PR #47 normal merge of `continuity/b028-post-merge-sync-001`; parents `4165e4b` + `717368a`; merge tree verified identical to the reviewed delivery).
 **Effective gate:** `B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
 
-Described HEAD: 8f2922c743fa9ff25b302698ae1ebcac071002d0
+Described HEAD: b8248b5b66ad7535921bef69769f2645a06c8ce7
 
 ## Pre-merge gate
 
