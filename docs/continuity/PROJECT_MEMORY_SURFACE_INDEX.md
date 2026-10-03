@@ -99,3 +99,14 @@ Surface updates in this event (ANOX-EVENT-0060…0066 — POST-0054-LEDGER-CANON
 - `docs/workforce/registries/prompts.jsonl` — first record `ANOX-PROMPT-B028F001` bound to this delivery.
 - `docs/authority/B028_SCALABLE_GOVERNANCE.md`, `B_FREEZE_REGISTRY.md`, `AUTHORITY_INDEX.md` — B-028 registered as additive Candidate authority (§J cutover contract).
 - No ledger event appended; `ANOX-EVENT-0066` remains the sealed tail.
+
+## Delivery surface updates — `B028-POST-MERGE-CONTINUITY-SYNC-001` (2026-10-03, metadata-only, still under sealed tail ANOX-EVENT-0066)
+
+- `ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001` merged to `main` at canonical merge `4165e4bbc6f295b7ee8790d766074848722a14b0` (PR #46; parents `32c729c` + `518733e`; merge tree identical to reviewed delivery; CI run `37116589907` all 8 jobs success).
+- `docs/workforce/registries/tasks.jsonl` — `ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001` registered (Candidate → Authorized via `state_gate_resolver.py` ALLOWED, `start_sha` = `4165e4b`) → In Progress → `Awaiting Review`; foundation task → `Merged`.
+- `docs/workforce/WORKFORCE_STATE.json` — post-merge flip: `current_gate` := pre-formulated post-merge gate text; post-merge `current_writer` = null (review-window writer = this sync task); `authorized_tasks` cleared; `previous_merges += {merge_head: 4165e4b, pre/post_merge_state}`; `described_head` = own sync checkpoint `019b7ad` (delivery-model, human-adjudicated 2026-10-03; merged anchor `6d860103` preserved in `previous_merges`; sync commits metadata-only).
+- `docs/continuity/CURRENT_STATE.json` — `delivery_branch` := `continuity/b028-post-merge-sync-001`; `latest_merge_to_baseline`/`main_baseline_head` := `4165e4b`; `previous_baseline_head` := `32c729c`; `described_head` = own sync checkpoint `019b7ad` (delivery-model, human-adjudicated 2026-10-03; merged anchor `6d860103` in `previous_merges`); pre/post gates := adopted post-merge gate.
+- `docs/continuity/CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md` — synchronized to the merged state.
+- `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` — updated/appended.
+- `docs/workforce/registries/runs.jsonl` — appended `ANOX-RUN-B028-POSTMERGE-SYNC-001`.
+- No ledger event appended (`ANOX-EVENT-0067` sealing requires a separate human decision); `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` remains Candidate with `start_sha` unbound.

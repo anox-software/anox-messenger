@@ -6,17 +6,17 @@
 **Working tree (runtime):** `__WORKING_TREE__`
 
 - **Canonical branch:** `main`
-- **Canonical base:** `32c729ceb6991447698c7ec8deee7278e36d333d` (verified main/origin/main; normal PR #45 merge of `governance/delivery-lifecycle-scope-base-001` with parents `fce371bfbfddfc26c6432a1d06ef9bbe117dc1d2` and `2efda91`; PR #42 `3414fb2` POST-0054 ledger canonicalization, PR #43 `d59ef47` S2-C01 resync task authorization, PR #44 `fce371b` S2-C01 resync task correction in ancestry).
-- **Delivery branch:** `governance/b028-foundation-001`
-- **Substantive checkpoint:** `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` (B-028 design authority + schemas + seven additive fail-closed tools + canonical coordinator rules + registry records incl. task-package correction + prompt scope binding + 98 adversarial tests; subsequent commits are finite metadata seals only).
-- **Previous baseline:** `270cdb92762965eea3236177710c88c259d4b33f` (PR #41 merge).
+- **Canonical base:** `4165e4bbc6f295b7ee8790d766074848722a14b0` (verified main/origin/main; normal PR #46 merge of `governance/b028-foundation-001` with parents `32c729ceb6991447698c7ec8deee7278e36d333d` and `518733e`; merge tree identical to the reviewed delivery — zero drift; CI run `37116589907` all 8 jobs success incl. instrumented x86_64 emulator tests).
+- **Delivery branch:** `continuity/b028-post-merge-sync-001`
+- **Substantive checkpoint (merged delivery):** `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` (merged B-028 foundation's substantive checkpoint — B-028 design authority + schemas + seven additive fail-closed tools + canonical coordinator rules + registry records incl. task-package correction + prompt scope binding + 102 adversarial tests; preserved as the semantic anchor in `previous_merges`; this sync's described HEAD is its own metadata-only delivery checkpoint per the delivery lifecycle model, human-adjudicated 2026-10-03).
+- **Previous baseline:** `32c729ceb6991447698c7ec8deee7278e36d333d` (PR #45 merge).
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 6d8601039ba9531d1d95be73d1a3f74f0ebeed1f
+Described HEAD: 019b7ad1b0ae3a3755c358f1ac6668b1d2176169
 
 ## Pre-merge gate
 
-`B028-SCALABLE-GOVERNANCE-FOUNDATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; B-028 scalable governance foundation delivered additive/advisory-only (design authority, session schema, domain_tiers, test_map, ci_verdicts, seal_event, render_surfaces, session-evidence ingest, risk classifier, next_step, prompt validator, canonical coordinator rules; 98 adversarial tests) under ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION); no cutover, no ledger event, remote permission NONE; no handoff generated`
+`B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME`
 
 ## Post-merge gate (conditional; real merge NOT_EXECUTED)
 
