@@ -6,13 +6,13 @@
 **Working tree (runtime):** `__WORKING_TREE__`
 
 - **Canonical branch:** `main`
-- **Canonical base:** `4165e4bbc6f295b7ee8790d766074848722a14b0` (verified main/origin/main; normal PR #46 merge of `governance/b028-foundation-001` with parents `32c729ceb6991447698c7ec8deee7278e36d333d` and `518733e`; merge tree identical to the reviewed delivery — zero drift; CI run `37116589907` all 8 jobs success incl. instrumented x86_64 emulator tests).
-- **Delivery branch:** `continuity/b028-post-merge-sync-001`
-- **Substantive checkpoint (merged delivery):** `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` (merged B-028 foundation's substantive checkpoint — B-028 design authority + schemas + seven additive fail-closed tools + canonical coordinator rules + registry records incl. task-package correction + prompt scope binding + 102 adversarial tests; preserved as the semantic anchor in `previous_merges`; this sync's described HEAD is its own metadata-only delivery checkpoint per the delivery lifecycle model, human-adjudicated 2026-10-03).
-- **Previous baseline:** `32c729ceb6991447698c7ec8deee7278e36d333d` (PR #45 merge).
+- **Canonical base:** `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (verified main/origin/main; normal PR #47 merge of `continuity/b028-post-merge-sync-001` with parents `4165e4bbc6f295b7ee8790d766074848722a14b0` and `717368a0d3ba6592005f58b75fdce4448ba14964`; merge tree identical to the reviewed delivery — zero drift).
+- **Delivery branch:** `continuity/b028-sync-lifecycle-finalization-001`
+- **Substantive checkpoint (merged delivery):** `019b7ad1b0ae3a3755c358f1ac6668b1d2176169` (merged post-merge-sync delivery's described checkpoint — registry authority citation correction; preserved as the semantic anchor in `previous_merges`; the merged B-028 foundation's substantive checkpoint `6d8601039ba9531d1d95be73d1a3f74f0ebeed1f` remains recorded in the earlier merge record; this finalization delivery's described HEAD is its own metadata-only delivery checkpoint per the delivery lifecycle model, human-adjudicated 2026-10-03).
+- **Previous baseline:** `4165e4bbc6f295b7ee8790d766074848722a14b0` (PR #46 merge).
 - **Effective gate (runtime):** `__EFFECTIVE_GATE__`
 
-Described HEAD: 019b7ad1b0ae3a3755c358f1ac6668b1d2176169
+Described HEAD: __FIN_CHECKPOINT__
 
 ## Pre-merge gate
 

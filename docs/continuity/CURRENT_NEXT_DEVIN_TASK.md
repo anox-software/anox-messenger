@@ -1,6 +1,14 @@
 # CURRENT_NEXT_DEVIN_TASK — anoX V1
 
-## B-028 post-merge continuity synchronization — B028-POST-MERGE-CONTINUITY-SYNC-001 (2026-10-03)
+## B-028 sync lifecycle finalization — B028-SYNC-LIFECYCLE-FINALIZATION-001 (2026-10-03)
+
+**Delivery:** `continuity/b028-sync-lifecycle-finalization-001`, base = canonical merge `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (verified `main` = `origin/main`; PR #47 normal merge of `continuity/b028-post-merge-sync-001`, parents `4165e4b` + `717368a`, merge tree identical to reviewed delivery).
+**Authorization:** `ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001` registered as Candidate in `tasks.jsonl` (ROLE-003, `security_class S1`, `data_egress D2`, `priority P2`, `required_evidence E2`, `remote_permission NONE`, `start_sha` = `c1a7ebf`); authorized via `tools/workforce/state_gate_resolver.py` → `ALLOWED (task_authorized)` under the Human owner's instruction.
+**Purpose:** metadata-only lifecycle finalization after the post-merge sync merge — `ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001` → `Merged`, `previous_merges += {merge_head: c1a7ebf, pre/post_merge_state}`, post-merge `current_writer = null`, `runs.jsonl` `end_sha` finalized (`717368a`), surfaces point at canonical merge `c1a7ebf`. `described_head` = this delivery's own checkpoint (delivery-model per the 2026-10-03 human adjudication for the post-merge-sync delivery type — preflight requires non-canonical described_head + active review-window writer; merged sync anchor `019b7ad` preserved in `previous_merges`).
+**Next task:** apply ROLE-002 review verdict to this finalization delivery; then Human selects the next gate — the pending ROLE-002 delta review of `remediation/s2-c01-resync-correction-002` continues independently; `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` (Candidate, `start_sha NOT YET BOUND`) becomes executable only after real advisory dual-run parity evidence exists and a separate human cutover decision is recorded. No implementation beyond this delivery, no remote mutation.
+**Event:** `ANOX-EVENT-0066` remains the last sealed canonical event. This delivery does not append an event; `ANOX-EVENT-0067` sealing requires a separate human decision.
+
+## B-028 post-merge continuity synchronization — B028-POST-MERGE-CONTINUITY-SYNC-001 (2026-10-03) — MERGED via PR #47 (`c1a7ebf`; post-merge surfaces canonical on `main`)
 
 **Delivery:** `continuity/b028-post-merge-sync-001`, base = canonical merge `4165e4bbc6f295b7ee8790d766074848722a14b0` (verified `main` = `origin/main`; PR #46 normal merge of `governance/b028-foundation-001`, parents `32c729c` + `518733e`, merge tree identical to reviewed delivery, CI run `37116589907` all 8 jobs success).
 **Authorization:** `ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001` registered as Candidate in `tasks.jsonl` (ROLE-003, `security_class S1`, `data_egress D2`, `priority P2`, `required_evidence E2`, `remote_permission NONE`, `start_sha` = `4165e4b`); authorized via `tools/workforce/state_gate_resolver.py` → `ALLOWED (task_authorized)` under the Human owner's instruction.

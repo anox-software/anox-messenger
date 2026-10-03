@@ -110,3 +110,14 @@ Surface updates in this event (ANOX-EVENT-0060…0066 — POST-0054-LEDGER-CANON
 - `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` — updated/appended.
 - `docs/workforce/registries/runs.jsonl` — appended `ANOX-RUN-B028-POSTMERGE-SYNC-001`.
 - No ledger event appended (`ANOX-EVENT-0067` sealing requires a separate human decision); `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` remains Candidate with `start_sha` unbound.
+
+## Delivery surface updates — `B028-SYNC-LIFECYCLE-FINALIZATION-001` (2026-10-03, metadata-only, still under sealed tail ANOX-EVENT-0066)
+
+- `ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001` merged to `main` at canonical merge `c1a7ebf7d15f29eaf4f698d0680b688224c08865` (PR #47; parents `4165e4b` + `717368a`; merge tree identical to reviewed delivery — zero drift).
+- `docs/workforce/registries/tasks.jsonl` — `ANOX-TASK-B028-SYNC-LIFECYCLE-FINALIZATION-001` registered (Candidate → Authorized via `state_gate_resolver.py` ALLOWED, `start_sha` = `c1a7ebf`) → In Progress → `Awaiting Review`; sync task → `Merged`.
+- `docs/workforce/WORKFORCE_STATE.json` — lifecycle finalization: `delivery_branch` := `continuity/b028-sync-lifecycle-finalization-001`; `current_writer` = this task (review-window, delivery-model per 2026-10-03 adjudication); post-merge `current_writer` = null; `previous_merges += {merge_head: c1a7ebf, pre/post_merge_state}`; `current_gate` unchanged; `latest_run_id` := `ANOX-RUN-B028-SYNC-LIFECYCLE-FIN-001`.
+- `docs/continuity/CURRENT_STATE.json` — `latest_merge_to_baseline`/`main_baseline_head` := `c1a7ebf`; `previous_baseline_head` := `4165e4b`; `described_head` = own checkpoint (delivery-model); `current_task` updated.
+- `docs/continuity/CURRENT_GIT_STATE.md`, `CURRENT_HANDOFF.md`, `CURRENT_OPEN_WORK.md`, `CURRENT_NEXT_DEVIN_TASK.md`, `CURRENT_IMPLEMENTATION_STATE.md` — synchronized to the post-merge-sync merged state.
+- `PROJECT_STATE.md`, `FORTSCHRITT.md`, `DEVIN_PROMPT_OUTPUT_ARCHIV.md` — updated/appended.
+- `docs/workforce/registries/runs.jsonl` — `ANOX-RUN-B028-POSTMERGE-SYNC-001` `end_sha` finalized to `717368a`; appended `ANOX-RUN-B028-SYNC-LIFECYCLE-FIN-001`.
+- No ledger event appended (`ANOX-EVENT-0067` sealing requires a separate human decision); `ANOX-TASK-B028-DUAL-RUN-CUTOVER-001` remains Candidate with `start_sha` unbound.
