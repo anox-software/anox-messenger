@@ -398,6 +398,7 @@
 - Result: `ANOX-RUN-HANDOFF-UNSEALED-EXCEPTION-001`; live + archive validation PASS; handoff package generated under `artifacts/handoff/`.
 - Global truth unchanged: MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; S2/S3/S4 remediation not closed; product BLOCKED_PENDING_FINAL_AUDIT; arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME; B027-D DEFERRED_UNTIL_ALL_CURRENT_FINDINGS_CLOSED; S2 C-01 resync delivery continues independently.
 
+<!-- ANOX_EVENT: ANOX-EVENT-0068 -->
 ## HANDOFF-UNSEALED-EXCEPTION-001 BOUNDED CORRECTION — 2026-10-03 (ROLE-002 verdict BLOCKED → correction applied; delta review pending)
 
 - Trigger: ROLE-002 independent review (`ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001`, read-only) returned `BLOCKED — CORRECTION REQUIRED` with findings `ANOX-ROLE002-HANDOFF-UNSEALED-001` (MEDIUM), `-002`/`-003` (LOW).
