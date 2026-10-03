@@ -3,7 +3,7 @@
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
  "delivery_branch": "continuity/b028-post-merge-sync-001",
- "described_head": "6d8601039ba9531d1d95be73d1a3f74f0ebeed1f",
+ "described_head": "019b7ad1b0ae3a3755c358f1ac6668b1d2176169",
  "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
  "active_roles": [
   "ROLE-002",
@@ -11,7 +11,11 @@
  ],
  "blocked_tasks": [],
  "authorized_tasks": [],
- "current_writer": null,
+ "current_writer": {
+  "task_id": "ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001",
+  "role_id": "ROLE-003",
+  "branch": "continuity/b028-post-merge-sync-001"
+ },
  "pending_human_remote_actions": [],
  "latest_decision_id": "ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001",
  "latest_finding_id": "ANOX-SECURITY-ARCH-010",
@@ -68,7 +72,7 @@
   "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED + MERGED to main at 29a6643 (F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); REMEDIATION_SESSION_S1 MERGED_INTO_MAIN at 2dc6b745 via PR #38 (integrated delivery tip 3ed46b7 = 62b07a1 + 69279ce + ARM64 CI disposition; S1CRC-R-001/R-002 remediated; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; R-009 DEFERRED/NON_BLOCKING; 0 MSC units closed)"
  },
  "pre_merge_state": {
-  "described_head": "6d8601039ba9531d1d95be73d1a3f74f0ebeed1f",
+  "described_head": "019b7ad1b0ae3a3755c358f1ac6668b1d2176169",
   "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": {
    "task_id": "ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001",
@@ -80,7 +84,7 @@
   "active_task": "ANOX-TASK-B028-POST-MERGE-CONTINUITY-SYNC-001"
  },
  "post_merge_state": {
-  "described_head": "6d8601039ba9531d1d95be73d1a3f74f0ebeed1f",
+  "described_head": "019b7ad1b0ae3a3755c358f1ac6668b1d2176169",
   "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": null,
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
@@ -557,7 +561,8 @@
   "2026-09-27: S1-POST-MERGE-LIFECYCLE-FINALIZATION-001 — HUMAN-S1-POST-MERGE-CONTINUITY-CHECK = PASS/ACCEPTED; lifecycle finalized: current_writer = null, authorized_tasks and pending_human_remote_actions cleared, post_merge_state.current_writer/active_task remain null, ANOX-TASK-S1-POST-MERGE-CONTINUITY-SYNC-001 moved to Merged; next = SELECT_NEXT_OPEN_MSC_REMEDIATION_WAVE (select next OPEN MSC remediation wave from canonical audit evidence — none selected or started; S2/S3/S4 NOT_STARTED); next_phase SECURITY_REMEDIATION_WAVE_1 retained; ledger tail remains ANOX-EVENT-0054; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; arm64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME; remote mutation NONE.",
   "2026-09-30: S2-C01-PREAUTHORIZATION-001 — Human decision ANOX-DECISION-S2-C01-PREAUTHORIZATION-001 recorded; canonical task record for ANOX-TASK-S2-CORRECTION-001 registered (binds remediation/s2-correction-001, start_sha 02179ecd, reviewed allowed/forbidden paths). Anchor becomes a valid trust anchor only after this governance delivery passes review and the Human remote/merge gate to canonical main. The correction branch remains blocked until then. No remote mutation.",
   "2026-10-02: B028-SCALABLE-GOVERNANCE-FOUNDATION-001 authorized by Human decision ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION): B-028 additive governance track (design authority + session/domain/test-map/CI-verdict schemas + 7 fail-closed tools + canonical coordinator rules + prompts.jsonl activation) delivered advisory-only; no cutover, no ledger event, no product/finding/MSC change; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.",
-  "2026-10-03: B028-POST-MERGE-CONTINUITY-SYNC-001 — post-merge continuity synchronization after PR #46 (merge 4165e4b): current_gate := pre-formulated post-merge gate, current_writer := null, authorized_tasks cleared (next selection is a human gate), ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 -> Merged, previous_merges += merge record 4165e4b. No ledger event; ANOX-EVENT-0067 sealing requires separate human decision; B-028 cutover remains Candidate."
+  "2026-10-03: B028-POST-MERGE-CONTINUITY-SYNC-001 — post-merge continuity synchronization after PR #46 (merge 4165e4b): current_gate := pre-formulated post-merge gate, current_writer = sync task during review (post_merge_state keeps null end-state), authorized_tasks cleared (next selection is a human gate), ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 -> Merged, previous_merges += merge record 4165e4b. No ledger event; ANOX-EVENT-0067 sealing requires separate human decision; B-028 cutover remains Candidate.",
+  "2026-10-03 adjudication: delivery-lifecycle preflight requires described_head not yet on canonical base and an active delivery writer — incompatible with the contract-literal post-merge-sync fields (described_head=merged checkpoint + writer=null). Human Product & Security Owner decided: apply delivery-model fields (described_head = this sync's own checkpoint commit, current_writer = sync task during review). Contract-deviation documented; semantic intent preserved: surfaces describe merged state, merged checkpoint 6d860103 remains the recorded substantive anchor in previous_merges."
  ],
  "product_development_state": "BLOCKED_PENDING_FINAL_AUDIT",
  "next_phase": "SECURITY_REMEDIATION_WAVE_1",
@@ -566,5 +571,5 @@
  "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
  "legacy_audit_set_status": "6/6 COMPLETE",
  "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
- "last_sync": "2026-10-03 — B028-POST-MERGE-CONTINUITY-SYNC-001; canonical merge 4165e4b (PR #46) verified (parents 32c729c+518733e, tree identical to reviewed delivery); post-merge flip applied; described_head remains 6d860103 (merged delivery's substantive checkpoint per HEAD-semantics); ledger tail ANOX-EVENT-0066 unchanged; remote mutation NONE."
+ "last_sync": "2026-10-03 — B028-POST-MERGE-CONTINUITY-SYNC-001; canonical merge 4165e4b (PR #46) verified (parents 32c729c+518733e, tree identical to reviewed delivery); post-merge flip applied; described_head = sync delivery's own checkpoint (delivery-model; human-adjudicated 2026-10-03); merged delivery's substantive checkpoint 6d860103 recorded in previous_merges; ledger tail ANOX-EVENT-0066 unchanged; remote mutation NONE."
 }
