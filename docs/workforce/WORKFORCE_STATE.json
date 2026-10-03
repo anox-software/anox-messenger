@@ -3,7 +3,7 @@
  "authority_version": "docs/authority/B027_AI_WORKFORCE_GOVERNANCE.md",
  "canonical_branch": "main",
  "delivery_branch": "governance/b028-foundation-001",
- "described_head": "d97770db07dd15e670f194b44535ea516b6c359a",
+ "described_head": "7d44a82bfc937a404380fecfa3a06c6c835d016e",
  "current_gate": "B028-SCALABLE-GOVERNANCE-FOUNDATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; B-028 scalable governance foundation delivered additive/advisory-only (design authority, session schema, domain_tiers, test_map, ci_verdicts, seal_event, render_surfaces, session-evidence ingest, risk classifier, next_step, prompt validator, canonical coordinator rules; 98 adversarial tests) under ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION); no cutover, no ledger event, remote permission NONE; no handoff generated",
  "active_roles": [
   "ROLE-002",
@@ -74,7 +74,7 @@
   "security_remediation": "IN_PROGRESS — REMEDIATION_SESSION_S0 RETESTED_AND_EVIDENCE_PRESERVED + MERGED to main at 29a6643 (F-01 RATIFIED; F-02…F-10 FIXED; merge blockers 0; 2 residual LOW non-blocking); REMEDIATION_SESSION_S1 MERGED_INTO_MAIN at 2dc6b745 via PR #38 (integrated delivery tip 3ed46b7 = 62b07a1 + 69279ce + ARM64 CI disposition; S1CRC-R-001/R-002 remediated; S1CRC-R-003 DEFERRED_NON_BLOCKING_MILESTONE_SECURITY; R-009 DEFERRED/NON_BLOCKING; 0 MSC units closed)"
  },
  "pre_merge_state": {
-  "described_head": "d97770db07dd15e670f194b44535ea516b6c359a",
+  "described_head": "7d44a82bfc937a404380fecfa3a06c6c835d016e",
   "current_gate": "B028-SCALABLE-GOVERNANCE-FOUNDATION-001 — LOCAL_DELIVERY_AWAITING_REVIEW; B-028 scalable governance foundation delivered additive/advisory-only (design authority, session schema, domain_tiers, test_map, ci_verdicts, seal_event, render_surfaces, session-evidence ingest, risk classifier, next_step, prompt validator, canonical coordinator rules; 98 adversarial tests) under ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001 (PROGRAM_FOUNDATION); no cutover, no ledger event, remote permission NONE; no handoff generated",
   "current_writer": {
    "task_id": "ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001",
@@ -86,7 +86,7 @@
   "active_task": "ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001"
  },
  "post_merge_state": {
-  "described_head": "d97770db07dd15e670f194b44535ea516b6c359a",
+  "described_head": "7d44a82bfc937a404380fecfa3a06c6c835d016e",
   "current_gate": "B028-DUAL-RUN-CUTOVER-001 — B-028 foundation MERGED_TO_MAIN (generic components advisory; acceptance authority unchanged — pinned validators remain; cutover requires separate human decision after clean dual-run parity); SECURITY_REMEDIATION_WAVE_1 wave completion remains Candidate pending retest evidence; S2 C-01 resync on remediation/s2-c01-resync-correction-002 continues independently awaiting ROLE-002 delta review; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; ARM64 UNVERIFIED_PENDING_REAL_ARM64_RUNTIME",
   "current_writer": null,
   "next_phase": "SECURITY_REMEDIATION_WAVE_1",
@@ -548,5 +548,5 @@
  "workforce_architecture_audit": "COMPLETE_WITH_FINDINGS",
  "legacy_audit_set_status": "6/6 COMPLETE",
  "security_architecture_audit": "COMPLETE_WITH_FINDINGS",
- "last_sync": "2026-10-02 — B028-SCALABLE-GOVERNANCE-FOUNDATION-001; canonical base 32c729c (PR #45 merged); described checkpoint d97770d; previous_merges synchronized for canonical merges cb9aee0/02179ecd/270cdb92/3414fb2/d59ef474/fce371b/32c729c (carried verbatim from reviewed S2 delivery surfaces); ledger tail ANOX-EVENT-0066 unchanged; remote mutation NONE."
+ "last_sync": "2026-10-02 — B028-SCALABLE-GOVERNANCE-FOUNDATION-001; canonical base 32c729c (PR #45 merged); described checkpoint 7d44a82b; previous_merges synchronized for canonical merges cb9aee0/02179ecd/270cdb92/3414fb2/d59ef474/fce371b/32c729c (carried verbatim from reviewed S2 delivery surfaces); ledger tail ANOX-EVENT-0066 unchanged; remote mutation NONE."
 }
