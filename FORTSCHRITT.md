@@ -409,3 +409,12 @@
 - Tests: `test_handoff_unsealed.py` 19/19 PASS under plain invocation (8 new partial/duplicate/unknown-stamp negatives); `test_handoff_and_validator.py` 178/178 PASS; battery re-run (live validation, archive DECLARED_UNSEALED, B027-A/B/C, render_surfaces --check, seal_event --verify).
 - Boundary preserved: no ledger event appended (tail `ANOX-EVENT-0068`); no product/crypto/backend/CI/authority/decision change; MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation NONE.
 - Next: ROLE-002 delta review of this bounded correction; on PASS → Human remote decision (push/PR/merge).
+
+<!-- ANOX_EVENT: ANOX-EVENT-0068 -->
+## DELTA-REVIEW PASS + MICRO-CORRECTION — 2026-10-03 (ROLE-002 verdict PASS — READY FOR HUMAN REMOTE DECISION)
+
+- ROLE-002 delta review (registered `ANOX-TASK-REVIEW-HANDOFF-UNSEALED-001`, run `ANOX-RUN-REVIEW-HANDOFF-UNSEALED-001` round 2): live binding verified after human push of the delivery branch to `5f4582f`; 18/18 independent parser reproductions fail-closed; 19/19 + 178/178 suites reproduced plain; real `--allow-unsealed` package `PASS — DECLARED_UNSEALED`; scope containment, registry evidence, invariants all PASS.
+- Verdict: `RESULT: PASS — READY FOR HUMAN REMOTE DECISION`.
+- Micro-correction in the same commit (reviewer-flagged, non-blocking): `ANOX-FINDING-ROLE002-HANDOFF-UNSEALED-004` (LOW) registered — stale `->Closed` references in `CURRENT_NEXT_DEVIN_TASK.md` corrected to `Ready For Retest`, record count updated, `latest_run_id` -> `ANOX-RUN-REVIEW-HANDOFF-UNSEALED-001`, `latest_finding_id` -> `-004`.
+- Boundary preserved: no ledger event (tail `ANOX-EVENT-0068`); MSC OPEN=42/CLOSED=0; B004/B005 NOT_STARTED; product BLOCKED_PENDING_FINAL_AUDIT; remote mutation = human push only (no PR/merge yet).
+- Next: Human remote decision — PR + merge of `governance/handoff-unsealed-exception-001` to `main`.
