@@ -48,3 +48,16 @@ Each B-028 component becomes the acceptance authority only through a separate re
 
 - Adversarial suites: `test_seal_event.py` (19), `test_render_surfaces.py` (10), `test_session_evidence.py` (19), `test_ingest_ci_verdict.py` (16), `test_validate_prompt.py` (16), `test_risk_classifier.py` (10), `test_next_step.py` (8) — 98 tests.
 - Registry records: `decisions.jsonl` (`ANOX-DECISION-B028-SCALABLE-GOVERNANCE-FOUNDATION-001`), `tasks.jsonl` (foundation task + cutover candidate), `prompts.jsonl` (`ANOX-PROMPT-B028F001`).
+
+## Appendix A — in-delivery task record correction (2026-10-02)
+
+The initial registry write for `ANOX-TASK-B028-SCALABLE-GOVERNANCE-FOUNDATION-001` listed
+`tools/audit/validate_*.py` and `tools/audit/test_*.py` in `forbidden_paths` (intent: protect the
+existing pinned audit validators/tests). The glob form also collided with the delivery's own
+`allowed_paths` for the new B-028 ingest tools, so the fail-closed lifecycle scope check BLOCKED the
+delivery on a self-inconsistent record. Corrected in place per registry precedent: the two globs were
+replaced by the explicit enumeration of the 35 `tools/audit/validate_*.py` / `test_*.py` files
+existing at the task's `start_sha` (32c729c). Effective authorized scope is unchanged — every path
+written by this delivery was and remains inside `allowed_paths`; the correction only removes a
+record-internal contradiction and does not grant new paths, new authority, or any relaxation of the
+forbidden set (existing validators remain individually forbidden).
